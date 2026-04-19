@@ -6,21 +6,21 @@ namespace healerfantasy.SpellResources;
 [GlobalClass]
 public partial class HealOverTimeSpellResource : SpellResource
 {
-	[Export] public float HealPerTick    = 5f;
+	[Export] public float HealPerTick = 6f;
 	[Export] public float EffectDuration = 10f;
-	[Export] public float TickInterval   = 1f;
+	[Export] public float TickInterval = 1f;
 
 	public override void Act(Character _caster, Character target)
 	{
-		target.ApplyEffect(new HealOverTimeEffect(HealPerTick, EffectDuration, TickInterval));
+		target.ApplyEffect(new HealOverTimeEffect(HealPerTick, EffectDuration, TickInterval) { Icon = Icon });
 	}
 
 	public HealOverTimeSpellResource()
 	{
-		Name        = "Renew";
+		Name = "Renew";
 		Description = $"Heals the target for {HealPerTick} every {TickInterval}s for {EffectDuration}s.";
-		ManaCost    = 10f;
-		CastTime    = 1.5f;
-		Icon        = GD.Load<Texture2D>("res://assets/spell-icons/healer/healer3.png");
+		ManaCost = 6f;
+		CastTime = 0.0f;
+		Icon = GD.Load<Texture2D>("res://assets/spell-icons/healer/healer3.png");
 	}
 }

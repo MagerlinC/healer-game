@@ -1,3 +1,5 @@
+using Godot;
+
 namespace healerfantasy;
 
 /// <summary>
@@ -29,6 +31,12 @@ public abstract class CharacterEffect
 	public float Remaining { get; private set; }
 
 	public bool IsExpired => Remaining <= 0f;
+
+	/// <summary>
+	/// Optional icon displayed on the affected character's UI frame.
+	/// Set this from the spell's <c>Act</c> method when constructing the effect.
+	/// </summary>
+	public Texture2D Icon { get; set; }
 
 	// How often OnTick fires. 0 means no discrete ticks (continuous only).
 	readonly float _tickInterval;

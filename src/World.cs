@@ -1,4 +1,5 @@
 using Godot;
+using healerfantasy;
 
 /// <summary>
 /// Root script for the World scene.
@@ -10,35 +11,31 @@ using Godot;
 /// </summary>
 public partial class World : Node2D
 {
-    public override void _Ready()
-    {
-        var ui       = GetNode<GameUI>("PartyUI");
-        var player   = GetNode<Player>("Player");
-        var templar  = GetNode<Character>("Templar");
-        var assassin = GetNode<Character>("Assassin");
-        var wizard   = GetNode<Character>("Wizard");
+	public override void _Ready()
+	{
+		var ui = GetNode<GameUI>("PartyUI");
+		var player = GetNode<Player>("Player");
+		var templar = GetNode<Character>("Templar");
+		var assassin = GetNode<Character>("Assassin");
+		var wizard = GetNode<Character>("Wizard");
 
-        Wire(templar,  ui, 0);
-        Wire(player,   ui, 1);
-        Wire(assassin, ui, 2);
-        Wire(wizard,   ui, 3);
+		GlobalAutoLoad.RegisterPartyMember(templar, 0);
+		GlobalAutoLoad.RegisterPartyMember(player, 1);
+		GlobalAutoLoad.RegisterPartyMember(assassin, 2);
+		GlobalAutoLoad.RegisterPartyMember(wizard, 3);
 
-        // Bind characters so hovering a frame resolves to the right Character
-        ui.BindCharacter(0, templar);
-        ui.BindCharacter(1, player);
-        ui.BindCharacter(2, assassin);
-        ui.BindCharacter(3, wizard);
+		// Bind characters so hovering a frame resolves to the right Character
+		ui.BindCharacter(0, templar);
+		ui.BindCharacter(1, player);
+		ui.BindCharacter(2, assassin);
+		ui.BindCharacter(3, wizard);
 
-        // Give the Player a reference to the UI for hover-target resolution
-        player.GameUI = ui;
+		// Give the Player a reference to the UI for hover-target resolution
+		player.GameUI = ui;
 
-        // Populate the action bar with the player's spell bindings
-        ui.SetupActionBar(player.GetSpellBindings());
-    }
+		// Populate the action bar with the player's spell bindings
+		ui.SetupActionBar(player.GetSpellBindings());
+	}
 
-    // ── helpers ──────────────────────────────────────────────────────────────
-    private static void Wire(Character c, GameUI ui, int slot)
-    {
-        c.HealthChanged += (current, max) => ui.SetHealth(slot, current, max);
-    }
+
 }

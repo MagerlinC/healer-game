@@ -10,7 +10,7 @@ namespace healerfantasy.SpellResources;
 [GlobalClass]
 public partial class GroupHealSpellResource : SpellResource
 {
-	[Export] public float HealAmount = 10f;
+	[Export] public float HealAmount = 25f;
 
 	public override void Act(Character caster, Character _target)
 	{
@@ -23,10 +23,10 @@ public partial class GroupHealSpellResource : SpellResource
 
 	public GroupHealSpellResource()
 	{
-		Name        = "Group Heal";
+		Name = "Group Heal";
 		Description = $"Restores {HealAmount} health to all party members.";
-		ManaCost    = 20f;
-		CastTime    = 2f;
-		Icon        = GD.Load<Texture2D>("res://assets/spell-icons/healer/healer2.png");
+		ManaCost = 20f;
+		CastTime = 2f;
+		Icon = GD.Load<Texture2D>("res://assets/spell-icons/healer/healer2.png");
 	}
 }

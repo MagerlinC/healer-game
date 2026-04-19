@@ -15,6 +15,7 @@ public partial class ManaBar : ProgressBar
 		);
 		MaxValue = _max;
 		Value = _current;
+		Size = new Vector2(200, 10);
 		Visible = true;
 	}
 

@@ -14,10 +14,10 @@ public partial class HealSpellResource : SpellResource
 
 	public HealSpellResource()
 	{
-		Name        = "Heal";
+		Name = "Heal";
 		Description = $"Restores {HealAmount} health to the target.";
-		ManaCost    = 10f;
-		CastTime    = 1.5f;
-		Icon        = GD.Load<Texture2D>("res://assets/spell-icons/healer/healer1.png");
+		ManaCost = 5f;
+		CastTime = 1.5f;
+		Icon = GD.Load<Texture2D>("res://assets/spell-icons/healer/healer1.png");
 	}
 }

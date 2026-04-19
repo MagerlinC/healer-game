@@ -12,6 +12,7 @@ public partial class Player : Character
 {
 	// ── movement ─────────────────────────────────────────────────────────────
 	[Export] public float Speed = 80.0f;
+	[Export] public float GlobalCooldown = 0.5f;
 	[Export] public SpellResource Spell1 = new HealSpellResource(); // TODO: I cannot seem to create this resource in the UI
 	[Export] public SpellResource Spell2 = new GroupHealSpellResource();
 	[Export] public SpellResource Spell3 = new HealOverTimeSpellResource();
@@ -30,6 +31,7 @@ public partial class Player : Character
 
 	bool _isCasting = false;
 	float _castTimer = 0f;
+	float _globalCooldownTimer = 0f;
 	SpellResource _castSpell;
 	Character _castTarget;
 
@@ -50,29 +52,19 @@ public partial class Player : Character
 		return null;
 	}
 
+	void FireSpell(SpellResource spell, Character target)
+	{
+		SpendMana(spell.ManaCost);
+		spell.Act(this, target);
+		_isCasting = false;
+		_castSpell = null;
+		_castTarget = null;
+	}
 	public override void _Process(double delta)
 	{
 		base._Process(delta); // runs health drain from Character
-
-		if (!IsAlive) return;
-
-		var spellToCast = GetSpellForInput();
-
-		if (spellToCast is not null && !_isCasting)
-		{
-			var hasMana = CurrentMana >= spellToCast.ManaCost;
-			if (hasMana)
-			{
-				// Lock in the target at cast-start: whichever health frame is under
-				// the cursor, or self if the cursor is not over any frame.
-				_castTarget = GameUI?.GetHoveredCharacter() ?? this;
-				_castSpell = spellToCast;
-
-				EmitSignal(SignalName.CastStarted, spellToCast);
-				_isCasting = true;
-				_castTimer = spellToCast.CastTime;
-			}
-		}
+		if (_globalCooldownTimer > 0f)
+			_globalCooldownTimer = Mathf.Max(_globalCooldownTimer - (float)delta, 0.0f);
 
 		// Tick cast timer — any movement input interrupts the cast
 		if (_isCasting)
@@ -87,10 +79,41 @@ public partial class Player : Character
 				if (_castTimer <= 0f)
 				{
 					FireSpell(_castSpell, _castTarget);
-					_isCasting = false;
-					_castSpell = null;
-					_castTarget = null;
 				}
+			}
+
+			return;
+		}
+
+
+		var canCast = IsAlive && _globalCooldownTimer == 0f;
+		if (!canCast) return;
+
+		var spellToCast = GetSpellForInput();
+
+		if (spellToCast is not null)
+		{
+			var hasMana = CurrentMana >= spellToCast.ManaCost;
+			if (hasMana)
+			{
+				// Lock in the target at cast-start: whichever health frame is under
+				// the cursor, or self if the cursor is not over any frame.
+				_castTarget = GameUI?.GetHoveredCharacter() ?? this;
+				_castSpell = spellToCast;
+
+				var spellIsInstant = spellToCast.CastTime == 0.0f;
+				if (spellIsInstant)
+				{
+					FireSpell(_castSpell, _castTarget);
+				}
+				else
+				{
+					EmitSignal(SignalName.CastStarted, spellToCast);
+					_isCasting = true;
+					_castTimer = spellToCast.CastTime;
+				}
+
+				_globalCooldownTimer = GlobalCooldown;
 			}
 		}
 	}
@@ -124,6 +147,7 @@ public partial class Player : Character
 	}
 	public override void _PhysicsProcess(double delta)
 	{
+		if (!IsAlive) return;
 		// GetVector normalises diagonal movement automatically
 		var direction = Input.GetVector("move_left", "move_right", "move_up", "move_down");
 		Velocity = direction != Vector2.Zero ? direction * Speed : Vector2.Zero;

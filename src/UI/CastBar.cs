@@ -19,6 +19,7 @@ public partial class CastBar : ProgressBar
 			nameof(Player.CastCancelled),
 			Callable.From(StopCast)
 		);
+		Size = new Vector2(200, 10);
 		Visible = false;
 	}
 	public override void _Process(double delta)
@@ -38,6 +39,7 @@ public partial class CastBar : ProgressBar
 
 	public void StartCast(SpellResource spell)
 	{
+		if (spell.CastTime == 0.0f) return;
 		_duration = spell.CastTime;
 		_remaining = spell.CastTime;
 		_isCasting = true;

@@ -11,26 +11,27 @@ using SpellResource = healerfantasy.SpellResources.SpellResource;
 /// </summary>
 public partial class GameUI : CanvasLayer
 {
-	CastBar      _castBar;
-	ProgressBar  _manaBar;
-	ActionBar    _actionBar;
+	CastBar _castBar;
+	ProgressBar _manaBar;
+	ActionBar _actionBar;
 
 	// ── per-member config: name + the colour the bar fills with ─────────────
 	static readonly (string Name, Color BarColor, float MaxHp)[] MemberDefs =
 	{
-		("Templar",  new Color(0.88f, 0.30f, 0.50f), 150f), // rose-red
-		("Healer",   new Color(0.35f, 0.78f, 0.22f),  80f), // poison-green
+		("Templar", new Color(0.88f, 0.30f, 0.50f), 150f), // rose-red
+		("Healer", new Color(0.35f, 0.78f, 0.22f), 80f), // poison-green
 		("Assassin", new Color(0.85f, 0.78f, 0.15f), 100f), // golden-yellow
-		("Wizard",   new Color(0.20f, 0.50f, 0.95f),  70f), // sapphire-blue
+		("Wizard", new Color(0.20f, 0.50f, 0.95f), 70f) // sapphire-blue
 	};
 
-	static readonly Color BorderDefault = new Color(0.32f, 0.26f, 0.26f);
-	static readonly Color BorderHovered = new Color(0.90f, 0.80f, 0.20f); // gold highlight
+	static readonly Color BorderDefault = new(0.32f, 0.26f, 0.26f);
+	static readonly Color BorderHovered = new(0.90f, 0.80f, 0.20f); // gold highlight
 
-	readonly ProgressBar[]    _bars        = new ProgressBar[4];
-	readonly PanelContainer[] _panels      = new PanelContainer[4];
-	readonly StyleBoxFlat[]   _panelStyles = new StyleBoxFlat[4];
-	readonly Character[]      _characters  = new Character[4];
+	readonly ProgressBar[] _bars = new ProgressBar[4];
+	readonly PanelContainer[] _panels = new PanelContainer[4];
+	readonly StyleBoxFlat[] _panelStyles = new StyleBoxFlat[4];
+	readonly HBoxContainer[] _effectBars = new HBoxContainer[4];
+	readonly Character[] _characters = new Character[4];
 
 	// ── lifecycle ────────────────────────────────────────────────────────────
 	public override void _Ready()
@@ -44,24 +45,22 @@ public partial class GameUI : CanvasLayer
 		AddChild(anchor);
 
 		_castBar = new CastBar();
-		_castBar.Size = new Vector2(200, 14);
-		_castBar.AnchorLeft   = 0.5f;
-		_castBar.AnchorTop    = 0.6f;
-		_castBar.OffsetLeft   = -100;
-		_castBar.OffsetRight  =  100;
-		_castBar.OffsetTop    =   20;
-		_castBar.OffsetBottom =   40;
+		_castBar.AnchorLeft = 0.5f;
+		_castBar.AnchorTop = 0.6f;
+		_castBar.OffsetLeft = -100;
+		_castBar.OffsetRight = 100;
+		_castBar.OffsetTop = 20;
+		_castBar.OffsetBottom = 40;
 		anchor.AddChild(_castBar);
 
 		_manaBar = new ManaBar();
-		_manaBar.Size = new Vector2(200, 14);
-		_manaBar.AnchorLeft   = 0.5f;
-		_manaBar.AnchorRight  = 0.5f;
-		_manaBar.AnchorTop    = 0.6f;
-		_manaBar.OffsetLeft   = -100;
-		_manaBar.OffsetRight  =  100;
-		_manaBar.OffsetTop    =   50;
-		_manaBar.OffsetBottom =   70;
+		_manaBar.AnchorLeft = 0.5f;
+		_manaBar.AnchorRight = 0.5f;
+		_manaBar.AnchorTop = 0.6f;
+		_manaBar.OffsetLeft = -100;
+		_manaBar.OffsetRight = 100;
+		_manaBar.OffsetTop = 50;
+		_manaBar.OffsetBottom = 70;
 
 		var fillStyle = new StyleBoxFlat();
 		fillStyle.BgColor = Colors.Blue;
@@ -69,50 +68,70 @@ public partial class GameUI : CanvasLayer
 		_manaBar.AddThemeStyleboxOverride("fill", fillStyle);
 		anchor.AddChild(_manaBar);
 
-		// Horizontal row pinned to the bottom-left corner
 		var hbox = new HBoxContainer();
 		hbox.AddThemeConstantOverride("separation", 6);
-		hbox.AnchorLeft   = 0f;
-		hbox.AnchorTop    = 1f;
-		hbox.AnchorRight  = 0f;
-		hbox.AnchorBottom = 1f;
-		hbox.GrowHorizontal = Control.GrowDirection.End;
-		hbox.GrowVertical   = Control.GrowDirection.Begin;
-		hbox.OffsetLeft   =   10f;
-		hbox.OffsetTop    =  -74f;
-		hbox.OffsetBottom =  -10f;
+
+		hbox.SetAnchorsPreset(Control.LayoutPreset.Center);
+		hbox.Position += new Vector2(0, 250); // push it down a bit
+
+		// Center the container itself
+		hbox.GrowHorizontal = Control.GrowDirection.Both;
+		hbox.GrowVertical = Control.GrowDirection.Both;
+
 		anchor.AddChild(hbox);
 
 		for (var i = 0; i < MemberDefs.Length; i++)
 		{
 			var (name, barColor, maxHp) = MemberDefs[i];
-			var panel = BuildFrame(name, barColor, maxHp, out _bars[i], out _panelStyles[i]);
-			_panels[i] = panel;
+			var wrapper = BuildFrame(
+				name, barColor, maxHp,
+				out _bars[i], out _panelStyles[i], out _panels[i], out _effectBars[i]);
 
-			// Capture the style reference (not the loop index) to avoid the
-			// classic C# closure-in-loop capture bug.
+			// Capture loop-local references to avoid the closure capture bug
 			var style = _panelStyles[i];
+			var panel = _panels[i];
 			panel.MouseEntered += () => style.BorderColor = BorderHovered;
-			panel.MouseExited  += () => style.BorderColor = BorderDefault;
+			panel.MouseExited += () => style.BorderColor = BorderDefault;
 
-			hbox.AddChild(panel);
+			hbox.AddChild(wrapper);
 		}
 
-		// Action bar — centered above the party frames.
-		// Party frames sit at OffsetBottom=-10, OffsetTop=-74 (64px tall).
-		// We leave a 10px gap, so the action bar bottom is at -84, top at -136 (52px tall).
+		// Action bar — centered, 10px above the party frame row.
+		// Frame row bottom: -10. Frame row top: -90. Action bar bottom: -100. Top: -152.
 		_actionBar = new ActionBar();
-		_actionBar.AnchorLeft   = 0.5f;
-		_actionBar.AnchorRight  = 0.5f;
-		_actionBar.AnchorTop    = 1f;
+		_actionBar.AnchorLeft = 0.5f;
+		_actionBar.AnchorRight = 0.5f;
+		_actionBar.AnchorTop = 1f;
 		_actionBar.AnchorBottom = 1f;
 		_actionBar.GrowHorizontal = Control.GrowDirection.Both;
-		_actionBar.GrowVertical   = Control.GrowDirection.Begin;
-		_actionBar.OffsetLeft   = -55f; // half of (2 × 52px slots + 6px gap) = 55
-		_actionBar.OffsetRight  =  55f;
-		_actionBar.OffsetTop    = -136f;
-		_actionBar.OffsetBottom =  -84f;
+		_actionBar.GrowVertical = Control.GrowDirection.Begin;
+		_actionBar.OffsetLeft = -55f;
+		_actionBar.OffsetRight = 55f;
+		_actionBar.OffsetTop = -152f;
+		_actionBar.OffsetBottom = -100f;
 		anchor.AddChild(_actionBar);
+
+		// ── subscribe to party signals via GlobalAutoLoad ─────────────────────
+		GlobalAutoLoad.SubscribeToPartySignal(
+			"HealthChanged",
+			slot => Callable.From((float current, float max) => SetHealth(slot, current, max)));
+
+		GlobalAutoLoad.SubscribeToPartySignal(
+			"EffectApplied",
+			slot => Callable.From((string id, Texture2D icon, float duration) => ShowEffectIndicator(slot, id, icon, duration)));
+
+		GlobalAutoLoad.SubscribeToPartySignal(
+			"EffectRemoved",
+			slot => Callable.From((string id) => HideEffectIndicator(slot, id)));
+
+		// Forward the player's (slot 1) mana changes to the action bar so it can
+		// grey out spells the player can't currently afford.
+		GlobalAutoLoad.SubscribeToPartySignal(
+			"ManaChanged",
+			slot => Callable.From((float current, float max) =>
+			{
+				if (slot == 1) _actionBar.SetIconShadingBasedOnPlayerMana(current, max);
+			}));
 	}
 
 	// ── public API ───────────────────────────────────────────────────────────
@@ -121,7 +140,7 @@ public partial class GameUI : CanvasLayer
 	{
 		if (index < 0 || index >= _bars.Length) return;
 		_bars[index].MaxValue = max;
-		_bars[index].Value    = current;
+		_bars[index].Value = current;
 	}
 
 	/// <summary>
@@ -156,35 +175,73 @@ public partial class GameUI : CanvasLayer
 			if (_panels[i] != null && _panels[i].GetGlobalRect().HasPoint(mousePos))
 				return _characters[i];
 		}
+
 		return null;
 	}
 
-	// ── frame builder ────────────────────────────────────────────────────────
-	static PanelContainer BuildFrame(
-		string name, Color barColor, float maxHp,
-		out ProgressBar bar, out StyleBoxFlat panelStyle)
+	/// <summary>Add an effect indicator badge to the given slot's effects row.</summary>
+	public void ShowEffectIndicator(int slot, string effectId, Texture2D icon, float duration)
 	{
+		if (slot < 0 || slot >= _effectBars.Length) return;
+		// Remove any existing indicator for this effect (handles refresh case)
+		HideEffectIndicator(slot, effectId);
+		_effectBars[slot].AddChild(new EffectIndicator(effectId, icon, duration));
+	}
+
+	/// <summary>Remove the effect indicator with the given id from the slot, if present.</summary>
+	public void HideEffectIndicator(int slot, string effectId)
+	{
+		if (slot < 0 || slot >= _effectBars.Length) return;
+		foreach (var child in _effectBars[slot].GetChildren())
+		{
+			if (child is EffectIndicator ind && ind.EffectId == effectId)
+			{
+				ind.QueueFree();
+				return;
+			}
+		}
+	}
+
+	// ── frame builder ────────────────────────────────────────────────────────
+	/// <summary>
+	/// Builds one party frame wrapped in a VBoxContainer that has an effects
+	/// row above it. Returns the wrapper to be added to the outer HBoxContainer.
+	/// </summary>
+	static Control BuildFrame(
+		string name, Color barColor, float maxHp,
+		out ProgressBar bar, out StyleBoxFlat panelStyle,
+		out PanelContainer panel, out HBoxContainer effectsBar)
+	{
+		// Wrapper: effects row on top, health frame below
+		var wrapper = new VBoxContainer();
+		wrapper.AddThemeConstantOverride("separation", 2);
+
+		// Effects row — always reserves 24px so the frame doesn't jump on apply
+		effectsBar = new HBoxContainer();
+		effectsBar.AddThemeConstantOverride("separation", 3);
+		effectsBar.CustomMinimumSize = new Vector2(0, 24);
+		effectsBar.MouseFilter = Control.MouseFilterEnum.Ignore;
+		wrapper.AddChild(effectsBar);
+
 		// Dark outer frame
-		var panel = new PanelContainer();
+		panel = new PanelContainer();
 		panel.CustomMinimumSize = new Vector2(138, 54);
 
 		panelStyle = new StyleBoxFlat();
 		panelStyle.BgColor = new Color(0.11f, 0.09f, 0.09f, 0.95f);
 		panelStyle.SetCornerRadiusAll(6);
 		panelStyle.SetBorderWidthAll(2);
-		panelStyle.BorderColor         = BorderDefault;
-		panelStyle.ContentMarginLeft   = 8f;
-		panelStyle.ContentMarginRight  = 8f;
-		panelStyle.ContentMarginTop    = 5f;
+		panelStyle.BorderColor = BorderDefault;
+		panelStyle.ContentMarginLeft = 8f;
+		panelStyle.ContentMarginRight = 8f;
+		panelStyle.ContentMarginTop = 5f;
 		panelStyle.ContentMarginBottom = 5f;
 		panel.AddThemeStyleboxOverride("panel", panelStyle);
 
 		var progressBar = new ProgressBar();
 		progressBar.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		progressBar.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
+		progressBar.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 		progressBar.AddThemeConstantOverride("separation", 4);
-		// Ignore mouse so the PanelContainer keeps focus and MouseExited
-		// doesn't fire when the cursor moves over the bar or label.
 		progressBar.MouseFilter = Control.MouseFilterEnum.Ignore;
 		panel.AddChild(progressBar);
 
@@ -192,9 +249,9 @@ public partial class GameUI : CanvasLayer
 		var label = new Label();
 		label.Text = name;
 		label.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		label.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
+		label.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 		label.HorizontalAlignment = HorizontalAlignment.Center;
-		label.VerticalAlignment   = VerticalAlignment.Center;
+		label.VerticalAlignment = VerticalAlignment.Center;
 		label.AddThemeFontSizeOverride("font_size", 14);
 		label.AddThemeColorOverride("font_color", new Color(0.90f, 0.87f, 0.83f));
 		label.MouseFilter = Control.MouseFilterEnum.Ignore;
@@ -211,9 +268,10 @@ public partial class GameUI : CanvasLayer
 
 		progressBar.ShowPercentage = false;
 		progressBar.MaxValue = maxHp;
-		progressBar.Value    = maxHp;
+		progressBar.Value = maxHp;
 
 		bar = progressBar;
-		return panel;
+		wrapper.AddChild(panel);
+		return wrapper;
 	}
 }

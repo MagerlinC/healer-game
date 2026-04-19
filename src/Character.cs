@@ -11,9 +11,22 @@ using SpellResource = healerfantasy.SpellResources.SpellResource;
 public abstract partial class Character : CharacterBody2D
 {
 	// ── signals ──────────────────────────────────────────────────────────────
-	[Signal] public delegate void HealthChangedEventHandler(float current, float max);
-	[Signal] public delegate void ManaChangedEventHandler(float current, float max);
-	[Signal] public delegate void DiedEventHandler();
+	[Signal]
+	public delegate void HealthChangedEventHandler(float current, float max);
+
+	[Signal]
+	public delegate void ManaChangedEventHandler(float current, float max);
+
+	[Signal]
+	public delegate void DiedEventHandler();
+
+	/// <summary>Emitted when an effect is applied (or refreshed) on this character.</summary>
+	[Signal]
+	public delegate void EffectAppliedEventHandler(string effectId, Texture2D icon, float duration);
+
+	/// <summary>Emitted when an effect expires or is removed from this character.</summary>
+	[Signal]
+	public delegate void EffectRemovedEventHandler(string effectId);
 
 	// ── exports ──────────────────────────────────────────────────────────────
 	[Export] public string CharacterName = "Character";
@@ -23,12 +36,12 @@ public abstract partial class Character : CharacterBody2D
 	/// <summary>Fraction of MaxHealth lost per second.</summary>
 	[Export] public float DrainPerSecond = 0.10f;
 
-	[Export] public float ManaRegenPerSecond = 0.5f;
+	[Export] public float ManaRegenPerSecond = 1.0f;
 
 	// ── state ────────────────────────────────────────────────────────────────
 	public float CurrentHealth { get; private set; }
-	public float CurrentMana  { get; private set; }
-	public bool  IsAlive => CurrentHealth > 0f;
+	public float CurrentMana { get; private set; }
+	public bool IsAlive => CurrentHealth > 0f;
 
 	// Keyed by CharacterEffect.EffectId for O(1) lookup and deduplication.
 	readonly Dictionary<string, CharacterEffect> _effects = new();
@@ -37,9 +50,11 @@ public abstract partial class Character : CharacterBody2D
 	public override void _Ready()
 	{
 		CurrentHealth = MaxHealth;
-		CurrentMana   = MaxMana;
+		CurrentMana = MaxMana;
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(ManaChanged));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(HealthChanged));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(EffectApplied));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(EffectRemoved));
 		EmitSignalHealthChanged(CurrentHealth, MaxHealth);
 		EmitSignalManaChanged(CurrentMana, MaxMana);
 		AddToGroup("party");
@@ -83,10 +98,14 @@ public abstract partial class Character : CharacterBody2D
 	public void ApplyEffect(CharacterEffect effect)
 	{
 		if (_effects.TryGetValue(effect.EffectId, out var existing))
+		{
 			existing.OnExpired(this);
+			EmitSignal(SignalName.EffectRemoved, effect.EffectId);
+		}
 
 		_effects[effect.EffectId] = effect;
 		effect.OnApplied(this);
+		EmitSignal(SignalName.EffectApplied, effect.EffectId, effect.Icon, effect.Duration);
 	}
 
 	/// <summary>Remove an active effect by id, if present.</summary>
@@ -96,21 +115,10 @@ public abstract partial class Character : CharacterBody2D
 		{
 			effect.OnExpired(this);
 			_effects.Remove(effectId);
+			EmitSignal(SignalName.EffectRemoved, effectId);
 		}
 	}
 
-	// ── protected helpers ────────────────────────────────────────────────────
-	/// <summary>
-	/// Fire a spell at the given target, deducting its mana cost at this point.
-	/// </summary>
-	protected void FireSpell(SpellResource spell, Character target)
-	{
-		SpendMana(spell.ManaCost);
-		spell.Act(this, target);
-	}
-
-	/// <summary>Convenience overload — casts the spell on self.</summary>
-	protected void FireSpell(SpellResource spell) => FireSpell(spell, this);
 
 	/// <summary>Subtract mana, clamped at 0.</summary>
 	protected void SpendMana(float amount)
@@ -144,6 +152,7 @@ public abstract partial class Character : CharacterBody2D
 		{
 			_effects[id].OnExpired(this);
 			_effects.Remove(id);
+			EmitSignal(SignalName.EffectRemoved, id);
 		}
 	}
 
