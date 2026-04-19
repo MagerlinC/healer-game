@@ -1,52 +1,48 @@
+using System.Collections.Generic;
 using Godot;
 using healerfantasy;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
 
 /// <summary>
 /// Abstract base for every character in the game (player and NPCs alike).
-/// Owns the health model, passive health drain, and exposes signals so the
-/// UI and other systems can react without being coupled to the character.
+/// Owns health, mana, passive drain, and a collection of active
+/// <see cref="CharacterEffect"/>s that are ticked every frame.
 /// </summary>
 public abstract partial class Character : CharacterBody2D
 {
 	// ── signals ──────────────────────────────────────────────────────────────
-	/// <summary>Emitted whenever health changes. Carries current and max values.</summary>
-	[Signal]
-	public delegate void HealthChangedEventHandler(float current, float max);
-
-	[Signal]
-	public delegate void ManaChangedEventHandler(float current, float max);
-
-	/// <summary>Emitted once when the character reaches 0 HP.</summary>
-	[Signal]
-	public delegate void DiedEventHandler();
+	[Signal] public delegate void HealthChangedEventHandler(float current, float max);
+	[Signal] public delegate void ManaChangedEventHandler(float current, float max);
+	[Signal] public delegate void DiedEventHandler();
 
 	// ── exports ──────────────────────────────────────────────────────────────
 	[Export] public string CharacterName = "Character";
 	[Export] public float MaxHealth = 100.0f;
 	[Export] public float MaxMana = 100.0f;
 
-	/// <summary>Fraction of MaxHealth lost per second (default 10 %).</summary>
+	/// <summary>Fraction of MaxHealth lost per second.</summary>
 	[Export] public float DrainPerSecond = 0.10f;
 
 	[Export] public float ManaRegenPerSecond = 0.5f;
 
 	// ── state ────────────────────────────────────────────────────────────────
 	public float CurrentHealth { get; private set; }
-	public float CurrentMana { get; private set; }
-	public bool IsAlive => CurrentHealth > 0f;
+	public float CurrentMana  { get; private set; }
+	public bool  IsAlive => CurrentHealth > 0f;
+
+	// Keyed by CharacterEffect.EffectId for O(1) lookup and deduplication.
+	readonly Dictionary<string, CharacterEffect> _effects = new();
 
 	// ── lifecycle ────────────────────────────────────────────────────────────
 	public override void _Ready()
 	{
 		CurrentHealth = MaxHealth;
-		CurrentMana = MaxMana;
-		// Init bars
+		CurrentMana   = MaxMana;
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(ManaChanged));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(HealthChanged));
 		EmitSignalHealthChanged(CurrentHealth, MaxHealth);
 		EmitSignalManaChanged(CurrentMana, MaxMana);
-		AddToGroup("party"); // makes all characters findable for spell targeting
+		AddToGroup("party");
 	}
 
 	public override void _Process(double delta)
@@ -54,12 +50,12 @@ public abstract partial class Character : CharacterBody2D
 		if (IsAlive)
 			TakeDamage(MaxHealth * DrainPerSecond * (float)delta);
 
-		CurrentMana = Mathf.Min(CurrentMana + ManaRegenPerSecond * (float)delta, MaxMana);
-		EmitSignalManaChanged(CurrentMana, MaxMana);
+		RestoreMana(ManaRegenPerSecond * (float)delta);
+		TickEffects((float)delta);
 	}
 
 	// ── public API ───────────────────────────────────────────────────────────
-	/// <summary>Apply damage, clamped at 0. Triggers death on first zero.</summary>
+	/// <summary>Apply damage, clamped at 0. Triggers death on first zero crossing.</summary>
 	public void TakeDamage(float amount)
 	{
 		if (!IsAlive) return;
@@ -71,36 +67,87 @@ public abstract partial class Character : CharacterBody2D
 			OnDeath();
 	}
 
+	/// <summary>Restore health, clamped at MaxHealth.</summary>
+	public void Heal(float amount)
+	{
+		if (!IsAlive) return;
+		CurrentHealth = Mathf.Min(CurrentHealth + amount, MaxHealth);
+		EmitSignalHealthChanged(CurrentHealth, MaxHealth);
+	}
+
 	/// <summary>
-	///  Cast a spell if enough mana. Spells are responsible for their own effects and targets.	
+	/// Apply an effect to this character. If an effect with the same
+	/// <see cref="CharacterEffect.EffectId"/> is already active it is
+	/// replaced (refreshed), not stacked.
 	/// </summary>
-	/// <param name="spell"></param>
-	public void FireSpell(SpellResource spell)
+	public void ApplyEffect(CharacterEffect effect)
 	{
-		if (!IsAlive) return;
-		spell.Act(this, this);
+		if (_effects.TryGetValue(effect.EffectId, out var existing))
+			existing.OnExpired(this);
 
+		_effects[effect.EffectId] = effect;
+		effect.OnApplied(this);
 	}
 
-	/// <summary> Spend Mana 
-	public void SpendMana(float amount)
+	/// <summary>Remove an active effect by id, if present.</summary>
+	public void RemoveEffect(string effectId)
 	{
-		if (!IsAlive) return;
+		if (_effects.TryGetValue(effectId, out var effect))
+		{
+			effect.OnExpired(this);
+			_effects.Remove(effectId);
+		}
+	}
 
+	// ── protected helpers ────────────────────────────────────────────────────
+	/// <summary>
+	/// Fire a spell at the given target, deducting its mana cost at this point.
+	/// </summary>
+	protected void FireSpell(SpellResource spell, Character target)
+	{
+		SpendMana(spell.ManaCost);
+		spell.Act(this, target);
+	}
+
+	/// <summary>Convenience overload — casts the spell on self.</summary>
+	protected void FireSpell(SpellResource spell) => FireSpell(spell, this);
+
+	/// <summary>Subtract mana, clamped at 0.</summary>
+	protected void SpendMana(float amount)
+	{
 		CurrentMana = Mathf.Max(0f, CurrentMana - amount);
-		EmitSignal(SignalName.ManaChanged, CurrentMana, MaxMana);
+		EmitSignalManaChanged(CurrentMana, MaxMana);
 	}
 
-	/// <summary>Restore health, clamped to MaxHealth.</summary>
-	public virtual void Heal(float amount)
+	/// <summary>Restore mana, clamped at MaxMana.</summary>
+	protected void RestoreMana(float amount)
 	{
-		if (!IsAlive) return;
-
-		CurrentHealth = Mathf.Min(MaxHealth, CurrentHealth + amount);
-		EmitSignal(SignalName.HealthChanged, CurrentHealth, MaxHealth);
+		CurrentMana = Mathf.Min(CurrentMana + amount, MaxMana);
+		EmitSignalManaChanged(CurrentMana, MaxMana);
 	}
 
-	// ── protected hooks ──────────────────────────────────────────────────────
+	// ── private helpers ──────────────────────────────────────────────────────
+	void TickEffects(float delta)
+	{
+		if (_effects.Count == 0) return;
+
+		List<string> expired = null;
+		foreach (var (id, effect) in _effects)
+		{
+			effect.Update(this, delta);
+			if (effect.IsExpired)
+				(expired ??= new List<string>()).Add(id);
+		}
+
+		if (expired == null) return;
+		foreach (var id in expired)
+		{
+			_effects[id].OnExpired(this);
+			_effects.Remove(id);
+		}
+	}
+
+	// ── protected virtuals ───────────────────────────────────────────────────
 	protected virtual void OnDeath()
 	{
 		EmitSignal(SignalName.Died);
