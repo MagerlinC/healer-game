@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://djg1i0kxk4dmt"]
+
+[ext_resource type="Script" uid="uid://cwbo6tbr106np" path="res://src/PartyUI.cs" id="Script_partyui"]
+
+[node name="PartyUI" type="CanvasLayer" unique_id=1934381830]
+script = ExtResource("Script_partyui")

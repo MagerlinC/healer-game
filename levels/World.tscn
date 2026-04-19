@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://kh347p4xi7l"]
+
+[ext_resource type="PackedScene" path="res://levels/Assassin.tscn" id="Scene_assassin"]
+[ext_resource type="PackedScene" uid="uid://djg1i0kxk4dmt" path="res://levels/PartyUI.tscn" id="Scene_partyui"]
+[ext_resource type="PackedScene" path="res://levels/Player.tscn" id="Scene_player"]
+[ext_resource type="PackedScene" path="res://levels/Templar.tscn" id="Scene_templar"]
+[ext_resource type="PackedScene" path="res://levels/Wizard.tscn" id="Scene_wizard"]
+[ext_resource type="Script" uid="uid://ct87sljy13km8" path="res://src/World.cs" id="Script_world"]
+
+[node name="World" type="Node2D" unique_id=1427998329]
+script = ExtResource("Script_world")
+
+[node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=62004981]
+
+[node name="Templar" parent="." unique_id=1231423954 instance=ExtResource("Scene_templar")]
+position = Vector2(128, 104)
+
+[node name="Assassin" parent="." unique_id=613426860 instance=ExtResource("Scene_assassin")]
+position = Vector2(196, 136)
+
+[node name="Wizard" parent="." unique_id=2015225033 instance=ExtResource("Scene_wizard")]
+position = Vector2(144, 152)
+
+[node name="Player" parent="." unique_id=1338505269 instance=ExtResource("Scene_player")]
+position = Vector2(160, 120)
+
+[node name="PartyUI" parent="." unique_id=955504976 instance=ExtResource("Scene_partyui")]
