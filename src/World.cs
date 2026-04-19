@@ -36,6 +36,4 @@ public partial class World : Node2D
 		// Populate the action bar with the player's spell bindings
 		ui.SetupActionBar(player.GetSpellBindings());
 	}
-
-
 }

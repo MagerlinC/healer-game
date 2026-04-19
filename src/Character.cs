@@ -34,7 +34,7 @@ public abstract partial class Character : CharacterBody2D
 	[Export] public float MaxMana = 100.0f;
 
 	/// <summary>Fraction of MaxHealth lost per second.</summary>
-	[Export] public float DrainPerSecond = 0.10f;
+	[Export] public float LifeLossPerSecond = 10f;
 
 	[Export] public float ManaRegenPerSecond = 1.0f;
 
@@ -63,7 +63,7 @@ public abstract partial class Character : CharacterBody2D
 	public override void _Process(double delta)
 	{
 		if (IsAlive)
-			TakeDamage(MaxHealth * DrainPerSecond * (float)delta);
+			TakeDamage(LifeLossPerSecond * (float)delta);
 
 		RestoreMana(ManaRegenPerSecond * (float)delta);
 		TickEffects((float)delta);
