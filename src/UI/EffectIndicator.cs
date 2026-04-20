@@ -17,8 +17,8 @@ public partial class EffectIndicator : PanelContainer
 
 	// ── private ───────────────────────────────────────────────────────────────
 	string _displayName;
-	Label  _countLabel;
-	bool   _hovered;
+	Label _countLabel;
+	bool _hovered;
 
 	static readonly Color BadgeBorder = new(0.25f, 0.70f, 0.35f, 0.90f);
 
@@ -26,20 +26,20 @@ public partial class EffectIndicator : PanelContainer
 	public EffectIndicator(CharacterEffect effect)
 	{
 		CharacterEffect = effect;
-		_displayName    = FormatDisplayName(effect.EffectId);
+		_displayName = FormatDisplayName(effect.EffectId);
 
-		CustomMinimumSize = new Vector2(24, 24);
-		MouseFilter       = MouseFilterEnum.Stop; // must be non-Ignore to receive mouse events
+		CustomMinimumSize = new Vector2(28, 28);
+		MouseFilter = MouseFilterEnum.Stop; // must be non-Ignore to receive mouse events
 
 		// ── badge style ──────────────────────────────────────────────────────
 		var style = new StyleBoxFlat();
 		style.BgColor = new Color(0.10f, 0.10f, 0.10f, 0.85f);
 		style.SetCornerRadiusAll(3);
 		style.SetBorderWidthAll(1);
-		style.BorderColor        = BadgeBorder;
-		style.ContentMarginLeft  = 1f;
+		style.BorderColor = BadgeBorder;
+		style.ContentMarginLeft = 1f;
 		style.ContentMarginRight = 1f;
-		style.ContentMarginTop   = 1f;
+		style.ContentMarginTop = 1f;
 		style.ContentMarginBottom = 1f;
 		AddThemeStyleboxOverride("panel", style);
 
@@ -52,8 +52,8 @@ public partial class EffectIndicator : PanelContainer
 		if (effect.Icon != null)
 		{
 			var iconRect = new TextureRect();
-			iconRect.Texture     = effect.Icon;
-			iconRect.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
+			iconRect.Texture = effect.Icon;
+			iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 			iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			iconRect.MouseFilter = MouseFilterEnum.Ignore;
 			iconRect.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
@@ -64,20 +64,28 @@ public partial class EffectIndicator : PanelContainer
 		_countLabel = new Label();
 		_countLabel.MouseFilter = MouseFilterEnum.Ignore;
 		_countLabel.AddThemeFontSizeOverride("font_size", 9);
-		_countLabel.AddThemeColorOverride("font_color",        new Color(1f, 1f, 1f, 1f));
+		_countLabel.AddThemeColorOverride("font_color", new Color(1f, 1f, 1f, 1f));
 		_countLabel.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 1f));
 		_countLabel.AddThemeConstantOverride("shadow_offset_x", 1);
 		_countLabel.AddThemeConstantOverride("shadow_offset_y", 1);
 		_countLabel.SetAnchorsAndOffsetsPreset(LayoutPreset.BottomRight);
 		_countLabel.GrowHorizontal = GrowDirection.Begin;
-		_countLabel.GrowVertical   = GrowDirection.Begin;
+		_countLabel.GrowVertical = GrowDirection.Begin;
 		inner.AddChild(_countLabel);
 
 		UpdateCountLabel();
 
 		// ── tooltip wiring ───────────────────────────────────────────────────
-		MouseEntered += () => { _hovered = true;  GameTooltip.Show(TooltipText()); };
-		MouseExited  += () => { _hovered = false; GameTooltip.Hide(); };
+		MouseEntered += () =>
+		{
+			_hovered = true;
+			GameTooltip.Show(TooltipText());
+		};
+		MouseExited += () =>
+		{
+			_hovered = false;
+			GameTooltip.Hide();
+		};
 	}
 
 	// ── lifecycle ────────────────────────────────────────────────────────────
@@ -96,13 +104,17 @@ public partial class EffectIndicator : PanelContainer
 		_countLabel.Text = Mathf.CeilToInt(CharacterEffect.Remaining).ToString();
 	}
 
-	string TooltipText() =>
-		$"{_displayName}\n{Mathf.CeilToInt(CharacterEffect.Remaining)}s remaining";
+	string TooltipText()
+	{
+		return $"{_displayName}\n{Mathf.CeilToInt(CharacterEffect.Remaining)}s remaining";
+	}
 
 	/// <summary>
 	/// Converts a PascalCase effect ID into a space-separated display name.
 	/// "ShieldingReinvigoration" → "Shielding Reinvigoration"
 	/// </summary>
-	static string FormatDisplayName(string id) =>
-		Regex.Replace(id, @"(?<=[a-z])(?=[A-Z])", " ");
+	static string FormatDisplayName(string id)
+	{
+		return Regex.Replace(id, @"(?<=[a-z])(?=[A-Z])", " ");
+	}
 }

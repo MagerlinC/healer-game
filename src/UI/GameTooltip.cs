@@ -81,7 +81,8 @@ public partial class GameTooltip : CanvasLayer
 	public static void Show(string text)
 	{
 		if (Instance is null) return;
-		Instance._label.Text   = text;
+		Instance._label.Text = text;
+		Instance._panel.ResetSize(); // force recompute from label's current minimum size
 		Instance._panel.Visible = true;
 		Instance._isShowing    = true;
 		Instance.Reposition();

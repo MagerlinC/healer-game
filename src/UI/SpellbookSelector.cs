@@ -274,7 +274,7 @@ public partial class SpellbookSelector : CanvasLayer
 		var tabs = new TabContainer();
 		tabs.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		// Minimum height: enough for two rows of cards plus margins
-		tabs.CustomMinimumSize = new Vector2(600f, 280f);
+		tabs.CustomMinimumSize = new Vector2(760f, 420f);
 
 		foreach (var (school, tabName) in SchoolOrder)
 		{

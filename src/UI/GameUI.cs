@@ -70,7 +70,7 @@ public partial class GameUI : CanvasLayer
 		_bossHealthBar.CustomMinimumSize = new Vector2(400f, 0f);
 		_bossHealthBar.SetAnchorsPreset(Control.LayoutPreset.TopWide);
 		_bossHealthBar.OffsetTop = 10f;
-		_bossHealthBar.OffsetBottom = 50f;
+		_bossHealthBar.OffsetBottom = 90f; // extra room for effect-badge row below the bar
 		anchor.AddChild(_bossHealthBar);
 
 		// ── Party frames ──────────────────────────────────────────────────────

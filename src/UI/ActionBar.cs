@@ -23,8 +23,8 @@ public partial class ActionBar : HBoxContainer
 	bool _isPlayerDead = false;
 
 	static readonly Color BorderDefault = new(0.25f, 0.22f, 0.20f);
-	static readonly Color BorderActive  = new(0.95f, 0.80f, 0.10f); // gold
-	static readonly Color BorderEmpty   = new(0.18f, 0.16f, 0.14f); // near-black for empty slots
+	static readonly Color BorderActive = new(0.95f, 0.80f, 0.10f); // gold
+	static readonly Color BorderEmpty = new(0.18f, 0.16f, 0.14f); // near-black for empty slots
 
 	// Shared greyscale shader — applied to the icon TextureRect when mana is too low.
 	static ShaderMaterial _greyMaterial;
@@ -61,7 +61,7 @@ public partial class ActionBar : HBoxContainer
 		);
 		GlobalAutoLoad.SubscribeToSignal(
 			nameof(Player.Died),
-			Callable.From((string charName) => SetIconShadingBasedOnCharacterDeath(charName))
+			Callable.From((Character character) => SetIconShadingBasedOnCharacterDeath(character))
 		);
 	}
 
@@ -109,15 +109,15 @@ public partial class ActionBar : HBoxContainer
 	{
 		foreach (var slot in _slots.Where(s => s.Icon != null))
 		{
-			slot.Icon!.Material = _isPlayerDead || (slot.Spell != null && current < slot.Spell.ManaCost)
+			slot.Icon!.Material = _isPlayerDead || slot.Spell != null && current < slot.Spell.ManaCost
 				? GreyMaterial
 				: null;
 		}
 	}
 
-	void SetIconShadingBasedOnCharacterDeath(string charName)
+	void SetIconShadingBasedOnCharacterDeath(Character character)
 	{
-		if (charName != GameConstants.PlayerName) return;
+		if (character.Name != GameConstants.PlayerName) return;
 		_isPlayerDead = true;
 	}
 
@@ -204,7 +204,7 @@ public partial class ActionBar : HBoxContainer
 		var label = new Label();
 		label.Text = GetKeybindLabel(actionName);
 		label.AddThemeFontSizeOverride("font_size", 11);
-		label.AddThemeColorOverride("font_color",        new Color(1.00f, 1.00f, 0.85f, spell != null ? 1.0f : 0.35f));
+		label.AddThemeColorOverride("font_color", new Color(1.00f, 1.00f, 0.85f, spell != null ? 1.0f : 0.35f));
 		label.AddThemeColorOverride("font_shadow_color", new Color(0.00f, 0.00f, 0.00f, 0.9f));
 		label.AddThemeConstantOverride("shadow_offset_x", 1);
 		label.AddThemeConstantOverride("shadow_offset_y", 1);
@@ -218,7 +218,7 @@ public partial class ActionBar : HBoxContainer
 		{
 			var tooltipText = GameTooltip.FormatSpellTooltip(spell);
 			panel.MouseEntered += () => GameTooltip.Show(tooltipText);
-			panel.MouseExited  += () => GameTooltip.Hide();
+			panel.MouseExited += () => GameTooltip.Hide();
 		}
 
 		return (panel, borderStyle, iconRect);
