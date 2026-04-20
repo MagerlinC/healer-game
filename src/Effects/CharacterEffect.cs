@@ -67,10 +67,22 @@ public abstract class CharacterEffect
 	/// <summary>Called once when the effect expires naturally or is removed.</summary>
 	public virtual void OnExpired(Character target) { }
 
+	/// <summary>
+	/// Override to trigger early expiry based on runtime state.
+	/// Checked every frame in <see cref="Update"/> before tick processing.
+	/// Example: <see cref="ShieldEffect"/> returns <c>true</c> when the
+	/// character's shield has been fully consumed by incoming damage.
+	/// </summary>
+	protected virtual bool ShouldExpireEarly(Character target) => false;
+
 	// ── internal update loop — driven by Character._Process ──────────────────
 	public void Update(Character target, float delta)
 	{
 		Remaining -= delta;
+
+		// Allow subclasses to cut the duration short (e.g. shield fully consumed).
+		if (!IsExpired && ShouldExpireEarly(target))
+			Remaining = 0f;
 
 		if (_tickInterval <= 0f) return;
 

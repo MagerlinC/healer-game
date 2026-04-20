@@ -27,7 +27,8 @@ public partial class GameUI : CanvasLayer
 	static readonly Color BorderDefault = new(0.32f, 0.26f, 0.26f);
 	static readonly Color BorderHovered = new(0.90f, 0.80f, 0.20f); // gold highlight
 
-	readonly ProgressBar[] _bars = new ProgressBar[4];
+	readonly ProgressBar[] _bars       = new ProgressBar[4];
+	readonly ProgressBar[] _shieldBars = new ProgressBar[4];
 	readonly PanelContainer[] _panels = new PanelContainer[4];
 	readonly StyleBoxFlat[] _panelStyles = new StyleBoxFlat[4];
 	readonly HBoxContainer[] _effectBars = new HBoxContainer[4];
@@ -85,7 +86,7 @@ public partial class GameUI : CanvasLayer
 			var (name, barColor, maxHp) = MemberDefs[i];
 			var wrapper = BuildFrame(
 				name, barColor, maxHp,
-				out _bars[i], out _panelStyles[i], out _panels[i], out _effectBars[i]);
+				out _bars[i], out _shieldBars[i], out _panelStyles[i], out _panels[i], out _effectBars[i]);
 
 			// Capture loop-local references to avoid the closure capture bug
 			var style = _panelStyles[i];
@@ -132,6 +133,11 @@ public partial class GameUI : CanvasLayer
 			{
 				if (slot == 1) _actionBar.SetIconShadingBasedOnPlayerMana(current, max);
 			}));
+
+		// Update shield overlay bars whenever a character's shield changes.
+		GlobalAutoLoad.SubscribeToPartySignal(
+			"ShieldChanged",
+			slot => Callable.From((float shield, float maxHp) => SetShield(slot, shield, maxHp)));
 	}
 
 	// ── public API ───────────────────────────────────────────────────────────
@@ -141,6 +147,19 @@ public partial class GameUI : CanvasLayer
 		if (index < 0 || index >= _bars.Length) return;
 		_bars[index].MaxValue = max;
 		_bars[index].Value = current;
+	}
+
+	/// <summary>
+	/// Update a member's shield overlay bar.
+	/// <paramref name="shield"/> is the current shield value;
+	/// <paramref name="maxHp"/> is the character's max health, used to scale
+	/// the bar so shield is shown as a fraction of the total health pool.
+	/// </summary>
+	public void SetShield(int index, float shield, float maxHp)
+	{
+		if (index < 0 || index >= _shieldBars.Length) return;
+		_shieldBars[index].MaxValue = maxHp;
+		_shieldBars[index].Value    = shield;
 	}
 
 	/// <summary>
@@ -209,7 +228,8 @@ public partial class GameUI : CanvasLayer
 	/// </summary>
 	static Control BuildFrame(
 		string name, Color barColor, float maxHp,
-		out ProgressBar bar, out StyleBoxFlat panelStyle,
+		out ProgressBar bar, out ProgressBar shieldBar,
+		out StyleBoxFlat panelStyle,
 		out PanelContainer panel, out HBoxContainer effectsBar)
 	{
 		// Wrapper: effects row on top, health frame below
@@ -238,6 +258,7 @@ public partial class GameUI : CanvasLayer
 		panelStyle.ContentMarginBottom = 5f;
 		panel.AddThemeStyleboxOverride("panel", panelStyle);
 
+		// ── Health bar ───────────────────────────────────────────────────────
 		var progressBar = new ProgressBar();
 		progressBar.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		progressBar.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
@@ -257,7 +278,6 @@ public partial class GameUI : CanvasLayer
 		label.MouseFilter = Control.MouseFilterEnum.Ignore;
 		panel.AddChild(label);
 
-		// Health bar — coloured fill, dark empty portion
 		var barBg = new StyleBoxFlat();
 		barBg.BgColor = new Color(0.16f, 0.13f, 0.13f);
 		progressBar.AddThemeStyleboxOverride("background", barBg);
@@ -269,8 +289,31 @@ public partial class GameUI : CanvasLayer
 		progressBar.ShowPercentage = false;
 		progressBar.MaxValue = maxHp;
 		progressBar.Value = maxHp;
-
 		bar = progressBar;
+
+		// ── Shield overlay bar ───────────────────────────────────────────────
+		// Stacks on top of the health bar inside the same PanelContainer.
+		// Transparent background so only the coloured fill is visible; the
+		// fill is a semi-transparent blue that sits over the health colour.
+		var shieldProgress = new ProgressBar();
+		shieldProgress.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		shieldProgress.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
+		shieldProgress.MouseFilter         = Control.MouseFilterEnum.Ignore;
+		shieldProgress.ShowPercentage      = false;
+		shieldProgress.MaxValue            = maxHp;
+		shieldProgress.Value               = 0f;
+
+		var shieldBg = new StyleBoxFlat();
+		shieldBg.BgColor = new Color(0f, 0f, 0f, 0f); // fully transparent background
+		shieldProgress.AddThemeStyleboxOverride("background", shieldBg);
+
+		var shieldFill = new StyleBoxFlat();
+		shieldFill.BgColor = new Color(0.45f, 0.70f, 1.00f, 0.50f); // cool blue, semi-transparent
+		shieldProgress.AddThemeStyleboxOverride("fill", shieldFill);
+
+		panel.AddChild(shieldProgress);
+		shieldBar = shieldProgress;
+
 		wrapper.AddChild(panel);
 		return wrapper;
 	}

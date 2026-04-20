@@ -1,0 +1,56 @@
+using healerfantasy.SpellSystem;
+
+namespace healerfantasy;
+
+/// <summary>
+/// A temporary buff granted by the <c>ArcaneMastery</c> talent when the player
+/// scores a critical hit.
+///
+/// While active, the next damage spell cast by the owner is boosted by 30%.
+/// The buff then removes itself so it can only ever fire once.
+///
+/// Implements both <see cref="CharacterEffect"/> (drives UI display and expiry)
+/// and <see cref="ISpellModifier"/> (intercepts the pipeline to apply the bonus).
+/// <see cref="Character.GetSpellModifiers"/> returns any active effect that
+/// implements <see cref="ISpellModifier"/>, so this buff is automatically wired
+/// into the cast pipeline while it is alive.
+/// </summary>
+public class ArcaneMasteryBuff : CharacterEffect, ISpellModifier
+{
+	const float BonusScaling = 1.30f; // +30 %
+
+	// Run after elemental/conditional bonuses but before any last-word modifiers.
+	public int Priority => 50;
+
+	public ArcaneMasteryBuff(float duration)
+		: base(duration, 0f)
+	{
+		EffectId = "ArcaneMastery";
+	}
+
+	// ── ISpellModifier ───────────────────────────────────────────────────────
+	public void OnBeforeCast(SpellContext ctx)
+	{
+	}
+
+	public void OnCalculate(SpellContext ctx)
+	{
+		if (ctx.Tags.HasFlag(SpellTags.Damage) || ctx.Tags.HasFlag(SpellTags.Healing))
+			ctx.FinalValue *= BonusScaling;
+	}
+
+	public void OnAfterCast(SpellContext ctx)
+	{
+		// Consume the buff after it has boosted a damage spell.
+		if (ctx.Tags.HasFlag(SpellTags.Damage) || ctx.Tags.HasFlag(SpellTags.Healing))
+			ctx.Caster.RemoveEffect(EffectId);
+	}
+
+	// ── CharacterEffect overrides ────────────────────────────────────────────
+	public override void OnApplied(Character target)
+	{
+	}
+	public override void OnExpired(Character target)
+	{
+	}
+}

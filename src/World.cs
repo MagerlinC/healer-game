@@ -13,16 +13,16 @@ public partial class World : Node2D
 {
 	public override void _Ready()
 	{
-		var ui = GetNode<GameUI>("PartyUI");
-		var player = GetNode<Player>("Player");
-		var templar = GetNode<Character>("Templar");
+		var ui      = GetNode<GameUI>("PartyUI");
+		var player  = GetNode<Player>("Player");
+		var templar  = GetNode<Character>("Templar");
 		var assassin = GetNode<Character>("Assassin");
-		var wizard = GetNode<Character>("Wizard");
+		var wizard   = GetNode<Character>("Wizard");
 
-		GlobalAutoLoad.RegisterPartyMember(templar, 0);
-		GlobalAutoLoad.RegisterPartyMember(player, 1);
+		GlobalAutoLoad.RegisterPartyMember(templar,  0);
+		GlobalAutoLoad.RegisterPartyMember(player,   1);
 		GlobalAutoLoad.RegisterPartyMember(assassin, 2);
-		GlobalAutoLoad.RegisterPartyMember(wizard, 3);
+		GlobalAutoLoad.RegisterPartyMember(wizard,   3);
 
 		// Bind characters so hovering a frame resolves to the right Character
 		ui.BindCharacter(0, templar);
@@ -35,5 +35,13 @@ public partial class World : Node2D
 
 		// Populate the action bar with the player's spell bindings
 		ui.SetupActionBar(player.GetSpellBindings());
+
+		// ── Talent selector ───────────────────────────────────────────────────
+		// Added as a direct child of the World node so it sits above all game
+		// nodes in the scene tree. ProcessMode = Always (set internally) means
+		// it can receive T-key input even while the game is paused.
+		var talentSelector = new TalentSelector();
+		AddChild(talentSelector);
+		talentSelector.Init(player);
 	}
 }

@@ -2,6 +2,7 @@
 using Godot;
 using healerfantasy;
 using healerfantasy.SpellResources;
+using healerfantasy.SpellSystem;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
 
 /// <summary>
@@ -55,7 +56,7 @@ public partial class Player : Character
 	void FireSpell(SpellResource spell, Character target)
 	{
 		SpendMana(spell.ManaCost);
-		spell.Act(this, target);
+		SpellPipeline.Cast(spell, this, target);
 		_isCasting = false;
 		_castSpell = null;
 		_castTarget = null;
