@@ -22,7 +22,7 @@ public partial class DecaySpellResource : SpellResource
 		Tags = SpellTags.Damage | SpellTags.Duration | SpellTags.Void;
 		TargetType = TargetType.Enemy;
 		School = SpellSchool.Void;
-		Icon = GD.Load<Texture2D>("res://assets/spell-icons/healer/healer5.png");
+		Icon = GD.Load<Texture2D>("res://assets/spell-icons/void/decay.png");
 	}
 
 	/// <summary>

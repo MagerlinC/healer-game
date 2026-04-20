@@ -5,13 +5,13 @@ using healerfantasy.SpellSystem;
 namespace healerfantasy.SpellResources;
 
 [GlobalClass]
-public partial class HealOverTimeSpellResource : SpellResource
+public partial class RenewingBloomSpell : SpellResource
 {
 	[Export] public float HealPerTick = 6f;
 	[Export] public float EffectDuration = 10f;
 	[Export] public float TickInterval = 1f;
 
-	public HealOverTimeSpellResource()
+	public RenewingBloomSpell()
 	{
 		Name = "Renewing Bloom";
 		Description = $"Heals the target for {HealPerTick} every {TickInterval}s for {EffectDuration}s.";

@@ -15,9 +15,9 @@ public partial class Player : Character
 	// ── movement ─────────────────────────────────────────────────────────────
 	[Export] public float Speed = 80.0f;
 	[Export] public float GlobalCooldown = 0.5f;
-	[Export] public SpellResource Spell1 = new TouchOfLightSpell(); // TODO: I cannot seem to create this resource in the UI
+	[Export] public SpellResource Spell1 = new TouchOfLightSpell();
 	[Export] public SpellResource Spell2 = new WaveOfIncandescenceSpell();
-	[Export] public SpellResource Spell3 = new HealOverTimeSpellResource();
+	[Export] public SpellResource Spell3 = new RenewingBloomSpell();
 	[Export] public SpellResource Spell4 = new ReinvigorateSpell();
 	[Export] public SpellResource Spell5 = new BurstOfLightSpell();
 	[Export] public SpellResource Spell6 = new DecaySpellResource();
