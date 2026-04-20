@@ -104,6 +104,7 @@ public partial class TalentSelector : CanvasLayer
     void Open()
     {
         if (_player == null) return;
+        if (GetTree().Paused) return; // another panel (e.g. Spellbook) is already open
         SyncSlotsFromPlayer();
         _isOpen = true;
         _overlay.Visible = true;

@@ -13,6 +13,9 @@ public partial class World : Node2D
 {
 	public override void _Ready()
 	{
+		// Tooltip singleton must be added first so it is available to all UI nodes.
+		AddChild(new GameTooltip());
+
 		var ui = GetNode<GameUI>("PartyUI");
 		var player = GetNode<Player>("Healer");
 		var templar = GetNode<Character>("Templar");
@@ -28,13 +31,16 @@ public partial class World : Node2D
 		// Give the Player a reference to the UI for hover-target resolution
 		player.GameUI = ui;
 
-		// Populate the action bar with the player's spell bindings
-		ui.SetupActionBar(player.GetSpellBindings());
+		// Build the action bar from the player's default loadout
+		ui.RebuildActionBar(player.EquippedSpells);
+
+		// ── Spellbook selector ────────────────────────────────────────────────
+		// Opens with [B]. Lets the player choose which spells fill their 6 slots.
+		var spellbook = new SpellbookSelector();
+		AddChild(spellbook);
+		spellbook.Init(player, ui);
 
 		// ── Talent selector ───────────────────────────────────────────────────
-		// Added as a direct child of the World node so it sits above all game
-		// nodes in the scene tree. ProcessMode = Always (set internally) means
-		// it can receive T-key input even while the game is paused.
 		var talentSelector = new TalentSelector();
 		AddChild(talentSelector);
 		talentSelector.Init(player);

@@ -1,3 +1,4 @@
+#nullable enable
 using System.Linq;
 using Godot;
 using healerfantasy;
@@ -149,10 +150,12 @@ public partial class GameUI : CanvasLayer
 	}
 
 
-	/// <summary>Populate the action bar with the player's spell bindings.</summary>
-	public void SetupActionBar((SpellResource Spell, string Action)[] bindings)
+	/// <summary>
+	/// Rebuild the action bar from the player's current equipped spells.
+	/// Safe to call at startup and whenever the player changes their loadout.
+	/// </summary>
+	public void RebuildActionBar(SpellResource?[] equipped)
 	{
-		foreach (var (spell, action) in bindings)
-			_actionBar.AddSlot(spell, action);
+		_actionBar.Rebuild(equipped);
 	}
 }

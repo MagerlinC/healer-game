@@ -148,13 +148,19 @@ public partial class TalentSlot : PanelContainer
         // ── input events ────────────────────────────────────────────────────
         MouseEntered += () =>
         {
-            if (IsLocked) return;
-            _outerStyle.BorderColor = IsSelected ? BorderSelected : BorderHover;
+            if (!IsLocked)
+                _outerStyle.BorderColor = IsSelected ? BorderSelected : BorderHover;
+
+            var tip = IsLocked
+                ? $"{Definition.Name}\n{Definition.Description}\n(Locked — select a talent in the row above first)"
+                : $"{Definition.Name}\n{Definition.Description}";
+            GameTooltip.Show(tip);
         };
         MouseExited += () =>
         {
-            if (IsLocked) return;
-            _outerStyle.BorderColor = IsSelected ? BorderSelected : BorderIdle;
+            if (!IsLocked)
+                _outerStyle.BorderColor = IsSelected ? BorderSelected : BorderIdle;
+            GameTooltip.Hide();
         };
         GuiInput += OnGuiInput;
     }

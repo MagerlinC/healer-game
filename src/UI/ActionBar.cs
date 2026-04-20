@@ -8,11 +8,13 @@ using SpellResource = healerfantasy.SpellResources.SpellResource;
 /// WoW-style action bar: a row of spell slots, each showing the spell icon
 /// and its keybind. The active slot (currently being cast) is highlighted
 /// with a gold border for the duration of the cast.
+/// Empty slots (null spells) are rendered as dim placeholders so the bar
+/// always shows all <see cref="Player.MaxSpellSlots"/> positions.
 /// </summary>
 public partial class ActionBar : HBoxContainer
 {
 	// Keeps everything needed to update a single slot at runtime.
-	record SlotInfo(SpellResource Spell, StyleBoxFlat BorderStyle, TextureRect Icon);
+	record SlotInfo(SpellResource? Spell, StyleBoxFlat BorderStyle, TextureRect? Icon);
 
 	readonly List<SlotInfo> _slots = new();
 
@@ -21,7 +23,8 @@ public partial class ActionBar : HBoxContainer
 	bool _isPlayerDead = false;
 
 	static readonly Color BorderDefault = new(0.25f, 0.22f, 0.20f);
-	static readonly Color BorderActive = new(0.95f, 0.80f, 0.10f); // gold
+	static readonly Color BorderActive  = new(0.95f, 0.80f, 0.10f); // gold
+	static readonly Color BorderEmpty   = new(0.18f, 0.16f, 0.14f); // near-black for empty slots
 
 	// Shared greyscale shader — applied to the icon TextureRect when mana is too low.
 	static ShaderMaterial _greyMaterial;
@@ -56,7 +59,6 @@ public partial class ActionBar : HBoxContainer
 			nameof(Player.CastCancelled),
 			Callable.From(ClearActiveSlot)
 		);
-
 		GlobalAutoLoad.SubscribeToSignal(
 			nameof(Player.Died),
 			Callable.From((string charName) => SetIconShadingBasedOnCharacterDeath(charName))
@@ -73,15 +75,30 @@ public partial class ActionBar : HBoxContainer
 	}
 
 	// ── public API ───────────────────────────────────────────────────────────
+
 	/// <summary>
-	/// Build and append a slot for the given spell, labelled with the key
-	/// bound to <paramref name="actionName"/> in the InputMap.
+	/// Rebuild the bar from <paramref name="equipped"/>, one slot per entry.
+	/// Null entries render as empty placeholder slots so the bar always has
+	/// <see cref="Player.MaxSpellSlots"/> visible positions.
+	/// Safe to call at any time; clears and repopulates all children.
 	/// </summary>
-	public void AddSlot(SpellResource spell, string actionName)
+	public void Rebuild(SpellResource?[] equipped)
 	{
-		var (panel, borderStyle, icon) = BuildSlot(spell, actionName);
-		_slots.Add(new SlotInfo(spell, borderStyle, icon));
-		AddChild(panel);
+		// Remove all current slot nodes
+		foreach (var child in GetChildren())
+			child.QueueFree();
+		_slots.Clear();
+		_activeIndex = -1;
+		_castTimer = 0f;
+
+		for (var i = 0; i < equipped.Length; i++)
+		{
+			var spell = equipped[i];
+			var actionName = $"spell_{i + 1}";
+			var (panel, borderStyle, icon) = BuildSlot(spell, actionName);
+			_slots.Add(new SlotInfo(spell, borderStyle, icon));
+			AddChild(panel);
+		}
 	}
 
 	/// <summary>
@@ -90,9 +107,11 @@ public partial class ActionBar : HBoxContainer
 	/// </summary>
 	public void SetIconShadingBasedOnPlayerMana(float current, float max)
 	{
-		foreach (var slot in _slots.Where(slot => slot.Icon != null))
+		foreach (var slot in _slots.Where(s => s.Icon != null))
 		{
-			slot.Icon.Material = _isPlayerDead || current < slot.Spell.ManaCost ? GreyMaterial : null;
+			slot.Icon!.Material = _isPlayerDead || (slot.Spell != null && current < slot.Spell.ManaCost)
+				? GreyMaterial
+				: null;
 		}
 	}
 
@@ -106,7 +125,9 @@ public partial class ActionBar : HBoxContainer
 	void ClearActiveSlot()
 	{
 		if (_activeIndex < 0) return;
-		_slots[_activeIndex].BorderStyle.BorderColor = BorderDefault;
+		_slots[_activeIndex].BorderStyle.BorderColor = _slots[_activeIndex].Spell != null
+			? BorderDefault
+			: BorderEmpty;
 		_activeIndex = -1;
 		_castTimer = 0f;
 	}
@@ -129,6 +150,8 @@ public partial class ActionBar : HBoxContainer
 	/// <summary>
 	/// Derive a short display string from the action's first bound key.
 	/// Falls back to stripping the "spell_" prefix if the InputMap has no events.
+	/// Reading directly from InputMap means player-rebound keys are reflected
+	/// automatically without any code changes.
 	/// </summary>
 	static string GetKeybindLabel(string actionName)
 	{
@@ -142,36 +165,31 @@ public partial class ActionBar : HBoxContainer
 	}
 
 	// ── slot builder ─────────────────────────────────────────────────────────
-	static (PanelContainer panel, StyleBoxFlat borderStyle, TextureRect icon) BuildSlot(
-		SpellResource spell, string actionName)
+	static (PanelContainer panel, StyleBoxFlat borderStyle, TextureRect? icon) BuildSlot(
+		SpellResource? spell, string actionName)
 	{
-		// Outer frame
 		var panel = new PanelContainer();
 		panel.CustomMinimumSize = new Vector2(52, 52);
-
-		// TODO: This doesn't show?
-		panel.TooltipText = spell.Name + "\n" + spell.Description;
 
 		var borderStyle = new StyleBoxFlat();
 		borderStyle.BgColor = new Color(0.12f, 0.10f, 0.10f, 0.95f);
 		borderStyle.SetCornerRadiusAll(4);
 		borderStyle.SetBorderWidthAll(2);
-		borderStyle.BorderColor = BorderDefault;
+		borderStyle.BorderColor = spell != null ? BorderDefault : BorderEmpty;
 		borderStyle.ContentMarginLeft = 3f;
 		borderStyle.ContentMarginRight = 3f;
 		borderStyle.ContentMarginTop = 3f;
 		borderStyle.ContentMarginBottom = 3f;
 		panel.AddThemeStyleboxOverride("panel", borderStyle);
 
-		// Inner control — acts as the stacking layer for icon + label
 		var inner = new Control();
 		inner.MouseFilter = MouseFilterEnum.Ignore;
 		inner.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		inner.SizeFlagsVertical = SizeFlags.ExpandFill;
 		panel.AddChild(inner);
 
-		// Spell icon — stretches to fill the slot
-		TextureRect iconRect = null;
+		// Spell icon — only added when the slot is filled
+		TextureRect? iconRect = null;
 		if (spell?.Icon != null)
 		{
 			iconRect = new TextureRect();
@@ -182,11 +200,11 @@ public partial class ActionBar : HBoxContainer
 			inner.AddChild(iconRect);
 		}
 
-		// Keybind label — bottom-right corner, grows toward top-left
+		// Keybind label — always shown so empty slots are clearly numbered
 		var label = new Label();
 		label.Text = GetKeybindLabel(actionName);
 		label.AddThemeFontSizeOverride("font_size", 11);
-		label.AddThemeColorOverride("font_color", new Color(1.00f, 1.00f, 0.85f, 1.0f));
+		label.AddThemeColorOverride("font_color",        new Color(1.00f, 1.00f, 0.85f, spell != null ? 1.0f : 0.35f));
 		label.AddThemeColorOverride("font_shadow_color", new Color(0.00f, 0.00f, 0.00f, 0.9f));
 		label.AddThemeConstantOverride("shadow_offset_x", 1);
 		label.AddThemeConstantOverride("shadow_offset_y", 1);
@@ -194,6 +212,14 @@ public partial class ActionBar : HBoxContainer
 		label.GrowHorizontal = GrowDirection.Begin;
 		label.GrowVertical = GrowDirection.Begin;
 		inner.AddChild(label);
+
+		// Tooltip — uses the shared GameTooltip singleton so it works inside CanvasLayer.
+		if (spell != null)
+		{
+			var tooltipText = GameTooltip.FormatSpellTooltip(spell);
+			panel.MouseEntered += () => GameTooltip.Show(tooltipText);
+			panel.MouseExited  += () => GameTooltip.Hide();
+		}
 
 		return (panel, borderStyle, iconRect);
 	}

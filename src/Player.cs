@@ -1,4 +1,5 @@
 #nullable enable
+using System.Linq;
 using Godot;
 using healerfantasy;
 using healerfantasy.SpellResources;
@@ -15,12 +16,21 @@ public partial class Player : Character
 	// ── movement ─────────────────────────────────────────────────────────────
 	[Export] public float Speed = 80.0f;
 	[Export] public float GlobalCooldown = 0.5f;
-	[Export] public SpellResource Spell1 = new TouchOfLightSpell();
-	[Export] public SpellResource Spell2 = new WaveOfIncandescenceSpell();
-	[Export] public SpellResource Spell3 = new RenewingBloomSpell();
-	[Export] public SpellResource Spell4 = new ReinvigorateSpell();
-	[Export] public SpellResource Spell5 = new BurstOfLightSpell();
-	[Export] public SpellResource Spell6 = new DecaySpellResource();
+
+	/// <summary>Maximum number of spells the player can have equipped at once.</summary>
+	public const int MaxSpellSlots = 6;
+
+	/// <summary>
+	/// The player's currently equipped spells, indexed by slot (0–5).
+	/// Slot <c>i</c> maps to input action <c>spell_{i+1}</c> and is labelled
+	/// with its keybind on the action bar. <c>null</c> entries are empty slots.
+	///
+	/// Populated from <see cref="SpellRegistry.AllSpells"/> in <see cref="_Ready"/>
+	/// so that references match the registry — the Spellbook UI can then use
+	/// reference equality when showing which spells are equipped.
+	/// Updated by the Spellbook UI when the player changes their loadout.
+	/// </summary>
+	public SpellResource?[] EquippedSpells { get; } = new SpellResource?[MaxSpellSlots];
 
 	/// <param name="spell">The spell being cast.</param>
 	/// <param name="adjustedCastTime">
@@ -43,8 +53,8 @@ public partial class Player : Character
 	bool _isCasting = false;
 	float _castTimer = 0f;
 	float _globalCooldownTimer = 0f;
-	SpellResource _castSpell;
-	Character _castTarget;
+	SpellResource? _castSpell;
+	Character? _castTarget;
 
 	// ── lifecycle ────────────────────────────────────────────────────────────
 	public override void _Ready()
@@ -53,18 +63,43 @@ public partial class Player : Character
 		CharacterName = GameConstants.PlayerName;
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastCancelled));
+
+		// Default loadout — loaded by name so EquippedSpells holds the same
+		// instances as SpellRegistry, enabling reference equality in the Spellbook.
+		var defaults = new[]
+		{
+			"Touch of Light", "Wave of Incandescence", "Renewing Bloom",
+			"Reinvigorate", "Burst of Light", "Decay"
+		};
+		for (var i = 0; i < defaults.Length && i < MaxSpellSlots; i++)
+			EquippedSpells[i] = SpellRegistry.AllSpells.FirstOrDefault(s => s.Name == defaults[i]);
 	}
 
+	// ── spell input ───────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Returns the equipped spell whose slot key was just pressed, or null.
+	/// Slot i maps to action <c>spell_{i+1}</c>, which the player can rebind
+	/// in the Godot InputMap without any code changes.
+	/// </summary>
 	SpellResource? GetSpellForInput()
 	{
-		if (Input.IsActionJustPressed("spell_1")) return Spell1;
-		if (Input.IsActionJustPressed("spell_2")) return Spell2;
-		if (Input.IsActionJustPressed("spell_3")) return Spell3;
-		if (Input.IsActionJustPressed("spell_4")) return Spell4;
-		if (Input.IsActionJustPressed("spell_5")) return Spell5;
-		if (Input.IsActionJustPressed("spell_6")) return Spell6;
+		for (var i = 0; i < MaxSpellSlots; i++)
+			if (EquippedSpells[i] != null && Input.IsActionJustPressed($"spell_{i + 1}"))
+				return EquippedSpells[i];
 		return null;
 	}
+
+	/// <summary>
+	/// Returns each slot's (spell, action-name) pair in slot order.
+	/// Used to build and refresh the action bar.
+	/// </summary>
+	public (SpellResource? Spell, string Action)[] GetSpellBindings() =>
+		Enumerable.Range(0, MaxSpellSlots)
+			.Select(i => (EquippedSpells[i], $"spell_{i + 1}"))
+			.ToArray();
+
+	// ── casting ───────────────────────────────────────────────────────────────
 
 	void FireSpell(SpellResource spell, Character target)
 	{
@@ -74,6 +109,7 @@ public partial class Player : Character
 		_castSpell = null;
 		_castTarget = null;
 	}
+
 	public override void _Process(double delta)
 	{
 		base._Process(delta); // runs health drain from Character
@@ -97,14 +133,10 @@ public partial class Player : Character
 			{
 				_castTimer -= (float)delta;
 				if (_castTimer <= 0f)
-				{
 					FireSpell(_castSpell, _castTarget);
-				}
 			}
-
 			return;
 		}
-
 
 		var canCast = IsAlive && _globalCooldownTimer == 0f;
 		if (!canCast) return;
@@ -116,29 +148,24 @@ public partial class Player : Character
 			var hasMana = CurrentMana >= spellToCast.ManaCost;
 			if (hasMana)
 			{
-				// Lock in the target at cast-start: whichever health frame is under
+				// Lock in the target at cast-start: whichever party frame is under
 				// the cursor, or self if the cursor is not over any frame.
-
 				var hoveredCharacter = ResolveTargetWithFallback(GameUI?.GetHoveredCharacter(), spellToCast);
 				if (spellToCast.TargetType == TargetType.Enemy && hoveredCharacter.IsFriendly)
-				{
 					return;
-				}
 
 				_castTarget = hoveredCharacter;
 				_castSpell = spellToCast;
 
-				var spellIsInstant = spellToCast.CastTime == 0.0f;
-				if (spellIsInstant)
+				if (spellToCast.CastTime == 0.0f)
 				{
 					FireSpell(_castSpell, _castTarget);
 				}
 				else
 				{
-					// Divide the raw cast time by the current speed multiplier so that
-					// e.g. 2 stacks of Acceleration (1.2×) turns a 2s cast into ~1.67s.
-					var castSpeedMultiplier = GetCharacterStats().CastSpeedMultiplier;
-					var adjustedCastTime = spellToCast.CastTime / castSpeedMultiplier;
+					// Divide by the cast-speed multiplier so e.g. 2× Acceleration
+					// turns a 2 s cast into ~1.67 s.
+					var adjustedCastTime = spellToCast.CastTime / GetCharacterStats().CastSpeedMultiplier;
 					EmitSignalCastStarted(spellToCast, adjustedCastTime);
 					_isCasting = true;
 					_castTimer = adjustedCastTime;
@@ -157,16 +184,12 @@ public partial class Player : Character
 				? this
 				: GetTree().GetFirstNodeInGroup(GameConstants.BossGroupName) as Character;
 		}
-
 		return target;
-
 	}
 
 	// ── private helpers ──────────────────────────────────────────────────────
-	/// <summary>
-	/// Abort the current cast and notify listeners.
-	/// No mana is refunded because none was spent yet.
-	/// </summary>
+
+	/// <summary>Abort the current cast and notify listeners. No mana is refunded.</summary>
 	void CancelCast()
 	{
 		EmitSignalCastCancelled();
@@ -176,29 +199,11 @@ public partial class Player : Character
 		_castTimer = 0f;
 	}
 
-	/// <summary>
-	/// Returns each spell paired with its input action name, in slot order.
-	/// Used by World to initialise the ActionBar.
-	/// </summary>
-	public (SpellResource Spell, string Action)[] GetSpellBindings()
-	{
-		return new[]
-		{
-			(Spell1, "spell_1"),
-			(Spell2, "spell_2"),
-			(Spell3, "spell_3"),
-			(Spell4, "spell_4"),
-			(Spell5, "spell_5"),
-			(Spell6, "spell_6")
-		};
-	}
 	public override void _PhysicsProcess(double delta)
 	{
 		if (!IsAlive) return;
-		// GetVector normalises diagonal movement automatically
 		var direction = Input.GetVector("move_left", "move_right", "move_up", "move_down");
 		Velocity = direction != Vector2.Zero ? direction * Speed : Vector2.Zero;
 		MoveAndSlide();
 	}
-
 }
