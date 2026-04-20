@@ -7,18 +7,20 @@ namespace healerfantasy.SpellSystem;
 /// </summary>
 public class CharacterStats
 {
-    public float MaxHealth           { get; set; }
-    public float MaxMana             { get; set; }
+	public float MaxHealth { get; set; }
+	public float MaxMana { get; set; }
 
-    /// <summary>0.0 – 1.0. E.g. 0.2 = 20% crit chance.</summary>
-    public float CritChance          { get; set; }
+	/// <summary>0.0 – 1.0. E.g. 0.2 = 20% crit chance.</summary>
+	public float CritChance { get; set; }
 
-    /// <summary>How much FinalValue is multiplied on a crit. Default 1.5×.</summary>
-    public float CritMultiplier      { get; set; } = 1.5f;
+	/// <summary>How much FinalValue is multiplied on a crit. Default 1.5×.</summary>
+	public float CritMultiplier { get; set; } = 1.5f;
 
-    /// <summary>Multiplier applied to all damage spells before modifier pipeline runs. Default 1.0.</summary>
-    public float DamageMultiplier    { get; set; } = 1.0f;
+	/// <summary>Multiplier applied to all damage spells before modifier pipeline runs. Default 1.0.</summary>
+	public float DamageMultiplier { get; set; } = 1.0f;
 
-    /// <summary>Multiplier applied to all healing spells before modifier pipeline runs. Default 1.0.</summary>
-    public float HealingMultiplier   { get; set; } = 1.0f;
+	/// <summary>Multiplier applied to all healing spells before modifier pipeline runs. Default 1.0.</summary>
+	public float HealingMultiplier { get; set; } = 1.0f;
+
+	public float CastSpeedMultiplier { get; set; } = 1.0f;
 }

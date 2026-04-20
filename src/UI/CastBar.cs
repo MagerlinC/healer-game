@@ -35,7 +35,7 @@ public partial class CastBar : PanelContainer
 
 		GlobalAutoLoad.SubscribeToSignal(
 			nameof(Player.CastStarted),
-			Callable.From((SpellResource spell) => StartCast(spell)));
+			Callable.From((SpellResource spell, float adjustedDuration) => StartCast(spell, adjustedDuration)));
 
 		GlobalAutoLoad.SubscribeToSignal(
 			nameof(Player.CastCancelled),
@@ -56,12 +56,19 @@ public partial class CastBar : PanelContainer
 	}
 
 	// ── public API ────────────────────────────────────────────────────────────
-	public void StartCast(SpellResource spell)
-	{
-		if (spell.CastTime == 0f) return;
 
-		_duration = spell.CastTime;
-		_remaining = spell.CastTime;
+	/// <summary>
+	/// Begin displaying a cast bar for <paramref name="spell"/>.
+	/// <paramref name="adjustedDuration"/> is the actual timer length after the
+	/// caster's cast-speed multiplier has been applied — use this rather than
+	/// <see cref="SpellResource.CastTime"/> so the bar matches the true cast time.
+	/// </summary>
+	public void StartCast(SpellResource spell, float adjustedDuration)
+	{
+		if (adjustedDuration <= 0f) return;
+
+		_duration = adjustedDuration;
+		_remaining = adjustedDuration;
 		_isCasting = true;
 
 		_iconRect.Texture = spell.Icon;

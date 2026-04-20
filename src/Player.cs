@@ -22,8 +22,14 @@ public partial class Player : Character
 	[Export] public SpellResource Spell5 = new BurstOfLightSpell();
 	[Export] public SpellResource Spell6 = new DecaySpellResource();
 
+	/// <param name="spell">The spell being cast.</param>
+	/// <param name="adjustedCastTime">
+	/// The actual cast duration after applying the caster's
+	/// <see cref="CharacterStats.CastSpeedMultiplier"/>. Use this for
+	/// UI timers rather than <see cref="SpellResources.SpellResource.CastTime"/>.
+	/// </param>
 	[Signal]
-	public delegate void CastStartedEventHandler(SpellResource spell);
+	public delegate void CastStartedEventHandler(SpellResource spell, float adjustedCastTime);
 
 	[Signal]
 	public delegate void CastCancelledEventHandler();
@@ -129,9 +135,13 @@ public partial class Player : Character
 				}
 				else
 				{
-					EmitSignal(SignalName.CastStarted, spellToCast);
+					// Divide the raw cast time by the current speed multiplier so that
+					// e.g. 2 stacks of Acceleration (1.2×) turns a 2s cast into ~1.67s.
+					var castSpeedMultiplier = GetCharacterStats().CastSpeedMultiplier;
+					var adjustedCastTime = spellToCast.CastTime / castSpeedMultiplier;
+					EmitSignalCastStarted(spellToCast, adjustedCastTime);
 					_isCasting = true;
-					_castTimer = spellToCast.CastTime;
+					_castTimer = adjustedCastTime;
 				}
 
 				_globalCooldownTimer = GlobalCooldown;

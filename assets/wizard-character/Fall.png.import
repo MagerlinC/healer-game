@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://qgtyuihqacpi"
-path="res://.godot/imported/Fall.png-2999a39bd522dc7f9e10ba967de19dfc.ctex"
+path="res://.godot/imported/Fall.png-04d25d135326d63285a1d0a308410e12.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/healer/Fall.png"
-dest_files=["res://.godot/imported/Fall.png-2999a39bd522dc7f9e10ba967de19dfc.ctex"]
+source_file="res://assets/wizard-character/Fall.png"
+dest_files=["res://.godot/imported/Fall.png-04d25d135326d63285a1d0a308410e12.ctex"]
 
 [params]
 

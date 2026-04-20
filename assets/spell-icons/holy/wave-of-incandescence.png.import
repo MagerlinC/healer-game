@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cetentmyapjo2"
-path="res://.godot/imported/Hit.png-16bb7b64dd0ae945724a88961d059592.ctex"
+uid="uid://y7yvk8cdfwmx"
+path="res://.godot/imported/wave-of-incandescence.png-85b94c16fddb20a463ce95dee5954c10.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/wizard-character/Hit.png"
-dest_files=["res://.godot/imported/Hit.png-16bb7b64dd0ae945724a88961d059592.ctex"]
+source_file="res://assets/spell-icons/holy/wave-of-incandescence.png"
+dest_files=["res://.godot/imported/wave-of-incandescence.png-85b94c16fddb20a463ce95dee5954c10.ctex"]
 
 [params]
 

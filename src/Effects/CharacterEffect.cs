@@ -33,6 +33,9 @@ public abstract partial class CharacterEffect : RefCounted
 
 	public bool IsExpired => Remaining <= 0f;
 
+	public int MaximumStacks = 0;
+	public int CurrentStacks { get; set; } = 1;
+
 	/// <summary>
 	/// Optional icon displayed on the affected character's UI frame.
 	/// Set this from the spell's <c>Act</c> method when constructing the effect.
@@ -72,6 +75,22 @@ public abstract partial class CharacterEffect : RefCounted
 	/// <summary>Called once when the effect is first applied to a character.</summary>
 	public virtual void OnApplied(Character target)
 	{
+	}
+
+	/// <summary>
+	/// Called when a new effect with the same <see cref="EffectId"/> is applied
+	/// while this instance is already active on <paramref name="target"/>.
+	/// The default behaviour refreshes the duration. Override to implement stacking
+	/// (e.g. incrementing <see cref="CurrentStacks"/>).
+	/// <para>
+	/// The incoming <paramref name="newEffect"/> is discarded after this call —
+	/// the dictionary keeps <em>this</em> instance, so all mutations must be
+	/// made on <c>this</c>.
+	/// </para>
+	/// </summary>
+	public virtual void OnReapplied(Character target, CharacterEffect newEffect)
+	{
+		Refresh();
 	}
 
 	/// <summary>Called on each tick while the effect is active.</summary>

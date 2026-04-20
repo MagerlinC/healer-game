@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cetentmyapjo2"
-path="res://.godot/imported/Hit.png-16bb7b64dd0ae945724a88961d059592.ctex"
+uid="uid://f6wodbjfxl51"
+path="res://.godot/imported/renewing-bloom.png-70dde22abec3a3e41cc7da0435cf98d5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/wizard-character/Hit.png"
-dest_files=["res://.godot/imported/Hit.png-16bb7b64dd0ae945724a88961d059592.ctex"]
+source_file="res://assets/spell-icons/nature/renewing-bloom.png"
+dest_files=["res://.godot/imported/renewing-bloom.png-70dde22abec3a3e41cc7da0435cf98d5.ctex"]
 
 [params]
 

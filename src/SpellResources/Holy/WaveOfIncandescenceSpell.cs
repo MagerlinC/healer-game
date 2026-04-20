@@ -22,7 +22,7 @@ public partial class WaveOfIncandescenceSpell : SpellResource
 		CastTime = 2f;
 		School = SpellSchool.Holy;
 		Tags = SpellTags.Healing | SpellTags.GroupSpell;
-		Icon = GD.Load<Texture2D>("res://assets/spell-icons/healer/healer2.png");
+		Icon = GD.Load<Texture2D>("res://assets/spell-icons/holy/wave-of-incandescence.png");
 	}
 
 	public override float GetBaseValue()

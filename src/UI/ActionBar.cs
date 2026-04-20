@@ -50,7 +50,7 @@ public partial class ActionBar : HBoxContainer
 
 		GlobalAutoLoad.SubscribeToSignal(
 			nameof(Player.CastStarted),
-			Callable.From((SpellResource spell) => OnCastStarted(spell))
+			Callable.From((SpellResource spell, float adjustedCastTime) => OnCastStarted(spell, adjustedCastTime))
 		);
 		GlobalAutoLoad.SubscribeToSignal(
 			nameof(Player.CastCancelled),
@@ -111,7 +111,7 @@ public partial class ActionBar : HBoxContainer
 		_castTimer = 0f;
 	}
 
-	void OnCastStarted(SpellResource spell)
+	void OnCastStarted(SpellResource spell, float adjustedCastTime)
 	{
 		ClearActiveSlot();
 
@@ -121,7 +121,7 @@ public partial class ActionBar : HBoxContainer
 
 			_slots[i].BorderStyle.BorderColor = BorderActive;
 			_activeIndex = i;
-			_castTimer = spell.CastTime;
+			_castTimer = adjustedCastTime;
 			break;
 		}
 	}

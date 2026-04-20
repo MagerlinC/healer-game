@@ -14,12 +14,14 @@ using healerfantasy.Talents;
 ///
 /// Clicking the card toggles its selected state and fires
 /// <see cref="Toggled"/> so the parent panel can react.
+///
+/// When <see cref="SetLocked"/> is true the card is visually dimmed,
+/// the cursor reverts to the default arrow, and clicks are ignored.
 /// </summary>
 public partial class TalentSlot : PanelContainer
 {
     // ── constants ────────────────────────────────────────────────────────────
     // talent-frames.png: 680×544 → 10 cols × 8 rows → 68×68 per frame.
-    // We use the first frame (row 0, col 0) for all slots.
     const int   FrameW = 68, FrameH = 68;
     const float SlotW  = 130f, SlotH = 170f;
     const float IconAreaSize = 100f;
@@ -27,19 +29,22 @@ public partial class TalentSlot : PanelContainer
     static readonly Color BorderIdle     = new(0.28f, 0.22f, 0.16f);
     static readonly Color BorderHover    = new(0.70f, 0.58f, 0.30f);
     static readonly Color BorderSelected = new(0.98f, 0.82f, 0.15f); // bright gold
+    static readonly Color BorderLocked   = new(0.16f, 0.13f, 0.11f); // near-black
 
-    // Unselected: icon desaturated + darkened; selected: full colour
     static readonly Color FrameTintIdle     = new(0.55f, 0.50f, 0.45f, 1f);
-    static readonly Color FrameTintSelected = new(1.00f, 0.90f, 0.55f, 1f); // warm gold
+    static readonly Color FrameTintSelected = new(1.00f, 0.90f, 0.55f, 1f);
+    static readonly Color FrameTintLocked   = new(0.30f, 0.27f, 0.24f, 1f);
 
     static readonly Color DimIdle     = new(0f, 0f, 0f, 0.52f);
     static readonly Color DimSelected = new(0f, 0f, 0f, 0f);
+    static readonly Color DimLocked   = new(0f, 0f, 0f, 0.78f);
 
     // ── public surface ───────────────────────────────────────────────────────
     public TalentDefinition Definition { get; }
     public bool             IsSelected { get; private set; }
+    public bool             IsLocked   { get; private set; }
 
-    /// <summary>Raised whenever the user clicks the slot and its state changes.</summary>
+    /// <summary>Raised whenever the user clicks an unlocked slot and its state changes.</summary>
     public event Action<TalentSlot> Toggled;
 
     // ── private refs updated at runtime ──────────────────────────────────────
@@ -110,7 +115,7 @@ public partial class TalentSlot : PanelContainer
         _frameOverlay.MouseFilter = MouseFilterEnum.Ignore;
         iconArea.AddChild(_frameOverlay);
 
-        // Layer 3 — dim overlay (darkens icon when unselected)
+        // Layer 3 — dim overlay (darkens icon when unselected / locked)
         _dimOverlay = new ColorRect();
         _dimOverlay.Color       = DimIdle;
         _dimOverlay.MouseFilter = MouseFilterEnum.Ignore;
@@ -143,25 +148,43 @@ public partial class TalentSlot : PanelContainer
         // ── input events ────────────────────────────────────────────────────
         MouseEntered += () =>
         {
+            if (IsLocked) return;
             _outerStyle.BorderColor = IsSelected ? BorderSelected : BorderHover;
         };
         MouseExited += () =>
         {
+            if (IsLocked) return;
             _outerStyle.BorderColor = IsSelected ? BorderSelected : BorderIdle;
         };
         GuiInput += OnGuiInput;
     }
 
     // ── public API ───────────────────────────────────────────────────────────
+
     public void SetSelected(bool selected)
     {
         IsSelected = selected;
         ApplyVisuals();
     }
 
+    /// <summary>
+    /// Lock or unlock this slot. Locked slots are visually dimmed, cannot be
+    /// clicked, and show the default arrow cursor. Locking a selected slot
+    /// does NOT automatically deselect it — call <see cref="SetSelected"/>
+    /// first if needed (as <see cref="TalentSelector"/> does in ValidateTree).
+    /// </summary>
+    public void SetLocked(bool locked)
+    {
+        IsLocked = locked;
+        MouseDefaultCursorShape = locked ? CursorShape.Arrow : CursorShape.PointingHand;
+        ApplyVisuals();
+    }
+
     // ── private ──────────────────────────────────────────────────────────────
     void OnGuiInput(InputEvent @event)
     {
+        if (IsLocked) return; // locked slots ignore all input
+
         if (@event is InputEventMouseButton mb
             && mb.ButtonIndex == MouseButton.Left
             && mb.Pressed)
@@ -178,9 +201,17 @@ public partial class TalentSlot : PanelContainer
         if (_frameOverlay == null) return;
         if (_dimOverlay   == null) return;
 
-        _outerStyle.BorderColor  = IsSelected ? BorderSelected : BorderIdle;
-        _frameOverlay.Modulate   = IsSelected ? FrameTintSelected : FrameTintIdle;
-        _dimOverlay.Color        = IsSelected ? DimSelected : DimIdle;
+        if (IsLocked)
+        {
+            _outerStyle.BorderColor = BorderLocked;
+            _frameOverlay.Modulate  = FrameTintLocked;
+            _dimOverlay.Color       = DimLocked;
+            return;
+        }
+
+        _outerStyle.BorderColor = IsSelected ? BorderSelected : BorderIdle;
+        _frameOverlay.Modulate  = IsSelected ? FrameTintSelected : FrameTintIdle;
+        _dimOverlay.Color       = IsSelected ? DimSelected : DimIdle;
     }
 
     static ShaderMaterial MakeGreyMaterial()

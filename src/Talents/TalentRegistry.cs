@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
+using healerfantasy.Talents.Chronomancy;
 
 namespace healerfantasy.Talents;
 
@@ -43,11 +44,24 @@ public static class TalentRegistry
 			Configure = (t, icon) =>
 				t.SpellModifiers.Add(new ShieldingReinvigorationTalent { EffectIcon = icon })
 		}
-
 	];
 
 	public static readonly List<TalentDefinition> NatureTalents = [];
-	public static readonly List<TalentDefinition> ChronomancyTalents = [];
+
+	public static readonly List<TalentDefinition> ChronomancyTalents =
+	[
+		new()
+		{
+			Name = "Acceleration",
+			Description =
+				"Casting a chronomancy spell increases cast speed for 10%. Stacks up to 3 times.",
+			IconPath = "res://assets/talent-icons/monk/Monk_17.png",
+			School = SpellSchool.Chronomancy,
+			TalentRow = 0,
+			Configure = (t, icon) =>
+				t.SpellModifiers.Add(new AccelerationTalent { EffectIcon = icon })
+		}
+	];
 
 	public static readonly List<TalentDefinition> GenericTalents =
 	[

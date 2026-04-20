@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cetentmyapjo2"
-path="res://.godot/imported/Hit.png-16bb7b64dd0ae945724a88961d059592.ctex"
+uid="uid://drphjebmj2y4t"
+path="res://.godot/imported/void-burst.png-697cf24e7cf7eaec00fdeac46f07bd80.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/wizard-character/Hit.png"
-dest_files=["res://.godot/imported/Hit.png-16bb7b64dd0ae945724a88961d059592.ctex"]
+source_file="res://assets/spell-icons/void/void-burst.png"
+dest_files=["res://.godot/imported/void-burst.png-697cf24e7cf7eaec00fdeac46f07bd80.ctex"]
 
 [params]
 

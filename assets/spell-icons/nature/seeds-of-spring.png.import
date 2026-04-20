@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cetentmyapjo2"
-path="res://.godot/imported/Hit.png-16bb7b64dd0ae945724a88961d059592.ctex"
+uid="uid://pea3rbykibd"
+path="res://.godot/imported/seeds-of-spring.png-abf684489118663e2c1debb6a429da7c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/wizard-character/Hit.png"
-dest_files=["res://.godot/imported/Hit.png-16bb7b64dd0ae945724a88961d059592.ctex"]
+source_file="res://assets/spell-icons/nature/seeds-of-spring.png"
+dest_files=["res://.godot/imported/seeds-of-spring.png-abf684489118663e2c1debb6a429da7c.ctex"]
 
 [params]
 

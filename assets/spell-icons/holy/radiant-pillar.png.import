@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cetentmyapjo2"
-path="res://.godot/imported/Hit.png-16bb7b64dd0ae945724a88961d059592.ctex"
+uid="uid://4g7asudqv3np"
+path="res://.godot/imported/radiant-pillar.png-c352a11d79bbfe55d83329e2550b1d22.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/wizard-character/Hit.png"
-dest_files=["res://.godot/imported/Hit.png-16bb7b64dd0ae945724a88961d059592.ctex"]
+source_file="res://assets/spell-icons/holy/radiant-pillar.png"
+dest_files=["res://.godot/imported/radiant-pillar.png-c352a11d79bbfe55d83329e2550b1d22.ctex"]
 
 [params]
 

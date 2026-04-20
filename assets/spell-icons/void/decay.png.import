@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cetentmyapjo2"
-path="res://.godot/imported/Hit.png-16bb7b64dd0ae945724a88961d059592.ctex"
+uid="uid://cn1jpth4vd3do"
+path="res://.godot/imported/decay.png-ddb1a3011bb92d5312febe1af9926691.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/wizard-character/Hit.png"
-dest_files=["res://.godot/imported/Hit.png-16bb7b64dd0ae945724a88961d059592.ctex"]
+source_file="res://assets/spell-icons/void/decay.png"
+dest_files=["res://.godot/imported/decay.png-ddb1a3011bb92d5312febe1af9926691.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cetentmyapjo2"
-path="res://.godot/imported/Hit.png-16bb7b64dd0ae945724a88961d059592.ctex"
+uid="uid://8103wgel0fua"
+path="res://.godot/imported/swarm-of-locusts.png-619534cdd0e187b763b254d5a592eacc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/wizard-character/Hit.png"
-dest_files=["res://.godot/imported/Hit.png-16bb7b64dd0ae945724a88961d059592.ctex"]
+source_file="res://assets/spell-icons/nature/swarm-of-locusts.png"
+dest_files=["res://.godot/imported/swarm-of-locusts.png-619534cdd0e187b763b254d5a592eacc.ctex"]
 
 [params]
 

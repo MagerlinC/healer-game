@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bp2lg1mtib2ky"
-path="res://.godot/imported/Attack1.png-a7ba517c4956e93445f1ac79cc66f9ed.ctex"
+path="res://.godot/imported/Attack1.png-45317475ea22a4a0dc317ee9010e3634.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/healer/Attack1.png"
-dest_files=["res://.godot/imported/Attack1.png-a7ba517c4956e93445f1ac79cc66f9ed.ctex"]
+source_file="res://assets/wizard-character/Attack1.png"
+dest_files=["res://.godot/imported/Attack1.png-45317475ea22a4a0dc317ee9010e3634.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://gx5og8wicsog"
-path="res://.godot/imported/Run.png-4b83ddbed4a5a43cdafabb9041ed04dc.ctex"
+path="res://.godot/imported/Run.png-bf29f98e412e2c59d5d1a99fde872fda.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/healer/Run.png"
-dest_files=["res://.godot/imported/Run.png-4b83ddbed4a5a43cdafabb9041ed04dc.ctex"]
+source_file="res://assets/wizard-character/Run.png"
+dest_files=["res://.godot/imported/Run.png-bf29f98e412e2c59d5d1a99fde872fda.ctex"]
 
 [params]
 

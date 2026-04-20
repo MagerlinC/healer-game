@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cetentmyapjo2"
-path="res://.godot/imported/Hit.png-16bb7b64dd0ae945724a88961d059592.ctex"
+uid="uid://co30066wpv2wx"
+path="res://.godot/imported/shield-of-atrophy.png-c6f3ed235384903748d7d2ba3fcaf0e1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/wizard-character/Hit.png"
-dest_files=["res://.godot/imported/Hit.png-16bb7b64dd0ae945724a88961d059592.ctex"]
+source_file="res://assets/spell-icons/void/shield-of-atrophy.png"
+dest_files=["res://.godot/imported/shield-of-atrophy.png-c6f3ed235384903748d7d2ba3fcaf0e1.ctex"]
 
 [params]
 

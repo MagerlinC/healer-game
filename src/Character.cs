@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using healerfantasy;
 using healerfantasy.Effects;
@@ -176,8 +177,12 @@ public abstract partial class Character : CharacterBody2D
 	{
 		if (_effects.TryGetValue(effect.EffectId, out var existing))
 		{
-			existing.OnExpired(this);
-			EmitSignalEffectRemoved(CharacterName, effect.EffectId);
+			// Let the existing instance handle the re-application (refresh or stack).
+			// The new effect object is discarded; we keep the live instance so
+			// stack counts and other state on it are preserved.
+			existing.OnReapplied(this, effect);
+			EmitSignalEffectApplied(CharacterName, existing);
+			return;
 		}
 
 		_effects[effect.EffectId] = effect;
@@ -231,6 +236,13 @@ public abstract partial class Character : CharacterBody2D
 		foreach (var talent in Talents)
 		foreach (var mod in talent.CharacterModifiers)
 			mod.Modify(stats);
+
+		// Also apply any active effect that acts as a character modifier
+		// (e.g. AccelerationEffect contributing to CastSpeedMultiplier).
+		// Mirrors how GetSpellModifiers handles ISpellModifier effects.
+		foreach (var eff in _effects.Values)
+			if (eff is ICharacterModifier effMod)
+				effMod.Modify(stats);
 
 		return stats;
 	}
@@ -288,6 +300,13 @@ public abstract partial class Character : CharacterBody2D
 			_effects.Remove(id);
 			EmitSignalEffectRemoved(CharacterName, id);
 		}
+	}
+
+	public CharacterEffect GetEffectById(string effectId)
+	{
+		_effects.TryGetValue(effectId, out var effect);
+
+		return effect;
 	}
 
 	void OnDeath()

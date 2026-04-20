@@ -7,7 +7,6 @@
     </PropertyGroup>
     <ItemGroup>
         <Folder Include="addons\"/>
-        <Folder Include="src\Talents\Chronomancy\"/>
         <Folder Include="src\Talents\Nature\"/>
     </ItemGroup>
 </Project>
