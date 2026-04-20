@@ -14,7 +14,7 @@ namespace healerfantasy;
 /// concrete class name. Applying an effect whose Id is already active on a
 /// Character replaces (refreshes) the old one rather than stacking it.
 /// </summary>
-public abstract class CharacterEffect
+public abstract partial class CharacterEffect : RefCounted
 {
 	/// <summary>
 	/// Unique identifier used for deduplication.
@@ -60,22 +60,33 @@ public abstract class CharacterEffect
 	/// </param>
 	protected CharacterEffect(float duration, float tickInterval = 0f)
 	{
-		EffectId      = GetType().Name;
-		Duration      = duration;
-		Remaining     = duration;
+		EffectId = GetType().Name;
+		Duration = duration;
+		Remaining = duration;
 		_tickInterval = tickInterval;
-		_tickTimer    = 0f; // fire first tick immediately
+		_tickTimer = 0f; // fire first tick immediately
 	}
 
 	// ── hooks for subclasses ─────────────────────────────────────────────────
 	/// <summary>Called once when the effect is first applied to a character.</summary>
-	public virtual void OnApplied(Character target) { }
+	public virtual void OnApplied(Character target)
+	{
+	}
 
 	/// <summary>Called on each tick while the effect is active.</summary>
-	protected virtual void OnTick(Character target) { }
+	protected virtual void OnTick(Character target)
+	{
+	}
 
 	/// <summary>Called once when the effect expires naturally or is removed.</summary>
-	public virtual void OnExpired(Character target) { }
+	public virtual void OnExpired(Character target)
+	{
+	}
+
+	public void Refresh()
+	{
+		Remaining = Duration;
+	}
 
 	/// <summary>
 	/// Override to trigger early expiry based on runtime state.
@@ -83,7 +94,10 @@ public abstract class CharacterEffect
 	/// Example: <see cref="ShieldEffect"/> returns <c>true</c> when the
 	/// character's shield has been fully consumed by incoming damage.
 	/// </summary>
-	protected virtual bool ShouldExpireEarly(Character target) => false;
+	protected virtual bool ShouldExpireEarly(Character target)
+	{
+		return false;
+	}
 
 	// ── internal update loop — driven by Character._Process ──────────────────
 	public void Update(Character target, float delta)

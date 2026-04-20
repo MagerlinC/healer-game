@@ -13,9 +13,14 @@ public partial class ManaBar : ProgressBar
 			nameof(Player.ManaChanged),
 			Callable.From((float current, float max) => OnManaChanged(current, max))
 		);
+
+		var fillStyle = new StyleBoxFlat();
+		fillStyle.BgColor = Colors.Blue;
+		AddThemeColorOverride("fill_color", Colors.Blue);
+		AddThemeStyleboxOverride("fill", fillStyle);
 		MaxValue = _max;
 		Value = _current;
-		Size = new Vector2(200, 10);
+		Size = new Vector2(250, 8);
 		Visible = true;
 	}
 

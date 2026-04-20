@@ -29,7 +29,7 @@ public partial class GameUI : CanvasLayer
 	static readonly Color BorderDefault = new(0.32f, 0.26f, 0.26f);
 	static readonly Color BorderHovered = new(0.90f, 0.80f, 0.20f); // gold highlight
 
-	readonly ProgressBar[] _bars       = new ProgressBar[4];
+	readonly ProgressBar[] _bars = new ProgressBar[4];
 	readonly ProgressBar[] _shieldBars = new ProgressBar[4];
 	readonly PanelContainer[] _panels = new PanelContainer[4];
 	readonly StyleBoxFlat[] _panelStyles = new StyleBoxFlat[4];
@@ -47,34 +47,36 @@ public partial class GameUI : CanvasLayer
 		anchor.MouseFilter = Control.MouseFilterEnum.Ignore;
 		AddChild(anchor);
 
+
 		_castBar = new CastBar();
-		_castBar.AnchorLeft    = 0.5f;
-		_castBar.AnchorRight   = 0.5f;
-		_castBar.AnchorTop     = 0.6f;
-		_castBar.AnchorBottom  = 0.6f;
-		_castBar.GrowHorizontal = Control.GrowDirection.Both;
-		_castBar.GrowVertical   = Control.GrowDirection.Both;
-		// Nudge the bar down a little from the anchor point and enforce
-		// a minimum width; height is driven by PanelContainer content.
-		_castBar.OffsetTop    = 15f;
 		_castBar.CustomMinimumSize = new Vector2(280f, 0f);
+		_castBar.SetAnchorsPreset(Control.LayoutPreset.Center);
+		_castBar.GrowHorizontal = Control.GrowDirection.Both;
+
+		// width = 280 → center it
+		_castBar.OffsetLeft = -140f;
+		_castBar.OffsetRight = 140f;
+
+		// move it slightly below center
+		_castBar.OffsetTop = 300f;
+		_castBar.OffsetBottom = 60f;
 		anchor.AddChild(_castBar);
 
 		_manaBar = new ManaBar();
-		_manaBar.AnchorLeft = 0.5f;
-		_manaBar.AnchorRight = 0.5f;
-		_manaBar.AnchorTop = 0.6f;
-		_manaBar.OffsetLeft = -100;
-		_manaBar.OffsetRight = 100;
-		_manaBar.OffsetTop = 50;
-		_manaBar.OffsetBottom = 70;
+		_manaBar.CustomMinimumSize = new Vector2(280f, 0f);
+		_manaBar.AnchorLeft = 0.1f;
+		_manaBar.AnchorRight = 0.1f;
+		_manaBar.AnchorTop = 0.9f; // 90% from top = near bottom
+		_manaBar.AnchorBottom = 0.9f;
+		_manaBar.GrowHorizontal = Control.GrowDirection.Both;
 
-		var fillStyle = new StyleBoxFlat();
-		fillStyle.BgColor = Colors.Blue;
-		_manaBar.AddThemeColorOverride("fill_color", Colors.Blue);
-		_manaBar.AddThemeStyleboxOverride("fill", fillStyle);
+		// width = 280 → center it
+		_manaBar.OffsetLeft = -140f;
+		_manaBar.OffsetRight = 140f;
 		anchor.AddChild(_manaBar);
 
+
+		// Party Frames
 		var hbox = new HBoxContainer();
 		hbox.AddThemeConstantOverride("separation", 6);
 
@@ -104,31 +106,33 @@ public partial class GameUI : CanvasLayer
 		}
 
 		// ── Combat meters ─────────────────────────────────────────────────────
-		// Healing meter — bottom-left corner
+		// Healing meter 
 		_healingMeter = new CombatMeter(CombatMeter.MeterType.Healing);
-		_healingMeter.AnchorLeft   = 0f;
-		_healingMeter.AnchorRight  = 0f;
-		_healingMeter.AnchorTop    = 1f;
+
+		_healingMeter.AnchorLeft = 1f;
+		_healingMeter.AnchorRight = 1f;
+		_healingMeter.AnchorTop = 1f;
 		_healingMeter.AnchorBottom = 1f;
-		_healingMeter.GrowHorizontal = Control.GrowDirection.End;
-		_healingMeter.GrowVertical   = Control.GrowDirection.Begin;
-		_healingMeter.OffsetLeft   = 10f;
-		_healingMeter.OffsetRight  = 200f;
-		_healingMeter.OffsetTop    = -155f;
+		_healingMeter.GrowHorizontal = Control.GrowDirection.Begin;
+		_healingMeter.GrowVertical = Control.GrowDirection.Begin;
+		_healingMeter.OffsetLeft = -510f;
+		_healingMeter.OffsetRight = -260f;
+		_healingMeter.OffsetTop = -155f;
 		_healingMeter.OffsetBottom = -10f;
+
 		anchor.AddChild(_healingMeter);
 
 		// Damage meter — bottom-right corner
 		_damageMeter = new CombatMeter(CombatMeter.MeterType.Damage);
-		_damageMeter.AnchorLeft   = 1f;
-		_damageMeter.AnchorRight  = 1f;
-		_damageMeter.AnchorTop    = 1f;
+		_damageMeter.AnchorLeft = 1f;
+		_damageMeter.AnchorRight = 1f;
+		_damageMeter.AnchorTop = 1f;
 		_damageMeter.AnchorBottom = 1f;
 		_damageMeter.GrowHorizontal = Control.GrowDirection.Begin;
-		_damageMeter.GrowVertical   = Control.GrowDirection.Begin;
-		_damageMeter.OffsetLeft   = -200f;
-		_damageMeter.OffsetRight  = -10f;
-		_damageMeter.OffsetTop    = -155f;
+		_damageMeter.GrowVertical = Control.GrowDirection.Begin;
+		_damageMeter.OffsetLeft = -260;
+		_damageMeter.OffsetRight = -10f;
+		_damageMeter.OffsetTop = -155f;
 		_damageMeter.OffsetBottom = -10f;
 		anchor.AddChild(_damageMeter);
 
@@ -154,7 +158,7 @@ public partial class GameUI : CanvasLayer
 
 		GlobalAutoLoad.SubscribeToPartySignal(
 			"EffectApplied",
-			slot => Callable.From((string id, Texture2D icon, float duration) => ShowEffectIndicator(slot, id, icon, duration)));
+			slot => Callable.From((CharacterEffect effect) => ShowEffectIndicator(slot, effect)));
 
 		GlobalAutoLoad.SubscribeToPartySignal(
 			"EffectRemoved",
@@ -194,7 +198,7 @@ public partial class GameUI : CanvasLayer
 	{
 		if (index < 0 || index >= _shieldBars.Length) return;
 		_shieldBars[index].MaxValue = maxHp;
-		_shieldBars[index].Value    = shield;
+		_shieldBars[index].Value = shield;
 	}
 
 	/// <summary>
@@ -239,12 +243,12 @@ public partial class GameUI : CanvasLayer
 	}
 
 	/// <summary>Add an effect indicator badge to the given slot's effects row.</summary>
-	public void ShowEffectIndicator(int slot, string effectId, Texture2D icon, float duration)
+	public void ShowEffectIndicator(int slot, CharacterEffect effect)
 	{
 		if (slot < 0 || slot >= _effectBars.Length) return;
 		// Remove any existing indicator for this effect (handles refresh case)
-		HideEffectIndicator(slot, effectId);
-		_effectBars[slot].AddChild(new EffectIndicator(effectId, icon, duration));
+		HideEffectIndicator(slot, effect.EffectId);
+		_effectBars[slot].AddChild(new EffectIndicator(effect));
 	}
 
 	/// <summary>Remove the effect indicator with the given id from the slot, if present.</summary>
@@ -337,11 +341,11 @@ public partial class GameUI : CanvasLayer
 		// fill is a semi-transparent blue that sits over the health colour.
 		var shieldProgress = new ProgressBar();
 		shieldProgress.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		shieldProgress.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
-		shieldProgress.MouseFilter         = Control.MouseFilterEnum.Ignore;
-		shieldProgress.ShowPercentage      = false;
-		shieldProgress.MaxValue            = maxHp;
-		shieldProgress.Value               = 0f;
+		shieldProgress.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		shieldProgress.MouseFilter = Control.MouseFilterEnum.Ignore;
+		shieldProgress.ShowPercentage = false;
+		shieldProgress.MaxValue = maxHp;
+		shieldProgress.Value = 0f;
 
 		var shieldBg = new StyleBoxFlat();
 		shieldBg.BgColor = new Color(0f, 0f, 0f, 0f); // fully transparent background

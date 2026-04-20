@@ -24,7 +24,7 @@ public abstract partial class Character : CharacterBody2D
 
 	/// <summary>Emitted when an effect is applied (or refreshed) on this character.</summary>
 	[Signal]
-	public delegate void EffectAppliedEventHandler(string effectId, Texture2D icon, float duration);
+	public delegate void EffectAppliedEventHandler(CharacterEffect effect);
 
 	/// <summary>Emitted when an effect expires or is removed from this character.</summary>
 	[Signal]
@@ -174,12 +174,12 @@ public abstract partial class Character : CharacterBody2D
 		if (_effects.TryGetValue(effect.EffectId, out var existing))
 		{
 			existing.OnExpired(this);
-			EmitSignal(SignalName.EffectRemoved, effect.EffectId);
+			EmitSignalEffectRemoved(effect.EffectId);
 		}
 
 		_effects[effect.EffectId] = effect;
 		effect.OnApplied(this);
-		EmitSignal(SignalName.EffectApplied, effect.EffectId, effect.Icon, effect.Duration);
+		EmitSignalEffectApplied(effect);
 	}
 
 	/// <summary>Remove an active effect by id, if present.</summary>
@@ -189,7 +189,20 @@ public abstract partial class Character : CharacterBody2D
 		{
 			effect.OnExpired(this);
 			_effects.Remove(effectId);
-			EmitSignal(SignalName.EffectRemoved, effectId);
+			EmitSignalEffectRemoved(effectId);
+		}
+	}
+
+	public void RefreshAllEffects()
+	{
+		if (_effects.Count == 0) return;
+
+		foreach (var effect in _effects.Values)
+		{
+			if (effect.SourceCharacterName == CharacterName)
+			{
+				effect.Refresh();
+			}
 		}
 	}
 

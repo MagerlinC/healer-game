@@ -16,7 +16,7 @@ namespace healerfantasy;
 /// implements <see cref="ISpellModifier"/>, so this buff is automatically wired
 /// into the cast pipeline while it is alive.
 /// </summary>
-public class CriticalInfusionBuff : CharacterEffect, ISpellModifier
+public partial class CriticalInfusionBuff : CharacterEffect, ISpellModifier
 {
 	const float BonusScaling = 1.30f; // +30 %
 

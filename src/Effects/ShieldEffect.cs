@@ -11,30 +11,36 @@ namespace healerfantasy;
 /// remaining shield (clamped at 0), so any damage already absorbed is
 /// correctly accounted for.
 /// </summary>
-public class ShieldEffect : CharacterEffect
+public partial class ShieldEffect : CharacterEffect
 {
-    readonly float _shieldAmount;
+	readonly float _shieldAmount;
 
-    /// <param name="amount">Total shield points added.</param>
-    /// <param name="duration">How long the shield lasts in seconds.</param>
-    public ShieldEffect(float amount, float duration)
-        : base(duration, 0f)
-    {
-        EffectId     = "ShieldingReinvigoration";
-        _shieldAmount = amount;
-    }
+	/// <param name="amount">Total shield points added.</param>
+	/// <param name="duration">How long the shield lasts in seconds.</param>
+	public ShieldEffect(float amount, float duration)
+		: base(duration, 0f)
+	{
+		EffectId = "ShieldingReinvigoration";
+		_shieldAmount = amount;
+	}
 
-    public override void OnApplied(Character target)
-        => target.AddShield(_shieldAmount);
+	public override void OnApplied(Character target)
+	{
+		target.AddShield(_shieldAmount);
+	}
 
-    public override void OnExpired(Character target)
-        => target.RemoveShield(_shieldAmount);
+	public override void OnExpired(Character target)
+	{
+		target.RemoveShield(_shieldAmount);
+	}
 
-    /// <summary>
-    /// Expire early if the shield has been fully consumed by incoming damage.
-    /// This causes the buff indicator to disappear immediately rather than
-    /// lingering for the remaining duration with a depleted shield.
-    /// </summary>
-    protected override bool ShouldExpireEarly(Character target)
-        => target.CurrentShield <= 0f;
+	/// <summary>
+	/// Expire early if the shield has been fully consumed by incoming damage.
+	/// This causes the buff indicator to disappear immediately rather than
+	/// lingering for the remaining duration with a depleted shield.
+	/// </summary>
+	protected override bool ShouldExpireEarly(Character target)
+	{
+		return target.CurrentShield <= 0f;
+	}
 }

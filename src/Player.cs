@@ -17,6 +17,7 @@ public partial class Player : Character
 	[Export] public SpellResource Spell1 = new HealSpellResource(); // TODO: I cannot seem to create this resource in the UI
 	[Export] public SpellResource Spell2 = new GroupHealSpellResource();
 	[Export] public SpellResource Spell3 = new HealOverTimeSpellResource();
+	[Export] public SpellResource Spell4 = new RefreshingSpellResource();
 
 	[Signal]
 	public delegate void CastStartedEventHandler(SpellResource spell);
@@ -46,10 +47,10 @@ public partial class Player : Character
 
 	SpellResource? GetSpellForInput()
 	{
-		// TODO: generalise to an array for more spells
 		if (Input.IsActionJustPressed("spell_1")) return Spell1;
 		if (Input.IsActionJustPressed("spell_2")) return Spell2;
 		if (Input.IsActionJustPressed("spell_3")) return Spell3;
+		if (Input.IsActionJustPressed("spell_4")) return Spell4;
 		return null;
 	}
 
@@ -143,7 +144,8 @@ public partial class Player : Character
 		{
 			(Spell1, "spell_1"),
 			(Spell2, "spell_2"),
-			(Spell3, "spell_3")
+			(Spell3, "spell_3"),
+			(Spell4, "spell_4")
 		};
 	}
 	public override void _PhysicsProcess(double delta)

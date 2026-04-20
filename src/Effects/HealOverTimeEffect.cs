@@ -7,9 +7,9 @@ namespace healerfantasy;
 /// Heals the target for <see cref="HealPerTick"/> every
 /// <see cref="TickInterval"/> seconds for <see cref="CharacterEffect.Duration"/> seconds.
 /// </summary>
-public class HealOverTimeEffect : CharacterEffect
+public partial class HealOverTimeEffect : CharacterEffect
 {
-	public float HealPerTick  { get; }
+	public float HealPerTick { get; }
 	public float TickInterval { get; }
 
 	/// <param name="healPerTick">Health restored on each tick.</param>
@@ -18,8 +18,8 @@ public class HealOverTimeEffect : CharacterEffect
 	public HealOverTimeEffect(float healPerTick, float duration, float tickInterval = 1f)
 		: base(duration, tickInterval)
 	{
-		HealPerTick   = healPerTick;
-		TickInterval  = tickInterval;
+		HealPerTick = healPerTick;
+		TickInterval = tickInterval;
 	}
 
 	protected override void OnTick(Character target)
@@ -30,13 +30,13 @@ public class HealOverTimeEffect : CharacterEffect
 
 		CombatLog.CombatLog.Record(new CombatEventRecord
 		{
-			Timestamp   = Time.GetTicksMsec() / 1000.0,
-			SourceName  = SourceCharacterName,
-			TargetName  = target.CharacterName,
+			Timestamp = Time.GetTicksMsec() / 1000.0,
+			SourceName = SourceCharacterName,
+			TargetName = target.CharacterName,
 			AbilityName = AbilityName ?? EffectId,
-			Amount      = HealPerTick,
-			Type        = CombatEventType.Healing,
-			IsCrit      = false,
+			Amount = HealPerTick,
+			Type = CombatEventType.Healing,
+			IsCrit = false
 		});
 	}
 }
