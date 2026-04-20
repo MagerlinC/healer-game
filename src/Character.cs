@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 using healerfantasy;
@@ -19,7 +20,7 @@ public abstract partial class Character : CharacterBody2D
 	public delegate void ManaChangedEventHandler(string characterName, float current, float max);
 
 	[Signal]
-	public delegate void DiedEventHandler();
+	public delegate void DiedEventHandler(string characterName);
 
 	/// <summary>Emitted when an effect is applied (or refreshed) on this character.</summary>
 	[Signal]
@@ -90,6 +91,7 @@ public abstract partial class Character : CharacterBody2D
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(ShieldChanged));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(EffectApplied));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(EffectRemoved));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(Died));
 		EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
 		EmitSignalManaChanged(CharacterName, CurrentMana, MaxMana);
 		AddToGroup("party");
@@ -286,9 +288,8 @@ public abstract partial class Character : CharacterBody2D
 		}
 	}
 
-	// ── protected virtuals ───────────────────────────────────────────────────
-	protected virtual void OnDeath()
+	void OnDeath()
 	{
-		EmitSignalDied();
+		EmitSignalDied(CharacterName);
 	}
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using healerfantasy;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
@@ -17,6 +18,7 @@ public partial class ActionBar : HBoxContainer
 
 	int _activeIndex = -1;
 	float _castTimer = 0f;
+	bool _isPlayerDead = false;
 
 	static readonly Color BorderDefault = new(0.25f, 0.22f, 0.20f);
 	static readonly Color BorderActive = new(0.95f, 0.80f, 0.10f); // gold
@@ -54,6 +56,11 @@ public partial class ActionBar : HBoxContainer
 			nameof(Player.CastCancelled),
 			Callable.From(ClearActiveSlot)
 		);
+
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(Player.Died),
+			Callable.From((string charName) => SetIconShadingBasedOnCharacterDeath(charName))
+		);
 	}
 
 	public override void _Process(double delta)
@@ -83,11 +90,16 @@ public partial class ActionBar : HBoxContainer
 	/// </summary>
 	public void SetIconShadingBasedOnPlayerMana(float current, float max)
 	{
-		foreach (var slot in _slots)
+		foreach (var slot in _slots.Where(slot => slot.Icon != null))
 		{
-			if (slot.Icon == null) continue;
-			slot.Icon.Material = current < slot.Spell.ManaCost ? GreyMaterial : null;
+			slot.Icon.Material = _isPlayerDead || current < slot.Spell.ManaCost ? GreyMaterial : null;
 		}
+	}
+
+	void SetIconShadingBasedOnCharacterDeath(string charName)
+	{
+		if (charName != GameConstants.PlayerName) return;
+		_isPlayerDead = true;
 	}
 
 	// ── private helpers ──────────────────────────────────────────────────────

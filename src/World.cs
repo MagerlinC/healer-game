@@ -42,19 +42,5 @@ public partial class World : Node2D
 		// ── Death screen ──────────────────────────────────────────────────────
 		var deathScreen = new DeathScreen();
 		AddChild(deathScreen);
-
-		// Show the death screen once every party member has died.
-		// Each Died handler checks the full party; only the last death triggers it.
-		Character[] party = { templar, player, assassin, wizard };
-		foreach (var member in party)
-		{
-			member.Died += () =>
-			{
-				foreach (var c in party)
-					if (c.IsAlive)
-						return; // at least one member still alive
-				deathScreen.ShowDeathScreen();
-			};
-		}
 	}
 }

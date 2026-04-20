@@ -135,7 +135,6 @@ public partial class GameUI : CanvasLayer
 	public void BindCharacter(int slot, Character character)
 	{
 		_partyFrames.BindCharacter(slot, character);
-
 		// Register the runtime name so combat-log source names align with meter rows.
 		_healingMeter?.RegisterCharacter(character.CharacterName);
 		_damageMeter?.RegisterCharacter(character.CharacterName);

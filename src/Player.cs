@@ -19,6 +19,7 @@ public partial class Player : Character
 	[Export] public SpellResource Spell2 = new GroupHealSpellResource();
 	[Export] public SpellResource Spell3 = new HealOverTimeSpellResource();
 	[Export] public SpellResource Spell4 = new RefreshingSpellResource();
+	[Export] public SpellResource Spell5 = new BurstOfLightSpell();
 
 	[Signal]
 	public delegate void CastStartedEventHandler(SpellResource spell);
@@ -53,6 +54,7 @@ public partial class Player : Character
 		if (Input.IsActionJustPressed("spell_2")) return Spell2;
 		if (Input.IsActionJustPressed("spell_3")) return Spell3;
 		if (Input.IsActionJustPressed("spell_4")) return Spell4;
+		if (Input.IsActionJustPressed("spell_5")) return Spell5;
 		return null;
 	}
 
@@ -69,6 +71,12 @@ public partial class Player : Character
 		base._Process(delta); // runs health drain from Character
 		if (_globalCooldownTimer > 0f)
 			_globalCooldownTimer = Mathf.Max(_globalCooldownTimer - (float)delta, 0.0f);
+
+		if (!IsAlive)
+		{
+			CancelCast();
+			return;
+		}
 
 		// Tick cast timer — any movement input interrupts the cast
 		if (_isCasting)
@@ -147,7 +155,8 @@ public partial class Player : Character
 			(Spell1, "spell_1"),
 			(Spell2, "spell_2"),
 			(Spell3, "spell_3"),
-			(Spell4, "spell_4")
+			(Spell4, "spell_4"),
+			(Spell5, "spell_5")
 		};
 	}
 	public override void _PhysicsProcess(double delta)

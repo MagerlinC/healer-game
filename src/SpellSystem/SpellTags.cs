@@ -8,13 +8,14 @@ namespace healerfantasy.SpellSystem;
 [System.Flags]
 public enum SpellTags
 {
-    None        = 0,
-    Damage      = 1 << 0,
-    Healing     = 1 << 1,
-    Fire        = 1 << 2,
-    Cold        = 1 << 3,
-    Lightning   = 1 << 4,
-    Critical    = 1 << 5,   // Set by the pipeline on a successful crit roll
-    HealOverTime = 1 << 6,
-    GroupSpell  = 1 << 7,
+	None = 0,
+	Damage = 1 << 0,
+	Healing = 1 << 1,
+	Light = 1 << 2,
+	Fire = 1 << 3,
+	Cold = 1 << 4,
+	Lightning = 1 << 5,
+	Critical = 1 << 6, // Set by the pipeline on a successful crit roll
+	HealOverTime = 1 << 7,
+	GroupSpell = 1 << 8
 }
