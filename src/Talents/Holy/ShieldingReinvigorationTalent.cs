@@ -1,4 +1,5 @@
 using Godot;
+using healerfantasy.Effects;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.Talents;
@@ -7,7 +8,7 @@ namespace healerfantasy.Talents;
 /// After a healing spell lands, each healed target gains a temporary shield
 /// equal to 20% of the healing done, lasting 5 seconds.
 ///
-/// The shield is applied via <see cref="ShieldEffect"/> which integrates with
+/// The shield is applied via <see cref="Effects.ShieldEffect"/> which integrates with
 /// the existing <see cref="CharacterEffect"/> system for UI display and expiry.
 /// Applying the same effect to a target while one is already active refreshes
 /// the duration and amount rather than stacking.

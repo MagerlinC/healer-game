@@ -8,19 +8,19 @@ namespace healerfantasy.SpellResources;
 /// Heals every member of the "party" group for a fixed amount.
 /// The explicit target is ignored — all party members are resolved via
 /// <see cref="ResolveTargets"/>, so the modifier pipeline (including
-/// <see cref="ShieldingReinvigorationTalent"/>) operates on the full group.
 /// </summary>
 [GlobalClass]
-public partial class GroupHealSpellResource : SpellResource
+public partial class WaveOfIncandescenceSpell : SpellResource
 {
 	[Export] public float HealAmount = 25f;
 
-	public GroupHealSpellResource()
+	public WaveOfIncandescenceSpell()
 	{
-		Name = "Wave of Vitality";
+		Name = "Wave of Incandescence";
 		Description = $"Restores {HealAmount} health to all party members.";
 		ManaCost = 20f;
 		CastTime = 2f;
+		School = SpellSchool.Holy;
 		Tags = SpellTags.Healing | SpellTags.GroupSpell;
 		Icon = GD.Load<Texture2D>("res://assets/spell-icons/healer/healer2.png");
 	}

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Godot;
 using healerfantasy;
+using healerfantasy.Effects;
 using healerfantasy.SpellSystem;
 
 /// <summary>

@@ -12,10 +12,9 @@ public enum SpellTags
 	Damage = 1 << 0,
 	Healing = 1 << 1,
 	Light = 1 << 2,
-	Fire = 1 << 3,
-	Cold = 1 << 4,
-	Lightning = 1 << 5,
-	Critical = 1 << 6, // Set by the pipeline on a successful crit roll
-	Duration = 1 << 7,
-	GroupSpell = 1 << 8
+	Void = 1 << 3,
+	Nature = 1 << 4,
+	Critical = 1 << 5, // Set by the pipeline on a successful crit roll
+	Duration = 1 << 6,
+	GroupSpell = 1 << 7
 }

@@ -1,7 +1,7 @@
 ﻿using Godot;
 using healerfantasy.CombatLog;
 
-namespace healerfantasy;
+namespace healerfantasy.Effects;
 
 /// <summary>
 /// Heals the target for <see cref="DamagePerTick"/> every

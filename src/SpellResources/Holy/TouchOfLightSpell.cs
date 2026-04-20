@@ -5,11 +5,11 @@ using healerfantasy.SpellSystem;
 namespace healerfantasy.SpellResources;
 
 [GlobalClass]
-public partial class HealSpellResource : SpellResource
+public partial class TouchOfLightSpell : SpellResource
 {
 	[Export] public float HealAmount = 25f;
 
-	public HealSpellResource()
+	public TouchOfLightSpell()
 	{
 		Name = "Touch of Light";
 		Description = $"Restores {HealAmount} health to the target.";

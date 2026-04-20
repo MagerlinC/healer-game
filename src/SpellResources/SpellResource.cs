@@ -11,6 +11,15 @@ public enum TargetType
 	Enemy
 }
 
+public enum SpellSchool
+{
+	Nature,
+	Void,
+	Holy,
+	Chronomancy,
+	Generic
+}
+
 [GlobalClass]
 public partial class SpellResource : Resource
 {
@@ -20,6 +29,7 @@ public partial class SpellResource : Resource
 	[Export] public float CastTime;
 	[Export] public float Cooldown;
 	[Export] public TargetType TargetType = TargetType.Friendly;
+	[Export] public SpellSchool School;
 
 	[Export] public Texture2D Icon;
 

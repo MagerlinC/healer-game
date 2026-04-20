@@ -1,7 +1,7 @@
 using healerfantasy.SpellSystem;
 using healerfantasy.Talents;
 
-namespace healerfantasy;
+namespace healerfantasy.Effects;
 
 /// <summary>
 /// A temporary buff granted by the <c>CriticalInfusion</c> talent when the player

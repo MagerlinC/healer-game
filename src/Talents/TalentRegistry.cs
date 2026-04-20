@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.Talents;
@@ -14,51 +17,49 @@ namespace healerfantasy.Talents;
 /// </summary>
 public static class TalentRegistry
 {
-	public static readonly TalentDefinition[] All =
-	{
+	public static readonly List<TalentDefinition> VoidTalents =
+	[
 		new()
 		{
-			Name = "Elemental Specialist",
-			Description = "+20% damage to Fire, Cold & Lightning spells.",
+			Name = "Void Specialist",
+			Description = "20% increased void damage.",
 			IconPath = "res://assets/talent-icons/monk/Monk_5.png",
+			TalentRow = 0,
+			School = SpellSchool.Void,
 			Configure = (t, _) =>
-				t.SpellModifiers.Add(new ElementalSpecialistTalent())
-		},
+				t.SpellModifiers.Add(new VoidSpecialistTalent())
+		}
+	];
 
-		new()
-		{
-			Name = "Critical Amplifier",
-			Description = "+20% critical strike chance on all spells.",
-			IconPath = "res://assets/talent-icons/monk/Monk_11.png",
-			Configure = (t, _) =>
-				t.CharacterModifiers.Add(new CriticalAmplifierTalent())
-		},
-
+	public static readonly List<TalentDefinition> HolyTalents =
+	[
 		new()
 		{
 			Name = "Shielding Reinvigoration",
 			Description = "Healing a target grants a 5s shield equal to 20% of the healing done.",
 			IconPath = "res://assets/talent-icons/monk/Monk_17.png",
+			School = SpellSchool.Holy,
+			TalentRow = 0,
 			Configure = (t, icon) =>
 				t.SpellModifiers.Add(new ShieldingReinvigorationTalent { EffectIcon = icon })
-		},
+		}
 
+	];
+
+	public static readonly List<TalentDefinition> NatureTalents = [];
+	public static readonly List<TalentDefinition> ChronomancyTalents = [];
+
+	public static readonly List<TalentDefinition> GenericTalents =
+	[
 		new()
 		{
-			Name = "Critical Infusion",
-			Description = "Critical hits grant a 10s buff amplifying the damage and healing of the next spell by 30%.",
-			IconPath = "res://assets/talent-icons/monk/Monk_23.png",
-			Configure = (t, icon) =>
-				t.SpellModifiers.Add(new CriticalInfusionTalent { EffectIcon = icon })
-		},
-		new()
-		{
-			Name = "Arcane Hunger",
-			Description =
-				"When casting a spell, spend up to 10% of maximum mana to increase its damage or healing by 1% per 1 mana spent (maximum of 50%).",
-			IconPath = "res://assets/talent-icons/monk/Monk_13.png",
-			Configure = (t, icon) =>
-				t.SpellModifiers.Add(new ArcaneHungerTalent())
+			Name = "Critical Amplifier",
+			Description = "+20% base critical strike chance on all spells.",
+			IconPath = "res://assets/talent-icons/monk/Monk_11.png",
+			School = SpellSchool.Generic,
+			TalentRow = 0,
+			Configure = (t, _) =>
+				t.CharacterModifiers.Add(new CriticalAmplifierTalent())
 		},
 		new()
 		{
@@ -66,9 +67,36 @@ public static class TalentRegistry
 			Description =
 				"Critical hits restore 20 mana.",
 			IconPath = "res://assets/talent-icons/monk/Monk_21.png",
+			School = SpellSchool.Generic,
+			TalentRow = 0,
 			Configure = (t, icon) =>
 				t.SpellModifiers.Add(new CriticalRechargeTalent())
+		},
+		new()
+		{
+			Name = "Arcane Hunger",
+			Description =
+				"When casting a spell, spend up to 10% of maximum mana to increase its damage or healing by 1% per 1 mana spent (maximum of 50%).",
+			IconPath = "res://assets/talent-icons/monk/Monk_13.png",
+			School = SpellSchool.Generic,
+			TalentRow = 1,
+			Configure = (t, icon) =>
+				t.SpellModifiers.Add(new ArcaneHungerTalent())
+		},
+		new()
+		{
+			Name = "Critical Infusion",
+			Description = "Critical hits grant a 10s buff amplifying the damage and healing of the next spell by 30%.",
+			IconPath = "res://assets/talent-icons/monk/Monk_23.png",
+			School = SpellSchool.Generic,
+			TalentRow = 1,
+			Configure = (t, icon) =>
+				t.SpellModifiers.Add(new CriticalInfusionTalent { EffectIcon = icon })
 		}
+	];
 
-	};
+	public static readonly List<TalentDefinition> AllTalents =
+		GenericTalents.Concat(VoidTalents).Concat(HolyTalents).Concat(NatureTalents).Concat(ChronomancyTalents).ToList();
+
+
 }

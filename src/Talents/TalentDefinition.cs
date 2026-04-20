@@ -1,5 +1,6 @@
 using System;
 using Godot;
+using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.Talents;
@@ -25,6 +26,11 @@ public enum ModifierPriority
 /// </summary>
 public class TalentDefinition
 {
+	/// <summary>Row index in the talent panel, starting at 0.</summary>
+	public int TalentRow { get; init; }
+
+	public SpellSchool School { get; init; }
+
 	/// <summary>Display name shown in the talent panel.</summary>
 	public string Name { get; init; }
 

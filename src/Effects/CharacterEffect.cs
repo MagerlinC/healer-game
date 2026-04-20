@@ -1,4 +1,5 @@
 using Godot;
+using healerfantasy.Effects;
 
 namespace healerfantasy;
 
@@ -91,7 +92,7 @@ public abstract partial class CharacterEffect : RefCounted
 	/// <summary>
 	/// Override to trigger early expiry based on runtime state.
 	/// Checked every frame in <see cref="Update"/> before tick processing.
-	/// Example: <see cref="ShieldEffect"/> returns <c>true</c> when the
+	/// Example: <see cref="Effects.ShieldEffect"/> returns <c>true</c> when the
 	/// character's shield has been fully consumed by incoming damage.
 	/// </summary>
 	protected virtual bool ShouldExpireEarly(Character target)

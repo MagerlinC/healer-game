@@ -13,10 +13,11 @@ public partial class HealOverTimeSpellResource : SpellResource
 
 	public HealOverTimeSpellResource()
 	{
-		Name = "Renewing Light";
+		Name = "Renewing Bloom";
 		Description = $"Heals the target for {HealPerTick} every {TickInterval}s for {EffectDuration}s.";
 		ManaCost = 6f;
 		CastTime = 0.0f;
+		School = SpellSchool.Nature;
 		// HealOverTime implies Healing; the per-tick value is what gets modified.
 		Tags = SpellTags.Healing | SpellTags.Duration;
 		Icon = GD.Load<Texture2D>("res://assets/spell-icons/healer/healer3.png");
@@ -33,7 +34,7 @@ public partial class HealOverTimeSpellResource : SpellResource
 	public override void Apply(SpellContext ctx)
 	{
 		// ctx.FinalValue is the modifier-adjusted per-tick heal amount.
-		ctx.Target?.ApplyEffect(new HealOverTimeEffect(ctx.FinalValue, EffectDuration, TickInterval)
+		ctx.Target?.ApplyEffect(new Effects.HealOverTimeEffect(ctx.FinalValue, EffectDuration, TickInterval)
 		{
 			Icon = Icon,
 			SourceCharacterName = ctx.Caster.CharacterName,

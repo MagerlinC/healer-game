@@ -178,7 +178,7 @@ public partial class TalentSelector : CanvasLayer
 		grid.AddThemeConstantOverride("h_separation", 12);
 		grid.AddThemeConstantOverride("v_separation", 12);
 
-		foreach (var def in TalentRegistry.All)
+		foreach (var def in TalentRegistry.AllTalents)
 		{
 			var slot = new TalentSlot(def);
 			_slots.Add(slot);

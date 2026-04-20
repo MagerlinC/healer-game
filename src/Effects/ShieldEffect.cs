@@ -1,4 +1,4 @@
-namespace healerfantasy;
+namespace healerfantasy.Effects;
 
 /// <summary>
 /// Applies a damage-absorbing shield to a character for a fixed duration.

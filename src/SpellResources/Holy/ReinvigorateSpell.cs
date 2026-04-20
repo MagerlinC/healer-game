@@ -3,10 +3,10 @@ using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;
 
-public partial class RefreshingSpellResource : SpellResource
+public partial class ReinvigorateSpell : SpellResource
 {
 	float HealAmount = 10f;
-	public RefreshingSpellResource()
+	public ReinvigorateSpell()
 	{
 		Name = "Reinvigorate";
 		Description =
