@@ -42,6 +42,7 @@ public abstract partial class Character : CharacterBody2D
 	[Export] public string CharacterName = "Character";
 	[Export] public float MaxHealth = 100.0f;
 	[Export] public float MaxMana = 100.0f;
+	[Export] public bool IsFriendly = true; // for conditional modifiers that check friend vs foe
 
 	/// <summary>Fraction of MaxHealth lost per second.</summary>
 	[Export] public float LifeLossPerSecond = 10f;

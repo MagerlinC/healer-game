@@ -174,7 +174,7 @@ public partial class TalentSelector : CanvasLayer
 
 		// ── Talent grid ──────────────────────────────────────────────────────
 		var grid = new GridContainer();
-		grid.Columns = 2;
+		grid.Columns = 3;
 		grid.AddThemeConstantOverride("h_separation", 12);
 		grid.AddThemeConstantOverride("v_separation", 12);
 

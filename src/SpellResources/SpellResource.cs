@@ -5,6 +5,12 @@ using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;
 
+public enum TargetType
+{
+	Friendly,
+	Enemy
+}
+
 [GlobalClass]
 public partial class SpellResource : Resource
 {
@@ -13,6 +19,8 @@ public partial class SpellResource : Resource
 	[Export] public float ManaCost;
 	[Export] public float CastTime;
 	[Export] public float Cooldown;
+	[Export] public TargetType TargetType = TargetType.Friendly;
+
 	[Export] public Texture2D Icon;
 
 	/// <summary>
@@ -21,7 +29,6 @@ public partial class SpellResource : Resource
 	/// Set these in each subclass constructor.
 	/// </summary>
 	public SpellTags Tags { get; protected set; } = SpellTags.None;
-
 	// ── Pipeline integration ─────────────────────────────────────────────────
 
 	/// <summary>

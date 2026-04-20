@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using System.Collections.Generic;
+using Godot;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;
@@ -15,6 +16,7 @@ public partial class BurstOfLightSpell : SpellResource
 		ManaCost = 5f;
 		CastTime = 1.5f;
 		Tags = SpellTags.Damage | SpellTags.Light;
+		TargetType = TargetType.Enemy;
 		Icon = GD.Load<Texture2D>("res://assets/spell-icons/healer/healer6.png");
 	}
 
@@ -22,6 +24,7 @@ public partial class BurstOfLightSpell : SpellResource
 	{
 		return DamageAmount;
 	}
+
 
 	public override void Apply(SpellContext ctx)
 	{

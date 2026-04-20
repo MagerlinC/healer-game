@@ -34,7 +34,7 @@ public partial class GroupHealSpellResource : SpellResource
 	{
 		var targets = new List<Character>();
 		foreach (var node in caster.GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive)
+			if (node is Character { IsAlive: true } c)
 				targets.Add(c);
 		return targets;
 	}

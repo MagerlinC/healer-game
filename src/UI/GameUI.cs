@@ -1,3 +1,4 @@
+using System.Linq;
 using Godot;
 using healerfantasy;
 using healerfantasy.UI;
@@ -143,8 +144,10 @@ public partial class GameUI : CanvasLayer
 	/// <summary>Returns the Character whose party frame the cursor is over, or null.</summary>
 	public Character GetHoveredCharacter()
 	{
+		if (_bossHealthBar.IsHovered()) return GetTree().GetNodesInGroup("boss").FirstOrDefault() as Character;
 		return _partyFrames.GetHoveredCharacter();
 	}
+
 
 	/// <summary>Populate the action bar with the player's spell bindings.</summary>
 	public void SetupActionBar((SpellResource Spell, string Action)[] bindings)

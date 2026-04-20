@@ -110,7 +110,14 @@ public partial class Player : Character
 			{
 				// Lock in the target at cast-start: whichever health frame is under
 				// the cursor, or self if the cursor is not over any frame.
-				_castTarget = GameUI?.GetHoveredCharacter() ?? this;
+
+				var hoveredCharacter = ResolveTargetWithFallback(GameUI?.GetHoveredCharacter(), spellToCast);
+				if (spellToCast.TargetType == TargetType.Enemy && hoveredCharacter.IsFriendly)
+				{
+					return;
+				}
+
+				_castTarget = hoveredCharacter;
 				_castSpell = spellToCast;
 
 				var spellIsInstant = spellToCast.CastTime == 0.0f;
@@ -130,6 +137,17 @@ public partial class Player : Character
 		}
 	}
 
+	Character ResolveTargetWithFallback(Character? target, SpellResource spell)
+	{
+		if (target == null)
+		{
+			return spell.TargetType == TargetType.Friendly ? this : GetTree().GetFirstNodeInGroup("boss") as Character;
+		}
+
+		return target;
+
+	}
+
 	// ── private helpers ──────────────────────────────────────────────────────
 	/// <summary>
 	/// Abort the current cast and notify listeners.
@@ -137,7 +155,7 @@ public partial class Player : Character
 	/// </summary>
 	void CancelCast()
 	{
-		EmitSignal(SignalName.CastCancelled);
+		EmitSignalCastCancelled();
 		_isCasting = false;
 		_castSpell = null;
 		_castTarget = null;

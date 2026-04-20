@@ -5,6 +5,9 @@ namespace healerfantasy.UI;
 public partial class BossHealthBar : PanelContainer
 {
 
+	static readonly Color BorderDefault = new(0.32f, 0.26f, 0.26f);
+	static readonly Color BorderHovered = new(0.90f, 0.80f, 0.20f);
+
 	Label _nameLabel;
 	Label _currentHealthLabel;
 	ProgressBar _bar;
@@ -17,6 +20,12 @@ public partial class BossHealthBar : PanelContainer
 		GlobalAutoLoad.SubscribeToSignal(nameof(Character.HealthChanged),
 			Callable.From((string charName, float current, float max) => UpdateProgress(charName, current, max)));
 		Visible = false;
+	}
+
+	public bool IsHovered()
+	{
+		var mousePos = GetViewport().GetMousePosition();
+		return GetGlobalRect().HasPoint(mousePos);
 	}
 
 	void UpdateProgress(string charName, float current, float max)
@@ -44,7 +53,8 @@ public partial class BossHealthBar : PanelContainer
 		panelStyle.ContentMarginBottom = 6f;
 		AddThemeStyleboxOverride("panel", panelStyle);
 
-		MouseFilter = MouseFilterEnum.Ignore;
+		MouseEntered += () => panelStyle.BorderColor = BorderHovered;
+		MouseExited += () => panelStyle.BorderColor = BorderDefault;
 
 		// ── main row ──────────────────────────────────────────────────────────
 		var row = new HBoxContainer();
@@ -53,6 +63,7 @@ public partial class BossHealthBar : PanelContainer
 
 		// ── overlay container (bar + text) ────────────────────────────────────
 		var overlay = new Control();
+		overlay.MouseFilter = MouseFilterEnum.Ignore; // let mouse events pass through to panel
 		overlay.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		overlay.CustomMinimumSize = new Vector2(0f, 24f);
 		row.AddChild(overlay);
