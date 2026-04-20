@@ -52,7 +52,7 @@ public partial class CrystalKnight : Character
 		CharacterName = GameConstants.Boss1Name;
 		// Character._Ready() adds every character to "party" — undo for enemies.
 		RemoveFromGroup("party");
-		AddToGroup("boss");
+		AddToGroup(GameConstants.BossGroupName);
 		IsFriendly = false;
 
 		// Stagger first attacks so the player has a moment to react.

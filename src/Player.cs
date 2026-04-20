@@ -20,6 +20,7 @@ public partial class Player : Character
 	[Export] public SpellResource Spell3 = new HealOverTimeSpellResource();
 	[Export] public SpellResource Spell4 = new RefreshingSpellResource();
 	[Export] public SpellResource Spell5 = new BurstOfLightSpell();
+	[Export] public SpellResource Spell6 = new DamageOverTimeSpellResource();
 
 	[Signal]
 	public delegate void CastStartedEventHandler(SpellResource spell);
@@ -55,6 +56,7 @@ public partial class Player : Character
 		if (Input.IsActionJustPressed("spell_3")) return Spell3;
 		if (Input.IsActionJustPressed("spell_4")) return Spell4;
 		if (Input.IsActionJustPressed("spell_5")) return Spell5;
+		if (Input.IsActionJustPressed("spell_6")) return Spell6;
 		return null;
 	}
 
@@ -141,7 +143,9 @@ public partial class Player : Character
 	{
 		if (target == null)
 		{
-			return spell.TargetType == TargetType.Friendly ? this : GetTree().GetFirstNodeInGroup("boss") as Character;
+			return spell.TargetType == TargetType.Friendly
+				? this
+				: GetTree().GetFirstNodeInGroup(GameConstants.BossGroupName) as Character;
 		}
 
 		return target;
@@ -174,7 +178,8 @@ public partial class Player : Character
 			(Spell2, "spell_2"),
 			(Spell3, "spell_3"),
 			(Spell4, "spell_4"),
-			(Spell5, "spell_5")
+			(Spell5, "spell_5"),
+			(Spell6, "spell_6")
 		};
 	}
 	public override void _PhysicsProcess(double delta)

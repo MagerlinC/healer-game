@@ -79,7 +79,7 @@ public static class SpellPipeline
 		spell.Apply(ctx);
 
 		// ── 10. Log to CombatLog (direct hits only; HoT ticks log themselves) ─
-		var isDirect = !ctx.Tags.HasFlag(SpellTags.HealOverTime);
+		var isDirect = !ctx.Tags.HasFlag(SpellTags.Duration);
 		foreach (var target in ctx.Targets)
 		{
 			if (ctx.Tags.HasFlag(SpellTags.Healing) && isDirect)

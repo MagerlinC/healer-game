@@ -144,7 +144,7 @@ public partial class GameUI : CanvasLayer
 	/// <summary>Returns the Character whose party frame the cursor is over, or null.</summary>
 	public Character GetHoveredCharacter()
 	{
-		if (_bossHealthBar.IsHovered()) return GetTree().GetNodesInGroup("boss").FirstOrDefault() as Character;
+		if (_bossHealthBar.IsHovered()) return GetTree().GetNodesInGroup(GameConstants.BossGroupName).FirstOrDefault() as Character;
 		return _partyFrames.GetHoveredCharacter();
 	}
 

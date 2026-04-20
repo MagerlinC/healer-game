@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 using healerfantasy;
@@ -16,9 +17,12 @@ public partial class DeathScreen : CanvasLayer
 {
 	readonly HashSet<string> _deadPartyMembers = new();
 
-	void OnCharacterDied(string characterName)
+	void OnCharacterDied(Character character)
 	{
-		_deadPartyMembers.Add(characterName);
+		if (character.IsFriendly)
+		{
+			_deadPartyMembers.Add(character.CharacterName);
+		}
 
 		// Check if all party members are dead.  If so, show the death screen.
 		if (_deadPartyMembers.Count >= 4)
@@ -32,7 +36,7 @@ public partial class DeathScreen : CanvasLayer
 		Visible = false;
 		ProcessMode = ProcessModeEnum.Always;
 
-		GlobalAutoLoad.SubscribeToSignal(nameof(Character.Died), Callable.From((string charName) => OnCharacterDied(charName)));
+		GlobalAutoLoad.SubscribeToSignal(nameof(Character.Died), Callable.From((Character character) => OnCharacterDied(character)));
 
 		// ── Dark overlay — blocks all mouse events from reaching the game ────
 		var overlay = new ColorRect();

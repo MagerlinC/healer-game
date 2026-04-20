@@ -20,7 +20,7 @@ public abstract partial class Character : CharacterBody2D
 	public delegate void ManaChangedEventHandler(string characterName, float current, float max);
 
 	[Signal]
-	public delegate void DiedEventHandler(string characterName);
+	public delegate void DiedEventHandler(Character character);
 
 	/// <summary>Emitted when an effect is applied (or refreshed) on this character.</summary>
 	[Signal]
@@ -291,6 +291,6 @@ public abstract partial class Character : CharacterBody2D
 
 	void OnDeath()
 	{
-		EmitSignalDied(CharacterName);
+		EmitSignalDied(this);
 	}
 }

@@ -16,6 +16,6 @@ public enum SpellTags
 	Cold = 1 << 4,
 	Lightning = 1 << 5,
 	Critical = 1 << 6, // Set by the pipeline on a successful crit roll
-	HealOverTime = 1 << 7,
+	Duration = 1 << 7,
 	GroupSpell = 1 << 8
 }
