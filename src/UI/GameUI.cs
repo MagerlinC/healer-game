@@ -14,6 +14,8 @@ public partial class GameUI : CanvasLayer
 	CastBar _castBar;
 	ProgressBar _manaBar;
 	ActionBar _actionBar;
+	CombatMeter _healingMeter;
+	CombatMeter _damageMeter;
 
 	// ── per-member config: name + the colour the bar fills with ─────────────
 	static readonly (string Name, Color BarColor, float MaxHp)[] MemberDefs =
@@ -46,12 +48,16 @@ public partial class GameUI : CanvasLayer
 		AddChild(anchor);
 
 		_castBar = new CastBar();
-		_castBar.AnchorLeft = 0.5f;
-		_castBar.AnchorTop = 0.6f;
-		_castBar.OffsetLeft = -100;
-		_castBar.OffsetRight = 100;
-		_castBar.OffsetTop = 20;
-		_castBar.OffsetBottom = 40;
+		_castBar.AnchorLeft    = 0.5f;
+		_castBar.AnchorRight   = 0.5f;
+		_castBar.AnchorTop     = 0.6f;
+		_castBar.AnchorBottom  = 0.6f;
+		_castBar.GrowHorizontal = Control.GrowDirection.Both;
+		_castBar.GrowVertical   = Control.GrowDirection.Both;
+		// Nudge the bar down a little from the anchor point and enforce
+		// a minimum width; height is driven by PanelContainer content.
+		_castBar.OffsetTop    = 15f;
+		_castBar.CustomMinimumSize = new Vector2(280f, 0f);
 		anchor.AddChild(_castBar);
 
 		_manaBar = new ManaBar();
@@ -96,6 +102,35 @@ public partial class GameUI : CanvasLayer
 
 			hbox.AddChild(wrapper);
 		}
+
+		// ── Combat meters ─────────────────────────────────────────────────────
+		// Healing meter — bottom-left corner
+		_healingMeter = new CombatMeter(CombatMeter.MeterType.Healing);
+		_healingMeter.AnchorLeft   = 0f;
+		_healingMeter.AnchorRight  = 0f;
+		_healingMeter.AnchorTop    = 1f;
+		_healingMeter.AnchorBottom = 1f;
+		_healingMeter.GrowHorizontal = Control.GrowDirection.End;
+		_healingMeter.GrowVertical   = Control.GrowDirection.Begin;
+		_healingMeter.OffsetLeft   = 10f;
+		_healingMeter.OffsetRight  = 200f;
+		_healingMeter.OffsetTop    = -155f;
+		_healingMeter.OffsetBottom = -10f;
+		anchor.AddChild(_healingMeter);
+
+		// Damage meter — bottom-right corner
+		_damageMeter = new CombatMeter(CombatMeter.MeterType.Damage);
+		_damageMeter.AnchorLeft   = 1f;
+		_damageMeter.AnchorRight  = 1f;
+		_damageMeter.AnchorTop    = 1f;
+		_damageMeter.AnchorBottom = 1f;
+		_damageMeter.GrowHorizontal = Control.GrowDirection.Begin;
+		_damageMeter.GrowVertical   = Control.GrowDirection.Begin;
+		_damageMeter.OffsetLeft   = -200f;
+		_damageMeter.OffsetRight  = -10f;
+		_damageMeter.OffsetTop    = -155f;
+		_damageMeter.OffsetBottom = -10f;
+		anchor.AddChild(_damageMeter);
 
 		// Action bar — centered, 10px above the party frame row.
 		// Frame row bottom: -10. Frame row top: -90. Action bar bottom: -100. Top: -152.
@@ -180,6 +215,11 @@ public partial class GameUI : CanvasLayer
 	{
 		if (slot < 0 || slot >= _characters.Length) return;
 		_characters[slot] = character;
+
+		// Ensure meters track by the character's actual runtime name so log
+		// source names (written from Character.CharacterName) align correctly.
+		_healingMeter?.RegisterCharacter(character.CharacterName);
+		_damageMeter?.RegisterCharacter(character.CharacterName);
 	}
 
 	/// <summary>

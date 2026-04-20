@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.CombatLog;
 using healerfantasy.SpellResources;
 
 namespace healerfantasy.SpellSystem;
@@ -77,7 +78,39 @@ public static class SpellPipeline
         // ── 9. Execute spell ────────────────────────────────────────────────
         spell.Apply(ctx);
 
-        // ── 10. Record in history ───────────────────────────────────────────
+        // ── 10. Log to CombatLog (direct hits only; HoT ticks log themselves) ─
+        bool isDirect = !ctx.Tags.HasFlag(SpellTags.HealOverTime);
+        foreach (var target in ctx.Targets)
+        {
+            if (ctx.Tags.HasFlag(SpellTags.Healing) && isDirect)
+            {
+                CombatLog.CombatLog.Record(new CombatEventRecord
+                {
+                    Timestamp   = ctx.Timestamp,
+                    SourceName  = caster.CharacterName,
+                    TargetName  = target.CharacterName,
+                    AbilityName = spell.Name,
+                    Amount      = ctx.FinalValue,
+                    Type        = CombatEventType.Healing,
+                    IsCrit      = ctx.Tags.HasFlag(SpellTags.Critical),
+                });
+            }
+            else if (ctx.Tags.HasFlag(SpellTags.Damage))
+            {
+                CombatLog.CombatLog.Record(new CombatEventRecord
+                {
+                    Timestamp   = ctx.Timestamp,
+                    SourceName  = caster.CharacterName,
+                    TargetName  = target.CharacterName,
+                    AbilityName = spell.Name,
+                    Amount      = ctx.FinalValue,
+                    Type        = CombatEventType.Damage,
+                    IsCrit      = ctx.Tags.HasFlag(SpellTags.Critical),
+                });
+            }
+        }
+
+        // ── 11. Record in history ───────────────────────────────────────────
         caster.SpellHistory.Record(spell.Name, ctx.Timestamp);
     }
 }

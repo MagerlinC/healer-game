@@ -32,7 +32,9 @@ public partial class HealOverTimeSpellResource : SpellResource
         // ctx.FinalValue is the modifier-adjusted per-tick heal amount.
         ctx.Target?.ApplyEffect(new HealOverTimeEffect(ctx.FinalValue, EffectDuration, TickInterval)
         {
-            Icon = Icon
+            Icon                = Icon,
+            SourceCharacterName = ctx.Caster.CharacterName,
+            AbilityName         = Name,
         });
     }
 }

@@ -1,3 +1,6 @@
+using Godot;
+using healerfantasy.CombatLog;
+
 namespace healerfantasy;
 
 /// <summary>
@@ -19,5 +22,21 @@ public class HealOverTimeEffect : CharacterEffect
 		TickInterval  = tickInterval;
 	}
 
-	protected override void OnTick(Character target) => target.Heal(HealPerTick);
+	protected override void OnTick(Character target)
+	{
+		target.Heal(HealPerTick);
+
+		if (SourceCharacterName == null) return;
+
+		CombatLog.CombatLog.Record(new CombatEventRecord
+		{
+			Timestamp   = Time.GetTicksMsec() / 1000.0,
+			SourceName  = SourceCharacterName,
+			TargetName  = target.CharacterName,
+			AbilityName = AbilityName ?? EffectId,
+			Amount      = HealPerTick,
+			Type        = CombatEventType.Healing,
+			IsCrit      = false,
+		});
+	}
 }

@@ -38,6 +38,16 @@ public abstract class CharacterEffect
 	/// </summary>
 	public Texture2D Icon { get; set; }
 
+	/// <summary>
+	/// CharacterName of the character that applied this effect.
+	/// When set, ticking effects (e.g. HealOverTime) will log events to
+	/// <see cref="healerfantasy.CombatLog.CombatLog"/> for meter display.
+	/// </summary>
+	public string SourceCharacterName { get; set; }
+
+	/// <summary>Display name of the spell or talent that applied this effect.</summary>
+	public string AbilityName { get; set; }
+
 	// How often OnTick fires. 0 means no discrete ticks (continuous only).
 	readonly float _tickInterval;
 	float _tickTimer;
