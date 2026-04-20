@@ -7,6 +7,6 @@ using Godot;
 /// </summary>
 public partial class PartyMember : Character
 {
-    // All health logic lives in Character.
-    // This class is the hook for NPC-specific behaviour going forward.
+	// All health logic lives in Character.
+	// This class is the hook for NPC-specific behaviour going forward.
 }

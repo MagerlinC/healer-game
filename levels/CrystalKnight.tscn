@@ -1,0 +1,24 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/CrystalKnight.cs" id="Script_crystal_knight"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
+radius = 14.0
+height = 24.0
+
+[node name="CrystalKnight" type="CharacterBody2D"]
+script = ExtResource("Script_crystal_knight")
+CharacterName = "Crystal Knight"
+MaxHealth = 500.0
+MaxMana = 200.0
+LifeLossPerSecond = 0.0
+MeleeAttackInterval = 2.0
+SpellCastInterval = 7.0
+MeleeDamage = 20.0
+BlastDamage = 15.0
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 8)
+shape = SubResource("CapsuleShape2D_1")
