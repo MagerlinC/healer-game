@@ -5,6 +5,7 @@ using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
 
+
 /// <summary>
 /// The player-controlled healer.
 /// Inherits health drain from Character and adds WASD movement + spell casting.
@@ -41,6 +42,7 @@ public partial class Player : Character
 	public override void _Ready()
 	{
 		base._Ready();
+		CharacterName = GameConstants.PlayerName;
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastCancelled));
 	}

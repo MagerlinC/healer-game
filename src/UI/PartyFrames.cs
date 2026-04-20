@@ -1,3 +1,4 @@
+using System.Linq;
 using Godot;
 using healerfantasy;
 
@@ -25,7 +26,7 @@ public partial class PartyFrames : Control
 	static readonly (string Name, Color BarColor, float MaxHp)[] MemberDefs =
 	{
 		("Templar", new Color(0.88f, 0.30f, 0.50f), 150f), // rose-red
-		("Healer", new Color(0.35f, 0.78f, 0.22f), 80f), // poison-green
+		(GameConstants.PlayerName, new Color(0.35f, 0.78f, 0.22f), 80f), // poison-green
 		("Assassin", new Color(0.85f, 0.78f, 0.15f), 100f), // golden-yellow
 		("Wizard", new Color(0.20f, 0.50f, 0.95f), 70f) // sapphire-blue
 	};
@@ -74,21 +75,21 @@ public partial class PartyFrames : Control
 		}
 
 		// ── party signal subscriptions ────────────────────────────────────────
-		GlobalAutoLoad.SubscribeToPartySignal(
-			"HealthChanged",
-			slot => Callable.From((float current, float max) => SetHealth(slot, current, max)));
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(Character.HealthChanged),
+			Callable.From((string characterName, float current, float max) => SetHealth(characterName, current, max)));
 
-		GlobalAutoLoad.SubscribeToPartySignal(
-			"ShieldChanged",
-			slot => Callable.From((float shield, float maxHp) => SetShield(slot, shield, maxHp)));
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(Character.ShieldChanged),
+			Callable.From((string characterName, float shield, float maxHp) => SetShield(characterName, shield, maxHp)));
 
-		GlobalAutoLoad.SubscribeToPartySignal(
-			"EffectApplied",
-			slot => Callable.From((CharacterEffect effect) => ShowEffectIndicator(slot, effect)));
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(Character.EffectApplied),
+			Callable.From((string characterName, CharacterEffect effect) => ShowEffectIndicator(characterName, effect)));
 
-		GlobalAutoLoad.SubscribeToPartySignal(
-			"EffectRemoved",
-			slot => Callable.From((string id) => HideEffectIndicator(slot, id)));
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(Character.EffectRemoved),
+			Callable.From((string characterName, string id) => HideEffectIndicator(characterName, id)));
 	}
 
 	// ── public API ────────────────────────────────────────────────────────────
@@ -121,31 +122,35 @@ public partial class PartyFrames : Control
 
 	// ── private signal handlers ───────────────────────────────────────────────
 
-	void SetHealth(int slot, float current, float max)
+	void SetHealth(string characterName, float current, float max)
 	{
-		if (slot < 0 || slot >= _bars.Length) return;
-		_bars[slot].MaxValue = max;
-		_bars[slot].Value = current;
+		var characterSlot = MemberDefs.ToList().FindIndex(m => m.Name == characterName);
+		if (characterSlot < 0 || characterSlot >= _bars.Length) return;
+		_bars[characterSlot].MaxValue = max;
+		_bars[characterSlot].Value = current;
 	}
 
-	void SetShield(int slot, float shield, float maxHp)
+	void SetShield(string characterName, float shield, float maxHp)
 	{
-		if (slot < 0 || slot >= _shieldBars.Length) return;
-		_shieldBars[slot].MaxValue = maxHp;
-		_shieldBars[slot].Value = shield;
+		var characterSlot = MemberDefs.ToList().FindIndex(m => m.Name == characterName);
+		if (characterSlot < 0 || characterSlot >= _shieldBars.Length) return;
+		_shieldBars[characterSlot].MaxValue = maxHp;
+		_shieldBars[characterSlot].Value = shield;
 	}
 
-	void ShowEffectIndicator(int slot, CharacterEffect effect)
+	void ShowEffectIndicator(string characterName, CharacterEffect effect)
 	{
-		if (slot < 0 || slot >= _effectBars.Length) return;
-		HideEffectIndicator(slot, effect.EffectId); // remove stale indicator if refreshed
-		_effectBars[slot].AddChild(new EffectIndicator(effect));
+		var characterSlot = MemberDefs.ToList().FindIndex(m => m.Name == characterName);
+		if (characterSlot < 0 || characterSlot >= _effectBars.Length) return;
+		HideEffectIndicator(characterName, effect.EffectId); // remove stale indicator if refreshed
+		_effectBars[characterSlot].AddChild(new EffectIndicator(effect));
 	}
 
-	void HideEffectIndicator(int slot, string effectId)
+	void HideEffectIndicator(string characterName, string effectId)
 	{
-		if (slot < 0 || slot >= _effectBars.Length) return;
-		foreach (var child in _effectBars[slot].GetChildren())
+		var characterSlot = MemberDefs.ToList().FindIndex(m => m.Name == characterName);
+		if (characterSlot < 0 || characterSlot >= _effectBars.Length) return;
+		foreach (var child in _effectBars[characterSlot].GetChildren())
 		{
 			if (child is EffectIndicator ind && ind.CharacterEffect.EffectId == effectId)
 			{

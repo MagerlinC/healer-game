@@ -1,5 +1,6 @@
 using Godot;
 using healerfantasy;
+using healerfantasy.UI;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
 
 /// <summary>
@@ -23,6 +24,7 @@ using SpellResource = healerfantasy.SpellResources.SpellResource;
 public partial class GameUI : CanvasLayer
 {
 	PartyFrames _partyFrames;
+	BossHealthBar _bossHealthBar;
 	ActionBar _actionBar;
 	CombatMeter _healingMeter;
 	CombatMeter _damageMeter;
@@ -60,6 +62,14 @@ public partial class GameUI : CanvasLayer
 		manaBar.OffsetLeft = -140f;
 		manaBar.OffsetRight = 140f;
 		anchor.AddChild(manaBar);
+
+		// ── Boss health bar ───────────────────────────────────────────────────
+		_bossHealthBar = new BossHealthBar();
+		_bossHealthBar.CustomMinimumSize = new Vector2(400f, 0f);
+		_bossHealthBar.SetAnchorsPreset(Control.LayoutPreset.TopWide);
+		_bossHealthBar.OffsetTop = 10f;
+		_bossHealthBar.OffsetBottom = 50f;
+		anchor.AddChild(_bossHealthBar);
 
 		// ── Party frames ──────────────────────────────────────────────────────
 		_partyFrames = new PartyFrames();
@@ -108,11 +118,11 @@ public partial class GameUI : CanvasLayer
 		// ── Signal subscriptions owned by GameUI ──────────────────────────────
 		// Mana changes shade action-bar icons; all other party signals are
 		// handled directly inside PartyFrames and ManaBar.
-		GlobalAutoLoad.SubscribeToPartySignal(
-			"ManaChanged",
-			slot => Callable.From((float current, float max) =>
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(Character.ManaChanged),
+			Callable.From((string characterName, float current, float max) =>
 			{
-				if (slot == 1) _actionBar.SetIconShadingBasedOnPlayerMana(current, max);
+				if (characterName == GameConstants.PlayerName) _actionBar.SetIconShadingBasedOnPlayerMana(current, max);
 			}));
 	}
 

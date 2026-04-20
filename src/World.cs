@@ -13,16 +13,11 @@ public partial class World : Node2D
 {
 	public override void _Ready()
 	{
-		var ui      = GetNode<GameUI>("PartyUI");
-		var player  = GetNode<Player>("Player");
-		var templar  = GetNode<Character>("Templar");
+		var ui = GetNode<GameUI>("PartyUI");
+		var player = GetNode<Player>("Healer");
+		var templar = GetNode<Character>("Templar");
 		var assassin = GetNode<Character>("Assassin");
-		var wizard   = GetNode<Character>("Wizard");
-
-		GlobalAutoLoad.RegisterPartyMember(templar,  0);
-		GlobalAutoLoad.RegisterPartyMember(player,   1);
-		GlobalAutoLoad.RegisterPartyMember(assassin, 2);
-		GlobalAutoLoad.RegisterPartyMember(wizard,   3);
+		var wizard = GetNode<Character>("Wizard");
 
 		// Bind characters so hovering a frame resolves to the right Character
 		ui.BindCharacter(0, templar);
@@ -56,7 +51,8 @@ public partial class World : Node2D
 			member.Died += () =>
 			{
 				foreach (var c in party)
-					if (c.IsAlive) return; // at least one member still alive
+					if (c.IsAlive)
+						return; // at least one member still alive
 				deathScreen.ShowDeathScreen();
 			};
 		}

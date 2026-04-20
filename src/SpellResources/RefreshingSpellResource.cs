@@ -25,6 +25,6 @@ public partial class RefreshingSpellResource : SpellResource
 	public override void Apply(SpellContext ctx)
 	{
 		ctx.Target.Heal(HealAmount);
-		ctx.Target.RefreshAllEffects();
+		ctx.Target.RefreshAllPlayerEffects();
 	}
 }

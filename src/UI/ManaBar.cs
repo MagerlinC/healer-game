@@ -9,11 +9,11 @@ public partial class ManaBar : ProgressBar
 
 		// Subscribe only to the player (slot 1) so enemy characters that also
 		// emit ManaChanged (e.g. the Crystal Knight) don't pollute this bar.
-		GlobalAutoLoad.SubscribeToPartySignal(
+		GlobalAutoLoad.SubscribeToSignal(
 			nameof(Character.ManaChanged),
-			slot => Callable.From((float current, float max) =>
+			Callable.From((string characterName, float current, float max) =>
 			{
-				if (slot == 1) OnManaChanged(current, max);
+				if (characterName == GameConstants.PlayerName) OnManaChanged(current, max);
 			})
 		);
 
@@ -27,6 +27,6 @@ public partial class ManaBar : ProgressBar
 	{
 		// Set MaxValue before Value so Value is never silently clamped.
 		MaxValue = max;
-		Value    = current;
+		Value = current;
 	}
 }

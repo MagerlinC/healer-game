@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Godot;
 using healerfantasy;
 using healerfantasy.SpellSystem;
-using SpellResource = healerfantasy.SpellResources.SpellResource;
 
 /// <summary>
 /// Abstract base for every character in the game (player and NPCs alike).
@@ -14,21 +13,21 @@ public abstract partial class Character : CharacterBody2D
 {
 	// ── signals ──────────────────────────────────────────────────────────────
 	[Signal]
-	public delegate void HealthChangedEventHandler(float current, float max);
+	public delegate void HealthChangedEventHandler(string characterName, float current, float max);
 
 	[Signal]
-	public delegate void ManaChangedEventHandler(float current, float max);
+	public delegate void ManaChangedEventHandler(string characterName, float current, float max);
 
 	[Signal]
 	public delegate void DiedEventHandler();
 
 	/// <summary>Emitted when an effect is applied (or refreshed) on this character.</summary>
 	[Signal]
-	public delegate void EffectAppliedEventHandler(CharacterEffect effect);
+	public delegate void EffectAppliedEventHandler(string characterName, CharacterEffect effect);
 
 	/// <summary>Emitted when an effect expires or is removed from this character.</summary>
 	[Signal]
-	public delegate void EffectRemovedEventHandler(string effectId);
+	public delegate void EffectRemovedEventHandler(string characterName, string effectId);
 
 	/// <summary>
 	/// Emitted whenever <see cref="CurrentShield"/> changes — on application,
@@ -36,7 +35,7 @@ public abstract partial class Character : CharacterBody2D
 	/// character's MaxHealth so the UI can draw a proportional bar.
 	/// </summary>
 	[Signal]
-	public delegate void ShieldChangedEventHandler(float currentShield, float maxHealth);
+	public delegate void ShieldChangedEventHandler(string characterName, float currentShield, float maxHealth);
 
 	// ── exports ──────────────────────────────────────────────────────────────
 	[Export] public string CharacterName = "Character";
@@ -91,8 +90,8 @@ public abstract partial class Character : CharacterBody2D
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(ShieldChanged));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(EffectApplied));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(EffectRemoved));
-		EmitSignalHealthChanged(CurrentHealth, MaxHealth);
-		EmitSignalManaChanged(CurrentMana, MaxMana);
+		EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
+		EmitSignalManaChanged(CharacterName, CurrentMana, MaxMana);
 		AddToGroup("party");
 	}
 
@@ -121,16 +120,16 @@ public abstract partial class Character : CharacterBody2D
 			var absorbed = Mathf.Min(CurrentShield, amount);
 			CurrentShield -= absorbed;
 			amount -= absorbed;
-			EmitSignal(SignalName.ShieldChanged, CurrentShield, MaxHealth);
+			EmitSignalShieldChanged(CharacterName, CurrentShield, MaxHealth);
 			if (amount <= 0f)
 			{
-				EmitSignalHealthChanged(CurrentHealth, MaxHealth);
+				EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
 				return;
 			}
 		}
 
 		CurrentHealth = Mathf.Max(0f, CurrentHealth - amount);
-		EmitSignalHealthChanged(CurrentHealth, MaxHealth);
+		EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
 
 		if (CurrentHealth == 0f)
 			OnDeath();
@@ -141,7 +140,7 @@ public abstract partial class Character : CharacterBody2D
 	{
 		if (!IsAlive) return;
 		CurrentHealth = Mathf.Min(CurrentHealth + amount, MaxHealth);
-		EmitSignalHealthChanged(CurrentHealth, MaxHealth);
+		EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
 	}
 
 	/// <summary>
@@ -151,7 +150,7 @@ public abstract partial class Character : CharacterBody2D
 	public void AddShield(float amount)
 	{
 		CurrentShield += amount;
-		EmitSignal(SignalName.ShieldChanged, CurrentShield, MaxHealth);
+		EmitSignalShieldChanged(CharacterName, CurrentShield, MaxHealth);
 	}
 
 	/// <summary>
@@ -161,7 +160,7 @@ public abstract partial class Character : CharacterBody2D
 	public void RemoveShield(float amount)
 	{
 		CurrentShield = Mathf.Max(0f, CurrentShield - amount);
-		EmitSignal(SignalName.ShieldChanged, CurrentShield, MaxHealth);
+		EmitSignalShieldChanged(CharacterName, CurrentShield, MaxHealth);
 	}
 
 	/// <summary>
@@ -174,12 +173,12 @@ public abstract partial class Character : CharacterBody2D
 		if (_effects.TryGetValue(effect.EffectId, out var existing))
 		{
 			existing.OnExpired(this);
-			EmitSignalEffectRemoved(effect.EffectId);
+			EmitSignalEffectRemoved(CharacterName, effect.EffectId);
 		}
 
 		_effects[effect.EffectId] = effect;
 		effect.OnApplied(this);
-		EmitSignalEffectApplied(effect);
+		EmitSignalEffectApplied(CharacterName, effect);
 	}
 
 	/// <summary>Remove an active effect by id, if present.</summary>
@@ -189,17 +188,17 @@ public abstract partial class Character : CharacterBody2D
 		{
 			effect.OnExpired(this);
 			_effects.Remove(effectId);
-			EmitSignalEffectRemoved(effectId);
+			EmitSignalEffectRemoved(CharacterName, effectId);
 		}
 	}
 
-	public void RefreshAllEffects()
+	public void RefreshAllPlayerEffects()
 	{
 		if (_effects.Count == 0) return;
 
 		foreach (var effect in _effects.Values)
 		{
-			if (effect.SourceCharacterName == CharacterName)
+			if (effect.SourceCharacterName == GameConstants.PlayerName)
 			{
 				effect.Refresh();
 			}
@@ -255,14 +254,14 @@ public abstract partial class Character : CharacterBody2D
 	public void SpendMana(float amount)
 	{
 		CurrentMana = Mathf.Max(0f, CurrentMana - amount);
-		EmitSignalManaChanged(CurrentMana, MaxMana);
+		EmitSignalManaChanged(CharacterName, CurrentMana, MaxMana);
 	}
 
 	/// <summary>Restore mana, clamped at MaxMana.</summary>
 	public void RestoreMana(float amount)
 	{
 		CurrentMana = Mathf.Min(CurrentMana + amount, MaxMana);
-		EmitSignalManaChanged(CurrentMana, MaxMana);
+		EmitSignalManaChanged(CharacterName, CurrentMana, MaxMana);
 	}
 
 	// ── private helpers ──────────────────────────────────────────────────────
@@ -283,13 +282,13 @@ public abstract partial class Character : CharacterBody2D
 		{
 			_effects[id].OnExpired(this);
 			_effects.Remove(id);
-			EmitSignal(SignalName.EffectRemoved, id);
+			EmitSignalEffectRemoved(CharacterName, id);
 		}
 	}
 
 	// ── protected virtuals ───────────────────────────────────────────────────
 	protected virtual void OnDeath()
 	{
-		EmitSignal(SignalName.Died);
+		EmitSignalDied();
 	}
 }

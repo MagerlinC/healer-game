@@ -5,12 +5,6 @@ using SpellResource = healerfantasy.SpellResources.SpellResource;
 /// <summary>
 /// Cast bar shown while the player is channelling a spell.
 /// Displays the spell's icon, name, remaining time, and a fill bar.
-///
-/// Layout:
-///   ┌──────────────────────────────────────┐
-///   │ [icon]  Spell Name             1.5s  │
-///   │         [████████████░░░░░░░░░░░░░░] │
-///   └──────────────────────────────────────┘
 /// </summary>
 public partial class CastBar : PanelContainer
 {

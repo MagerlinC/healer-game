@@ -10,16 +10,16 @@ public partial class GlobalAutoLoad : Node
 
 	// ── generic signal registry ───────────────────────────────────────────────
 	// Maps each emitter node to the set of signal names it has registered.
-	private static readonly Dictionary<Node, HashSet<string>> SignalMap = new();
+	static readonly Dictionary<Node, HashSet<string>> SignalMap = new();
 
 	// ── party-slot signal registry ────────────────────────────────────────────
 	// Maps each party-member node to its UI slot index (0 = Templar … 3 = Wizard).
-	private static readonly Dictionary<Node, int> PartySlotMap = new();
+	static readonly Dictionary<Node, int> PartySlotMap = new();
 
 	// Buffers slot-aware subscriptions so GameUI can subscribe in its own
 	// _Ready before World has finished registering party members.
 	// Maps signal name → list of slot-factory functions.
-	private static readonly Dictionary<string, List<Func<int, Callable>>> PartySubscriptions = new();
+	static readonly Dictionary<string, List<Func<int, Callable>>> PartySubscriptions = new();
 
 	public override void _Ready()
 	{
@@ -61,27 +61,6 @@ public partial class GlobalAutoLoad : Node
 		}
 	}
 
-	// ── party-slot pub/sub ────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Register <paramref name="node"/> as the party member in <paramref name="slot"/>.
-	/// Immediately connects any subscriptions that were registered before this call.
-	/// </summary>
-	public static void RegisterPartyMember(Node node, int slot)
-	{
-		PartySlotMap[node] = slot;
-
-		// Connect buffered subscriptions for every signal this node emits
-		if (!SignalMap.TryGetValue(node, out var signals)) return;
-
-		foreach (var (signalName, factories) in PartySubscriptions)
-		{
-			if (!signals.Contains(signalName)) continue;
-			foreach (var factory in factories)
-				node.Connect(signalName, factory(slot));
-		}
-	}
-
 	/// <summary>
 	/// Subscribe to a per-slot signal on every party member.
 	/// <para>
@@ -105,20 +84,5 @@ public partial class GlobalAutoLoad : Node
 		SignalMap.Clear();
 		PartySlotMap.Clear();
 		PartySubscriptions.Clear();
-	}
-
-	public static void SubscribeToPartySignal(string signalName, Func<int, Callable> callableFactory)
-	{
-		// Buffer so future RegisterPartyMember calls connect automatically
-		if (!PartySubscriptions.TryGetValue(signalName, out var list))
-			PartySubscriptions[signalName] = list = new List<Func<int, Callable>>();
-		list.Add(callableFactory);
-
-		// Connect immediately to any already-registered party members
-		foreach (var (node, slot) in PartySlotMap)
-		{
-			if (SignalMap.TryGetValue(node, out var signals) && signals.Contains(signalName))
-				node.Connect(signalName, callableFactory(slot));
-		}
 	}
 }
