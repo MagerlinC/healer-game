@@ -94,6 +94,19 @@ public partial class GlobalAutoLoad : Node
 	/// and made automatically when <see cref="RegisterPartyMember"/> is called.
 	/// </para>
 	/// </summary>
+	/// <summary>
+	/// Clears all signal and party-slot registrations.
+	/// Must be called before reloading the scene so that stale node references
+	/// held in the static dictionaries don't survive into the next run and cause
+	/// connection errors or phantom signal deliveries.
+	/// </summary>
+	public static void Reset()
+	{
+		SignalMap.Clear();
+		PartySlotMap.Clear();
+		PartySubscriptions.Clear();
+	}
+
 	public static void SubscribeToPartySignal(string signalName, Func<int, Callable> callableFactory)
 	{
 		// Buffer so future RegisterPartyMember calls connect automatically
