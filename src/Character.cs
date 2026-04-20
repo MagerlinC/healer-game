@@ -12,271 +12,271 @@ using SpellResource = healerfantasy.SpellResources.SpellResource;
 /// </summary>
 public abstract partial class Character : CharacterBody2D
 {
-    // ── signals ──────────────────────────────────────────────────────────────
-    [Signal]
-    public delegate void HealthChangedEventHandler(float current, float max);
+	// ── signals ──────────────────────────────────────────────────────────────
+	[Signal]
+	public delegate void HealthChangedEventHandler(float current, float max);
 
-    [Signal]
-    public delegate void ManaChangedEventHandler(float current, float max);
+	[Signal]
+	public delegate void ManaChangedEventHandler(float current, float max);
 
-    [Signal]
-    public delegate void DiedEventHandler();
+	[Signal]
+	public delegate void DiedEventHandler();
 
-    /// <summary>Emitted when an effect is applied (or refreshed) on this character.</summary>
-    [Signal]
-    public delegate void EffectAppliedEventHandler(string effectId, Texture2D icon, float duration);
+	/// <summary>Emitted when an effect is applied (or refreshed) on this character.</summary>
+	[Signal]
+	public delegate void EffectAppliedEventHandler(string effectId, Texture2D icon, float duration);
 
-    /// <summary>Emitted when an effect expires or is removed from this character.</summary>
-    [Signal]
-    public delegate void EffectRemovedEventHandler(string effectId);
+	/// <summary>Emitted when an effect expires or is removed from this character.</summary>
+	[Signal]
+	public delegate void EffectRemovedEventHandler(string effectId);
 
-    /// <summary>
-    /// Emitted whenever <see cref="CurrentShield"/> changes — on application,
-    /// damage absorption, or expiry. Carries the new shield value and the
-    /// character's MaxHealth so the UI can draw a proportional bar.
-    /// </summary>
-    [Signal]
-    public delegate void ShieldChangedEventHandler(float currentShield, float maxHealth);
+	/// <summary>
+	/// Emitted whenever <see cref="CurrentShield"/> changes — on application,
+	/// damage absorption, or expiry. Carries the new shield value and the
+	/// character's MaxHealth so the UI can draw a proportional bar.
+	/// </summary>
+	[Signal]
+	public delegate void ShieldChangedEventHandler(float currentShield, float maxHealth);
 
-    // ── exports ──────────────────────────────────────────────────────────────
-    [Export] public string CharacterName = "Character";
-    [Export] public float MaxHealth = 100.0f;
-    [Export] public float MaxMana = 100.0f;
+	// ── exports ──────────────────────────────────────────────────────────────
+	[Export] public string CharacterName = "Character";
+	[Export] public float MaxHealth = 100.0f;
+	[Export] public float MaxMana = 100.0f;
 
-    /// <summary>Fraction of MaxHealth lost per second.</summary>
-    [Export] public float LifeLossPerSecond = 10f;
+	/// <summary>Fraction of MaxHealth lost per second.</summary>
+	[Export] public float LifeLossPerSecond = 10f;
 
-    [Export] public float ManaRegenPerSecond = 1.0f;
+	[Export] public float ManaRegenPerSecond = 1.0f;
 
-    /// <summary>Base critical strike chance before talent modifiers are applied.</summary>
-    [Export] public float BaseCritChance = 0f;
+	/// <summary>Base critical strike chance before talent modifiers are applied.</summary>
+	[Export] public float BaseCritChance = 0.05f; // 5% chance
 
-    // ── state ────────────────────────────────────────────────────────────────
-    public float CurrentHealth { get; private set; }
-    public float CurrentMana   { get; private set; }
-    public bool  IsAlive       => CurrentHealth > 0f;
+	// ── state ────────────────────────────────────────────────────────────────
+	public float CurrentHealth { get; private set; }
+	public float CurrentMana { get; private set; }
+	public bool IsAlive => CurrentHealth > 0f;
 
-    /// <summary>
-    /// Current shield points. Damage is absorbed by the shield before
-    /// reaching health. Modified via <see cref="AddShield"/> /
-    /// <see cref="RemoveShield"/>; consumed automatically in
-    /// <see cref="TakeDamage"/>.
-    /// </summary>
-    public float CurrentShield { get; private set; }
+	/// <summary>
+	/// Current shield points. Damage is absorbed by the shield before
+	/// reaching health. Modified via <see cref="AddShield"/> /
+	/// <see cref="RemoveShield"/>; consumed automatically in
+	/// <see cref="TakeDamage"/>.
+	/// </summary>
+	public float CurrentShield { get; private set; }
 
-    // ── spell / talent system ─────────────────────────────────────────────────
-    /// <summary>
-    /// Talents assigned to this character. Call <see cref="GetCharacterStats"/>
-    /// to obtain the aggregated stat snapshot, and <see cref="GetSpellModifiers"/>
-    /// to collect all active spell modifier instances.
-    /// </summary>
-    public List<Talent> Talents { get; } = new();
+	// ── spell / talent system ─────────────────────────────────────────────────
+	/// <summary>
+	/// Talents assigned to this character. Call <see cref="GetCharacterStats"/>
+	/// to obtain the aggregated stat snapshot, and <see cref="GetSpellModifiers"/>
+	/// to collect all active spell modifier instances.
+	/// </summary>
+	public List<Talent> Talents { get; } = new();
 
-    /// <summary>
-    /// Persistent record of every completed spell cast made by this character.
-    /// Written by <see cref="SpellPipeline"/> after each successful cast.
-    /// </summary>
-    public SpellHistory SpellHistory { get; } = new();
+	/// <summary>
+	/// Persistent record of every completed spell cast made by this character.
+	/// Written by <see cref="SpellPipeline"/> after each successful cast.
+	/// </summary>
+	public SpellHistory SpellHistory { get; } = new();
 
-    // Keyed by CharacterEffect.EffectId for O(1) lookup and deduplication.
-    readonly Dictionary<string, CharacterEffect> _effects = new();
+	// Keyed by CharacterEffect.EffectId for O(1) lookup and deduplication.
+	readonly Dictionary<string, CharacterEffect> _effects = new();
 
-    // ── lifecycle ────────────────────────────────────────────────────────────
-    public override void _Ready()
-    {
-        CurrentHealth = MaxHealth;
-        CurrentMana   = MaxMana;
-        GlobalAutoLoad.RegisterSignalEmitter(this, nameof(ManaChanged));
-        GlobalAutoLoad.RegisterSignalEmitter(this, nameof(HealthChanged));
-        GlobalAutoLoad.RegisterSignalEmitter(this, nameof(ShieldChanged));
-        GlobalAutoLoad.RegisterSignalEmitter(this, nameof(EffectApplied));
-        GlobalAutoLoad.RegisterSignalEmitter(this, nameof(EffectRemoved));
-        EmitSignalHealthChanged(CurrentHealth, MaxHealth);
-        EmitSignalManaChanged(CurrentMana, MaxMana);
-        AddToGroup("party");
-    }
+	// ── lifecycle ────────────────────────────────────────────────────────────
+	public override void _Ready()
+	{
+		CurrentHealth = MaxHealth;
+		CurrentMana = MaxMana;
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(ManaChanged));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(HealthChanged));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(ShieldChanged));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(EffectApplied));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(EffectRemoved));
+		EmitSignalHealthChanged(CurrentHealth, MaxHealth);
+		EmitSignalManaChanged(CurrentMana, MaxMana);
+		AddToGroup("party");
+	}
 
-    public override void _Process(double delta)
-    {
-        if (IsAlive)
-            TakeDamage(LifeLossPerSecond * (float)delta);
+	public override void _Process(double delta)
+	{
+		if (IsAlive)
+			TakeDamage(LifeLossPerSecond * (float)delta);
 
-        RestoreMana(ManaRegenPerSecond * (float)delta);
-        TickEffects((float)delta);
-    }
+		RestoreMana(ManaRegenPerSecond * (float)delta);
+		TickEffects((float)delta);
+	}
 
-    // ── public API ───────────────────────────────────────────────────────────
+	// ── public API ───────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Apply damage. The shield absorbs damage first; any remainder reduces
-    /// health. Triggers death on the first zero-health crossing.
-    /// </summary>
-    public void TakeDamage(float amount)
-    {
-        if (!IsAlive) return;
+	/// <summary>
+	/// Apply damage. The shield absorbs damage first; any remainder reduces
+	/// health. Triggers death on the first zero-health crossing.
+	/// </summary>
+	public void TakeDamage(float amount)
+	{
+		if (!IsAlive) return;
 
-        // Shield absorbs damage before health is affected.
-        if (CurrentShield > 0f)
-        {
-            float absorbed = Mathf.Min(CurrentShield, amount);
-            CurrentShield -= absorbed;
-            amount        -= absorbed;
-            EmitSignal(SignalName.ShieldChanged, CurrentShield, MaxHealth);
-            if (amount <= 0f)
-            {
-                EmitSignalHealthChanged(CurrentHealth, MaxHealth);
-                return;
-            }
-        }
+		// Shield absorbs damage before health is affected.
+		if (CurrentShield > 0f)
+		{
+			var absorbed = Mathf.Min(CurrentShield, amount);
+			CurrentShield -= absorbed;
+			amount -= absorbed;
+			EmitSignal(SignalName.ShieldChanged, CurrentShield, MaxHealth);
+			if (amount <= 0f)
+			{
+				EmitSignalHealthChanged(CurrentHealth, MaxHealth);
+				return;
+			}
+		}
 
-        CurrentHealth = Mathf.Max(0f, CurrentHealth - amount);
-        EmitSignalHealthChanged(CurrentHealth, MaxHealth);
+		CurrentHealth = Mathf.Max(0f, CurrentHealth - amount);
+		EmitSignalHealthChanged(CurrentHealth, MaxHealth);
 
-        if (CurrentHealth == 0f)
-            OnDeath();
-    }
+		if (CurrentHealth == 0f)
+			OnDeath();
+	}
 
-    /// <summary>Restore health, clamped at MaxHealth.</summary>
-    public void Heal(float amount)
-    {
-        if (!IsAlive) return;
-        CurrentHealth = Mathf.Min(CurrentHealth + amount, MaxHealth);
-        EmitSignalHealthChanged(CurrentHealth, MaxHealth);
-    }
+	/// <summary>Restore health, clamped at MaxHealth.</summary>
+	public void Heal(float amount)
+	{
+		if (!IsAlive) return;
+		CurrentHealth = Mathf.Min(CurrentHealth + amount, MaxHealth);
+		EmitSignalHealthChanged(CurrentHealth, MaxHealth);
+	}
 
-    /// <summary>
-    /// Add shield points. Subsequent <see cref="TakeDamage"/> calls will drain
-    /// the shield before touching health.
-    /// </summary>
-    public void AddShield(float amount)
-    {
-        CurrentShield += amount;
-        EmitSignal(SignalName.ShieldChanged, CurrentShield, MaxHealth);
-    }
+	/// <summary>
+	/// Add shield points. Subsequent <see cref="TakeDamage"/> calls will drain
+	/// the shield before touching health.
+	/// </summary>
+	public void AddShield(float amount)
+	{
+		CurrentShield += amount;
+		EmitSignal(SignalName.ShieldChanged, CurrentShield, MaxHealth);
+	}
 
-    /// <summary>
-    /// Remove up to <paramref name="amount"/> shield points, clamped at 0.
-    /// Called by <see cref="ShieldEffect.OnExpired"/> to clean up on expiry.
-    /// </summary>
-    public void RemoveShield(float amount)
-    {
-        CurrentShield = Mathf.Max(0f, CurrentShield - amount);
-        EmitSignal(SignalName.ShieldChanged, CurrentShield, MaxHealth);
-    }
+	/// <summary>
+	/// Remove up to <paramref name="amount"/> shield points, clamped at 0.
+	/// Called by <see cref="ShieldEffect.OnExpired"/> to clean up on expiry.
+	/// </summary>
+	public void RemoveShield(float amount)
+	{
+		CurrentShield = Mathf.Max(0f, CurrentShield - amount);
+		EmitSignal(SignalName.ShieldChanged, CurrentShield, MaxHealth);
+	}
 
-    /// <summary>
-    /// Apply an effect to this character. If an effect with the same
-    /// <see cref="CharacterEffect.EffectId"/> is already active it is
-    /// replaced (refreshed), not stacked.
-    /// </summary>
-    public void ApplyEffect(CharacterEffect effect)
-    {
-        if (_effects.TryGetValue(effect.EffectId, out var existing))
-        {
-            existing.OnExpired(this);
-            EmitSignal(SignalName.EffectRemoved, effect.EffectId);
-        }
+	/// <summary>
+	/// Apply an effect to this character. If an effect with the same
+	/// <see cref="CharacterEffect.EffectId"/> is already active it is
+	/// replaced (refreshed), not stacked.
+	/// </summary>
+	public void ApplyEffect(CharacterEffect effect)
+	{
+		if (_effects.TryGetValue(effect.EffectId, out var existing))
+		{
+			existing.OnExpired(this);
+			EmitSignal(SignalName.EffectRemoved, effect.EffectId);
+		}
 
-        _effects[effect.EffectId] = effect;
-        effect.OnApplied(this);
-        EmitSignal(SignalName.EffectApplied, effect.EffectId, effect.Icon, effect.Duration);
-    }
+		_effects[effect.EffectId] = effect;
+		effect.OnApplied(this);
+		EmitSignal(SignalName.EffectApplied, effect.EffectId, effect.Icon, effect.Duration);
+	}
 
-    /// <summary>Remove an active effect by id, if present.</summary>
-    public void RemoveEffect(string effectId)
-    {
-        if (_effects.TryGetValue(effectId, out var effect))
-        {
-            effect.OnExpired(this);
-            _effects.Remove(effectId);
-            EmitSignal(SignalName.EffectRemoved, effectId);
-        }
-    }
+	/// <summary>Remove an active effect by id, if present.</summary>
+	public void RemoveEffect(string effectId)
+	{
+		if (_effects.TryGetValue(effectId, out var effect))
+		{
+			effect.OnExpired(this);
+			_effects.Remove(effectId);
+			EmitSignal(SignalName.EffectRemoved, effectId);
+		}
+	}
 
-    // ── talent / stat system ─────────────────────────────────────────────────
+	// ── talent / stat system ─────────────────────────────────────────────────
 
-    /// <summary>
-    /// Compute this character's final <see cref="CharacterStats"/> by starting
-    /// from the base exported values and applying every <see cref="ICharacterModifier"/>
-    /// contributed by the character's talents, in order.
-    /// </summary>
-    public CharacterStats GetCharacterStats()
-    {
-        var stats = new CharacterStats
-        {
-            MaxHealth         = MaxHealth,
-            MaxMana           = MaxMana,
-            CritChance        = BaseCritChance,
-            CritMultiplier    = 1.5f,
-            DamageMultiplier  = 1.0f,
-            HealingMultiplier = 1.0f,
-        };
+	/// <summary>
+	/// Compute this character's final <see cref="CharacterStats"/> by starting
+	/// from the base exported values and applying every <see cref="ICharacterModifier"/>
+	/// contributed by the character's talents, in order.
+	/// </summary>
+	public CharacterStats GetCharacterStats()
+	{
+		var stats = new CharacterStats
+		{
+			MaxHealth = MaxHealth,
+			MaxMana = MaxMana,
+			CritChance = BaseCritChance,
+			CritMultiplier = 1.5f,
+			DamageMultiplier = 1.0f,
+			HealingMultiplier = 1.0f
+		};
 
-        foreach (var talent in Talents)
-            foreach (var mod in talent.CharacterModifiers)
-                mod.Modify(stats);
+		foreach (var talent in Talents)
+		foreach (var mod in talent.CharacterModifiers)
+			mod.Modify(stats);
 
-        return stats;
-    }
+		return stats;
+	}
 
-    /// <summary>
-    /// Collect all <see cref="ISpellModifier"/> instances that apply to this
-    /// character's casts. Includes modifiers from talents AND from any currently
-    /// active <see cref="CharacterEffect"/> that implements
-    /// <see cref="ISpellModifier"/> (e.g. <see cref="ArcaneMasteryBuff"/>).
-    /// </summary>
-    public IEnumerable<ISpellModifier> GetSpellModifiers()
-    {
-        foreach (var talent in Talents)
-            foreach (var mod in talent.SpellModifiers)
-                yield return mod;
+	/// <summary>
+	/// Collect all <see cref="ISpellModifier"/> instances that apply to this
+	/// character's casts. Includes modifiers from talents AND from any currently
+	/// active <see cref="CharacterEffect"/> that implements
+	/// <see cref="ISpellModifier"/> (e.g. <see cref="CriticalInfusionBuff"/>).
+	/// </summary>
+	public IEnumerable<ISpellModifier> GetSpellModifiers()
+	{
+		foreach (var talent in Talents)
+		foreach (var mod in talent.SpellModifiers)
+			yield return mod;
 
-        foreach (var effect in _effects.Values)
-            if (effect is ISpellModifier mod)
-                yield return mod;
-    }
+		foreach (var effect in _effects.Values)
+			if (effect is ISpellModifier mod)
+				yield return mod;
+	}
 
-    // ── protected helpers ────────────────────────────────────────────────────
+	// ── protected helpers ────────────────────────────────────────────────────
 
-    /// <summary>Subtract mana, clamped at 0.</summary>
-    protected void SpendMana(float amount)
-    {
-        CurrentMana = Mathf.Max(0f, CurrentMana - amount);
-        EmitSignalManaChanged(CurrentMana, MaxMana);
-    }
+	/// <summary>Subtract mana, clamped at 0.</summary>
+	public void SpendMana(float amount)
+	{
+		CurrentMana = Mathf.Max(0f, CurrentMana - amount);
+		EmitSignalManaChanged(CurrentMana, MaxMana);
+	}
 
-    /// <summary>Restore mana, clamped at MaxMana.</summary>
-    protected void RestoreMana(float amount)
-    {
-        CurrentMana = Mathf.Min(CurrentMana + amount, MaxMana);
-        EmitSignalManaChanged(CurrentMana, MaxMana);
-    }
+	/// <summary>Restore mana, clamped at MaxMana.</summary>
+	public void RestoreMana(float amount)
+	{
+		CurrentMana = Mathf.Min(CurrentMana + amount, MaxMana);
+		EmitSignalManaChanged(CurrentMana, MaxMana);
+	}
 
-    // ── private helpers ──────────────────────────────────────────────────────
-    void TickEffects(float delta)
-    {
-        if (_effects.Count == 0) return;
+	// ── private helpers ──────────────────────────────────────────────────────
+	void TickEffects(float delta)
+	{
+		if (_effects.Count == 0) return;
 
-        List<string> expired = null;
-        foreach (var (id, effect) in _effects)
-        {
-            effect.Update(this, delta);
-            if (effect.IsExpired)
-                (expired ??= new List<string>()).Add(id);
-        }
+		List<string> expired = null;
+		foreach (var (id, effect) in _effects)
+		{
+			effect.Update(this, delta);
+			if (effect.IsExpired)
+				(expired ??= new List<string>()).Add(id);
+		}
 
-        if (expired == null) return;
-        foreach (var id in expired)
-        {
-            _effects[id].OnExpired(this);
-            _effects.Remove(id);
-            EmitSignal(SignalName.EffectRemoved, id);
-        }
-    }
+		if (expired == null) return;
+		foreach (var id in expired)
+		{
+			_effects[id].OnExpired(this);
+			_effects.Remove(id);
+			EmitSignal(SignalName.EffectRemoved, id);
+		}
+	}
 
-    // ── protected virtuals ───────────────────────────────────────────────────
-    protected virtual void OnDeath()
-    {
-        EmitSignal(SignalName.Died);
-    }
+	// ── protected virtuals ───────────────────────────────────────────────────
+	protected virtual void OnDeath()
+	{
+		EmitSignal(SignalName.Died);
+	}
 }

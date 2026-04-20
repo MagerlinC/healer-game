@@ -45,11 +45,30 @@ public static class TalentRegistry
 
 		new()
 		{
-			Name = "Arcane Mastery",
+			Name = "Critical Infusion",
 			Description = "Critical hits grant a 10s buff amplifying the damage and healing of the next spell by 30%.",
 			IconPath = "res://assets/talent-icons/monk/Monk_23.png",
 			Configure = (t, icon) =>
-				t.SpellModifiers.Add(new ArcaneMasteryTalent { EffectIcon = icon })
+				t.SpellModifiers.Add(new CriticalInfusionTalent { EffectIcon = icon })
+		},
+		new()
+		{
+			Name = "Arcane Hunger",
+			Description =
+				"When casting a spell, spend up to 10% of maximum mana to increase its damage or healing by 1% per 1 mana spent (maximum of 50%).",
+			IconPath = "res://assets/talent-icons/monk/Monk_13.png",
+			Configure = (t, icon) =>
+				t.SpellModifiers.Add(new ArcaneHungerTalent())
+		},
+		new()
+		{
+			Name = "Critical Recharge",
+			Description =
+				"Critical hits restore 20 mana.",
+			IconPath = "res://assets/talent-icons/monk/Monk_21.png",
+			Configure = (t, icon) =>
+				t.SpellModifiers.Add(new CriticalRechargeTalent())
 		}
+
 	};
 }

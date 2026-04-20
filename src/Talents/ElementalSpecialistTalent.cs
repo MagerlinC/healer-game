@@ -10,19 +10,23 @@ namespace healerfantasy.Talents;
 /// </summary>
 public class ElementalSpecialistTalent : ISpellModifier
 {
-    const SpellTags ElementalMask = SpellTags.Fire | SpellTags.Cold | SpellTags.Lightning;
-    const float     Bonus         = 1.20f; // +20 %
+	const SpellTags ElementalMask = SpellTags.Fire | SpellTags.Cold | SpellTags.Lightning;
+	const float Bonus = 1.20f; // +20 %
 
-    public int Priority => 10;
+	public ModifierPriority Priority => ModifierPriority.BASE;
 
-    public void OnBeforeCast(SpellContext ctx) { }
+	public void OnBeforeCast(SpellContext ctx)
+	{
+	}
 
-    public void OnCalculate(SpellContext ctx)
-    {
-        // Applies if the spell carries ANY elemental tag.
-        if ((ctx.Tags & ElementalMask) == SpellTags.None) return;
-        ctx.FinalValue *= Bonus;
-    }
+	public void OnCalculate(SpellContext ctx)
+	{
+		// Applies if the spell carries ANY elemental tag.
+		if ((ctx.Tags & ElementalMask) == SpellTags.None) return;
+		ctx.FinalValue *= Bonus;
+	}
 
-    public void OnAfterCast(SpellContext ctx) { }
+	public void OnAfterCast(SpellContext ctx)
+	{
+	}
 }

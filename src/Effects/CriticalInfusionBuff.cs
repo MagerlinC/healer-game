@@ -1,9 +1,10 @@
 using healerfantasy.SpellSystem;
+using healerfantasy.Talents;
 
 namespace healerfantasy;
 
 /// <summary>
-/// A temporary buff granted by the <c>ArcaneMastery</c> talent when the player
+/// A temporary buff granted by the <c>CriticalInfusion</c> talent when the player
 /// scores a critical hit.
 ///
 /// While active, the next damage spell cast by the owner is boosted by 30%.
@@ -15,17 +16,16 @@ namespace healerfantasy;
 /// implements <see cref="ISpellModifier"/>, so this buff is automatically wired
 /// into the cast pipeline while it is alive.
 /// </summary>
-public class ArcaneMasteryBuff : CharacterEffect, ISpellModifier
+public class CriticalInfusionBuff : CharacterEffect, ISpellModifier
 {
 	const float BonusScaling = 1.30f; // +30 %
 
-	// Run after elemental/conditional bonuses but before any last-word modifiers.
-	public int Priority => 50;
+	public ModifierPriority Priority => ModifierPriority.BASE;
 
-	public ArcaneMasteryBuff(float duration)
+	public CriticalInfusionBuff(float duration)
 		: base(duration, 0f)
 	{
-		EffectId = "ArcaneMastery";
+		EffectId = "CriticalInfusion";
 	}
 
 	// ── ISpellModifier ───────────────────────────────────────────────────────

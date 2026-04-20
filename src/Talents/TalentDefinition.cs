@@ -4,6 +4,13 @@ using healerfantasy.SpellSystem;
 
 namespace healerfantasy.Talents;
 
+public enum ModifierPriority
+{
+	BASE = 0,
+	ADDITIVE = 1,
+	MULTIPLICATIVE = 2
+}
+
 /// <summary>
 /// Describes a talent entry as it appears in the talent selector UI.
 ///
@@ -18,35 +25,35 @@ namespace healerfantasy.Talents;
 /// </summary>
 public class TalentDefinition
 {
-    /// <summary>Display name shown in the talent panel.</summary>
-    public string Name { get; init; }
+	/// <summary>Display name shown in the talent panel.</summary>
+	public string Name { get; init; }
 
-    /// <summary>Short description shown below the icon in the talent slot.</summary>
-    public string Description { get; init; }
+	/// <summary>Short description shown below the icon in the talent slot.</summary>
+	public string Description { get; init; }
 
-    /// <summary>res:// path to the talent's icon texture.</summary>
-    public string IconPath { get; init; }
+	/// <summary>res:// path to the talent's icon texture.</summary>
+	public string IconPath { get; init; }
 
-    /// <summary>
-    /// Attaches modifiers to the talent being built.
-    /// Receives the blank <see cref="Talent"/> and the loaded icon texture.
-    /// <para>
-    /// Do NOT set <c>t.Name</c> or <c>t.Description</c> here — those are
-    /// forwarded automatically from this definition by <see cref="CreateTalent"/>.
-    /// </para>
-    /// </summary>
-    public Action<Talent, Texture2D> Configure { get; init; }
+	/// <summary>
+	/// Attaches modifiers to the talent being built.
+	/// Receives the blank <see cref="Talent"/> and the loaded icon texture.
+	/// <para>
+	/// Do NOT set <c>t.Name</c> or <c>t.Description</c> here — those are
+	/// forwarded automatically from this definition by <see cref="CreateTalent"/>.
+	/// </para>
+	/// </summary>
+	public Action<Talent, Texture2D> Configure { get; init; }
 
-    /// <summary>
-    /// Builds a fully-configured <see cref="Talent"/> ready to be added to a
-    /// character. Name, Description, and icon loading are handled here so
-    /// <see cref="Configure"/> stays focused on modifiers only.
-    /// </summary>
-    public Talent CreateTalent()
-    {
-        var icon = GD.Load<Texture2D>(IconPath);
-        var talent = new Talent { Name = Name, Description = Description };
-        Configure?.Invoke(talent, icon);
-        return talent;
-    }
+	/// <summary>
+	/// Builds a fully-configured <see cref="Talent"/> ready to be added to a
+	/// character. Name, Description, and icon loading are handled here so
+	/// <see cref="Configure"/> stays focused on modifiers only.
+	/// </summary>
+	public Talent CreateTalent()
+	{
+		var icon = GD.Load<Texture2D>(IconPath);
+		var talent = new Talent { Name = Name, Description = Description };
+		Configure?.Invoke(talent, icon);
+		return talent;
+	}
 }

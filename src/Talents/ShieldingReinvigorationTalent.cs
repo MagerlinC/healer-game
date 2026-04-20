@@ -24,7 +24,7 @@ public class ShieldingReinvigorationTalent : ISpellModifier
 	/// </summary>
 	public Texture2D EffectIcon { get; set; }
 
-	public int Priority => 20;
+	public ModifierPriority Priority => ModifierPriority.BASE;
 
 	public void OnBeforeCast(SpellContext ctx)
 	{
