@@ -39,7 +39,7 @@ public class CriticalInfusionTalent : ISpellModifier
 		// Grant (or refresh) the buff on the caster.
 		ctx.Caster.ApplyEffect(new CriticalInfusionBuff(BuffDuration)
 		{
-			Icon = EffectIcon // talent icon, not the triggering spell's icon
+			Icon = EffectIcon
 		});
 	}
 }

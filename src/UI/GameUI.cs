@@ -44,7 +44,7 @@ public partial class GameUI : CanvasLayer
 		// Full-screen transparent control used only for edge-anchoring
 		var anchor = new Control();
 		anchor.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		anchor.MouseFilter = Control.MouseFilterEnum.Ignore;
+		// anchor.MouseFilter = Control.MouseFilterEnum.Pass;
 		AddChild(anchor);
 
 
@@ -257,7 +257,7 @@ public partial class GameUI : CanvasLayer
 		if (slot < 0 || slot >= _effectBars.Length) return;
 		foreach (var child in _effectBars[slot].GetChildren())
 		{
-			if (child is EffectIndicator ind && ind.EffectId == effectId)
+			if (child is EffectIndicator ind && ind.CharacterEffect.EffectId == effectId)
 			{
 				ind.QueueFree();
 				return;

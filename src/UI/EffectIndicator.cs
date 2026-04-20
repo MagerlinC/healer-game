@@ -21,8 +21,7 @@ using healerfantasy;
 public partial class EffectIndicator : PanelContainer
 {
 	// ── public ───────────────────────────────────────────────────────────────
-	public string EffectId { get; }
-	CharacterEffect _characterEffect;
+	public CharacterEffect CharacterEffect { get; private set; }
 
 	// ── private ───────────────────────────────────────────────────────────────
 	string _displayName;
@@ -44,7 +43,7 @@ public partial class EffectIndicator : PanelContainer
 	// ── constructor ──────────────────────────────────────────────────────────
 	public EffectIndicator(CharacterEffect effect)
 	{
-		_characterEffect = effect;
+		CharacterEffect = effect;
 		_displayName = FormatDisplayName(effect.EffectId);
 
 		CustomMinimumSize = new Vector2(24, 24);
@@ -115,12 +114,6 @@ public partial class EffectIndicator : PanelContainer
 
 	public override void _Process(double delta)
 	{
-		if (_characterEffect.IsExpired)
-		{
-			QueueFree();
-			return;
-		}
-
 		UpdateCountLabel();
 
 		if (_hovered && _tooltipPanel != null)
@@ -146,12 +139,12 @@ public partial class EffectIndicator : PanelContainer
 
 	void UpdateCountLabel()
 	{
-		_countLabel.Text = Mathf.CeilToInt(_characterEffect.Remaining).ToString();
+		_countLabel.Text = Mathf.CeilToInt(CharacterEffect.Remaining).ToString();
 	}
 
 	void RefreshTooltipText()
 	{
-		_tooltipLabel.Text = $"{_displayName}\n{Mathf.CeilToInt(_characterEffect.Remaining)}s remaining";
+		_tooltipLabel.Text = $"{_displayName}\n{Mathf.CeilToInt(CharacterEffect.Remaining)}s remaining";
 	}
 
 	void UpdateTooltipPosition()

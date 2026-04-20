@@ -137,6 +137,9 @@ public partial class ActionBar : HBoxContainer
 		var panel = new PanelContainer();
 		panel.CustomMinimumSize = new Vector2(52, 52);
 
+		// TODO: This doesn't show?
+		panel.TooltipText = spell.Name + "\n" + spell.Description;
+
 		var borderStyle = new StyleBoxFlat();
 		borderStyle.BgColor = new Color(0.12f, 0.10f, 0.10f, 0.95f);
 		borderStyle.SetCornerRadiusAll(4);
@@ -150,6 +153,7 @@ public partial class ActionBar : HBoxContainer
 
 		// Inner control — acts as the stacking layer for icon + label
 		var inner = new Control();
+		inner.MouseFilter = MouseFilterEnum.Ignore;
 		inner.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		inner.SizeFlagsVertical = SizeFlags.ExpandFill;
 		panel.AddChild(inner);
