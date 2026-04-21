@@ -38,7 +38,8 @@ public partial class RenewingBloomSpell : SpellResource
 		{
 			Icon = Icon,
 			SourceCharacterName = ctx.Caster.CharacterName,
-			AbilityName = Name
+			AbilityName = Name,
+			School = School
 		});
 	}
 }

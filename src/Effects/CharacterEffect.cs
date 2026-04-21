@@ -1,5 +1,6 @@
 using Godot;
 using healerfantasy.Effects;
+using healerfantasy.SpellResources;
 
 namespace healerfantasy;
 
@@ -51,6 +52,12 @@ public abstract partial class CharacterEffect : RefCounted
 
 	/// <summary>Display name of the spell or talent that applied this effect.</summary>
 	public string AbilityName { get; set; }
+
+	/// <summary>
+	/// Spell school of this effect, used to colour floating combat text on each tick.
+	/// Set this from the spell's <c>Apply</c> method when constructing the effect.
+	/// </summary>
+	public SpellSchool School { get; set; } = SpellSchool.Generic;
 
 	// How often OnTick fires. 0 means no discrete ticks (continuous only).
 	readonly float _tickInterval;

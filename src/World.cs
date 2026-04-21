@@ -1,5 +1,6 @@
 using Godot;
 using healerfantasy;
+using healerfantasy.UI;
 
 /// <summary>
 /// Root script for the World scene.
@@ -16,11 +17,22 @@ public partial class World : Node2D
 		// Tooltip singleton must be added first so it is available to all UI nodes.
 		AddChild(new GameTooltip());
 
+		// ── Floating combat text ──────────────────────────────────────────────
+		var fctManager = new FloatingCombatTextManager();
+		AddChild(fctManager);
+
 		var ui = GetNode<GameUI>("PartyUI");
 		var player = GetNode<Player>("Healer");
 		var templar = GetNode<Character>("Templar");
 		var assassin = GetNode<Character>("Assassin");
 		var wizard = GetNode<Character>("Wizard");
+
+		// Register all characters with the floating combat text manager
+		fctManager.Register(player);
+		fctManager.Register(templar);
+		fctManager.Register(assassin);
+		fctManager.Register(wizard);
+		fctManager.Register(GetNode<Character>("CrystalKnight"));
 
 		// Bind characters so hovering a frame resolves to the right Character
 		ui.BindCharacter(0, templar);

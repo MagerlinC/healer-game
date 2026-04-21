@@ -14,6 +14,7 @@ public partial class ReinvigorateSpell : SpellResource
 		ManaCost = 5f;
 		CastTime = 0.0f;
 		Cooldown = 4f;
+		School = SpellSchool.Holy;
 		Tags = SpellTags.Healing;
 		Icon = GD.Load<Texture2D>("res://assets/spell-icons/healer/healer4.png");
 	}

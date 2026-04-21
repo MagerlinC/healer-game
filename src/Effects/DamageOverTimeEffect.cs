@@ -25,6 +25,7 @@ public partial class DamageOverTimeEffect : CharacterEffect
 	protected override void OnTick(Character target)
 	{
 		target.TakeDamage(DamagePerTick);
+		target.RaiseFloatingCombatText(DamagePerTick, false, (int)School, false);
 
 		if (SourceCharacterName == null) return;
 

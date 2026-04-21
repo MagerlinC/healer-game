@@ -78,11 +78,28 @@ public static class SpellPipeline
 		// ── 9. Execute spell ────────────────────────────────────────────────
 		spell.Apply(ctx);
 
+		// ── 9b. Floating combat text (direct hits only; DoT/HoT ticks emit their own) ─
+		var isDirectSpell = !ctx.Tags.HasFlag(SpellTags.Duration);
+		if (isDirectSpell)
+		{
+			bool isDamageSpell  = ctx.Tags.HasFlag(SpellTags.Damage);
+			bool isHealingSpell = ctx.Tags.HasFlag(SpellTags.Healing) && !isDamageSpell;
+			bool isCritSpell    = ctx.Tags.HasFlag(SpellTags.Critical);
+			int  school         = (int)spell.School;
+
+			foreach (var target in ctx.Targets)
+			{
+				if (isDamageSpell)
+					target.RaiseFloatingCombatText(ctx.FinalValue, false, school, isCritSpell);
+				else if (isHealingSpell)
+					target.RaiseFloatingCombatText(ctx.FinalValue, true, school, isCritSpell);
+			}
+		}
+
 		// ── 10. Log to CombatLog (direct hits only; HoT ticks log themselves) ─
-		var isDirect = !ctx.Tags.HasFlag(SpellTags.Duration);
 		foreach (var target in ctx.Targets)
 		{
-			if (ctx.Tags.HasFlag(SpellTags.Healing) && isDirect)
+			if (ctx.Tags.HasFlag(SpellTags.Healing) && isDirectSpell)
 			{
 				CombatLog.CombatLog.Record(new CombatEventRecord
 				{
@@ -95,7 +112,7 @@ public static class SpellPipeline
 					IsCrit = ctx.Tags.HasFlag(SpellTags.Critical)
 				});
 			}
-			else if (ctx.Tags.HasFlag(SpellTags.Damage))
+			else if (ctx.Tags.HasFlag(SpellTags.Damage) && isDirectSpell)
 			{
 				CombatLog.CombatLog.Record(new CombatEventRecord
 				{

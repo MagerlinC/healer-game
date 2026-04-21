@@ -39,6 +39,13 @@ public partial class VoidDrainSpell : SpellResource
 	public override void Apply(SpellContext ctx)
 	{
 		ctx.Target?.TakeDamage(ctx.FinalValue);
-		ctx.Caster.Heal(ctx.FinalValue * HealFraction);
+
+		var healAmount = ctx.FinalValue * HealFraction;
+		ctx.Caster.Heal(healAmount);
+
+		// The pipeline only emits FCT for ctx.Targets (the enemy).
+		// Emit the self-heal float here so the caster sees their own gain.
+		var isCrit = ctx.Tags.HasFlag(SpellTags.Critical);
+		ctx.Caster.RaiseFloatingCombatText(healAmount, true, (int)School, isCrit);
 	}
 }

@@ -25,6 +25,7 @@ public partial class HealOverTimeEffect : CharacterEffect
 	protected override void OnTick(Character target)
 	{
 		target.Heal(HealPerTick);
+		target.RaiseFloatingCombatText(HealPerTick, true, (int)School, false);
 
 		if (SourceCharacterName == null) return;
 

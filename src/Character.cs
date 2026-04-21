@@ -40,6 +40,19 @@ public abstract partial class Character : CharacterBody2D
 	[Signal]
 	public delegate void ShieldChangedEventHandler(string characterName, float currentShield, float maxHealth);
 
+	/// <summary>
+	/// Emitted when a spell or periodic effect directly deals damage or restores
+	/// health on this character. Used by <see cref="UI.FloatingCombatTextManager"/>
+	/// to spawn floating numbers above the character model.
+	/// <para>
+	/// <paramref name="school"/> is the integer value of
+	/// <see cref="SpellResources.SpellSchool"/> cast to <c>int</c>.
+	/// </para>
+	/// Does <em>not</em> fire for passive life-loss ticks.
+	/// </summary>
+	[Signal]
+	public delegate void FloatingCombatTextEventHandler(float amount, bool isHealing, int school, bool isCrit);
+
 	// ── exports ──────────────────────────────────────────────────────────────
 	[Export] public string CharacterName = "Character";
 	[Export] public float MaxHealth = 100.0f;
@@ -95,6 +108,7 @@ public abstract partial class Character : CharacterBody2D
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(EffectApplied));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(EffectRemoved));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(Died));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(FloatingCombatText));
 		EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
 		EmitSignalManaChanged(CharacterName, CurrentMana, MaxMana);
 		AddToGroup("party");
@@ -265,6 +279,16 @@ public abstract partial class Character : CharacterBody2D
 	}
 
 	// ── protected helpers ────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Public wrapper so external systems (SpellPipeline, effects, spells) can
+	/// fire the <see cref="FloatingCombatText"/> signal, which is protected by
+	/// the Godot source generator.
+	/// </summary>
+	public void RaiseFloatingCombatText(float amount, bool isHealing, int school, bool isCrit)
+	{
+		EmitSignalFloatingCombatText(amount, isHealing, school, isCrit);
+	}
 
 	/// <summary>Subtract mana, clamped at 0.</summary>
 	public void SpendMana(float amount)
