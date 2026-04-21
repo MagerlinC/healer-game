@@ -61,43 +61,14 @@ public partial class DeathScreen : CanvasLayer
 		title.AddThemeColorOverride("font_color", new Color(0.85f, 0.22f, 0.22f));
 		vbox.AddChild(title);
 
-		// ── "New Run" button ──────────────────────────────────────────────────
-		var button = new Button();
-		button.Text = "New Run";
-		button.CustomMinimumSize = new Vector2(180f, 52f);
-		button.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
-		button.AddThemeFontSizeOverride("font_size", 18);
-		button.AddThemeColorOverride("font_color", new Color(0.90f, 0.87f, 0.83f));
+		// ── Button row ────────────────────────────────────────────────────────
+		var btnRow = new HBoxContainer();
+		btnRow.Alignment = BoxContainer.AlignmentMode.Center;
+		btnRow.AddThemeConstantOverride("separation", 20);
+		vbox.AddChild(btnRow);
 
-		// Normal state — dark panel with a muted red border
-		var normalStyle = new StyleBoxFlat();
-		normalStyle.BgColor = new Color(0.16f, 0.11f, 0.11f);
-		normalStyle.SetCornerRadiusAll(6);
-		normalStyle.SetBorderWidthAll(2);
-		normalStyle.BorderColor = new Color(0.50f, 0.20f, 0.20f);
-		normalStyle.ContentMarginLeft = 16f;
-		normalStyle.ContentMarginRight = 16f;
-		normalStyle.ContentMarginTop = 10f;
-		normalStyle.ContentMarginBottom = 10f;
-
-		// Hover state — lighter with a brighter red border
-		var hoverStyle = new StyleBoxFlat();
-		hoverStyle.BgColor = new Color(0.26f, 0.16f, 0.16f);
-		hoverStyle.SetCornerRadiusAll(6);
-		hoverStyle.SetBorderWidthAll(2);
-		hoverStyle.BorderColor = new Color(0.80f, 0.30f, 0.30f);
-		hoverStyle.ContentMarginLeft = 16f;
-		hoverStyle.ContentMarginRight = 16f;
-		hoverStyle.ContentMarginTop = 10f;
-		hoverStyle.ContentMarginBottom = 10f;
-
-		button.AddThemeStyleboxOverride("normal", normalStyle);
-		button.AddThemeStyleboxOverride("hover", hoverStyle);
-		button.AddThemeStyleboxOverride("pressed", normalStyle);
-		button.AddThemeStyleboxOverride("focus", normalStyle);
-
-		button.Pressed += OnNewRunPressed;
-		vbox.AddChild(button);
+		btnRow.AddChild(MakeButton("Retry",       new Color(0.50f, 0.20f, 0.20f), OnRetryPressed));
+		btnRow.AddChild(MakeButton("Main Menu",   new Color(0.35f, 0.30f, 0.22f), OnMainMenuPressed));
 	}
 
 	// ── public API ────────────────────────────────────────────────────────────
@@ -115,14 +86,56 @@ public partial class DeathScreen : CanvasLayer
 
 	// ── private ───────────────────────────────────────────────────────────────
 
-	void OnNewRunPressed()
+	/// <summary>Restart the same boss fight with the same RunState loadout.</summary>
+	void OnRetryPressed()
 	{
-		// Unpause first so the scene tree is in a clean state before reload.
 		GetTree().Paused = false;
-
-		// Clear static signal state so the fresh scene starts with clean tables.
 		GlobalAutoLoad.Reset();
+		GetTree().ChangeSceneToFile("res://levels/World.tscn");
+	}
 
-		GetTree().ReloadCurrentScene();
+	/// <summary>Return to Main Menu and reset RunState for a fresh run.</summary>
+	void OnMainMenuPressed()
+	{
+		GetTree().Paused = false;
+		GlobalAutoLoad.Reset();
+		RunState.Instance?.Reset();
+		GetTree().ChangeSceneToFile("res://levels/MainMenu.tscn");
+	}
+
+	// ── helpers ───────────────────────────────────────────────────────────────
+
+	static Button MakeButton(string text, Color borderColor, System.Action onPressed)
+	{
+		var btn = new Button();
+		btn.Text                    = text;
+		btn.CustomMinimumSize       = new Vector2(180f, 52f);
+		btn.SizeFlagsHorizontal     = Control.SizeFlags.ShrinkCenter;
+		btn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+		btn.AddThemeFontSizeOverride("font_size", 18);
+		btn.AddThemeColorOverride("font_color",       new Color(0.90f, 0.87f, 0.83f));
+		btn.AddThemeColorOverride("font_hover_color", new Color(0.95f, 0.84f, 0.50f));
+
+		var normal = MakeStyle(new Color(0.16f, 0.11f, 0.11f), borderColor);
+		var hover  = MakeStyle(new Color(0.26f, 0.16f, 0.14f), borderColor * 1.4f);
+		btn.AddThemeStyleboxOverride("normal",  normal);
+		btn.AddThemeStyleboxOverride("hover",   hover);
+		btn.AddThemeStyleboxOverride("pressed", normal);
+		btn.AddThemeStyleboxOverride("focus",   normal);
+
+		btn.Pressed += onPressed;
+		return btn;
+	}
+
+	static StyleBoxFlat MakeStyle(Color bg, Color border)
+	{
+		var s = new StyleBoxFlat();
+		s.BgColor = bg;
+		s.SetCornerRadiusAll(6);
+		s.SetBorderWidthAll(2);
+		s.BorderColor          = border;
+		s.ContentMarginLeft    = s.ContentMarginRight  = 16f;
+		s.ContentMarginTop     = s.ContentMarginBottom = 10f;
+		return s;
 	}
 }

@@ -9,11 +9,14 @@ using healerfantasy.Talents;
 ///
 /// • Press T (or click ✕) to open/close.
 /// • While open the game is paused so the player cannot cast spells.
-/// • Talents are organised into per-school tabs (General / Holy / Nature /
-///   Void / Chronomancy). Within each tab, talents are arranged in numbered
-///   rows. A talent at row N is locked until at least one talent in row N−1
-///   of the same school is selected — cascading automatically when higher
-///   rows are unlocked.
+/// • All schools are displayed side-by-side in a single scrollable view
+///   so the player can compare talents across schools at a glance.
+///   Each school column has a coloured header and a per-school accent
+///   separator; columns are divided by vertical rules.
+/// • Within each school, talents are arranged in numbered rows.
+///   A talent at row N is locked until at least one talent in row N−1
+///   of the same school is selected — cascading automatically when
+///   higher rows are deselected.
 /// • Selecting / deselecting updates the player's <see cref="Character.Talents"/>
 ///   list when the panel closes.
 ///
@@ -22,26 +25,26 @@ using healerfantasy.Talents;
 /// </summary>
 public partial class TalentSelector : CanvasLayer
 {
-    // ── colours / sizes ──────────────────────────────────────────────────────
-    static readonly Color OverlayBg    = new(0.00f, 0.00f, 0.00f, 0.72f);
-    static readonly Color PanelBg      = new(0.10f, 0.08f, 0.07f, 0.98f);
-    static readonly Color PanelBorder  = new(0.65f, 0.52f, 0.28f);
-    static readonly Color TitleColor   = new(0.95f, 0.84f, 0.50f);
-    static readonly Color HintColor    = new(0.45f, 0.42f, 0.38f);
-    static readonly Color SepColor     = new(0.50f, 0.40f, 0.22f, 0.55f);
-    static readonly Color ArrowColor   = new(0.45f, 0.40f, 0.35f, 0.75f);
+    // ── colours ───────────────────────────────────────────────────────────────
+    static readonly Color OverlayBg   = new(0.00f, 0.00f, 0.00f, 0.72f);
+    static readonly Color PanelBg     = new(0.10f, 0.08f, 0.07f, 0.98f);
+    static readonly Color PanelBorder = new(0.65f, 0.52f, 0.28f);
+    static readonly Color TitleColor  = new(0.95f, 0.84f, 0.50f);
+    static readonly Color HintColor   = new(0.45f, 0.42f, 0.38f);
+    static readonly Color SepColor    = new(0.50f, 0.40f, 0.22f, 0.55f);
+    static readonly Color ArrowColor  = new(0.45f, 0.40f, 0.35f, 0.75f);
 
-    /// <summary>School display order, tab names, and per-school accent colours.</summary>
-    static readonly (SpellSchool School, string TabName, Color Accent)[] SchoolOrder =
+    /// <summary>School display order and per-school accent colours.</summary>
+    static readonly (SpellSchool School, string Name, Color Accent)[] SchoolOrder =
     {
-        (SpellSchool.Generic,     "General",      new Color(0.70f, 0.65f, 0.60f)),
-        (SpellSchool.Holy,        "Holy",          new Color(0.95f, 0.85f, 0.40f)),
-        (SpellSchool.Nature,      "Nature",        new Color(0.40f, 0.80f, 0.35f)),
-        (SpellSchool.Void,        "Void",          new Color(0.65f, 0.35f, 0.85f)),
-        (SpellSchool.Chronomancy, "Chronomancy",   new Color(0.35f, 0.75f, 0.90f)),
+        (SpellSchool.Generic,     "General",     new Color(0.70f, 0.65f, 0.60f)),
+        (SpellSchool.Holy,        "Holy",         new Color(0.95f, 0.85f, 0.40f)),
+        (SpellSchool.Nature,      "Nature",       new Color(0.40f, 0.80f, 0.35f)),
+        (SpellSchool.Void,        "Void",         new Color(0.65f, 0.35f, 0.85f)),
+        (SpellSchool.Chronomancy, "Chronomancy",  new Color(0.35f, 0.75f, 0.90f)),
     };
 
-    // ── state ────────────────────────────────────────────────────────────────
+    // ── state ─────────────────────────────────────────────────────────────────
     Player  _player;
     Control _overlay;
     bool    _isOpen;
@@ -52,24 +55,15 @@ public partial class TalentSelector : CanvasLayer
     /// <summary>
     /// Structured lookup used for unlock validation:
     /// school → row index → slots in that row.
-    /// Built once during <see cref="BuildSchoolPane"/>.
     /// </summary>
     readonly Dictionary<SpellSchool, Dictionary<int, List<TalentSlot>>> _slotsBySchoolAndRow = new();
 
-    // ── public API ───────────────────────────────────────────────────────────
-    /// <summary>
-    /// Must be called once after the node is added to the scene tree.
-    /// Links the panel to the <paramref name="player"/> whose talents it manages.
-    /// </summary>
-    public void Init(Player player)
-    {
-        _player = player;
-    }
+    // ── public API ────────────────────────────────────────────────────────────
+    public void Init(Player player) => _player = player;
 
-    // ── lifecycle ────────────────────────────────────────────────────────────
+    // ── lifecycle ─────────────────────────────────────────────────────────────
     public override void _Ready()
     {
-        // Layer above GameUI (10) so the talent panel covers everything.
         Layer = 15;
         ProcessMode = ProcessModeEnum.Always;
 
@@ -94,17 +88,13 @@ public partial class TalentSelector : CanvasLayer
         }
     }
 
-    // ── open / close ─────────────────────────────────────────────────────────
-    void Toggle()
-    {
-        if (_isOpen) Close();
-        else Open();
-    }
+    // ── open / close ──────────────────────────────────────────────────────────
+    void Toggle() { if (_isOpen) Close(); else Open(); }
 
     void Open()
     {
         if (_player == null) return;
-        if (GetTree().Paused) return; // another panel (e.g. Spellbook) is already open
+        if (GetTree().Paused) return; // another panel is already open
         SyncSlotsFromPlayer();
         _isOpen = true;
         _overlay.Visible = true;
@@ -119,7 +109,7 @@ public partial class TalentSelector : CanvasLayer
         ApplyTalentsToPlayer();
     }
 
-    // ── talent synchronisation ────────────────────────────────────────────────
+    // ── talent synchronisation ─────────────────────────────────────────────────
     void SyncSlotsFromPlayer()
     {
         var active = new HashSet<string>();
@@ -129,7 +119,6 @@ public partial class TalentSelector : CanvasLayer
         foreach (var slot in _slots)
             slot.SetSelected(active.Contains(slot.Definition.Name));
 
-        // Re-validate every tree so locked states match the current selection
         foreach (var (school, _, _) in SchoolOrder)
             ValidateTree(school);
     }
@@ -142,17 +131,11 @@ public partial class TalentSelector : CanvasLayer
                 _player.Talents.Add(slot.Definition.CreateTalent());
     }
 
-    // ── unlock validation ─────────────────────────────────────────────────────
-
+    // ── unlock validation ──────────────────────────────────────────────────────
     /// <summary>
     /// Recalculates locked states for every row in <paramref name="school"/>'s tree.
-    ///
-    /// <para>Row 0 is always unlocked. Row N (N &gt; 0) is unlocked if and only if
-    /// at least one slot in row N−1 of the same school is currently selected.</para>
-    ///
-    /// <para>Processing rows in ascending order means a single pass cascades
-    /// correctly: if row 1 becomes locked (deselected), the check for row 2
-    /// immediately sees no selected row-1 slots and locks row 2 as well.</para>
+    /// Row 0 is always unlocked; row N requires at least one selection in row N−1.
+    /// Processing ascending rows cascades correctly in a single pass.
     /// </summary>
     void ValidateTree(SpellSchool school)
     {
@@ -165,14 +148,14 @@ public partial class TalentSelector : CanvasLayer
 
             foreach (var slot in rowDict[row])
             {
-                // Deselect before locking so ApplyVisuals sees the correct state
                 if (!unlocked && slot.IsSelected)
                     slot.SetSelected(false);
-
                 slot.SetLocked(!unlocked);
             }
         }
     }
+
+    void OnSlotToggled(TalentSlot slot) => ValidateTree(slot.Definition.School);
 
     // ── UI construction ───────────────────────────────────────────────────────
     Control BuildOverlay()
@@ -181,7 +164,6 @@ public partial class TalentSelector : CanvasLayer
         overlay.Color = OverlayBg;
         overlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         overlay.MouseFilter = Control.MouseFilterEnum.Stop;
-
         overlay.AddChild(BuildPanel());
         return overlay;
     }
@@ -194,20 +176,19 @@ public partial class TalentSelector : CanvasLayer
         style.BgColor = PanelBg;
         style.SetCornerRadiusAll(10);
         style.SetBorderWidthAll(2);
-        style.BorderColor = PanelBorder;
-        style.ContentMarginLeft   = 24f;
-        style.ContentMarginRight  = 24f;
-        style.ContentMarginTop    = 18f;
-        style.ContentMarginBottom = 24f;
+        style.BorderColor             = PanelBorder;
+        style.ContentMarginLeft       = 24f;
+        style.ContentMarginRight      = 24f;
+        style.ContentMarginTop        = 18f;
+        style.ContentMarginBottom     = 24f;
         panel.AddThemeStyleboxOverride("panel", style);
 
-        // Anchor to centre and grow outward to fit content
-        panel.AnchorLeft   = 0.5f;
-        panel.AnchorRight  = 0.5f;
-        panel.AnchorTop    = 0.5f;
-        panel.AnchorBottom = 0.5f;
-        panel.GrowHorizontal = Control.GrowDirection.Both;
-        panel.GrowVertical   = Control.GrowDirection.Both;
+        // Fill the viewport with a comfortable margin on each side
+        panel.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        panel.OffsetLeft   =  40f;
+        panel.OffsetRight  = -40f;
+        panel.OffsetTop    =  30f;
+        panel.OffsetBottom = -30f;
 
         var vbox = new VBoxContainer();
         vbox.AddThemeConstantOverride("separation", 14);
@@ -215,27 +196,15 @@ public partial class TalentSelector : CanvasLayer
 
         // ── Title row ────────────────────────────────────────────────────────
         vbox.AddChild(BuildTitleRow());
+        AddSeparator(vbox, SepColor);
 
-        // ── Gold separator ───────────────────────────────────────────────────
-        var sep = new HSeparator();
-        sep.AddThemeColorOverride("color", SepColor);
-        vbox.AddChild(sep);
+        // ── All schools side-by-side ─────────────────────────────────────────
+        // The scroll container expands to fill the space between title and footer.
+        var schoolView = BuildSchoolColumns();
+        schoolView.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+        vbox.AddChild(schoolView);
 
-        // ── School tabs ──────────────────────────────────────────────────────
-        var tabs = new TabContainer();
-        tabs.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        tabs.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
-        // Minimum size ensures the panel is large enough for two rows of slots
-        // even when a tab contains only one row.
-        tabs.CustomMinimumSize = new Vector2(800f, 580f);
-        vbox.AddChild(tabs);
-
-        foreach (var (school, tabName, accent) in SchoolOrder)
-        {
-            var pane = BuildSchoolPane(school, accent);
-            pane.Name = tabName;
-            tabs.AddChild(pane);
-        }
+        AddSeparator(vbox, SepColor);
 
         // ── Footer hint ──────────────────────────────────────────────────────
         var hint = new Label();
@@ -248,28 +217,76 @@ public partial class TalentSelector : CanvasLayer
         return panel;
     }
 
+    // ── school column layout ──────────────────────────────────────────────────
+
     /// <summary>
-    /// Builds the scroll pane for a single school tab.
-    /// Talents are grouped into horizontal rows by <see cref="TalentDefinition.TalentRow"/>,
-    /// sorted ascending. A ▼ connector is inserted between rows.
-    /// All slots are registered in <see cref="_slots"/> and <see cref="_slotsBySchoolAndRow"/>.
+    /// Returns a <see cref="ScrollContainer"/> containing all school columns
+    /// laid out horizontally, separated by vertical rules.
     /// </summary>
-    Control BuildSchoolPane(SpellSchool school, Color accentColor)
+    Control BuildSchoolColumns()
     {
         var scroll = new ScrollContainer();
         scroll.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         scroll.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
 
-        var outer = new VBoxContainer();
-        outer.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        outer.AddThemeConstantOverride("separation", 6);
-        scroll.AddChild(outer);
+        var hbox = new HBoxContainer();
+        hbox.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+        hbox.AddThemeConstantOverride("separation", 0);
+        scroll.AddChild(hbox);
 
-        // Top padding
-        var topPad = new Control();
-        topPad.CustomMinimumSize = new Vector2(0f, 16f);
-        outer.AddChild(topPad);
+        for (var i = 0; i < SchoolOrder.Length; i++)
+        {
+            if (i > 0)
+            {
+                // Vertical rule between schools
+                var vsep = new VSeparator();
+                vsep.AddThemeColorOverride("color", SepColor);
+                vsep.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+                hbox.AddChild(vsep);
+            }
 
+            var (school, name, accent) = SchoolOrder[i];
+            hbox.AddChild(BuildSchoolColumn(school, name, accent));
+        }
+
+        return scroll;
+    }
+
+    /// <summary>
+    /// Builds one school column: a coloured header, a tinted separator,
+    /// then talent rows separated by ▼ connectors.
+    /// All created slots are registered in <see cref="_slots"/> and
+    /// <see cref="_slotsBySchoolAndRow"/> for later sync / validation.
+    /// </summary>
+    Control BuildSchoolColumn(SpellSchool school, string colName, Color accent)
+    {
+        // Margin container gives each column breathing room
+        var margin = new MarginContainer();
+        margin.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+        margin.AddThemeConstantOverride("margin_left",   20);
+        margin.AddThemeConstantOverride("margin_right",  20);
+        margin.AddThemeConstantOverride("margin_top",    16);
+        margin.AddThemeConstantOverride("margin_bottom", 16);
+
+        var col = new VBoxContainer();
+        col.AddThemeConstantOverride("separation", 10);
+        col.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+        margin.AddChild(col);
+
+        // ── School header ─────────────────────────────────────────────────────
+        var header = new Label();
+        header.Text                = colName;
+        header.HorizontalAlignment = HorizontalAlignment.Center;
+        header.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        header.AddThemeFontSizeOverride("font_size", 16);
+        header.AddThemeColorOverride("font_color", accent);
+        col.AddChild(header);
+
+        var sep = new HSeparator();
+        sep.AddThemeColorOverride("color", new Color(accent.R, accent.G, accent.B, 0.45f));
+        col.AddChild(sep);
+
+        // ── Talent rows ───────────────────────────────────────────────────────
         var rowGroups = TalentRegistry.AllTalents
             .Where(t => t.School == school)
             .GroupBy(t => t.TalentRow)
@@ -279,13 +296,13 @@ public partial class TalentSelector : CanvasLayer
         if (rowGroups.Count == 0)
         {
             var empty = new Label();
-            empty.Text                = "No talents yet — coming soon!";
+            empty.Text                = "Coming soon!";
             empty.HorizontalAlignment = HorizontalAlignment.Center;
             empty.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-            empty.AddThemeFontSizeOverride("font_size", 13);
+            empty.AddThemeFontSizeOverride("font_size", 12);
             empty.AddThemeColorOverride("font_color", HintColor);
-            outer.AddChild(empty);
-            return scroll;
+            col.AddChild(empty);
+            return margin;
         }
 
         for (var i = 0; i < rowGroups.Count; i++)
@@ -293,21 +310,18 @@ public partial class TalentSelector : CanvasLayer
             var rowGroup = rowGroups[i];
             var rowIndex = rowGroup.Key;
 
-            // ── Row of slots ──────────────────────────────────────────────────
+            // Row of talent slots
             var hbox = new HBoxContainer();
-            hbox.Alignment             = BoxContainer.AlignmentMode.Center;
-            hbox.SizeFlagsHorizontal   = Control.SizeFlags.ExpandFill;
+            hbox.Alignment           = BoxContainer.AlignmentMode.Center;
+            hbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
             hbox.AddThemeConstantOverride("separation", 12);
 
             foreach (var def in rowGroup)
             {
                 var slot = new TalentSlot(def);
                 slot.Toggled += OnSlotToggled;
-
-                // Register in flat list
                 _slots.Add(slot);
 
-                // Register in structured lookup
                 if (!_slotsBySchoolAndRow.ContainsKey(school))
                     _slotsBySchoolAndRow[school] = new Dictionary<int, List<TalentSlot>>();
                 if (!_slotsBySchoolAndRow[school].ContainsKey(rowIndex))
@@ -317,9 +331,9 @@ public partial class TalentSelector : CanvasLayer
                 hbox.AddChild(slot);
             }
 
-            outer.AddChild(hbox);
+            col.AddChild(hbox);
 
-            // ── Connector arrow between rows ──────────────────────────────────
+            // ▼ connector between rows
             if (i < rowGroups.Count - 1)
             {
                 var arrow = new Label();
@@ -328,21 +342,11 @@ public partial class TalentSelector : CanvasLayer
                 arrow.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
                 arrow.AddThemeFontSizeOverride("font_size", 18);
                 arrow.AddThemeColorOverride("font_color", ArrowColor);
-                outer.AddChild(arrow);
+                col.AddChild(arrow);
             }
         }
 
-        // Bottom padding
-        var botPad = new Control();
-        botPad.CustomMinimumSize = new Vector2(0f, 16f);
-        outer.AddChild(botPad);
-
-        return scroll;
-    }
-
-    void OnSlotToggled(TalentSlot slot)
-    {
-        ValidateTree(slot.Definition.School);
+        return margin;
     }
 
     // ── title row ─────────────────────────────────────────────────────────────
@@ -350,7 +354,6 @@ public partial class TalentSelector : CanvasLayer
     {
         var hbox = new HBoxContainer();
 
-        // Spacer so the title centres despite the close button on the right
         var spacer = new Control();
         spacer.CustomMinimumSize = new Vector2(28, 0);
         hbox.AddChild(spacer);
@@ -375,5 +378,12 @@ public partial class TalentSelector : CanvasLayer
         hbox.AddChild(closeBtn);
 
         return hbox;
+    }
+
+    void AddSeparator(VBoxContainer parent, Color color)
+    {
+        var sep = new HSeparator();
+        sep.AddThemeColorOverride("color", color);
+        parent.AddChild(sep);
     }
 }

@@ -48,5 +48,9 @@ public partial class World : Node2D
 		// ── Death screen ──────────────────────────────────────────────────────
 		var deathScreen = new DeathScreen();
 		AddChild(deathScreen);
+
+		// ── Victory screen ────────────────────────────────────────────────────
+		var victoryScreen = new VictoryScreen();
+		AddChild(victoryScreen);
 	}
 }

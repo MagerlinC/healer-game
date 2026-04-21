@@ -64,15 +64,30 @@ public partial class Player : Character
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastCancelled));
 
-		// Default loadout — loaded by name so EquippedSpells holds the same
-		// instances as SpellRegistry, enabling reference equality in the Spellbook.
-		var defaults = new[]
+		// Load spell loadout from RunState (set by the Overworld).
+		// RunState always has a valid loadout (defaults if the Overworld was skipped).
+		if (RunState.Instance?.HasLoadout == true)
 		{
-			"Touch of Light", "Wave of Incandescence", "Renewing Bloom",
-			"Reinvigorate", "Burst of Light", "Decay"
-		};
-		for (var i = 0; i < defaults.Length && i < MaxSpellSlots; i++)
-			EquippedSpells[i] = SpellRegistry.AllSpells.FirstOrDefault(s => s.Name == defaults[i]);
+			System.Array.Copy(RunState.Instance.SelectedSpells, EquippedSpells, MaxSpellSlots);
+		}
+		else
+		{
+			// Fallback: hardcoded defaults for direct editor launches
+			var defaults = new[]
+			{
+				"Touch of Light", "Wave of Incandescence", "Renewing Bloom",
+				"Reinvigorate", "Burst of Light", "Decay"
+			};
+			for (var i = 0; i < defaults.Length && i < MaxSpellSlots; i++)
+				EquippedSpells[i] = SpellRegistry.AllSpells.FirstOrDefault(s => s.Name == defaults[i]);
+		}
+
+		// Apply talents chosen in the Overworld
+		if (RunState.Instance?.SelectedTalentDefs.Count > 0)
+		{
+			foreach (var def in RunState.Instance.SelectedTalentDefs)
+				Talents.Add(def.CreateTalent());
+		}
 	}
 
 	// ── spell input ───────────────────────────────────────────────────────────
