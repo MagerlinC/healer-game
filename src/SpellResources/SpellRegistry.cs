@@ -8,18 +8,23 @@ public static class SpellRegistry
 {
 	public static readonly List<SpellResource> VoidSpells =
 	[
-		new DecaySpellResource()
+		new DecaySpellResource(),
+		new ShadowBoltSpell(),
+		new VoidDrainSpell()
 	];
 
 	public static readonly List<SpellResource> ChronomancySpells =
 	[
-		new RewindSpell()
+		new RewindSpell(),
+		new TimeWarpSpell(),
+		new TimeLoopSpell()
 	];
 
 	public static readonly List<SpellResource> NatureSpells =
 	[
-		new RenewingBloomSpell()
-
+		new RenewingBloomSpell(),
+		new WildGrowthSpell(),
+		new PoisonBoltSpell()
 	];
 
 	public static readonly List<SpellResource> HolySpells =

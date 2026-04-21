@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://jtfaufxnhjos"
-path="res://.godot/imported/haste.png-fedc1f0a50a648011fc6db9d1e771aa0.ctex"
+uid="uid://dp5jy0pcr4g7f"
+path="res://.godot/imported/shadow-bolt.png-857482d901a3f2abb730833703f01937.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/spell-icons/chronomancy/haste.png"
-dest_files=["res://.godot/imported/haste.png-fedc1f0a50a648011fc6db9d1e771aa0.ctex"]
+source_file="res://assets/spell-icons/void/shadow-bolt.png"
+dest_files=["res://.godot/imported/shadow-bolt.png-857482d901a3f2abb730833703f01937.ctex"]
 
 [params]
 

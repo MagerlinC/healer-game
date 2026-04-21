@@ -13,6 +13,7 @@ public partial class ReinvigorateSpell : SpellResource
 			$"Instantly restores {HealAmount} health to the target and refreshes the duration of all buffs which were applied by the caster on the target.";
 		ManaCost = 5f;
 		CastTime = 0.0f;
+		Cooldown = 4f;
 		Tags = SpellTags.Healing;
 		Icon = GD.Load<Texture2D>("res://assets/spell-icons/healer/healer4.png");
 	}

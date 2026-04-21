@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dasjyaoonu04k"
-path="res://.godot/imported/slow.png-c396c996ddc02259d61bf0e018a96a78.ctex"
+uid="uid://xx3486jaipb1"
+path="res://.godot/imported/poison-bolt.png-94dc34b78a8889038ab7959814aadda1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/spell-icons/chronomancy/slow.png"
-dest_files=["res://.godot/imported/slow.png-c396c996ddc02259d61bf0e018a96a78.ctex"]
+source_file="res://assets/spell-icons/nature/poison-bolt.png"
+dest_files=["res://.godot/imported/poison-bolt.png-94dc34b78a8889038ab7959814aadda1.ctex"]
 
 [params]
 

@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using healerfantasy;
@@ -45,6 +46,14 @@ public partial class Player : Character
 	public delegate void CastCancelledEventHandler();
 
 	/// <summary>
+	/// Emitted when a spell with a non-zero <see cref="SpellResource.Cooldown"/>
+	/// is successfully cast. <paramref name="duration"/> is the full cooldown in
+	/// seconds — the same value the UI should count down from.
+	/// </summary>
+	[Signal]
+	public delegate void CooldownStartedEventHandler(SpellResource spell, float duration);
+
+	/// <summary>
 	/// Set by World after the scene is ready.
 	/// Used to resolve which party member the mouse is hovering at cast time.
 	/// </summary>
@@ -56,6 +65,13 @@ public partial class Player : Character
 	SpellResource? _castSpell;
 	Character? _castTarget;
 
+	/// <summary>
+	/// Tracks the remaining cooldown (seconds) for each spell that was cast and
+	/// has a non-zero <see cref="SpellResource.Cooldown"/>. Entries are kept at
+	/// zero rather than removed so IsOnCooldown stays O(1).
+	/// </summary>
+	readonly Dictionary<SpellResource, float> _spellCooldowns = new();
+
 	// ── lifecycle ────────────────────────────────────────────────────────────
 	public override void _Ready()
 	{
@@ -63,6 +79,7 @@ public partial class Player : Character
 		CharacterName = GameConstants.PlayerName;
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastCancelled));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CooldownStarted));
 
 		// Load spell loadout from RunState (set by the Overworld).
 		// RunState always has a valid loadout (defaults if the Overworld was skipped).
@@ -120,16 +137,32 @@ public partial class Player : Character
 	{
 		SpendMana(spell.ManaCost);
 		SpellPipeline.Cast(spell, this, target);
+
+		if (spell.Cooldown > 0f)
+		{
+			_spellCooldowns[spell] = spell.Cooldown;
+			EmitSignalCooldownStarted(spell, spell.Cooldown);
+		}
+
 		_isCasting = false;
 		_castSpell = null;
 		_castTarget = null;
 	}
+
+	/// <summary>Returns true if <paramref name="spell"/> still has time remaining on its cooldown.</summary>
+	public bool IsOnCooldown(SpellResource spell) =>
+		_spellCooldowns.TryGetValue(spell, out var cd) && cd > 0f;
 
 	public override void _Process(double delta)
 	{
 		base._Process(delta); // runs health drain from Character
 		if (_globalCooldownTimer > 0f)
 			_globalCooldownTimer = Mathf.Max(_globalCooldownTimer - (float)delta, 0.0f);
+
+		// Tick per-spell cooldowns.
+		var cdKeys = new List<SpellResource>(_spellCooldowns.Keys);
+		foreach (var key in cdKeys)
+			_spellCooldowns[key] = Mathf.Max(_spellCooldowns[key] - (float)delta, 0f);
 
 		if (!IsAlive)
 		{
@@ -161,7 +194,7 @@ public partial class Player : Character
 		if (spellToCast is not null)
 		{
 			var hasMana = CurrentMana >= spellToCast.ManaCost;
-			if (hasMana)
+			if (hasMana && !IsOnCooldown(spellToCast))
 			{
 				// Lock in the target at cast-start: whichever party frame is under
 				// the cursor, or self if the cursor is not over any frame.

@@ -6,7 +6,7 @@ namespace healerfantasy.SpellResources.Chronomancy;
 public partial class RewindSpell : SpellResource
 {
 
-	[Export] public float EffectDuration = 4f;
+	[Export] public float EffectDuration = 3f;
 
 	public RewindSpell()
 	{
@@ -15,6 +15,7 @@ public partial class RewindSpell : SpellResource
 			$"Store the target's current health in time, causing its health to rewind back after {EffectDuration} seconds.";
 		ManaCost = 6f;
 		CastTime = 0.0f;
+		Cooldown = 8f;
 		Tags = SpellTags.Damage | SpellTags.Duration;
 		TargetType = TargetType.Enemy;
 		School = SpellSchool.Chronomancy;

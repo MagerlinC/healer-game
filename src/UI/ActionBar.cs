@@ -14,7 +14,7 @@ using SpellResource = healerfantasy.SpellResources.SpellResource;
 public partial class ActionBar : HBoxContainer
 {
 	// Keeps everything needed to update a single slot at runtime.
-	record SlotInfo(SpellResource? Spell, StyleBoxFlat BorderStyle, TextureRect? Icon);
+	record SlotInfo(SpellResource? Spell, StyleBoxFlat BorderStyle, TextureRect? Icon, CooldownOverlay? Overlay);
 
 	readonly List<SlotInfo> _slots = new();
 
@@ -60,6 +60,10 @@ public partial class ActionBar : HBoxContainer
 			Callable.From(ClearActiveSlot)
 		);
 		GlobalAutoLoad.SubscribeToSignal(
+			nameof(Player.CooldownStarted),
+			Callable.From((SpellResource spell, float duration) => OnCooldownStarted(spell, duration))
+		);
+		GlobalAutoLoad.SubscribeToSignal(
 			nameof(Player.Died),
 			Callable.From((Character character) => SetIconShadingBasedOnCharacterDeath(character))
 		);
@@ -67,11 +71,16 @@ public partial class ActionBar : HBoxContainer
 
 	public override void _Process(double delta)
 	{
-		if (_activeIndex < 0) return;
+		if (_activeIndex >= 0)
+		{
+			_castTimer -= (float)delta;
+			if (_castTimer <= 0f)
+				ClearActiveSlot();
+		}
 
-		_castTimer -= (float)delta;
-		if (_castTimer <= 0f)
-			ClearActiveSlot();
+		// Tick cooldown overlays every frame regardless of cast state.
+		foreach (var slot in _slots)
+			slot.Overlay?.Tick((float)delta);
 	}
 
 	// ── public API ───────────────────────────────────────────────────────────
@@ -95,8 +104,8 @@ public partial class ActionBar : HBoxContainer
 		{
 			var spell = equipped[i];
 			var actionName = $"spell_{i + 1}";
-			var (panel, borderStyle, icon) = BuildSlot(spell, actionName);
-			_slots.Add(new SlotInfo(spell, borderStyle, icon));
+			var (panel, borderStyle, icon, overlay) = BuildSlot(spell, actionName);
+			_slots.Add(new SlotInfo(spell, borderStyle, icon, overlay));
 			AddChild(panel);
 		}
 	}
@@ -147,6 +156,16 @@ public partial class ActionBar : HBoxContainer
 		}
 	}
 
+	void OnCooldownStarted(SpellResource spell, float duration)
+	{
+		foreach (var slot in _slots)
+		{
+			if (!ReferenceEquals(slot.Spell, spell)) continue;
+			slot.Overlay?.Start(duration);
+			break;
+		}
+	}
+
 	/// <summary>
 	/// Derive a short display string from the action's first bound key.
 	/// Falls back to stripping the "spell_" prefix if the InputMap has no events.
@@ -165,7 +184,7 @@ public partial class ActionBar : HBoxContainer
 	}
 
 	// ── slot builder ─────────────────────────────────────────────────────────
-	static (PanelContainer panel, StyleBoxFlat borderStyle, TextureRect? icon) BuildSlot(
+	static (PanelContainer panel, StyleBoxFlat borderStyle, TextureRect? icon, CooldownOverlay? overlay) BuildSlot(
 		SpellResource? spell, string actionName)
 	{
 		var panel = new PanelContainer();
@@ -200,6 +219,17 @@ public partial class ActionBar : HBoxContainer
 			inner.AddChild(iconRect);
 		}
 
+		// Cooldown overlay — sits above the icon, below the keybind label.
+		// Only created for filled slots; empty slots can never have cooldowns.
+		CooldownOverlay? overlay = null;
+		if (spell != null)
+		{
+			overlay = new CooldownOverlay();
+			overlay.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+			overlay.MouseFilter = MouseFilterEnum.Ignore;
+			inner.AddChild(overlay);
+		}
+
 		// Keybind label — always shown so empty slots are clearly numbered
 		var label = new Label();
 		label.Text = GetKeybindLabel(actionName);
@@ -221,6 +251,6 @@ public partial class ActionBar : HBoxContainer
 			panel.MouseExited += () => GameTooltip.Hide();
 		}
 
-		return (panel, borderStyle, iconRect);
+		return (panel, borderStyle, iconRect, overlay);
 	}
 }

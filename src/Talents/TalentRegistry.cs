@@ -3,6 +3,9 @@ using System.Linq;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 using healerfantasy.Talents.Chronomancy;
+using healerfantasy.Talents.Holy;
+using healerfantasy.Talents.Nature;
+using healerfantasy.Talents.Void;
 
 namespace healerfantasy.Talents;
 
@@ -29,6 +32,26 @@ public static class TalentRegistry
 			School = SpellSchool.Void,
 			Configure = (t, _) =>
 				t.SpellModifiers.Add(new VoidSpecialistTalent())
+		},
+		new()
+		{
+			Name = "Entropic Surge",
+			Description = "Void spells have a 15% chance to deal double damage.",
+			IconPath = "res://assets/talent-icons/monk/Monk_9.png",
+			TalentRow = 1,
+			School = SpellSchool.Void,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new EntropicSurgeTalent())
+		},
+		new()
+		{
+			Name = "Siphoning Void",
+			Description = "Dealing void damage restores 1 mana.",
+			IconPath = "res://assets/talent-icons/monk/Monk_10.png",
+			TalentRow = 2,
+			School = SpellSchool.Void,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new SiphoningVoidTalent())
 		}
 	];
 
@@ -43,10 +66,62 @@ public static class TalentRegistry
 			TalentRow = 0,
 			Configure = (t, icon) =>
 				t.SpellModifiers.Add(new ShieldingReinvigorationTalent { EffectIcon = icon })
+		},
+		new()
+		{
+			Name = "Sacred Ground",
+			Description = "Healing spells restore 2 mana for each target healed.",
+			IconPath = "res://assets/talent-icons/monk/Monk_2.png",
+			School = SpellSchool.Holy,
+			TalentRow = 1,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new SacredGroundTalent())
+		},
+		new()
+		{
+			Name = "Sacred Momentum",
+			Description = "Holy spells are 15% more effective when the target is below 50% health.",
+			IconPath = "res://assets/talent-icons/monk/Monk_3.png",
+			School = SpellSchool.Holy,
+			TalentRow = 2,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new SacredMomentumTalent())
 		}
 	];
 
-	public static readonly List<TalentDefinition> NatureTalents = [];
+	public static readonly List<TalentDefinition> NatureTalents =
+	[
+		new()
+		{
+			Name = "Verdant Strength",
+			Description = "Nature healing spells are 20% more effective.",
+			IconPath = "res://assets/talent-icons/monk/Monk_6.png",
+			School = SpellSchool.Nature,
+			TalentRow = 0,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new VerdantStrengthTalent())
+		},
+		new()
+		{
+			Name = "Toxic Potency",
+			Description = "Nature damage spells deal 20% more damage.",
+			IconPath = "res://assets/talent-icons/monk/Monk_7.png",
+			School = SpellSchool.Nature,
+			TalentRow = 1,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new ToxicPotencyTalent())
+		},
+		new()
+		{
+			Name = "Flourishing",
+			Description = "After healing a target, the most-injured untreated party member is also healed for 6 HP.",
+			IconPath = "res://assets/talent-icons/monk/Monk_8.png",
+			School = SpellSchool.Nature,
+			TalentRow = 2,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new FlourishingTalent())
+		}
+	];
 
 	public static readonly List<TalentDefinition> ChronomancyTalents =
 	[
@@ -60,6 +135,26 @@ public static class TalentRegistry
 			TalentRow = 0,
 			Configure = (t, icon) =>
 				t.SpellModifiers.Add(new AccelerationTalent { EffectIcon = icon })
+		},
+		new()
+		{
+			Name = "Temporal Flow",
+			Description = "Passively increases cast speed by 15%.",
+			IconPath = "res://assets/talent-icons/monk/Monk_12.png",
+			School = SpellSchool.Chronomancy,
+			TalentRow = 1,
+			Configure = (t, _) =>
+				t.CharacterModifiers.Add(new TemporalFlowTalent())
+		},
+		new()
+		{
+			Name = "Mana Rift",
+			Description = "Chronomancy spells have a 20% chance to refund their full mana cost.",
+			IconPath = "res://assets/talent-icons/monk/Monk_14.png",
+			School = SpellSchool.Chronomancy,
+			TalentRow = 2,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new ManaRiftTalent())
 		}
 	];
 

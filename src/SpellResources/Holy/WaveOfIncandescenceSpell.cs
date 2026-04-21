@@ -20,6 +20,7 @@ public partial class WaveOfIncandescenceSpell : SpellResource
 		Description = $"Restores {HealAmount} health to all party members.";
 		ManaCost = 20f;
 		CastTime = 2f;
+		Cooldown = 8f;
 		School = SpellSchool.Holy;
 		Tags = SpellTags.Healing | SpellTags.GroupSpell;
 		Icon = GD.Load<Texture2D>("res://assets/spell-icons/holy/wave-of-incandescence.png");
