@@ -16,15 +16,14 @@ public partial class RewindSpell : SpellResource
 		ManaCost = 6f;
 		CastTime = 0.0f;
 		Cooldown = 8f;
-		Tags = SpellTags.Damage | SpellTags.Duration;
-		TargetType = TargetType.Enemy;
+		Tags = SpellTags.Healing | SpellTags.Duration;
+		TargetType = TargetType.Friendly;
 		School = SpellSchool.Chronomancy;
 		Icon = GD.Load<Texture2D>("res://assets/spell-icons/chronomancy/rewind.png");
 	}
 
 	public override void Apply(SpellContext ctx)
 	{
-		// ctx.FinalValue is the modifier-adjusted per-tick heal amount.
 		ctx.Target?.ApplyEffect(new Effects.RewindEffect(EffectDuration)
 		{
 			Icon = Icon,

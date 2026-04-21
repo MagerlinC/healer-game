@@ -22,7 +22,7 @@ public partial class WildGrowthSpell : SpellResource
 		Description =
 			$"Spreads natural energy across the party, healing each member for {HealPerTick} every {TickInterval}s for {EffectDuration}s.";
 		ManaCost = 14f;
-		CastTime = 0.0f;
+		CastTime = 1.0f;
 		Cooldown = 8f;
 		School = SpellSchool.Nature;
 		Tags = SpellTags.Healing | SpellTags.Nature | SpellTags.Duration | SpellTags.GroupSpell;
