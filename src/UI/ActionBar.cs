@@ -205,6 +205,7 @@ public partial class ActionBar : HBoxContainer
 		inner.MouseFilter = MouseFilterEnum.Ignore;
 		inner.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		inner.SizeFlagsVertical = SizeFlags.ExpandFill;
+		inner.ClipContents = true; // prevents the cooldown overlay polygon from drawing outside the slot
 		panel.AddChild(inner);
 
 		// Spell icon — only added when the slot is filled

@@ -28,39 +28,39 @@ public partial class GameTooltip : CanvasLayer
 	public static GameTooltip? Instance { get; private set; }
 
 	// ── style ─────────────────────────────────────────────────────────────────
-	static readonly Color TooltipBg     = new(0.08f, 0.07f, 0.06f, 0.96f);
+	static readonly Color TooltipBg = new(0.08f, 0.07f, 0.06f, 0.96f);
 	static readonly Color TooltipBorder = new(0.55f, 0.45f, 0.25f, 0.90f);
-	static readonly Color TooltipText   = new(0.95f, 0.88f, 0.70f);
+	static readonly Color TooltipText = new(0.95f, 0.88f, 0.70f);
 
 	// ── private state ─────────────────────────────────────────────────────────
 	PanelContainer _panel = null!;
-	Label          _label = null!;
-	bool           _isShowing;
+	Label _label = null!;
+	bool _isShowing;
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 	public override void _Ready()
 	{
 		Instance = this;
-		Layer = 50;                              // above all game/UI layers
-		ProcessMode = ProcessModeEnum.Always;    // works while game is paused
+		Layer = 50; // above all game/UI layers
+		ProcessMode = ProcessModeEnum.Always; // works while game is paused
 
 		var style = new StyleBoxFlat();
 		style.BgColor = TooltipBg;
 		style.SetCornerRadiusAll(5);
 		style.SetBorderWidthAll(1);
-		style.BorderColor        = TooltipBorder;
-		style.ContentMarginLeft  = style.ContentMarginRight  = 10f;
-		style.ContentMarginTop   = style.ContentMarginBottom = 6f;
+		style.BorderColor = TooltipBorder;
+		style.ContentMarginLeft = style.ContentMarginRight = 10f;
+		style.ContentMarginTop = style.ContentMarginBottom = 6f;
 
 		_panel = new PanelContainer();
 		_panel.AddThemeStyleboxOverride("panel", style);
 		_panel.MouseFilter = Control.MouseFilterEnum.Ignore;
-		_panel.Visible     = false;
+		_panel.Visible = false;
 		AddChild(_panel);
 
 		_label = new Label();
 		_label.AutowrapMode = TextServer.AutowrapMode.Off;
-		_label.MouseFilter  = Control.MouseFilterEnum.Ignore;
+		_label.MouseFilter = Control.MouseFilterEnum.Ignore;
 		_label.AddThemeFontSizeOverride("font_size", 12);
 		_label.AddThemeColorOverride("font_color", TooltipText);
 		_panel.AddChild(_label);
@@ -84,7 +84,7 @@ public partial class GameTooltip : CanvasLayer
 		Instance._label.Text = text;
 		Instance._panel.ResetSize(); // force recompute from label's current minimum size
 		Instance._panel.Visible = true;
-		Instance._isShowing    = true;
+		Instance._isShowing = true;
 		Instance.Reposition();
 	}
 
@@ -93,7 +93,7 @@ public partial class GameTooltip : CanvasLayer
 	{
 		if (Instance is null) return;
 		Instance._panel.Visible = false;
-		Instance._isShowing    = false;
+		Instance._isShowing = false;
 	}
 
 	/// <summary>
@@ -104,18 +104,19 @@ public partial class GameTooltip : CanvasLayer
 	{
 		var castInfo = spell.CastTime <= 0f
 			? "Instant"
-			: $"{spell.CastTime:F1}s cast";
+			: $"{spell.CastTime:F1}s";
 
-		return $"{spell.Name}\n{spell.Description}\nMana: {(int)spell.ManaCost}  •  {castInfo}";
+		return
+			$"{spell.Name}\n{spell.Description}\nMana: {(int)spell.ManaCost}\nCast time: {castInfo}\nCooldown: {(spell.Cooldown > 0f ? $"{spell.Cooldown:F1}s" : "None")}";
 	}
 
 	// ── private ───────────────────────────────────────────────────────────────
 	void Reposition()
 	{
-		var mouse  = GetViewport().GetMousePosition();
-		var pos    = mouse + new Vector2(14f, 14f);
+		var mouse = GetViewport().GetMousePosition();
+		var pos = mouse + new Vector2(14f, 14f);
 		var vpSize = GetViewport().GetVisibleRect().Size;
-		var pSize  = _panel.Size;
+		var pSize = _panel.Size;
 
 		// Nudge left/up if the panel would overflow the viewport edge.
 		if (pos.X + pSize.X > vpSize.X) pos.X = mouse.X - pSize.X - 6f;
