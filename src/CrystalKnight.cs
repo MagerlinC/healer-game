@@ -139,34 +139,40 @@ public partial class CrystalKnight : Character
 				ExecuteStructuralCrush();
 		}
 
-		// ── Regular attack timers (suppressed during a crush wind-up) ─────────
-		// Suppress new casts while the wind-up is counting down so the boss
-		// doesn't overlap a big telegraphed attack with a normal one.
+		// ── Regular attack timers ─────────────────────────────────────────────
+		// Always tick every timer so none of them fall arbitrarily far behind
+		// while another attack is in progress.  But only *fire* the next attack
+		// once the current animation has fully finished (pendingAttack returns to
+		// None in OnAnimationFinished) AND no Structural Crush wind-up is active.
+		// Without this guard, two timers expiring in the same frame would both
+		// call their start-attack method, the second overwriting _pendingTarget /
+		// _pendingAttack and causing the first attack to be silently dropped.
 		if (_crushWindupTimer > 0f) return;
 
 		_meleeTimer -= (float)delta;
+		_spellTimer -= (float)delta;
+		_decayTimer -= (float)delta;
+		_crushTimer -= (float)delta;
+
+		// Don't start a new attack while an animation is still playing.
+		if (_pendingAttack != PendingAttack.None) return;
+
 		if (_meleeTimer <= 0f)
 		{
 			_meleeTimer = MeleeAttackInterval;
 			PerformMeleeAttack();
 		}
-
-		_spellTimer -= (float)delta;
-		if (_spellTimer <= 0f)
+		else if (_spellTimer <= 0f)
 		{
 			_spellTimer = SpellCastInterval;
 			CastCrystalBlast();
 		}
-
-		_decayTimer -= (float)delta;
-		if (_decayTimer <= 0f)
+		else if (_decayTimer <= 0f)
 		{
 			_decayTimer = DecayInterval;
 			CastCrystalDecay();
 		}
-
-		_crushTimer -= (float)delta;
-		if (_crushTimer <= 0f)
+		else if (_crushTimer <= 0f)
 		{
 			_crushTimer = CrushInterval;
 			BeginStructuralCrush();

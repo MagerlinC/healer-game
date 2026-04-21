@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Godot;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;
@@ -15,23 +16,27 @@ namespace healerfantasy.SpellResources;
 /// <see cref="Parryable"/> is set to true so that UI and boss logic can identify
 /// this spell as parryable.
 /// </summary>
-[Godot.GlobalClass]
+[GlobalClass]
 public partial class BossStructuralCrushSpell : SpellResource
 {
 	public float DamageAmount = 35f;
 
 	public BossStructuralCrushSpell()
 	{
-		Name        = "Structural Crush";
+		Name = "Structural Crush";
 		Description = "A devastating crystalline shockwave that crushes the entire party — unless deflected in time.";
-		Tags        = SpellTags.Damage;
-		ManaCost    = 0f;
-		CastTime    = 0f;
-		Parryable   = true;
-		EffectType  = EffectType.Harmful;
+		Tags = SpellTags.Damage;
+		ManaCost = 0f;
+		CastTime = 0f;
+		Icon = GD.Load<Texture2D>("res://assets/spell-icons/enemy/crystal-knight/structural-crush.png");
+		Parryable = true;
+		EffectType = EffectType.Harmful;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	/// <summary>Targets every alive party member.</summary>
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)
