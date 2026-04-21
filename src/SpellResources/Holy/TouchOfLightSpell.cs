@@ -16,7 +16,8 @@ public partial class TouchOfLightSpell : SpellResource
 		ManaCost = 5f;
 		CastTime = 1.5f;
 		Tags = SpellTags.Healing;
-		Icon = GD.Load<Texture2D>("res://assets/spell-icons/healer/healer1.png");
+		School = SpellSchool.Holy;
+		Icon = GD.Load<Texture2D>("res://assets/spell-icons/holy/touch-of-light.png");
 	}
 
 	public override float GetBaseValue()

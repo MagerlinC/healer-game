@@ -22,6 +22,15 @@ public partial class Player : Character
 	public const int MaxSpellSlots = 6;
 
 	/// <summary>
+	/// Always-available generic spells (Dispel, Deflect) sourced from
+	/// <see cref="SpellRegistry.GenericSpells"/>. These live in their own
+	/// action bar and cannot be removed from the loadout. Bound to input
+	/// actions <c>generic_1</c> and <c>generic_2</c>.
+	/// </summary>
+	public SpellResource[] GenericSpells { get; } =
+		SpellRegistry.GenericSpells.ToArray();
+
+	/// <summary>
 	/// The player's currently equipped spells, indexed by slot (0–5).
 	/// Slot <c>i</c> maps to input action <c>spell_{i+1}</c> and is labelled
 	/// with its keybind on the action bar. <c>null</c> entries are empty slots.
@@ -110,6 +119,18 @@ public partial class Player : Character
 	// ── spell input ───────────────────────────────────────────────────────────
 
 	/// <summary>
+	/// Returns the generic spell whose key was just pressed, or null.
+	/// Slot 0 → <c>generic_1</c>, slot 1 → <c>generic_2</c>.
+	/// </summary>
+	SpellResource? GetGenericSpellForInput()
+	{
+		for (var i = 0; i < GenericSpells.Length; i++)
+			if (Input.IsActionJustPressed($"generic_{i + 1}"))
+				return GenericSpells[i];
+		return null;
+	}
+
+	/// <summary>
 	/// Returns the equipped spell whose slot key was just pressed, or null.
 	/// Slot i maps to action <c>spell_{i+1}</c>, which the player can rebind
 	/// in the Godot InputMap without any code changes.
@@ -126,10 +147,12 @@ public partial class Player : Character
 	/// Returns each slot's (spell, action-name) pair in slot order.
 	/// Used to build and refresh the action bar.
 	/// </summary>
-	public (SpellResource? Spell, string Action)[] GetSpellBindings() =>
-		Enumerable.Range(0, MaxSpellSlots)
+	public (SpellResource? Spell, string Action)[] GetSpellBindings()
+	{
+		return Enumerable.Range(0, MaxSpellSlots)
 			.Select(i => (EquippedSpells[i], $"spell_{i + 1}"))
 			.ToArray();
+	}
 
 	// ── casting ───────────────────────────────────────────────────────────────
 
@@ -149,9 +172,26 @@ public partial class Player : Character
 		_castTarget = null;
 	}
 
+	/// <summary>
+	/// Fire a generic (off-GCD) spell without cancelling any active cast.
+	/// Generic spells have no mana cost and do not trigger the GCD.
+	/// </summary>
+	void FireGenericSpell(SpellResource spell, Character target)
+	{
+		SpellPipeline.Cast(spell, this, target);
+
+		if (spell.Cooldown > 0f)
+		{
+			_spellCooldowns[spell] = spell.Cooldown;
+			EmitSignalCooldownStarted(spell, spell.Cooldown);
+		}
+	}
+
 	/// <summary>Returns true if <paramref name="spell"/> still has time remaining on its cooldown.</summary>
-	public bool IsOnCooldown(SpellResource spell) =>
-		_spellCooldowns.TryGetValue(spell, out var cd) && cd > 0f;
+	public bool IsOnCooldown(SpellResource spell)
+	{
+		return _spellCooldowns.TryGetValue(spell, out var cd) && cd > 0f;
+	}
 
 	public override void _Process(double delta)
 	{
@@ -170,6 +210,19 @@ public partial class Player : Character
 			return;
 		}
 
+		// ── Generic spells (off-GCD, castable even while casting another spell) ──
+		// Checked before the _isCasting early-return so Deflect can be triggered
+		// at any time during a cast.
+		if (IsAlive)
+		{
+			var genericSpell = GetGenericSpellForInput();
+			if (genericSpell != null && !IsOnCooldown(genericSpell))
+			{
+				var target = ResolveTargetWithFallback(GameUI?.GetHoveredCharacter(), genericSpell);
+				FireGenericSpell(genericSpell, target);
+			}
+		}
+
 		// Tick cast timer — any movement input interrupts the cast
 		if (_isCasting)
 		{
@@ -183,6 +236,7 @@ public partial class Player : Character
 				if (_castTimer <= 0f)
 					FireSpell(_castSpell, _castTarget);
 			}
+
 			return;
 		}
 
@@ -199,7 +253,7 @@ public partial class Player : Character
 				// Lock in the target at cast-start: whichever party frame is under
 				// the cursor, or self if the cursor is not over any frame.
 				var hoveredCharacter = ResolveTargetWithFallback(GameUI?.GetHoveredCharacter(), spellToCast);
-				if (spellToCast.TargetType == TargetType.Enemy && hoveredCharacter.IsFriendly)
+				if (spellToCast.EffectType == EffectType.Harmful && hoveredCharacter.IsFriendly)
 					return;
 
 				_castTarget = hoveredCharacter;
@@ -228,10 +282,11 @@ public partial class Player : Character
 	{
 		if (target == null)
 		{
-			return spell.TargetType == TargetType.Friendly
+			return spell.EffectType == EffectType.Helpful
 				? this
 				: GetTree().GetFirstNodeInGroup(GameConstants.BossGroupName) as Character;
 		}
+
 		return target;
 	}
 

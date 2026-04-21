@@ -1,11 +1,23 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using healerfantasy.SpellResources.Chronomancy;
+using healerfantasy.SpellResources.Generic;
 
 namespace healerfantasy.SpellResources;
 
 public static class SpellRegistry
 {
+	/// <summary>
+	/// Always-available generic spells (Dispel, Deflect).
+	/// These are shown in the spellbook but cannot be added to or removed from
+	/// the regular loadout — they live in their own action bar slots.
+	/// </summary>
+	public static readonly List<SpellResource> GenericSpells =
+	[
+		new DispelSpell(),
+		new DeflectSpell()
+	];
+
 	public static readonly List<SpellResource> VoidSpells =
 	[
 		new DecaySpellResource(),

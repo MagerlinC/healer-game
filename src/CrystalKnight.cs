@@ -15,6 +15,12 @@ using healerfantasy.SpellSystem;
 ///   Falls back to any alive party member if the Templar is dead.
 /// • Every <see cref="SpellCastInterval"/> seconds, fires Crystal Blast at a
 ///   randomly chosen alive party member.
+/// • Every <see cref="DecayInterval"/> seconds, applies Crystal Decay (a 10 HP/sec
+///   DoT) to a random party member. Dispel removes it.
+/// • Every <see cref="CrushInterval"/> seconds, begins a <see cref="CrushWindupDuration"/>
+///   second wind-up for Structural Crush. Plays a riser sound and opens a parry
+///   window. If the player casts Deflect during the wind-up, the attack is
+///   negated; otherwise all party members take 35 damage on resolution.
 ///
 /// Animations are driven by a padded uniform sprite sheet
 /// (crystal_knight_sheet.png, 80×80 frames):
@@ -24,26 +30,63 @@ using healerfantasy.SpellSystem;
 /// </summary>
 public partial class CrystalKnight : Character
 {
+	// ── signals ───────────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Emitted when a telegraphed cast wind-up begins (currently: Structural Crush).
+	/// <paramref name="spellName"/> is the display name; <paramref name="duration"/>
+	/// is the full wind-up duration in seconds so the UI can show a countdown.
+	/// </summary>
+	[Signal]
+	public delegate void CastWindupStartedEventHandler(string spellName, Texture2D icon, float duration);
+
+	/// <summary>Emitted when the wind-up resolves — whether deflected or landed.</summary>
+	[Signal]
+	public delegate void CastWindupEndedEventHandler();
+
 	// ── tuneable exports ──────────────────────────────────────────────────────
 	[Export] public float MeleeAttackInterval = 2.0f;
 	[Export] public float SpellCastInterval = 7.0f;
+	[Export] public float DecayInterval = 10.0f;
+	[Export] public float CrushInterval = 12.0f;
+	[Export] public float CrushWindupDuration = 3.0f;
+
 	[Export] public float MeleeDamage = 20f;
 	[Export] public float BlastDamage = 15f;
+	[Export] public float CrushDamage = 35f;
 
 	// ── internal state ────────────────────────────────────────────────────────
 	float _meleeTimer;
 	float _spellTimer;
+	float _decayTimer;
+	float _crushTimer;
+	float _crushWindupTimer; // counts down during the Structural Crush wind-up
 
 	BossMeleeAttackSpell _meleeSpell;
 	BossCrystalBlastSpell _blastSpell;
-	AnimatedSprite2D _sprite;
+	BossCrystalDecaySpell _decaySpell;
+	BossStructuralCrushSpell _crushSpell;
 
-	// Target locked in when a timer fires; damage is dealt once the animation ends.
+	AnimatedSprite2D _sprite;
+	AudioStreamPlayer _riserPlayer;
+
+	// Tracks which attack animation is in flight so OnAnimationFinished knows
+	// which spell to fire.
+	enum PendingAttack
+	{
+		None,
+		Melee,
+		CrystalBlast,
+		CrystalDecay
+	}
+
+	PendingAttack _pendingAttack;
 	Character _pendingTarget;
-	bool _pendingIsMelee;
 
 	// ── constants ─────────────────────────────────────────────────────────────
 	const int FrameSize = 80; // uniform cell size in crystal_knight_sheet.png
+
+	const string RiserSoundPath = "res://assets/sound-effects/riser.mp3";
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 	public override void _Ready()
@@ -58,9 +101,21 @@ public partial class CrystalKnight : Character
 		// Stagger first attacks so the player has a moment to react.
 		_meleeTimer = MeleeAttackInterval;
 		_spellTimer = SpellCastInterval;
+		_decayTimer = DecayInterval;
+		_crushTimer = CrushInterval;
 
 		_meleeSpell = new BossMeleeAttackSpell { DamageAmount = MeleeDamage };
 		_blastSpell = new BossCrystalBlastSpell { DamageAmount = BlastDamage };
+		_decaySpell = new BossCrystalDecaySpell();
+		_crushSpell = new BossStructuralCrushSpell { DamageAmount = CrushDamage };
+
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
+
+		// Audio player for the Structural Crush riser telegraph.
+		_riserPlayer = new AudioStreamPlayer();
+		_riserPlayer.Stream = GD.Load<AudioStream>(RiserSoundPath);
+		AddChild(_riserPlayer);
 
 		// ── sprite setup ──────────────────────────────────────────────────────
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
@@ -76,6 +131,19 @@ public partial class CrystalKnight : Character
 
 		if (!IsAlive) return;
 
+		// ── Structural Crush wind-up countdown ────────────────────────────────
+		if (_crushWindupTimer > 0f)
+		{
+			_crushWindupTimer -= (float)delta;
+			if (_crushWindupTimer <= 0f)
+				ExecuteStructuralCrush();
+		}
+
+		// ── Regular attack timers (suppressed during a crush wind-up) ─────────
+		// Suppress new casts while the wind-up is counting down so the boss
+		// doesn't overlap a big telegraphed attack with a normal one.
+		if (_crushWindupTimer > 0f) return;
+
 		_meleeTimer -= (float)delta;
 		if (_meleeTimer <= 0f)
 		{
@@ -89,6 +157,20 @@ public partial class CrystalKnight : Character
 			_spellTimer = SpellCastInterval;
 			CastCrystalBlast();
 		}
+
+		_decayTimer -= (float)delta;
+		if (_decayTimer <= 0f)
+		{
+			_decayTimer = DecayInterval;
+			CastCrystalDecay();
+		}
+
+		_crushTimer -= (float)delta;
+		if (_crushTimer <= 0f)
+		{
+			_crushTimer = CrushInterval;
+			BeginStructuralCrush();
+		}
 	}
 
 	// ── combat actions ────────────────────────────────────────────────────────
@@ -98,7 +180,7 @@ public partial class CrystalKnight : Character
 		var target = FindTank() ?? PickRandomPartyMember();
 		if (target == null) return;
 		_pendingTarget = target;
-		_pendingIsMelee = true;
+		_pendingAttack = PendingAttack.Melee;
 		_sprite.Play("attack");
 	}
 
@@ -107,20 +189,79 @@ public partial class CrystalKnight : Character
 		var target = PickRandomPartyMember();
 		if (target == null) return;
 		_pendingTarget = target;
-		_pendingIsMelee = false;
+		_pendingAttack = PendingAttack.CrystalBlast;
 		_sprite.Play("spell");
 	}
 
-	// Damage lands on the last frame; then we return to idle.
+	void CastCrystalDecay()
+	{
+		var target = PickRandomPartyMember();
+		if (target == null) return;
+		_pendingTarget = target;
+		_pendingAttack = PendingAttack.CrystalDecay;
+		_sprite.Play("spell");
+	}
+
+	/// <summary>
+	/// Begins the Structural Crush wind-up:
+	/// plays the riser sound, opens the parry window, and starts the countdown.
+	/// The attack resolves in <see cref="ExecuteStructuralCrush"/> when the
+	/// wind-up timer expires.
+	/// </summary>
+	void BeginStructuralCrush()
+	{
+		_crushWindupTimer = CrushWindupDuration;
+		_riserPlayer.Play();
+		ParryWindowManager.OpenWindow();
+		EmitSignalCastWindupStarted(_crushSpell.Name, _crushSpell.Icon, CrushWindupDuration);
+		// Play the spell animation as a visual telegraph; the actual hit comes
+		// from the wind-up timer rather than OnAnimationFinished.
+		_pendingAttack = PendingAttack.None; // animation finish won't fire a spell
+		_sprite.Play("spell");
+	}
+
+	/// <summary>
+	/// Resolves the Structural Crush at the end of the wind-up.
+	/// If the player deflected in time the attack is cancelled; otherwise
+	/// all party members take <see cref="CrushDamage"/> damage.
+	/// </summary>
+	void ExecuteStructuralCrush()
+	{
+		EmitSignalCastWindupEnded(); // hides the boss cast bar regardless of outcome
+
+		var wasDeflected = ParryWindowManager.ConsumeResult();
+		if (wasDeflected)
+		{
+			GD.Print("[CrystalKnight] Structural Crush was deflected!");
+			return;
+		}
+
+		// Pick any alive party member as the explicit target — the spell's
+		// ResolveTargets will expand it to the whole party.
+		var anyTarget = PickRandomPartyMember();
+		if (anyTarget != null)
+			SpellPipeline.Cast(_crushSpell, this, anyTarget);
+	}
+
+	// Damage lands on the last frame for melee/blast; then we return to idle.
 	void OnAnimationFinished()
 	{
 		if (_pendingTarget != null && _pendingTarget.IsAlive)
 		{
-			var spell = _pendingIsMelee ? (SpellResource)_meleeSpell : _blastSpell;
-			SpellPipeline.Cast(spell, this, _pendingTarget);
+			SpellResource spell = _pendingAttack switch
+			{
+				PendingAttack.Melee => _meleeSpell,
+				PendingAttack.CrystalBlast => _blastSpell,
+				PendingAttack.CrystalDecay => _decaySpell,
+				_ => null
+			};
+
+			if (spell != null)
+				SpellPipeline.Cast(spell, this, _pendingTarget);
 		}
 
 		_pendingTarget = null;
+		_pendingAttack = PendingAttack.None;
 		_sprite.Play("idle");
 	}
 

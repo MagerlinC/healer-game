@@ -27,7 +27,7 @@ public partial class VoidDrainSpell : SpellResource
 		Cooldown = 4f;
 		School = SpellSchool.Void;
 		Tags = SpellTags.Damage | SpellTags.Healing | SpellTags.Void;
-		TargetType = TargetType.Enemy;
+		EffectType = EffectType.Harmful;
 		Icon = GD.Load<Texture2D>("res://assets/spell-icons/void/void-drain.png");
 	}
 

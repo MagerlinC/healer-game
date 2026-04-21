@@ -17,7 +17,7 @@ public partial class RewindSpell : SpellResource
 		CastTime = 0.0f;
 		Cooldown = 8f;
 		Tags = SpellTags.Healing | SpellTags.Duration;
-		TargetType = TargetType.Friendly;
+		EffectType = EffectType.Helpful;
 		School = SpellSchool.Chronomancy;
 		Icon = GD.Load<Texture2D>("res://assets/spell-icons/chronomancy/rewind.png");
 	}

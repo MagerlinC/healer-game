@@ -15,31 +15,34 @@ namespace healerfantasy.SpellResources.Chronomancy;
 [GlobalClass]
 public partial class TimeLoopSpell : SpellResource
 {
-    [Export] public float HealAmount = 35f;
-    [Export] public float Delay = 5f;
+	[Export] public float HealAmount = 35f;
+	[Export] public float Delay = 5f;
 
-    public TimeLoopSpell()
-    {
-        Name = "Time Loop";
-        Description =
-            $"Traps an ally in a temporal loop. After {Delay}s, the loop resolves and heals them for {HealAmount} HP.";
-        ManaCost = 8f;
-        CastTime = 0.0f;
-        School = SpellSchool.Chronomancy;
-        Tags = SpellTags.Healing | SpellTags.Duration;
-        TargetType = TargetType.Friendly;
-        Icon = GD.Load<Texture2D>("res://assets/spell-icons/chronomancy/time-loop.png");
-    }
+	public TimeLoopSpell()
+	{
+		Name = "Time Loop";
+		Description =
+			$"Traps an ally in a temporal loop. After {Delay}s, the loop resolves and heals them for {HealAmount} HP.";
+		ManaCost = 8f;
+		CastTime = 0.0f;
+		School = SpellSchool.Chronomancy;
+		Tags = SpellTags.Healing | SpellTags.Duration;
+		EffectType = EffectType.Helpful;
+		Icon = GD.Load<Texture2D>("res://assets/spell-icons/chronomancy/time-loop.png");
+	}
 
-    public override float GetBaseValue() => HealAmount;
+	public override float GetBaseValue()
+	{
+		return HealAmount;
+	}
 
-    public override void Apply(SpellContext ctx)
-    {
-        ctx.Target?.ApplyEffect(new Effects.TimeLoopEffect(Delay, ctx.FinalValue)
-        {
-            Icon = Icon,
-            SourceCharacterName = ctx.Caster.CharacterName,
-            AbilityName = Name
-        });
-    }
+	public override void Apply(SpellContext ctx)
+	{
+		ctx.Target?.ApplyEffect(new Effects.TimeLoopEffect(Delay, ctx.FinalValue)
+		{
+			Icon = Icon,
+			SourceCharacterName = ctx.Caster.CharacterName,
+			AbilityName = Name
+		});
+	}
 }

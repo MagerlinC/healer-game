@@ -5,10 +5,10 @@ using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;
 
-public enum TargetType
+public enum EffectType
 {
-	Friendly,
-	Enemy
+	Helpful,
+	Harmful
 }
 
 public enum SpellSchool
@@ -28,7 +28,8 @@ public partial class SpellResource : Resource
 	[Export] public float ManaCost;
 	[Export] public float CastTime;
 	[Export] public float Cooldown;
-	[Export] public TargetType TargetType = TargetType.Friendly;
+	[Export] public bool Parryable = false;
+	[Export] public EffectType EffectType = EffectType.Helpful;
 	[Export] public SpellSchool School;
 
 	[Export] public Texture2D Icon;

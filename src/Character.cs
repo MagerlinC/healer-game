@@ -204,6 +204,20 @@ public abstract partial class Character : CharacterBody2D
 		EmitSignalEffectApplied(CharacterName, effect);
 	}
 
+	/// <summary>
+	/// Remove all active effects that are marked as harmful (i.e. debuffs).
+	/// Called by the Dispel spell.
+	/// </summary>
+	public void RemoveHarmfulEffects()
+	{
+		var toRemove = new List<string>();
+		foreach (var (id, effect) in _effects)
+			if (effect.IsHarmful)
+				toRemove.Add(id);
+		foreach (var id in toRemove)
+			RemoveEffect(id);
+	}
+
 	/// <summary>Remove an active effect by id, if present.</summary>
 	public void RemoveEffect(string effectId)
 	{

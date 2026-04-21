@@ -24,7 +24,15 @@ public abstract partial class CharacterEffect : RefCounted
 	/// one active instance per character. Override to allow multiple distinct
 	/// effects of the same type (e.g. different DoT sources).
 	/// </summary>
-	public string EffectId { get; protected set; }
+	/// <summary>
+	/// Unique identifier used for deduplication.
+	/// Defaults to the concrete class name so each subclass only ever has
+	/// one active instance per character. Override in the subclass constructor
+	/// (or set externally before calling <see cref="Character.ApplyEffect"/>)
+	/// to give the effect a spell-specific ID so multiple distinct DoT sources
+	/// don't collide and overwrite each other.
+	/// </summary>
+	public string EffectId { get; set; }
 
 	/// <summary>Total duration of the effect in seconds.</summary>
 	public float Duration { get; protected set; }
@@ -58,6 +66,12 @@ public abstract partial class CharacterEffect : RefCounted
 	/// Set this from the spell's <c>Apply</c> method when constructing the effect.
 	/// </summary>
 	public SpellSchool School { get; set; } = SpellSchool.Generic;
+
+	/// <summary>
+	/// When true, this effect can be removed by Dispel.
+	/// Set to true for debuffs (damage-over-time, curses, etc.).
+	/// </summary>
+	public bool IsHarmful { get; set; } = false;
 
 	// How often OnTick fires. 0 means no discrete ticks (continuous only).
 	readonly float _tickInterval;

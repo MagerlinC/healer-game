@@ -28,6 +28,7 @@ public partial class GameUI : CanvasLayer
 	PartyFrames _partyFrames;
 	BossHealthBar _bossHealthBar;
 	ActionBar _actionBar;
+	GenericActionBar _genericActionBar;
 	CombatMeter _healingMeter;
 	CombatMeter _damageMeter;
 
@@ -73,6 +74,18 @@ public partial class GameUI : CanvasLayer
 		_bossHealthBar.OffsetBottom = 90f; // extra room for effect-badge row below the bar
 		anchor.AddChild(_bossHealthBar);
 
+		// ── Boss cast bar (shown during telegraphed wind-ups e.g. Structural Crush)
+		var bossCastBar = new BossCastBar();
+		bossCastBar.CustomMinimumSize = new Vector2(280f, 0f);
+		bossCastBar.AnchorLeft  = bossCastBar.AnchorRight = 0.5f;
+		bossCastBar.AnchorTop   = bossCastBar.AnchorBottom = 0f;
+		bossCastBar.GrowHorizontal = Control.GrowDirection.Both;
+		bossCastBar.OffsetLeft  = -140f;
+		bossCastBar.OffsetRight =  140f;
+		bossCastBar.OffsetTop   = 100f; // just below the boss health bar + effects row
+		bossCastBar.OffsetBottom = 140f;
+		anchor.AddChild(bossCastBar);
+
 		// ── Party frames ──────────────────────────────────────────────────────
 		_partyFrames = new PartyFrames();
 		_partyFrames.AnchorTop = 0.6f;
@@ -105,17 +118,29 @@ public partial class GameUI : CanvasLayer
 		_damageMeter.OffsetBottom = -10f;
 		anchor.AddChild(_damageMeter);
 
-		// ── Action bar ────────────────────────────────────────────────────────
+		// ── Action bars (regular + generic, side by side) ────────────────────
+		// Both bars are children of a shared HBoxContainer so they're naturally
+		// laid out next to each other without manual pixel-offset arithmetic.
+		var barRow = new HBoxContainer();
+		barRow.AddThemeConstantOverride("separation", 14);
+		barRow.AnchorLeft  = barRow.AnchorRight  = 0.5f;
+		barRow.AnchorTop   = barRow.AnchorBottom = 1f;
+		barRow.GrowHorizontal = Control.GrowDirection.Both;
+		barRow.GrowVertical   = Control.GrowDirection.Begin;
+		barRow.OffsetTop    = -152f;
+		barRow.OffsetBottom = -100f;
+		anchor.AddChild(barRow);
+
 		_actionBar = new ActionBar();
-		_actionBar.AnchorLeft = _actionBar.AnchorRight = 0.5f;
-		_actionBar.AnchorTop = _actionBar.AnchorBottom = 1f;
-		_actionBar.GrowHorizontal = Control.GrowDirection.Both;
-		_actionBar.GrowVertical = Control.GrowDirection.Begin;
-		_actionBar.OffsetLeft = -55f;
-		_actionBar.OffsetRight = 55f;
-		_actionBar.OffsetTop = -152f;
-		_actionBar.OffsetBottom = -100f;
-		anchor.AddChild(_actionBar);
+		barRow.AddChild(_actionBar);
+
+		// Thin vertical separator between the two bars.
+		var sep = new VSeparator();
+		sep.AddThemeColorOverride("color", new Color(0.50f, 0.40f, 0.22f, 0.55f));
+		barRow.AddChild(sep);
+
+		_genericActionBar = new GenericActionBar();
+		barRow.AddChild(_genericActionBar);
 
 		// ── Signal subscriptions owned by GameUI ──────────────────────────────
 		// Mana changes shade action-bar icons; all other party signals are
@@ -157,5 +182,14 @@ public partial class GameUI : CanvasLayer
 	public void RebuildActionBar(SpellResource?[] equipped)
 	{
 		_actionBar.Rebuild(equipped);
+	}
+
+	/// <summary>
+	/// Populate the generic action bar with the player's always-available spells.
+	/// Must be called once from World after the Player node is resolved.
+	/// </summary>
+	public void BuildGenericActionBar(Player player)
+	{
+		_genericActionBar.Build(player);
 	}
 }

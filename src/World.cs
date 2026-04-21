@@ -46,6 +46,9 @@ public partial class World : Node2D
 		// Build the action bar from the player's default loadout
 		ui.RebuildActionBar(player.EquippedSpells);
 
+		// Build the generic action bar (Dispel + Deflect — always available)
+		ui.BuildGenericActionBar(player);
+
 		// ── Spellbook selector ────────────────────────────────────────────────
 		// Opens with [B]. Lets the player choose which spells fill their 6 slots.
 		var spellbook = new SpellbookSelector();

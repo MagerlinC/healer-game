@@ -18,7 +18,7 @@ public partial class BurstOfLightSpell : SpellResource
 		CastTime = 1.5f;
 		Tags = SpellTags.Damage | SpellTags.Light;
 		School = SpellSchool.Holy;
-		TargetType = TargetType.Enemy;
+		EffectType = EffectType.Harmful;
 		Icon = GD.Load<Texture2D>("res://assets/spell-icons/holy/burst-of-light.png");
 	}
 

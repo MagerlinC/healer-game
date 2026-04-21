@@ -48,7 +48,8 @@ public partial class SpellbookSelector : CanvasLayer
 		(SpellSchool.Holy, "Holy"),
 		(SpellSchool.Nature, "Nature"),
 		(SpellSchool.Void, "Void"),
-		(SpellSchool.Chronomancy, "Chronomancy")
+		(SpellSchool.Chronomancy, "Chronomancy"),
+		(SpellSchool.Generic, "Generic") // Always-available spells shown read-only
 	};
 
 	// ── state ────────────────────────────────────────────────────────────────
@@ -289,9 +290,15 @@ public partial class SpellbookSelector : CanvasLayer
 	/// <summary>
 	/// Builds the scroll pane for one school tab.
 	/// <paramref name="school"/> null means show all spells regardless of school.
+	/// Generic spells get a read-only presentation — they cannot be equipped or
+	/// unequipped because they are always available via the generic action bar.
 	/// </summary>
 	Control BuildSchoolPane(SpellSchool? school)
 	{
+		// Generic tab: show always-available spells in a read-only layout.
+		if (school == SpellSchool.Generic)
+			return BuildGenericPane();
+
 		var scroll = new ScrollContainer();
 		scroll.SizeFlagsHorizontal = scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 
@@ -329,6 +336,115 @@ public partial class SpellbookSelector : CanvasLayer
 			flow.AddChild(BuildLibraryCard(spell));
 
 		return scroll;
+	}
+
+	/// <summary>
+	/// Builds the read-only Generic tab showing always-available spells.
+	/// These cards cannot be clicked to equip/unequip.
+	/// </summary>
+	Control BuildGenericPane()
+	{
+		var scroll = new ScrollContainer();
+		scroll.SizeFlagsHorizontal = scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+
+		var vbox = new VBoxContainer();
+		vbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		vbox.AddThemeConstantOverride("separation", 12);
+
+		var margin = new MarginContainer();
+		margin.AddThemeConstantOverride("margin_left", 14);
+		margin.AddThemeConstantOverride("margin_right", 14);
+		margin.AddThemeConstantOverride("margin_top", 14);
+		margin.AddThemeConstantOverride("margin_bottom", 14);
+		margin.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		margin.AddChild(vbox);
+		scroll.AddChild(margin);
+
+		// Header note
+		var note = new Label();
+		note.Text = "These spells are always available and cannot be removed.\nActivate them from the generic action bar (right of the main bar).";
+		note.HorizontalAlignment = HorizontalAlignment.Center;
+		note.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		note.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+		note.AddThemeFontSizeOverride("font_size", 12);
+		note.AddThemeColorOverride("font_color", HintColor);
+		vbox.AddChild(note);
+
+		var flow = new HFlowContainer();
+		flow.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		flow.AddThemeConstantOverride("h_separation", 10);
+		flow.AddThemeConstantOverride("v_separation", 10);
+		vbox.AddChild(flow);
+
+		foreach (var spell in SpellRegistry.GenericSpells)
+			flow.AddChild(BuildReadOnlyCard(spell));
+
+		return scroll;
+	}
+
+	/// <summary>
+	/// Builds a spell card that is displayed but cannot be clicked.
+	/// Used for always-available generic spells in the Generic tab.
+	/// </summary>
+	PanelContainer BuildReadOnlyCard(SpellResource spell)
+	{
+		var panel = new PanelContainer();
+		panel.CustomMinimumSize = new Vector2(CardW, CardH);
+		// Default cursor — signals this is not interactive
+		panel.MouseDefaultCursorShape = Control.CursorShape.Arrow;
+
+		var border = new StyleBoxFlat();
+		border.BgColor = new Color(0.09f, 0.07f, 0.10f, 0.97f);
+		border.SetCornerRadiusAll(5);
+		border.SetBorderWidthAll(2);
+		// Always gold: these are always "equipped"
+		border.BorderColor = CardBorderEquipped;
+		border.ContentMarginLeft = border.ContentMarginRight = 6f;
+		border.ContentMarginTop = border.ContentMarginBottom = 6f;
+		panel.AddThemeStyleboxOverride("panel", border);
+
+		var vbox = new VBoxContainer();
+		vbox.AddThemeConstantOverride("separation", 4);
+		vbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		panel.AddChild(vbox);
+
+		// Icon
+		var iconRect = new TextureRect();
+		iconRect.Texture = spell.Icon;
+		iconRect.CustomMinimumSize = new Vector2(CardIconSize, CardIconSize);
+		iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+		iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+		iconRect.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		iconRect.MouseFilter = Control.MouseFilterEnum.Ignore;
+		vbox.AddChild(iconRect);
+
+		// "Always Available" badge instead of a school label
+		var badge = new Label();
+		badge.Text = "Always Available";
+		badge.HorizontalAlignment = HorizontalAlignment.Center;
+		badge.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		badge.AddThemeFontSizeOverride("font_size", 9);
+		badge.AddThemeColorOverride("font_color", new Color(0.70f, 0.60f, 0.85f)); // soft purple
+		badge.MouseFilter = Control.MouseFilterEnum.Ignore;
+		vbox.AddChild(badge);
+
+		// Name
+		var nameLabel = new Label();
+		nameLabel.Text = spell.Name ?? "";
+		nameLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		nameLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+		nameLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		nameLabel.AddThemeFontSizeOverride("font_size", 10);
+		nameLabel.AddThemeColorOverride("font_color", new Color(0.88f, 0.84f, 0.78f));
+		nameLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+		vbox.AddChild(nameLabel);
+
+		// Tooltip (hover only — no click handler)
+		var tooltipText = GameTooltip.FormatSpellTooltip(spell);
+		panel.MouseEntered += () => GameTooltip.Show(tooltipText);
+		panel.MouseExited  += () => GameTooltip.Hide();
+
+		return panel;
 	}
 
 	PanelContainer BuildLibraryCard(SpellResource spell)
