@@ -19,7 +19,7 @@ public partial class BossCrystalDecaySpell : SpellResource
 		Tags = SpellTags.Damage | SpellTags.Void | SpellTags.Duration;
 		ManaCost = 0f;
 		CastTime = 0f;
-		Icon = GD.Load<Texture2D>("res://assets/spell-icons/enemy/crystal-knight/crystal-decay.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/crystal-knight/crystal-decay.png");
 		EffectType = EffectType.Harmful;
 	}
 

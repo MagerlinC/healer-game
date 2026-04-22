@@ -28,7 +28,7 @@ public partial class VoidDrainSpell : SpellResource
 		School = SpellSchool.Void;
 		Tags = SpellTags.Damage | SpellTags.Healing | SpellTags.Void;
 		EffectType = EffectType.Harmful;
-		Icon = GD.Load<Texture2D>("res://assets/spell-icons/void/void-drain.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/void-drain.png");
 	}
 
 	public override float GetBaseValue()

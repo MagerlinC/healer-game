@@ -20,7 +20,7 @@ public partial class RenewingBloomSpell : SpellResource
 		School = SpellSchool.Nature;
 		// HealOverTime implies Healing; the per-tick value is what gets modified.
 		Tags = SpellTags.Healing | SpellTags.Duration;
-		Icon = GD.Load<Texture2D>("res://assets/spell-icons/healer/healer3.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "healer/healer3.png");
 	}
 
 	/// <summary>

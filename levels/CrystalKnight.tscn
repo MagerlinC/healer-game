@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3]
 
-[ext_resource type="Script" path="res://src/CrystalKnight.cs" id="Script_crystal_knight"]
+[ext_resource type="Script" uid="uid://cynq7ftlqpd7b" path="res://src/Characters/Enemies/CrystalKnight.cs" id="Script_crystal_knight"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
 radius = 14.0

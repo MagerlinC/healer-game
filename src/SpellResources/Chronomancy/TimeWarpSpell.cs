@@ -25,7 +25,7 @@ public partial class TimeWarpSpell : SpellResource
 		Cooldown = 10f;
 		School = SpellSchool.Chronomancy;
 		Tags = SpellTags.Duration | SpellTags.GroupSpell;
-		Icon = GD.Load<Texture2D>("res://assets/spell-icons/chronomancy/time-warp.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/time-warp.png");
 	}
 
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)

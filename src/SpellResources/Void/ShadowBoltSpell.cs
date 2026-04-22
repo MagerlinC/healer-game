@@ -23,7 +23,7 @@ public partial class ShadowBoltSpell : SpellResource
 		School = SpellSchool.Void;
 		Tags = SpellTags.Damage | SpellTags.Void;
 		EffectType = EffectType.Harmful;
-		Icon = GD.Load<Texture2D>("res://assets/spell-icons/void/shadow-bolt.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/shadow-bolt.png");
 	}
 
 	public override float GetBaseValue()

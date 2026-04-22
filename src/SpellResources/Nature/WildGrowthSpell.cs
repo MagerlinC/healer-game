@@ -26,7 +26,7 @@ public partial class WildGrowthSpell : SpellResource
 		Cooldown = 8f;
 		School = SpellSchool.Nature;
 		Tags = SpellTags.Healing | SpellTags.Nature | SpellTags.Duration | SpellTags.GroupSpell;
-		Icon = GD.Load<Texture2D>("res://assets/spell-icons/nature/wild-growth.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "nature/wild-growth.png");
 	}
 
 	public override float GetBaseValue()

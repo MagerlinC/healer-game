@@ -19,7 +19,7 @@ public partial class BurstOfLightSpell : SpellResource
 		Tags = SpellTags.Damage | SpellTags.Light;
 		School = SpellSchool.Holy;
 		EffectType = EffectType.Harmful;
-		Icon = GD.Load<Texture2D>("res://assets/spell-icons/holy/burst-of-light.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "holy/burst-of-light.png");
 	}
 
 	public override float GetBaseValue()

@@ -26,7 +26,7 @@ public partial class PoisonBoltSpell : SpellResource
 		School = SpellSchool.Nature;
 		Tags = SpellTags.Damage | SpellTags.Nature | SpellTags.Duration;
 		EffectType = EffectType.Harmful;
-		Icon = GD.Load<Texture2D>("res://assets/spell-icons/nature/poison-bolt.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "nature/poison-bolt.png");
 	}
 
 	public override float GetBaseValue()
@@ -39,7 +39,7 @@ public partial class PoisonBoltSpell : SpellResource
 		ctx.Target?.TakeDamage(InstantDamage);
 		ctx.Target?.ApplyEffect(new Effects.DamageOverTimeEffect(ctx.FinalValue, EffectDuration, TickInterval)
 		{
-			EffectId = Name,   // "Poison Bolt" — unique per spell, not per class
+			EffectId = Name, // "Poison Bolt" — unique per spell, not per class
 			Icon = Icon,
 			SourceCharacterName = ctx.Caster.CharacterName,
 			AbilityName = Name,

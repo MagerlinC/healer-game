@@ -28,7 +28,7 @@ public partial class BossStructuralCrushSpell : SpellResource
 		Tags = SpellTags.Damage;
 		ManaCost = 0f;
 		CastTime = 0f;
-		Icon = GD.Load<Texture2D>("res://assets/spell-icons/enemy/crystal-knight/structural-crush.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/crystal-knight/structural-crush.png");
 		Parryable = true;
 		EffectType = EffectType.Harmful;
 	}

@@ -26,7 +26,7 @@ public partial class DeflectSpell : SpellResource
 		ManaCost = 0f;
 		CastTime = 0f;
 		Cooldown = 20f;
-		Icon = GD.Load<Texture2D>("res://assets/spell-icons/generic/deflect.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "generic/deflect.png");
 		School = SpellSchool.Generic;
 		EffectType = EffectType.Helpful;
 		Tags = SpellTags.None;

@@ -16,7 +16,7 @@ public partial class ReinvigorateSpell : SpellResource
 		Cooldown = 4f;
 		School = SpellSchool.Holy;
 		Tags = SpellTags.Healing;
-		Icon = GD.Load<Texture2D>("res://assets/spell-icons/healer/healer4.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "healer/healer4.png");
 	}
 
 	public override float GetBaseValue()

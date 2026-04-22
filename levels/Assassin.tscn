@@ -1,7 +1,7 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3]
 
-[ext_resource type="Texture2D" path="res://assets/32rogues/rogues.png" id="Texture_rogues"]
-[ext_resource type="Script" path="res://src/PartyMember.cs" id="Script_member"]
+[ext_resource type="Texture2D" uid="uid://bgclbkcyu1nle" path="res://assets/32rogues/rogues.png" id="Texture_rogues"]
+[ext_resource type="Script" uid="uid://di875q73nxbls" path="res://src/Characters/PartyMember.cs" id="Script_member"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
 radius = 8.0

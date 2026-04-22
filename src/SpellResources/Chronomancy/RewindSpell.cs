@@ -19,7 +19,7 @@ public partial class RewindSpell : SpellResource
 		Tags = SpellTags.Healing | SpellTags.Duration;
 		EffectType = EffectType.Helpful;
 		School = SpellSchool.Chronomancy;
-		Icon = GD.Load<Texture2D>("res://assets/spell-icons/chronomancy/rewind.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/rewind.png");
 	}
 
 	public override void Apply(SpellContext ctx)

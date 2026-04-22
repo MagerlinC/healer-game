@@ -22,7 +22,7 @@ public partial class DecaySpellResource : SpellResource
 		Tags = SpellTags.Damage | SpellTags.Duration | SpellTags.Void;
 		EffectType = EffectType.Harmful;
 		School = SpellSchool.Void;
-		Icon = GD.Load<Texture2D>("res://assets/spell-icons/void/decay.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/decay.png");
 	}
 
 	/// <summary>
@@ -38,7 +38,7 @@ public partial class DecaySpellResource : SpellResource
 		// ctx.FinalValue is the modifier-adjusted per-tick heal amount.
 		ctx.Target?.ApplyEffect(new Effects.DamageOverTimeEffect(ctx.FinalValue, EffectDuration, TickInterval)
 		{
-			EffectId = Name,   // "Decay" — unique per spell, not per class
+			EffectId = Name, // "Decay" — unique per spell, not per class
 			Icon = Icon,
 			SourceCharacterName = ctx.Caster.CharacterName,
 			AbilityName = Name,
