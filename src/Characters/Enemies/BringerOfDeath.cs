@@ -32,251 +32,262 @@ using healerfantasy.SpellSystem;
 /// </summary>
 public partial class BringerOfDeath : Character
 {
-    // ── signals ───────────────────────────────────────────────────────────────
+	public BringerOfDeath()
+	{
+		MaxHealth = 1500f;
+	}
+	// ── signals ───────────────────────────────────────────────────────────────
 
-    [Signal]
-    public delegate void CastWindupStartedEventHandler(string spellName, Texture2D icon, float duration);
+	[Signal]
+	public delegate void CastWindupStartedEventHandler(string spellName, Texture2D icon, float duration);
 
-    [Signal]
-    public delegate void CastWindupEndedEventHandler();
+	[Signal]
+	public delegate void CastWindupEndedEventHandler();
 
-    // ── tuneable exports ──────────────────────────────────────────────────────
-    [Export] public float MeleeInterval       = 3.0f;
-    [Export] public float SoulRendInterval    = 8.0f;
-    [Export] public float DeathMarkInterval   = 11.0f;
-    [Export] public float EmbraceInterval     = 15.0f;
-    [Export] public float EmbraceWindupDuration = 3.5f;
+	// ── tuneable exports ──────────────────────────────────────────────────────
+	[Export] public float MeleeInterval = 3.0f;
+	[Export] public float SoulRendInterval = 8.0f;
+	[Export] public float DeathMarkInterval = 11.0f;
+	[Export] public float EmbraceInterval = 15.0f;
+	[Export] public float EmbraceWindupDuration = 3.5f;
 
-    [Export] public float MeleeDamage   = 25f;
-    [Export] public float SoulRendDamage = 20f;
-    [Export] public float EmbraceDamage = 45f;
+	[Export] public float MeleeDamage = 25f;
+	[Export] public float SoulRendDamage = 20f;
+	[Export] public float EmbraceDamage = 45f;
 
-    // ── internal state ────────────────────────────────────────────────────────
-    float _meleeTimer;
-    float _soulRendTimer;
-    float _deathMarkTimer;
-    float _embraceTimer;
-    float _embraceWindupTimer;
+	// ── internal state ────────────────────────────────────────────────────────
+	float _meleeTimer;
+	float _soulRendTimer;
+	float _deathMarkTimer;
+	float _embraceTimer;
+	float _embraceWindupTimer;
 
-    BossDeathboltSpell   _deathboltSpell;
-    BossSoulRendSpell    _soulRendSpell;
-    BossDeathMarkSpell   _deathMarkSpell;
-    BossEmbraceOfDeathSpell _embraceSpell;
+	BossDeathboltSpell _deathboltSpell;
+	BossSoulRendSpell _soulRendSpell;
+	BossDeathMarkSpell _deathMarkSpell;
+	BossEmbraceOfDeathSpell _embraceSpell;
 
-    AnimatedSprite2D _sprite;
-    AudioStreamPlayer _riserPlayer;
+	AnimatedSprite2D _sprite;
+	AudioStreamPlayer _riserPlayer;
 
-    enum PendingAttack { None, Melee, SoulRend, DeathMark }
-    PendingAttack _pendingAttack;
-    Character _pendingTarget;
+	enum PendingAttack
+	{
+		None,
+		Melee,
+		SoulRend,
+		DeathMark
+	}
 
-    const string RiserSoundPath = "res://assets/sound-effects/riser.mp3";
+	PendingAttack _pendingAttack;
+	Character _pendingTarget;
 
-    // Individual-sprite base path
-    const string SpritePath = "res://assets/enemies/bringer-of-death/Individual Sprite/";
+	const string RiserSoundPath = "res://assets/sound-effects/riser.mp3";
 
-    // ── lifecycle ─────────────────────────────────────────────────────────────
-    public override void _Ready()
-    {
-        base._Ready();
-        CharacterName = GameConstants.Boss2Name;
-        RemoveFromGroup("party");
-        AddToGroup(GameConstants.BossGroupName);
-        IsFriendly = false;
+	// Individual-sprite base path
+	const string SpritePath = "res://assets/enemies/bringer-of-death/Individual Sprite/";
 
-        // Stagger first attacks so the player has a moment to react.
-        _meleeTimer     = MeleeInterval;
-        _soulRendTimer  = SoulRendInterval;
-        _deathMarkTimer = DeathMarkInterval;
-        _embraceTimer   = EmbraceInterval;
+	// ── lifecycle ─────────────────────────────────────────────────────────────
+	public override void _Ready()
+	{
+		base._Ready();
+		CharacterName = GameConstants.Boss2Name;
+		RemoveFromGroup("party");
+		AddToGroup(GameConstants.BossGroupName);
+		IsFriendly = false;
 
-        _deathboltSpell = new BossDeathboltSpell   { DamageAmount = MeleeDamage };
-        _soulRendSpell  = new BossSoulRendSpell    { DamageAmount = SoulRendDamage };
-        _deathMarkSpell = new BossDeathMarkSpell();
-        _embraceSpell   = new BossEmbraceOfDeathSpell { DamageAmount = EmbraceDamage };
+		// Stagger first attacks so the player has a moment to react.
+		_meleeTimer = MeleeInterval;
+		_soulRendTimer = SoulRendInterval;
+		_deathMarkTimer = DeathMarkInterval;
+		_embraceTimer = EmbraceInterval;
 
-        GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
-        GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
+		_deathboltSpell = new BossDeathboltSpell { DamageAmount = MeleeDamage };
+		_soulRendSpell = new BossSoulRendSpell { DamageAmount = SoulRendDamage };
+		_deathMarkSpell = new BossDeathMarkSpell();
+		_embraceSpell = new BossEmbraceOfDeathSpell { DamageAmount = EmbraceDamage };
 
-        _riserPlayer = new AudioStreamPlayer();
-        _riserPlayer.Stream = GD.Load<AudioStream>(RiserSoundPath);
-        AddChild(_riserPlayer);
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
 
-        _sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-        SetupAnimations();
-        _sprite.AnimationFinished += OnAnimationFinished;
-        _sprite.Play("idle");
-    }
+		_riserPlayer = new AudioStreamPlayer();
+		_riserPlayer.Stream = GD.Load<AudioStream>(RiserSoundPath);
+		AddChild(_riserPlayer);
 
-    public override void _Process(double delta)
-    {
-        base._Process(delta);
-        if (!IsAlive) return;
+		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+		SetupAnimations();
+		_sprite.AnimationFinished += OnAnimationFinished;
+		_sprite.Play("idle");
+	}
 
-        // ── Embrace of Death wind-up countdown ────────────────────────────────
-        if (_embraceWindupTimer > 0f)
-        {
-            _embraceWindupTimer -= (float)delta;
-            if (_embraceWindupTimer <= 0f)
-                ExecuteEmbrace();
-        }
+	public override void _Process(double delta)
+	{
+		base._Process(delta);
+		if (!IsAlive) return;
 
-        if (_embraceWindupTimer > 0f) return;
+		// ── Embrace of Death wind-up countdown ────────────────────────────────
+		if (_embraceWindupTimer > 0f)
+		{
+			_embraceWindupTimer -= (float)delta;
+			if (_embraceWindupTimer <= 0f)
+				ExecuteEmbrace();
+		}
 
-        _meleeTimer     -= (float)delta;
-        _soulRendTimer  -= (float)delta;
-        _deathMarkTimer -= (float)delta;
-        _embraceTimer   -= (float)delta;
+		if (_embraceWindupTimer > 0f) return;
 
-        if (_pendingAttack != PendingAttack.None) return;
+		_meleeTimer -= (float)delta;
+		_soulRendTimer -= (float)delta;
+		_deathMarkTimer -= (float)delta;
+		_embraceTimer -= (float)delta;
 
-        if (_meleeTimer <= 0f)
-        {
-            _meleeTimer = MeleeInterval;
-            PerformDeathbolt();
-        }
-        else if (_soulRendTimer <= 0f)
-        {
-            _soulRendTimer = SoulRendInterval;
-            CastSoulRend();
-        }
-        else if (_deathMarkTimer <= 0f)
-        {
-            _deathMarkTimer = DeathMarkInterval;
-            CastDeathMark();
-        }
-        else if (_embraceTimer <= 0f)
-        {
-            _embraceTimer = EmbraceInterval;
-            BeginEmbrace();
-        }
-    }
+		if (_pendingAttack != PendingAttack.None) return;
 
-    // ── combat actions ────────────────────────────────────────────────────────
+		if (_meleeTimer <= 0f)
+		{
+			_meleeTimer = MeleeInterval;
+			PerformDeathbolt();
+		}
+		else if (_soulRendTimer <= 0f)
+		{
+			_soulRendTimer = SoulRendInterval;
+			CastSoulRend();
+		}
+		else if (_deathMarkTimer <= 0f)
+		{
+			_deathMarkTimer = DeathMarkInterval;
+			CastDeathMark();
+		}
+		else if (_embraceTimer <= 0f)
+		{
+			_embraceTimer = EmbraceInterval;
+			BeginEmbrace();
+		}
+	}
 
-    void PerformDeathbolt()
-    {
-        var target = FindTank() ?? PickRandomPartyMember();
-        if (target == null) return;
-        _pendingTarget = target;
-        _pendingAttack = PendingAttack.Melee;
-        _sprite.Play("attack");
-    }
+	// ── combat actions ────────────────────────────────────────────────────────
 
-    void CastSoulRend()
-    {
-        var target = PickRandomPartyMember();
-        if (target == null) return;
-        _pendingTarget = target;
-        _pendingAttack = PendingAttack.SoulRend;
-        _sprite.Play("cast");
-    }
+	void PerformDeathbolt()
+	{
+		var target = FindTank() ?? PickRandomPartyMember();
+		if (target == null) return;
+		_pendingTarget = target;
+		_pendingAttack = PendingAttack.Melee;
+		_sprite.Play("attack");
+	}
 
-    void CastDeathMark()
-    {
-        var target = PickRandomPartyMember();
-        if (target == null) return;
-        _pendingTarget = target;
-        _pendingAttack = PendingAttack.DeathMark;
-        _sprite.Play("spell");
-    }
+	void CastSoulRend()
+	{
+		var target = PickRandomPartyMember();
+		if (target == null) return;
+		_pendingTarget = target;
+		_pendingAttack = PendingAttack.SoulRend;
+		_sprite.Play("cast");
+	}
 
-    void BeginEmbrace()
-    {
-        _embraceWindupTimer = EmbraceWindupDuration;
-        _riserPlayer.Play();
-        ParryWindowManager.OpenWindow();
-        EmitSignalCastWindupStarted(_embraceSpell.Name, _embraceSpell.Icon, EmbraceWindupDuration);
-        _pendingAttack = PendingAttack.None;
-        _sprite.Play("spell");
-    }
+	void CastDeathMark()
+	{
+		var target = PickRandomPartyMember();
+		if (target == null) return;
+		_pendingTarget = target;
+		_pendingAttack = PendingAttack.DeathMark;
+		_sprite.Play("spell");
+	}
 
-    void ExecuteEmbrace()
-    {
-        EmitSignalCastWindupEnded();
+	void BeginEmbrace()
+	{
+		_embraceWindupTimer = EmbraceWindupDuration;
+		_riserPlayer.Play();
+		ParryWindowManager.OpenWindow();
+		EmitSignalCastWindupStarted(_embraceSpell.Name, _embraceSpell.Icon, EmbraceWindupDuration);
+		_pendingAttack = PendingAttack.None;
+		_sprite.Play("spell");
+	}
 
-        if (ParryWindowManager.ConsumeResult())
-        {
-            GD.Print("[BringerOfDeath] Embrace of Death was deflected!");
-            return;
-        }
+	void ExecuteEmbrace()
+	{
+		EmitSignalCastWindupEnded();
 
-        var anyTarget = PickRandomPartyMember();
-        if (anyTarget != null)
-            SpellPipeline.Cast(_embraceSpell, this, anyTarget);
-    }
+		if (ParryWindowManager.ConsumeResult())
+		{
+			GD.Print("[BringerOfDeath] Embrace of Death was deflected!");
+			return;
+		}
 
-    void OnAnimationFinished()
-    {
-        if (_pendingTarget != null && _pendingTarget.IsAlive)
-        {
-            SpellResource spell = _pendingAttack switch
-            {
-                PendingAttack.Melee    => _deathboltSpell,
-                PendingAttack.SoulRend => _soulRendSpell,
-                PendingAttack.DeathMark => _deathMarkSpell,
-                _ => null
-            };
-            if (spell != null)
-                SpellPipeline.Cast(spell, this, _pendingTarget);
-        }
+		var anyTarget = PickRandomPartyMember();
+		if (anyTarget != null)
+			SpellPipeline.Cast(_embraceSpell, this, anyTarget);
+	}
 
-        _pendingTarget = null;
-        _pendingAttack = PendingAttack.None;
-        _sprite.Play("idle");
-    }
+	void OnAnimationFinished()
+	{
+		if (_pendingTarget != null && _pendingTarget.IsAlive)
+		{
+			SpellResource spell = _pendingAttack switch
+			{
+				PendingAttack.Melee => _deathboltSpell,
+				PendingAttack.SoulRend => _soulRendSpell,
+				PendingAttack.DeathMark => _deathMarkSpell,
+				_ => null
+			};
+			if (spell != null)
+				SpellPipeline.Cast(spell, this, _pendingTarget);
+		}
 
-    // ── targeting helpers ─────────────────────────────────────────────────────
+		_pendingTarget = null;
+		_pendingAttack = PendingAttack.None;
+		_sprite.Play("idle");
+	}
 
-    Character FindTank()
-    {
-        foreach (var node in GetTree().GetNodesInGroup("party"))
-            if (node is Character c && c.CharacterName == "Templar" && c.IsAlive)
-                return c;
-        return null;
-    }
+	// ── targeting helpers ─────────────────────────────────────────────────────
 
-    Character PickRandomPartyMember()
-    {
-        var alive = new List<Character>();
-        foreach (var node in GetTree().GetNodesInGroup("party"))
-            if (node is Character c && c.IsAlive)
-                alive.Add(c);
-        if (alive.Count == 0) return null;
-        return alive[(int)(GD.Randi() % (uint)alive.Count)];
-    }
+	Character FindTank()
+	{
+		foreach (var node in GetTree().GetNodesInGroup("party"))
+			if (node is Character c && c.CharacterName == "Templar" && c.IsAlive)
+				return c;
+		return null;
+	}
 
-    // ── animation setup ───────────────────────────────────────────────────────
+	Character PickRandomPartyMember()
+	{
+		var alive = new List<Character>();
+		foreach (var node in GetTree().GetNodesInGroup("party"))
+			if (node is Character c && c.IsAlive)
+				alive.Add(c);
+		if (alive.Count == 0) return null;
+		return alive[(int)(GD.Randi() % (uint)alive.Count)];
+	}
 
-    /// <summary>
-    /// Builds SpriteFrames from individual PNG files at runtime.
-    /// File pattern: {SpritePath}{AnimName}/Bringer-of-Death_{AnimName}_{n}.png
-    /// </summary>
-    void SetupAnimations()
-    {
-        var frames = new SpriteFrames();
-        frames.RemoveAnimation("default");
+	// ── animation setup ───────────────────────────────────────────────────────
 
-        AddAnimFromFiles(frames, "idle",   "Idle",   8,  8f, true);
-        AddAnimFromFiles(frames, "attack", "Attack", 10, 12f, false);
-        AddAnimFromFiles(frames, "cast",   "Cast",   9,  10f, false);
-        AddAnimFromFiles(frames, "spell",  "Spell",  16, 10f, false);
+	/// <summary>
+	/// Builds SpriteFrames from individual PNG files at runtime.
+	/// File pattern: {SpritePath}{AnimName}/Bringer-of-Death_{AnimName}_{n}.png
+	/// </summary>
+	void SetupAnimations()
+	{
+		var frames = new SpriteFrames();
+		frames.RemoveAnimation("default");
 
-        _sprite.SpriteFrames = frames;
-        _sprite.Scale = new Vector2(0.6f, 0.6f); // scale down to fit the arena
-    }
+		AddAnimFromFiles(frames, "idle", "Idle", 8, 8f, true);
+		AddAnimFromFiles(frames, "attack", "Attack", 10, 12f, false);
+		AddAnimFromFiles(frames, "cast", "Cast", 9, 10f, false);
+		AddAnimFromFiles(frames, "spell", "Spell", 16, 10f, false);
 
-    static void AddAnimFromFiles(SpriteFrames frames, string animName, string folderName,
-        int count, float fps, bool loop)
-    {
-        frames.AddAnimation(animName);
-        frames.SetAnimationLoop(animName, loop);
-        frames.SetAnimationSpeed(animName, fps);
-        for (var i = 1; i <= count; i++)
-        {
-            var path    = $"{SpritePath}{folderName}/Bringer-of-Death_{folderName}_{i}.png";
-            var texture = GD.Load<Texture2D>(path);
-            frames.AddFrame(animName, texture);
-        }
-    }
+		_sprite.SpriteFrames = frames;
+		_sprite.Scale = new Vector2(0.8f, 0.8f); // scale down to fit the arena
+	}
+
+	static void AddAnimFromFiles(SpriteFrames frames, string animName, string folderName,
+		int count, float fps, bool loop)
+	{
+		frames.AddAnimation(animName);
+		frames.SetAnimationLoop(animName, loop);
+		frames.SetAnimationSpeed(animName, fps);
+		for (var i = 1; i <= count; i++)
+		{
+			var path = $"{SpritePath}{folderName}/Bringer-of-Death_{folderName}_{i}.png";
+			var texture = GD.Load<Texture2D>(path);
+			frames.AddFrame(animName, texture);
+		}
+	}
 }

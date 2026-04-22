@@ -29,242 +29,253 @@ using healerfantasy.SpellSystem;
 /// </summary>
 public partial class DemonSlime : Character
 {
-    // ── signals ───────────────────────────────────────────────────────────────
+	// ── signals ───────────────────────────────────────────────────────────────
 
-    [Signal]
-    public delegate void CastWindupStartedEventHandler(string spellName, Texture2D icon, float duration);
+	public DemonSlime()
+	{
+		MaxHealth = 1200f;
+	}
 
-    [Signal]
-    public delegate void CastWindupEndedEventHandler();
+	[Signal]
+	public delegate void CastWindupStartedEventHandler(string spellName, Texture2D icon, float duration);
 
-    // ── tuneable exports ──────────────────────────────────────────────────────
-    [Export] public float MeleeInterval    = 3.0f;
-    [Export] public float AcidSpitInterval = 8.0f;
-    [Export] public float OozeInterval     = 12.0f;
-    [Export] public float NovaInterval     = 16.0f;
-    [Export] public float NovaWindupDuration = 3.0f;
+	[Signal]
+	public delegate void CastWindupEndedEventHandler();
 
-    [Export] public float MeleeDamage    = 22f;
-    [Export] public float AcidSpitDamage = 25f;
-    [Export] public float NovaDamage     = 50f;
+	// ── tuneable exports ──────────────────────────────────────────────────────
+	[Export] public float MeleeInterval = 3.0f;
+	[Export] public float AcidSpitInterval = 8.0f;
+	[Export] public float OozeInterval = 8.0f;
+	[Export] public float NovaInterval = 12.0f;
+	[Export] public float NovaWindupDuration = 3.0f;
 
-    // ── internal state ────────────────────────────────────────────────────────
-    float _meleeTimer;
-    float _acidSpitTimer;
-    float _oozeTimer;
-    float _novaTimer;
-    float _novaWindupTimer;
+	[Export] public float MeleeDamage = 25f;
+	[Export] public float AcidSpitDamage = 30f;
+	[Export] public float NovaDamage = 50f;
 
-    BossSlimeSlamSpell      _slamSpell;
-    BossAcidSpitSpell       _acidSpitSpell;
-    BossCorrosiveOozeSpell  _oozeSpell;
-    BossToxicNovaSpell      _novaSpell;
+	// ── internal state ────────────────────────────────────────────────────────
+	float _meleeTimer;
+	float _acidSpitTimer;
+	float _oozeTimer;
+	float _novaTimer;
+	float _novaWindupTimer;
 
-    AnimatedSprite2D  _sprite;
-    AudioStreamPlayer _riserPlayer;
+	BossSlimeSlamSpell _slamSpell;
+	BossAcidSpitSpell _acidSpitSpell;
+	BossCorrosiveOozeSpell _oozeSpell;
+	BossToxicNovaSpell _novaSpell;
 
-    enum PendingAttack { None, Melee, AcidSpit, Ooze }
-    PendingAttack _pendingAttack;
-    Character     _pendingTarget;
+	AnimatedSprite2D _sprite;
+	AudioStreamPlayer _riserPlayer;
 
-    const string RiserSoundPath = "res://assets/sound-effects/riser.mp3";
-    const string IdlePath       = "res://assets/enemies/demon-slime/individual sprites/01_demon_idle/demon_idle_";
-    const string CleavePath     = "res://assets/enemies/demon-slime/individual sprites/03_demon_cleave/demon_cleave_";
+	enum PendingAttack
+	{
+		None,
+		Melee,
+		AcidSpit,
+		Ooze
+	}
 
-    // ── lifecycle ─────────────────────────────────────────────────────────────
-    public override void _Ready()
-    {
-        base._Ready();
-        CharacterName = GameConstants.Boss3Name;
-        RemoveFromGroup("party");
-        AddToGroup(GameConstants.BossGroupName);
-        IsFriendly = false;
+	PendingAttack _pendingAttack;
+	Character _pendingTarget;
 
-        _meleeTimer    = MeleeInterval;
-        _acidSpitTimer = AcidSpitInterval;
-        _oozeTimer     = OozeInterval;
-        _novaTimer     = NovaInterval;
+	const string IdlePath = "res://assets/enemies/demon-slime/individual sprites/01_demon_idle/demon_idle_";
+	const string CleavePath = "res://assets/enemies/demon-slime/individual sprites/03_demon_cleave/demon_cleave_";
 
-        _slamSpell     = new BossSlimeSlamSpell     { DamageAmount = MeleeDamage };
-        _acidSpitSpell = new BossAcidSpitSpell      { DamageAmount = AcidSpitDamage };
-        _oozeSpell     = new BossCorrosiveOozeSpell();
-        _novaSpell     = new BossToxicNovaSpell     { DamageAmount = NovaDamage };
+	// ── lifecycle ─────────────────────────────────────────────────────────────
+	public override void _Ready()
+	{
+		base._Ready();
+		CharacterName = GameConstants.Boss3Name;
+		RemoveFromGroup("party");
+		AddToGroup(GameConstants.BossGroupName);
+		IsFriendly = false;
 
-        GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
-        GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
+		_meleeTimer = MeleeInterval;
+		_acidSpitTimer = AcidSpitInterval;
+		_oozeTimer = OozeInterval;
+		_novaTimer = NovaInterval;
 
-        _riserPlayer = new AudioStreamPlayer();
-        _riserPlayer.Stream = GD.Load<AudioStream>(RiserSoundPath);
-        AddChild(_riserPlayer);
+		_slamSpell = new BossSlimeSlamSpell { DamageAmount = MeleeDamage };
+		_acidSpitSpell = new BossAcidSpitSpell { DamageAmount = AcidSpitDamage };
+		_oozeSpell = new BossCorrosiveOozeSpell();
+		_novaSpell = new BossToxicNovaSpell { DamageAmount = NovaDamage };
 
-        _sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-        SetupAnimations();
-        _sprite.AnimationFinished += OnAnimationFinished;
-        _sprite.Play("idle");
-    }
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
 
-    public override void _Process(double delta)
-    {
-        base._Process(delta);
-        if (!IsAlive) return;
+		_riserPlayer = new AudioStreamPlayer();
+		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.ParryRiserSoundPath);
+		AddChild(_riserPlayer);
 
-        // ── Toxic Nova wind-up countdown ──────────────────────────────────────
-        if (_novaWindupTimer > 0f)
-        {
-            _novaWindupTimer -= (float)delta;
-            if (_novaWindupTimer <= 0f)
-                ExecuteNova();
-        }
+		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+		SetupAnimations();
+		_sprite.AnimationFinished += OnAnimationFinished;
+		_sprite.Play("idle");
+	}
 
-        if (_novaWindupTimer > 0f) return;
+	public override void _Process(double delta)
+	{
+		base._Process(delta);
+		if (!IsAlive) return;
 
-        _meleeTimer    -= (float)delta;
-        _acidSpitTimer -= (float)delta;
-        _oozeTimer     -= (float)delta;
-        _novaTimer     -= (float)delta;
+		// ── Toxic Nova wind-up countdown ──────────────────────────────────────
+		if (_novaWindupTimer > 0f)
+		{
+			_novaWindupTimer -= (float)delta;
+			if (_novaWindupTimer <= 0f)
+				ExecuteNova();
+		}
 
-        if (_pendingAttack != PendingAttack.None) return;
+		if (_novaWindupTimer > 0f) return;
 
-        if (_meleeTimer <= 0f)
-        {
-            _meleeTimer = MeleeInterval;
-            PerformSlam();
-        }
-        else if (_acidSpitTimer <= 0f)
-        {
-            _acidSpitTimer = AcidSpitInterval;
-            CastAcidSpit();
-        }
-        else if (_oozeTimer <= 0f)
-        {
-            _oozeTimer = OozeInterval;
-            CastOoze();
-        }
-        else if (_novaTimer <= 0f)
-        {
-            _novaTimer = NovaInterval;
-            BeginNova();
-        }
-    }
+		_meleeTimer -= (float)delta;
+		_acidSpitTimer -= (float)delta;
+		_oozeTimer -= (float)delta;
+		_novaTimer -= (float)delta;
 
-    // ── combat actions ────────────────────────────────────────────────────────
+		if (_pendingAttack != PendingAttack.None) return;
 
-    void PerformSlam()
-    {
-        var target = FindTank() ?? PickRandomPartyMember();
-        if (target == null) return;
-        _pendingTarget = target;
-        _pendingAttack = PendingAttack.Melee;
-        _sprite.Play("cleave");
-    }
+		if (_meleeTimer <= 0f)
+		{
+			_meleeTimer = MeleeInterval;
+			PerformSlam();
+		}
+		else if (_acidSpitTimer <= 0f)
+		{
+			_acidSpitTimer = AcidSpitInterval;
+			CastAcidSpit();
+		}
+		else if (_oozeTimer <= 0f)
+		{
+			_oozeTimer = OozeInterval;
+			CastOoze();
+		}
+		else if (_novaTimer <= 0f)
+		{
+			_novaTimer = NovaInterval;
+			BeginNova();
+		}
+	}
 
-    void CastAcidSpit()
-    {
-        var target = PickRandomPartyMember();
-        if (target == null) return;
-        _pendingTarget = target;
-        _pendingAttack = PendingAttack.AcidSpit;
-        _sprite.Play("cleave");
-    }
+	// ── combat actions ────────────────────────────────────────────────────────
 
-    void CastOoze()
-    {
-        var target = PickRandomPartyMember();
-        if (target == null) return;
-        _pendingTarget = target;
-        _pendingAttack = PendingAttack.Ooze;
-        _sprite.Play("cleave");
-    }
+	void PerformSlam()
+	{
+		var target = FindTank() ?? PickRandomPartyMember();
+		if (target == null) return;
+		_pendingTarget = target;
+		_pendingAttack = PendingAttack.Melee;
+		_sprite.Play("cleave");
+	}
 
-    void BeginNova()
-    {
-        _novaWindupTimer = NovaWindupDuration;
-        _riserPlayer.Play();
-        ParryWindowManager.OpenWindow();
-        EmitSignalCastWindupStarted(_novaSpell.Name, _novaSpell.Icon, NovaWindupDuration);
-        _pendingAttack = PendingAttack.None;
-        _sprite.Play("cleave");
-    }
+	void CastAcidSpit()
+	{
+		var target = PickRandomPartyMember();
+		if (target == null) return;
+		_pendingTarget = target;
+		_pendingAttack = PendingAttack.AcidSpit;
+		_sprite.Play("cleave");
+	}
 
-    void ExecuteNova()
-    {
-        EmitSignalCastWindupEnded();
+	void CastOoze()
+	{
+		var target = PickRandomPartyMember();
+		if (target == null) return;
+		_pendingTarget = target;
+		_pendingAttack = PendingAttack.Ooze;
+		_sprite.Play("cleave");
+	}
 
-        if (ParryWindowManager.ConsumeResult())
-        {
-            GD.Print("[DemonSlime] Toxic Nova was deflected!");
-            return;
-        }
+	void BeginNova()
+	{
+		_novaWindupTimer = NovaWindupDuration;
+		_riserPlayer.Play();
+		ParryWindowManager.OpenWindow();
+		EmitSignalCastWindupStarted(_novaSpell.Name, _novaSpell.Icon, NovaWindupDuration);
+		_pendingAttack = PendingAttack.None;
+		_sprite.Play("cleave");
+	}
 
-        var anyTarget = PickRandomPartyMember();
-        if (anyTarget != null)
-            SpellPipeline.Cast(_novaSpell, this, anyTarget);
-    }
+	void ExecuteNova()
+	{
+		EmitSignalCastWindupEnded();
 
-    void OnAnimationFinished()
-    {
-        if (_pendingTarget != null && _pendingTarget.IsAlive)
-        {
-            SpellResource spell = _pendingAttack switch
-            {
-                PendingAttack.Melee   => _slamSpell,
-                PendingAttack.AcidSpit => _acidSpitSpell,
-                PendingAttack.Ooze    => _oozeSpell,
-                _ => null
-            };
-            if (spell != null)
-                SpellPipeline.Cast(spell, this, _pendingTarget);
-        }
+		if (ParryWindowManager.ConsumeResult())
+		{
+			GD.Print("[DemonSlime] Toxic Nova was deflected!");
+			return;
+		}
 
-        _pendingTarget = null;
-        _pendingAttack = PendingAttack.None;
-        _sprite.Play("idle");
-    }
+		var anyTarget = PickRandomPartyMember();
+		if (anyTarget != null)
+			SpellPipeline.Cast(_novaSpell, this, anyTarget);
+	}
 
-    // ── targeting helpers ─────────────────────────────────────────────────────
+	void OnAnimationFinished()
+	{
+		if (_pendingTarget != null && _pendingTarget.IsAlive)
+		{
+			SpellResource spell = _pendingAttack switch
+			{
+				PendingAttack.Melee => _slamSpell,
+				PendingAttack.AcidSpit => _acidSpitSpell,
+				PendingAttack.Ooze => _oozeSpell,
+				_ => null
+			};
+			if (spell != null)
+				SpellPipeline.Cast(spell, this, _pendingTarget);
+		}
 
-    Character FindTank()
-    {
-        foreach (var node in GetTree().GetNodesInGroup("party"))
-            if (node is Character c && c.CharacterName == "Templar" && c.IsAlive)
-                return c;
-        return null;
-    }
+		_pendingTarget = null;
+		_pendingAttack = PendingAttack.None;
+		_sprite.Play("idle");
+	}
 
-    Character PickRandomPartyMember()
-    {
-        var alive = new List<Character>();
-        foreach (var node in GetTree().GetNodesInGroup("party"))
-            if (node is Character c && c.IsAlive)
-                alive.Add(c);
-        if (alive.Count == 0) return null;
-        return alive[(int)(GD.Randi() % (uint)alive.Count)];
-    }
+	// ── targeting helpers ─────────────────────────────────────────────────────
 
-    // ── animation setup ───────────────────────────────────────────────────────
+	Character FindTank()
+	{
+		foreach (var node in GetTree().GetNodesInGroup("party"))
+			if (node is Character c && c.CharacterName == "Templar" && c.IsAlive)
+				return c;
+		return null;
+	}
 
-    void SetupAnimations()
-    {
-        var frames = new SpriteFrames();
-        frames.RemoveAnimation("default");
+	Character PickRandomPartyMember()
+	{
+		var alive = new List<Character>();
+		foreach (var node in GetTree().GetNodesInGroup("party"))
+			if (node is Character c && c.IsAlive)
+				alive.Add(c);
+		if (alive.Count == 0) return null;
+		return alive[(int)(GD.Randi() % (uint)alive.Count)];
+	}
 
-        AddAnimFromFiles(frames, "idle",   IdlePath,   6,  8f,  true);
-        AddAnimFromFiles(frames, "cleave", CleavePath, 15, 12f, false);
+	// ── animation setup ───────────────────────────────────────────────────────
 
-        _sprite.SpriteFrames = frames;
-        _sprite.Scale = new Vector2(0.25f, 0.25f); // frames are 288×160, scale to fit arena
-    }
+	void SetupAnimations()
+	{
+		var frames = new SpriteFrames();
+		frames.RemoveAnimation("default");
 
-    static void AddAnimFromFiles(SpriteFrames frames, string animName, string basePath,
-        int count, float fps, bool loop)
-    {
-        frames.AddAnimation(animName);
-        frames.SetAnimationLoop(animName, loop);
-        frames.SetAnimationSpeed(animName, fps);
-        for (var i = 1; i <= count; i++)
-        {
-            var texture = GD.Load<Texture2D>($"{basePath}{i}.png");
-            frames.AddFrame(animName, texture);
-        }
-    }
+		AddAnimFromFiles(frames, "idle", IdlePath, 6, 8f, true);
+		AddAnimFromFiles(frames, "cleave", CleavePath, 15, 12f, false);
+
+		_sprite.SpriteFrames = frames;
+		_sprite.Scale = new Vector2(0.55f, 0.55f); // frames are 288×160, scale to fit arena
+	}
+
+	static void AddAnimFromFiles(SpriteFrames frames, string animName, string basePath,
+		int count, float fps, bool loop)
+	{
+		frames.AddAnimation(animName);
+		frames.SetAnimationLoop(animName, loop);
+		frames.SetAnimationSpeed(animName, fps);
+		for (var i = 1; i <= count; i++)
+		{
+			var texture = GD.Load<Texture2D>($"{basePath}{i}.png");
+			frames.AddFrame(animName, texture);
+		}
+	}
 }

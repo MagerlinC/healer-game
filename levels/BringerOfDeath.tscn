@@ -9,9 +9,7 @@ height = 28.0
 [node name="BringerOfDeath" type="CharacterBody2D"]
 script = ExtResource("Script_bringer_of_death")
 CharacterName = "Bringer of Death"
-MaxHealth = 600.0
 MaxMana = 300.0
-LifeLossPerSecond = 5.0
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 

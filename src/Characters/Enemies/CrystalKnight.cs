@@ -30,6 +30,10 @@ using healerfantasy.SpellSystem;
 /// </summary>
 public partial class CrystalKnight : Character
 {
+	public CrystalKnight()
+	{
+		MaxHealth = 1000f;
+	}
 	// ── signals ───────────────────────────────────────────────────────────────
 
 	/// <summary>

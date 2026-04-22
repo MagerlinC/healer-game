@@ -19,7 +19,7 @@ namespace healerfantasy.SpellResources;
 [GlobalClass]
 public partial class BossStructuralCrushSpell : SpellResource
 {
-	public float DamageAmount = 35f;
+	public float DamageAmount = 40f;
 
 	public BossStructuralCrushSpell()
 	{
