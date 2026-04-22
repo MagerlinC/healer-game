@@ -5,6 +5,7 @@ using Godot;
 using healerfantasy;
 using healerfantasy.SpellResources;
 using healerfantasy.Talents;
+using healerfantasy.UI;
 
 /// <summary>
 /// Root script for the Overworld scene.
@@ -78,7 +79,7 @@ public partial class OverworldController : Node2D
 
 	// ── talent-point HUD ──────────────────────────────────────────────────────
 	Label? _talentPointsLabel;
-	Label? _characterProgressLabel;
+	HBoxContainer? _characterProgressLabel;
 
 	// ── overworld references ──────────────────────────────────────────────────
 	OverworldPlayer? _player;
@@ -151,9 +152,8 @@ public partial class OverworldController : Node2D
 		// ── HUD ───────────────────────────────────────────────────────────────
 		var hud = new CanvasLayer { Layer = 5 };
 		AddChild(hud);
-		_hintLabel = BuildHintLabel();
-		hud.AddChild(_hintLabel);
-		hud.AddChild(BuildHUDButtonBar());
+		hud.AddChild(BuildHintLabel()); // also sets _hintLabel internally
+		hud.AddChild(BuildBackToMenuButton());
 		_characterProgressLabel = BuildCharacterProgressLabel();
 		hud.AddChild(_characterProgressLabel);
 
@@ -221,33 +221,49 @@ public partial class OverworldController : Node2D
 
 	// ── HUD ───────────────────────────────────────────────────────────────────
 
-	Label BuildHintLabel()
+	/// <summary>
+	/// Builds the bottom-right hint label wrapped in a styled panel.
+	/// Sets <see cref="_hintLabel"/> and returns the panel wrapper to add to the HUD.
+	/// </summary>
+	Control BuildHintLabel()
 	{
-		var lbl = new Label();
-		lbl.Text = DefaultHint;
-		lbl.HorizontalAlignment = HorizontalAlignment.Center;
-		lbl.SetAnchorsPreset(Control.LayoutPreset.TopWide);
-		lbl.OffsetTop = 10f;
-		lbl.AddThemeFontSizeOverride("font_size", 13);
-		lbl.AddThemeColorOverride("font_color", HintColor);
-		lbl.MouseFilter = Control.MouseFilterEnum.Ignore;
-		return lbl;
+		var style = new StyleBoxFlat();
+		style.BgColor = new Color(0.07f, 0.06f, 0.06f, 0.88f);
+		style.SetBorderWidthAll(1);
+		style.BorderColor = PanelBorder;
+		style.SetCornerRadiusAll(4);
+		style.ContentMarginLeft = style.ContentMarginRight = 10f;
+		style.ContentMarginTop = style.ContentMarginBottom = 5f;
+
+		var panel = new PanelContainer();
+		panel.AddThemeStyleboxOverride("panel", style);
+		panel.SetAnchorsPreset(Control.LayoutPreset.BottomRight);
+		// Grow leftward / upward so the panel stays fully on-screen.
+		panel.GrowHorizontal = Control.GrowDirection.Begin;
+		panel.GrowVertical = Control.GrowDirection.Begin;
+		panel.OffsetRight = -12f;
+		panel.OffsetBottom = -12f;
+		panel.MouseFilter = Control.MouseFilterEnum.Ignore;
+
+		_hintLabel = new Label();
+		_hintLabel.Text = DefaultHint;
+		_hintLabel.AddThemeFontSizeOverride("font_size", 14);
+		_hintLabel.AddThemeColorOverride("font_color", HintColor);
+		_hintLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+		panel.AddChild(_hintLabel);
+
+		return panel;
 	}
 
-	Control BuildHUDButtonBar()
+	Control BuildBackToMenuButton()
 	{
-		var margin = new MarginContainer();
-		margin.SetAnchorsPreset(Control.LayoutPreset.BottomWide);
-		margin.GrowVertical = Control.GrowDirection.Begin;
-		margin.AddThemeConstantOverride("margin_left", 24);
-		margin.AddThemeConstantOverride("margin_right", 24);
-		margin.AddThemeConstantOverride("margin_top", 12);
-		margin.AddThemeConstantOverride("margin_bottom", 16);
-
 		var hbox = new HBoxContainer();
-		hbox.Alignment = BoxContainer.AlignmentMode.End;
+		hbox.SetAnchorsPreset(Control.LayoutPreset.TopRight);
+		// Grow leftward from the right edge so the full button is visible.
+		hbox.GrowHorizontal = Control.GrowDirection.Begin;
+		hbox.OffsetRight = -10f;
+		hbox.OffsetTop = 10f;
 		hbox.AddThemeConstantOverride("separation", 14);
-		margin.AddChild(hbox);
 
 		// Main Menu button
 		var menuBtn = new Button();
@@ -261,37 +277,7 @@ public partial class OverworldController : Node2D
 		menuBtn.Pressed += () => GetTree().ChangeSceneToFile("res://levels/MainMenu.tscn");
 		hbox.AddChild(menuBtn);
 
-		// Start Run button
-		var startBtn = new Button();
-		startBtn.Text = "Start Run  ▶";
-		startBtn.CustomMinimumSize = new Vector2(180f, 48f);
-		startBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-		startBtn.AddThemeFontSizeOverride("font_size", 18);
-		startBtn.AddThemeColorOverride("font_color", new Color(0.10f, 0.08f, 0.06f));
-		startBtn.AddThemeColorOverride("font_hover_color", new Color(0.06f, 0.04f, 0.02f));
-
-		var normalStyle = new StyleBoxFlat();
-		normalStyle.BgColor = TitleColor;
-		normalStyle.SetCornerRadiusAll(6);
-		normalStyle.ContentMarginLeft = normalStyle.ContentMarginRight = 20f;
-		normalStyle.ContentMarginTop = normalStyle.ContentMarginBottom = 10f;
-
-		var hoverStyle = new StyleBoxFlat();
-		hoverStyle.BgColor = new Color(1.00f, 0.92f, 0.60f);
-		hoverStyle.SetCornerRadiusAll(6);
-		hoverStyle.ContentMarginLeft = hoverStyle.ContentMarginRight = 20f;
-		hoverStyle.ContentMarginTop = hoverStyle.ContentMarginBottom = 10f;
-
-		/*
-		startBtn.AddThemeStyleboxOverride("normal", normalStyle);
-		startBtn.AddThemeStyleboxOverride("hover", hoverStyle);
-		startBtn.AddThemeStyleboxOverride("pressed", normalStyle);
-		startBtn.AddThemeStyleboxOverride("focus", normalStyle);
-		startBtn.Pressed += OnStartRun;
-		hbox.AddChild(startBtn);
-		*/
-
-		return margin;
+		return hbox;
 	}
 
 	void OnStartRun()
@@ -305,23 +291,16 @@ public partial class OverworldController : Node2D
 	/// <summary>
 	/// Builds the top-left HUD label showing character level and XP progress.
 	/// </summary>
-	Label BuildCharacterProgressLabel()
+	HBoxContainer BuildCharacterProgressLabel()
 	{
-		var lbl = new Label();
-		lbl.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
-		lbl.OffsetLeft = 20f;
-		lbl.OffsetTop = 10f;
-		lbl.AddThemeFontSizeOverride("font_size", 13);
-		lbl.AddThemeColorOverride("font_color", new Color(0.70f, 0.65f, 0.60f));
-		lbl.MouseFilter = Control.MouseFilterEnum.Ignore;
-		UpdateCharacterProgressLabel(lbl);
-		return lbl;
-	}
-
-	static void UpdateCharacterProgressLabel(Label lbl)
-	{
-		lbl.Text = $"Lv. {PlayerProgressStore.Level}  •  XP: {PlayerProgressStore.CurrentXp} / {PlayerProgressStore.XpPerLevel}" +
-		           $"  •  Talent Points: {PlayerProgressStore.TalentPoints}";
+		var indicator = new PlayerLevelIndicator();
+		indicator.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
+		indicator.OffsetLeft = 20f;
+		indicator.OffsetTop = 10f;
+		indicator.AddThemeFontSizeOverride("font_size", 18);
+		indicator.AddThemeColorOverride("font_color", new Color(0.70f, 0.65f, 0.60f));
+		indicator.MouseFilter = Control.MouseFilterEnum.Ignore;
+		return indicator;
 	}
 
 	// ── overlay panel builder ─────────────────────────────────────────────────
@@ -595,9 +574,9 @@ public partial class OverworldController : Node2D
 		_spellLockOverlays[spellKey] = (lockOverlay, lockLabel);
 
 		// Set initial lock state
-		bool locked = IsSpellLocked(spell);
+		var locked = IsSpellLocked(spell);
 		lockOverlay.Visible = locked;
-		lockLabel.Visible   = locked;
+		lockLabel.Visible = locked;
 
 		panel.MouseEntered += () =>
 		{
@@ -606,6 +585,7 @@ public partial class OverworldController : Node2D
 				GameTooltip.Show(GetLockedSpellTooltip(spell));
 				return;
 			}
+
 			if (!IsEquipped(spell)) border.BorderColor = CardBorderHover;
 			GameTooltip.Show(GameTooltip.FormatSpellTooltip(spell));
 		};
@@ -622,6 +602,7 @@ public partial class OverworldController : Node2D
 				{
 					ToggleSpell(spell);
 				}
+
 				panel.AcceptEvent();
 			}
 		};
@@ -638,14 +619,15 @@ public partial class OverworldController : Node2D
 	bool IsSpellLocked(SpellResource spell)
 	{
 		if (spell.RequiredSchoolPoints <= 0) return false;
-		int invested = _talentSlots.Count(s => s.IsSelected && s.Definition.School == spell.School);
+		var invested = _talentSlots.Count(s => s.IsSelected && s.Definition.School == spell.School);
 		return invested < spell.RequiredSchoolPoints;
 	}
 
 	string GetLockedSpellTooltip(SpellResource spell)
 	{
-		return $"{spell.Name}\nRequires {spell.RequiredSchoolPoints} {spell.School} talent point{(spell.RequiredSchoolPoints > 1 ? "s" : "")} invested.\n" +
-		       $"({_talentSlots.Count(s => s.IsSelected && s.Definition.School == spell.School)} / {spell.RequiredSchoolPoints} selected)";
+		return
+			$"{spell.Name}\nRequires {spell.RequiredSchoolPoints} {spell.School} talent point{(spell.RequiredSchoolPoints > 1 ? "s" : "")} invested.\n" +
+			$"({_talentSlots.Count(s => s.IsSelected && s.Definition.School == spell.School)} / {spell.RequiredSchoolPoints} selected)";
 	}
 
 	/// <summary>
@@ -655,14 +637,14 @@ public partial class OverworldController : Node2D
 	/// </summary>
 	void RefreshSpellLockVisuals()
 	{
-		bool loadoutChanged = false;
+		var loadoutChanged = false;
 		foreach (var spell in SpellRegistry.AllSpells)
 		{
 			var key = spell.Name ?? spell.GetType().Name;
 			if (!_spellLockOverlays.TryGetValue(key, out var nodes)) continue;
-			bool locked = IsSpellLocked(spell);
+			var locked = IsSpellLocked(spell);
 			nodes.Overlay.Visible = locked;
-			nodes.Icon.Visible    = locked;
+			nodes.Icon.Visible = locked;
 
 			// If a locked spell is currently equipped, remove it from the loadout.
 			if (locked && IsEquipped(spell))
@@ -887,9 +869,9 @@ public partial class OverworldController : Node2D
 	void UpdateTalentPointsLabel()
 	{
 		if (_talentPointsLabel == null) return;
-		int total    = PlayerProgressStore.TalentPoints;
-		int selected = _talentSlots.Count(s => s.IsSelected);
-		int free     = total - selected;
+		var total = PlayerProgressStore.TalentPoints;
+		var selected = _talentSlots.Count(s => s.IsSelected);
+		var free = total - selected;
 
 		if (total == 0)
 		{
@@ -997,7 +979,7 @@ public partial class OverworldController : Node2D
 		// If the slot was just selected, check we haven't exceeded the budget.
 		if (slot.IsSelected)
 		{
-			int selected = _talentSlots.Count(s => s.IsSelected);
+			var selected = _talentSlots.Count(s => s.IsSelected);
 			if (selected > PlayerProgressStore.TalentPoints)
 			{
 				// Over budget — revert the selection silently.
@@ -1046,7 +1028,7 @@ public partial class OverworldController : Node2D
 
 		// Ensure we haven't synced more talents than available points (e.g. after
 		// returning from a run that was started before a reset).
-		int excess = _talentSlots.Count(s => s.IsSelected) - PlayerProgressStore.TalentPoints;
+		var excess = _talentSlots.Count(s => s.IsSelected) - PlayerProgressStore.TalentPoints;
 		if (excess > 0)
 		{
 			// Deselect the last N selected slots to bring within budget.
