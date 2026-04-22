@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bc3djhuok4oru"
-path="res://.godot/imported/library.png-da5b6cadd772a7ee5184486ee55305ce.ctex"
+uid="uid://djdoxh0n6ffdh"
+path="res://.godot/imported/door.png-8fb8475389ffc93fcafc2cdbb0081e0f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/backgrounds/overworld/library.png"
-dest_files=["res://.godot/imported/library.png-da5b6cadd772a7ee5184486ee55305ce.ctex"]
+source_file="res://assets/interactibles/door.png"
+dest_files=["res://.godot/imported/door.png-8fb8475389ffc93fcafc2cdbb0081e0f.ctex"]
 
 [params]
 

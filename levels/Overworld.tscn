@@ -1,6 +1,10 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://c7mqu4p51amnb"]
 
-[ext_resource type="Script" path="res://src/UI/OverworldController.cs" id="1"]
+[ext_resource type="Script" uid="uid://brr05st13ac2q" path="res://src/UI/OverworldController.cs" id="1"]
 
-[node name="Overworld" type="Node2D"]
+[node name="Overworld" type="Node2D" unique_id=842984943]
 script = ExtResource("1")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=735557781]
+position = Vector2(960, 539)
+zoom = Vector2(2, 2)
