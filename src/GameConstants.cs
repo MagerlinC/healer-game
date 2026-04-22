@@ -21,4 +21,12 @@ public static class GameConstants
 		"res://levels/DemonSlime.tscn"
 	};
 
+	// ── XP rewards ────────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// XP awarded for defeating each boss, indexed by encounter (0–2).
+	/// Crystal Knight awards more XP to encourage repeated practice runs.
+	/// </summary>
+	public static readonly int[] BossXpRewards = { 200, 100, 150 };
+
 }

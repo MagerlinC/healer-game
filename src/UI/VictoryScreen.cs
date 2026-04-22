@@ -10,6 +10,8 @@ using healerfantasy.CombatLog;
 /// For the final encounter (index 2) it shows the full "VICTORY!" screen
 /// with "Play Again" and "Main Menu" options.
 ///
+/// Also awards XP on each boss kill and displays level-up notifications.
+///
 /// Sits on CanvasLayer 20 (same as DeathScreen) and is hidden by default.
 /// ProcessMode is Always so buttons keep receiving input while the tree is
 /// paused.
@@ -32,10 +34,15 @@ public partial class VictoryScreen : CanvasLayer
                     RunHistoryStore.RecordBossEncounter(character.CharacterName);
                     CombatLog.Clear();
 
+                    // Award XP and process level-ups.
+                    int bossIndex   = RunState.Instance.CurrentBossIndex;
+                    int xpReward    = GameConstants.BossXpRewards[bossIndex];
+                    int levelsGained = PlayerProgressStore.AddXp(xpReward);
+
                     if (RunState.Instance.CurrentBossIndex < 2)
-                        ShowArenaCleared(character.CharacterName);
+                        ShowArenaCleared(character.CharacterName, xpReward, levelsGained);
                     else
-                        ShowVictoryScreen();
+                        ShowVictoryScreen(xpReward, levelsGained);
                 }
             }));
 
@@ -51,7 +58,7 @@ public partial class VictoryScreen : CanvasLayer
         vbox.SetAnchorsPreset(Control.LayoutPreset.Center);
         vbox.GrowHorizontal = Control.GrowDirection.Both;
         vbox.GrowVertical   = Control.GrowDirection.Both;
-        vbox.AddThemeConstantOverride("separation", 28);
+        vbox.AddThemeConstantOverride("separation", 20);
         overlay.AddChild(vbox);
 
         // Title
@@ -64,9 +71,18 @@ public partial class VictoryScreen : CanvasLayer
         // Subtitle
         _subLabel = new Label();
         _subLabel.HorizontalAlignment = HorizontalAlignment.Center;
+        _subLabel.AutowrapMode = TextServer.AutowrapMode.Word;
         _subLabel.AddThemeFontSizeOverride("font_size", 18);
         _subLabel.AddThemeColorOverride("font_color", new Color(0.72f, 0.68f, 0.62f));
         vbox.AddChild(_subLabel);
+
+        // XP / level-up info row
+        _xpLabel = new Label();
+        _xpLabel.HorizontalAlignment = HorizontalAlignment.Center;
+        _xpLabel.AutowrapMode = TextServer.AutowrapMode.Word;
+        _xpLabel.AddThemeFontSizeOverride("font_size", 16);
+        _xpLabel.AddThemeColorOverride("font_color", new Color(0.55f, 0.85f, 0.95f));
+        vbox.AddChild(_xpLabel);
 
         // Button row (populated dynamically when the screen is shown)
         _btnRow = new HBoxContainer();
@@ -80,12 +96,13 @@ public partial class VictoryScreen : CanvasLayer
     /// <summary>
     /// Shows the intermediate "Arena Cleared!" screen between bosses.
     /// </summary>
-    public void ShowArenaCleared(string defeatedBossName)
+    public void ShowArenaCleared(string defeatedBossName, int xpGained, int levelsGained)
     {
         if (Visible) return;
 
         _titleLabel.Text = "ARENA CLEARED!";
         _subLabel.Text   = $"{defeatedBossName} has been defeated.\nPrepare for the next battle.";
+        _xpLabel.Text    = BuildXpLine(xpGained, levelsGained);
 
         // Clear any old buttons and build arena-cleared set.
         foreach (var child in _btnRow.GetChildren())
@@ -104,12 +121,13 @@ public partial class VictoryScreen : CanvasLayer
     /// <summary>
     /// Shows the final victory screen after the last boss is defeated.
     /// </summary>
-    public void ShowVictoryScreen()
+    public void ShowVictoryScreen(int xpGained, int levelsGained)
     {
         if (Visible) return;
 
         _titleLabel.Text = "VICTORY!";
         _subLabel.Text   = "All three arenas have been conquered.";
+        _xpLabel.Text    = BuildXpLine(xpGained, levelsGained);
 
         foreach (var child in _btnRow.GetChildren())
             child.QueueFree();
@@ -153,9 +171,24 @@ public partial class VictoryScreen : CanvasLayer
 
     Label          _titleLabel = null!;
     Label          _subLabel   = null!;
+    Label          _xpLabel    = null!;
     HBoxContainer  _btnRow     = null!;
 
     // ── helpers ───────────────────────────────────────────────────────────────
+
+    static string BuildXpLine(int xpGained, int levelsGained)
+    {
+        var xpText = $"+{xpGained} XP  •  Level {PlayerProgressStore.Level}  •  " +
+                     $"XP: {PlayerProgressStore.CurrentXp}/{PlayerProgressStore.XpPerLevel}";
+        if (levelsGained > 0)
+        {
+            var pointWord = levelsGained == 1 ? "point" : "points";
+            xpText += levelsGained == 1
+                ? $"\n✦  LEVEL UP!  ✦  +1 talent point  •  All party members gain +{PlayerProgressStore.MaxHealthBonusPerLevel:0} max health"
+                : $"\n✦  LEVEL UP ×{levelsGained}!  ✦  +{levelsGained} talent {pointWord}  •  All party members gain +{levelsGained * PlayerProgressStore.MaxHealthBonusPerLevel:0} max health";
+        }
+        return xpText;
+    }
 
     static Button MakeButton(string text, Color bgColor, Color borderColor, System.Action onPressed)
     {

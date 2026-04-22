@@ -71,9 +71,14 @@ public partial class OverworldController : Node2D
 
 	readonly SpellResource?[] _loadout = new SpellResource?[Player.MaxSpellSlots];
 	readonly Dictionary<string, (PanelContainer Panel, StyleBoxFlat Border)> _libraryCards = new();
+	readonly Dictionary<string, (ColorRect Overlay, Label Icon)> _spellLockOverlays = new();
 	(PanelContainer Panel, StyleBoxFlat Border, TextureRect Icon)[]? _loadoutSlots;
 	readonly List<TalentSlot> _talentSlots = new();
 	readonly Dictionary<SpellSchool, Dictionary<int, List<TalentSlot>>> _talentsBySchoolRow = new();
+
+	// ── talent-point HUD ──────────────────────────────────────────────────────
+	Label? _talentPointsLabel;
+	Label? _characterProgressLabel;
 
 	// ── overworld references ──────────────────────────────────────────────────
 	OverworldPlayer? _player;
@@ -149,6 +154,8 @@ public partial class OverworldController : Node2D
 		_hintLabel = BuildHintLabel();
 		hud.AddChild(_hintLabel);
 		hud.AddChild(BuildHUDButtonBar());
+		_characterProgressLabel = BuildCharacterProgressLabel();
+		hud.AddChild(_characterProgressLabel);
 
 		// ── Wire interactible clicks ──────────────────────────────────────────
 		spellTome.InputEvent += (_, ev, _) =>
@@ -293,6 +300,28 @@ public partial class OverworldController : Node2D
 		GlobalAutoLoad.Reset();
 		RunHistoryStore.StartRun();
 		GetTree().ChangeSceneToFile("res://levels/World.tscn");
+	}
+
+	/// <summary>
+	/// Builds the top-left HUD label showing character level and XP progress.
+	/// </summary>
+	Label BuildCharacterProgressLabel()
+	{
+		var lbl = new Label();
+		lbl.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
+		lbl.OffsetLeft = 20f;
+		lbl.OffsetTop = 10f;
+		lbl.AddThemeFontSizeOverride("font_size", 13);
+		lbl.AddThemeColorOverride("font_color", new Color(0.70f, 0.65f, 0.60f));
+		lbl.MouseFilter = Control.MouseFilterEnum.Ignore;
+		UpdateCharacterProgressLabel(lbl);
+		return lbl;
+	}
+
+	static void UpdateCharacterProgressLabel(Label lbl)
+	{
+		lbl.Text = $"Lv. {PlayerProgressStore.Level}  •  XP: {PlayerProgressStore.CurrentXp} / {PlayerProgressStore.XpPerLevel}" +
+		           $"  •  Talent Points: {PlayerProgressStore.TalentPoints}";
 	}
 
 	// ── overlay panel builder ─────────────────────────────────────────────────
@@ -546,11 +575,39 @@ public partial class OverworldController : Node2D
 		nameLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
 		vbox.AddChild(nameLabel);
 
-		var tooltip = GameTooltip.FormatSpellTooltip(spell);
+		// ── Lock overlay (shown when talent requirements aren't met) ──────────
+		var lockOverlay = new ColorRect();
+		lockOverlay.Color = new Color(0f, 0f, 0f, 0.62f);
+		lockOverlay.MouseFilter = Control.MouseFilterEnum.Ignore;
+		lockOverlay.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		panel.AddChild(lockOverlay);
+
+		var lockLabel = new Label();
+		lockLabel.Text = "🔒";
+		lockLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		lockLabel.VerticalAlignment = VerticalAlignment.Center;
+		lockLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+		lockLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		lockLabel.AddThemeFontSizeOverride("font_size", 22);
+		panel.AddChild(lockLabel);
+
+		var spellKey = spell.Name ?? spell.GetType().Name;
+		_spellLockOverlays[spellKey] = (lockOverlay, lockLabel);
+
+		// Set initial lock state
+		bool locked = IsSpellLocked(spell);
+		lockOverlay.Visible = locked;
+		lockLabel.Visible   = locked;
+
 		panel.MouseEntered += () =>
 		{
+			if (IsSpellLocked(spell))
+			{
+				GameTooltip.Show(GetLockedSpellTooltip(spell));
+				return;
+			}
 			if (!IsEquipped(spell)) border.BorderColor = CardBorderHover;
-			GameTooltip.Show(tooltip);
+			GameTooltip.Show(GameTooltip.FormatSpellTooltip(spell));
 		};
 		panel.MouseExited += () =>
 		{
@@ -561,12 +618,69 @@ public partial class OverworldController : Node2D
 		{
 			if (ev is InputEventMouseButton mb && mb.ButtonIndex == MouseButton.Left && mb.Pressed)
 			{
-				ToggleSpell(spell);
+				if (!IsSpellLocked(spell))
+				{
+					ToggleSpell(spell);
+				}
 				panel.AcceptEvent();
 			}
 		};
 
 		return panel;
+	}
+
+	// ── spell lock helpers ────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Returns true if the spell's school-point requirement is not yet met
+	/// by the currently selected talents.
+	/// </summary>
+	bool IsSpellLocked(SpellResource spell)
+	{
+		if (spell.RequiredSchoolPoints <= 0) return false;
+		int invested = _talentSlots.Count(s => s.IsSelected && s.Definition.School == spell.School);
+		return invested < spell.RequiredSchoolPoints;
+	}
+
+	string GetLockedSpellTooltip(SpellResource spell)
+	{
+		return $"{spell.Name}\nRequires {spell.RequiredSchoolPoints} {spell.School} talent point{(spell.RequiredSchoolPoints > 1 ? "s" : "")} invested.\n" +
+		       $"({_talentSlots.Count(s => s.IsSelected && s.Definition.School == spell.School)} / {spell.RequiredSchoolPoints} selected)";
+	}
+
+	/// <summary>
+	/// Refreshes lock overlay visibility for all spell cards based on current talent selection.
+	/// Also removes any locked spells from the active loadout.
+	/// Call whenever talent selection changes.
+	/// </summary>
+	void RefreshSpellLockVisuals()
+	{
+		bool loadoutChanged = false;
+		foreach (var spell in SpellRegistry.AllSpells)
+		{
+			var key = spell.Name ?? spell.GetType().Name;
+			if (!_spellLockOverlays.TryGetValue(key, out var nodes)) continue;
+			bool locked = IsSpellLocked(spell);
+			nodes.Overlay.Visible = locked;
+			nodes.Icon.Visible    = locked;
+
+			// If a locked spell is currently equipped, remove it from the loadout.
+			if (locked && IsEquipped(spell))
+			{
+				var slot = System.Array.FindIndex(_loadout, s => s?.Name == spell.Name);
+				if (slot >= 0)
+				{
+					_loadout[slot] = null;
+					loadoutChanged = true;
+				}
+			}
+		}
+
+		if (loadoutChanged)
+		{
+			RefreshSpellVisuals();
+			RunState.Instance.SetSpells(_loadout);
+		}
 	}
 
 	Control BuildLoadoutRow()
@@ -728,6 +842,14 @@ public partial class OverworldController : Node2D
 		vbox.AddThemeConstantOverride("separation", 10);
 		margin.AddChild(vbox);
 
+		// ── Talent point budget display ───────────────────────────────────────
+		_talentPointsLabel = new Label();
+		_talentPointsLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		_talentPointsLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		_talentPointsLabel.AddThemeFontSizeOverride("font_size", 14);
+		UpdateTalentPointsLabel();
+		vbox.AddChild(_talentPointsLabel);
+
 		var scroll = new ScrollContainer();
 		scroll.SizeFlagsHorizontal = scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 
@@ -760,6 +882,26 @@ public partial class OverworldController : Node2D
 		vbox.AddChild(hint);
 
 		return margin;
+	}
+
+	void UpdateTalentPointsLabel()
+	{
+		if (_talentPointsLabel == null) return;
+		int total    = PlayerProgressStore.TalentPoints;
+		int selected = _talentSlots.Count(s => s.IsSelected);
+		int free     = total - selected;
+
+		if (total == 0)
+		{
+			_talentPointsLabel.Text = "No talent points yet — defeat a boss to level up and earn your first point!";
+			_talentPointsLabel.AddThemeColorOverride("font_color", HintColor);
+		}
+		else
+		{
+			_talentPointsLabel.Text = $"Talent Points: {free} available  ({selected} / {total} spent)";
+			_talentPointsLabel.AddThemeColorOverride("font_color",
+				free > 0 ? new Color(0.55f, 0.85f, 0.95f) : new Color(0.70f, 0.65f, 0.55f));
+		}
 	}
 
 	Control BuildTalentSchoolColumn(SpellSchool school, string colName, Color accent)
@@ -852,8 +994,24 @@ public partial class OverworldController : Node2D
 
 	void OnTalentSlotToggled(TalentSlot slot)
 	{
+		// If the slot was just selected, check we haven't exceeded the budget.
+		if (slot.IsSelected)
+		{
+			int selected = _talentSlots.Count(s => s.IsSelected);
+			if (selected > PlayerProgressStore.TalentPoints)
+			{
+				// Over budget — revert the selection silently.
+				slot.SetSelected(false);
+				UpdateTalentPointsLabel();
+				return;
+			}
+		}
+
 		ValidateTalentTree(slot.Definition.School);
 		CommitTalentsToRunState();
+		UpdateTalentPointsLabel();
+		// Refresh spell lock overlays — talent choices affect spell availability.
+		RefreshSpellLockVisuals();
 	}
 
 	void ValidateTalentTree(SpellSchool school)
@@ -885,6 +1043,20 @@ public partial class OverworldController : Node2D
 			slot.SetSelected(active.Contains(slot.Definition.Name));
 		foreach (var (school, _, _) in TalentSchoolOrder)
 			ValidateTalentTree(school);
+
+		// Ensure we haven't synced more talents than available points (e.g. after
+		// returning from a run that was started before a reset).
+		int excess = _talentSlots.Count(s => s.IsSelected) - PlayerProgressStore.TalentPoints;
+		if (excess > 0)
+		{
+			// Deselect the last N selected slots to bring within budget.
+			foreach (var slot in _talentSlots.Where(s => s.IsSelected).Reverse().Take(excess))
+				slot.SetSelected(false);
+			CommitTalentsToRunState();
+		}
+
+		UpdateTalentPointsLabel();
+		RefreshSpellLockVisuals();
 	}
 
 	// ══════════════════════════════════════════════════════════════════════════

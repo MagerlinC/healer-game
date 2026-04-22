@@ -27,6 +27,7 @@ public partial class TimeLoopSpell : SpellResource
 		CastTime = 0.0f;
 		School = SpellSchool.Chronomancy;
 		Tags = SpellTags.Healing | SpellTags.Duration;
+		RequiredSchoolPoints = 2;
 		EffectType = EffectType.Helpful;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/time-loop.png");
 	}

@@ -22,6 +22,7 @@ public partial class DecaySpellResource : SpellResource
 		Tags = SpellTags.Damage | SpellTags.Duration | SpellTags.Void;
 		EffectType = EffectType.Harmful;
 		School = SpellSchool.Void;
+		RequiredSchoolPoints = 1;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/decay.png");
 	}
 

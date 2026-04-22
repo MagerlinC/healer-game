@@ -24,6 +24,7 @@ public partial class TimeWarpSpell : SpellResource
 		CastTime = 0.0f;
 		Cooldown = 10f;
 		School = SpellSchool.Chronomancy;
+		RequiredSchoolPoints = 2;
 		Tags = SpellTags.Duration | SpellTags.GroupSpell;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/time-warp.png");
 	}

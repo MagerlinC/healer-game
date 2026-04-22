@@ -40,6 +40,14 @@ public partial class SpellResource : Resource
 	/// Set these in each subclass constructor.
 	/// </summary>
 	public SpellTags Tags { get; protected set; } = SpellTags.None;
+
+	/// <summary>
+	/// Minimum number of talent points the player must have invested in this
+	/// spell's <see cref="School"/> before the spell can be equipped.
+	/// 0 means no requirement (default — spell is always available).
+	/// Set this in subclass constructors for advanced spells.
+	/// </summary>
+	public int RequiredSchoolPoints { get; protected set; } = 0;
 	// ── Pipeline integration ─────────────────────────────────────────────────
 
 	/// <summary>
