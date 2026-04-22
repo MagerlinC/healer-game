@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://ddibb1t3qxt5r"
+path="res://.godot/imported/5. Emberlight.ogg-8e7acbee7887ebf616797274e6d3ae39.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/music/Loops/ogg/5. Emberlight.ogg"
+dest_files=["res://.godot/imported/5. Emberlight.ogg-8e7acbee7887ebf616797274e6d3ae39.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

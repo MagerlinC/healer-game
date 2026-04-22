@@ -15,14 +15,7 @@ public static class GameConstants
 	{
 		"res://levels/CrystalKnight.tscn",
 		"res://levels/BringerOfDeath.tscn",
-		"res://levels/DemonSlime.tscn",
+		"res://levels/DemonSlime.tscn"
 	};
 
-	/// <summary>Arena background image paths, one per boss encounter.</summary>
-	public static readonly string[] ArenaBackgroundPaths =
-	{
-		"res://assets/backgrounds/space/1.png",
-		"res://assets/backgrounds/space/2.png",
-		"res://assets/backgrounds/space/3.png",
-	};
 }

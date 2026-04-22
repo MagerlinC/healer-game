@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bjoa5wcr4rwme"
+path="res://.godot/imported/10. Elven Dawn.wav-de21d8db14c424ba1f191ce526a163a4.sample"
+
+[deps]
+
+source_file="res://assets/music/Loops/wav/10. Elven Dawn.wav"
+dest_files=["res://.godot/imported/10. Elven Dawn.wav-de21d8db14c424ba1f191ce526a163a4.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

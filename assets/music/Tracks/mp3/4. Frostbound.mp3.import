@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cj0s8w4kxfm48"
+path="res://.godot/imported/4. Frostbound.mp3-8082125f0ea65d82aedf47165af50b08.mp3str"
+
+[deps]
+
+source_file="res://assets/music/Tracks/mp3/4. Frostbound.mp3"
+dest_files=["res://.godot/imported/4. Frostbound.mp3-8082125f0ea65d82aedf47165af50b08.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

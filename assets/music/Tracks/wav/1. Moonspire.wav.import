@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://nphk12aguues"
+path="res://.godot/imported/1. Moonspire.wav-a30b632ff224bf89a326e2c5c7c837ed.sample"
+
+[deps]
+
+source_file="res://assets/music/Tracks/wav/1. Moonspire.wav"
+dest_files=["res://.godot/imported/1. Moonspire.wav-a30b632ff224bf89a326e2c5c7c837ed.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

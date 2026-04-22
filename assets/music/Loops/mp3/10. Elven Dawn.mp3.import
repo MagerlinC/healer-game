@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dwc28i5feou1o"
+path="res://.godot/imported/10. Elven Dawn.mp3-827a0afee3321538c55b1d8cd4647283.mp3str"
+
+[deps]
+
+source_file="res://assets/music/Loops/mp3/10. Elven Dawn.mp3"
+dest_files=["res://.godot/imported/10. Elven Dawn.mp3-827a0afee3321538c55b1d8cd4647283.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

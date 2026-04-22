@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bcghk87rv10n6"
+path="res://.godot/imported/2. Winds of Valor.mp3-4736ca7b94ed17131f4da0570f4284ff.mp3str"
+
+[deps]
+
+source_file="res://assets/music/Loops/mp3/2. Winds of Valor.mp3"
+dest_files=["res://.godot/imported/2. Winds of Valor.mp3-4736ca7b94ed17131f4da0570f4284ff.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

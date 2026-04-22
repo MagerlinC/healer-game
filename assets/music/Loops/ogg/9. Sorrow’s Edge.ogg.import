@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://c637ucg5n0fyk"
+path="res://.godot/imported/9. Sorrow’s Edge.ogg-2916f606e47720af4bd0ac874c18ac1a.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/music/Loops/ogg/9. Sorrow’s Edge.ogg"
+dest_files=["res://.godot/imported/9. Sorrow’s Edge.ogg-2916f606e47720af4bd0ac874c18ac1a.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

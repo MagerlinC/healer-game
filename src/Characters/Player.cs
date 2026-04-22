@@ -96,17 +96,6 @@ public partial class Player : Character
 		{
 			System.Array.Copy(RunState.Instance.SelectedSpells, EquippedSpells, MaxSpellSlots);
 		}
-		else
-		{
-			// Fallback: hardcoded defaults for direct editor launches
-			var defaults = new[]
-			{
-				"Touch of Light", "Wave of Incandescence", "Renewing Bloom",
-				"Reinvigorate", "Burst of Light", "Decay"
-			};
-			for (var i = 0; i < defaults.Length && i < MaxSpellSlots; i++)
-				EquippedSpells[i] = SpellRegistry.AllSpells.FirstOrDefault(s => s.Name == defaults[i]);
-		}
 
 		// Apply talents chosen in the Overworld
 		if (RunState.Instance?.SelectedTalentDefs.Count > 0)

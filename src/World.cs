@@ -32,9 +32,9 @@ public partial class World : Node2D
 		AddChild(bgLayer);
 		var bgRect = new TextureRect();
 		bgRect.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		bgRect.Texture      = GD.Load<Texture2D>(GameConstants.ArenaBackgroundPaths[RunState.Instance.CurrentBossIndex]);
-		bgRect.StretchMode  = TextureRect.StretchModeEnum.Scale;
-		bgRect.MouseFilter  = Control.MouseFilterEnum.Ignore;
+		bgRect.Texture = GD.Load<Texture2D>(AssetConstants.ArenaBackgroundPaths[RunState.Instance.CurrentBossIndex]);
+		bgRect.StretchMode = TextureRect.StretchModeEnum.Scale;
+		bgRect.MouseFilter = Control.MouseFilterEnum.Ignore;
 		bgLayer.AddChild(bgRect);
 
 		// Tooltip singleton must be added first so it is available to all UI nodes.
@@ -44,15 +44,15 @@ public partial class World : Node2D
 		var fctManager = new FloatingCombatTextManager();
 		AddChild(fctManager);
 
-		var ui      = GetNode<GameUI>("PartyUI");
-		var player  = GetNode<Player>("Healer");
-		var templar  = GetNode<Character>("Templar");
+		var ui = GetNode<GameUI>("PartyUI");
+		var player = GetNode<Player>("Healer");
+		var templar = GetNode<Character>("Templar");
 		var assassin = GetNode<Character>("Assassin");
-		var wizard   = GetNode<Character>("Wizard");
+		var wizard = GetNode<Character>("Wizard");
 
 		// ── Boss — instantiated dynamically from RunState ─────────────────────
 		var bossScene = GD.Load<PackedScene>(GameConstants.BossScenePaths[RunState.Instance.CurrentBossIndex]);
-		var boss      = bossScene.Instantiate<Character>();
+		var boss = bossScene.Instantiate<Character>();
 		boss.Position = new Vector2(123f, 120f);
 		AddChild(boss); // _Ready fires here; boss registers its signals with GlobalAutoLoad
 

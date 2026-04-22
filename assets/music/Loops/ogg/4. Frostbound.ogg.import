@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://gtjop5wnfflx"
+path="res://.godot/imported/4. Frostbound.ogg-4360a3f8b71fb84b64dd3d83e70500e9.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/music/Loops/ogg/4. Frostbound.ogg"
+dest_files=["res://.godot/imported/4. Frostbound.ogg-4360a3f8b71fb84b64dd3d83e70500e9.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

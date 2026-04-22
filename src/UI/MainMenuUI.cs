@@ -52,8 +52,18 @@ public partial class MainMenuUI : Node2D
 		// Full-screen dark background
 		var bg = new ColorRect();
 		bg.Color = BgColor;
+
 		bg.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		bg.MouseFilter = Control.MouseFilterEnum.Stop;
+
+
+		var bgRect = new TextureRect();
+		bgRect.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		bgRect.Texture = GD.Load<Texture2D>(AssetConstants.MainMenuPath);
+		bgRect.StretchMode = TextureRect.StretchModeEnum.Scale;
+		bgRect.MouseFilter = Control.MouseFilterEnum.Ignore;
+		bg.AddChild(bgRect);
+
 		canvas.AddChild(bg);
 
 		// Centred content column
@@ -240,42 +250,9 @@ public partial class MainMenuUI : Node2D
 			var slotIndex = i;
 			var actionName = $"spell_{slotIndex + 1}";
 
-			var slotLabel = new Label();
-			slotLabel.Text = $"Spell Slot {slotIndex + 1}";
-			slotLabel.VerticalAlignment = VerticalAlignment.Center;
-			slotLabel.AddThemeFontSizeOverride("font_size", 13);
-			slotLabel.AddThemeColorOverride("font_color", new Color(0.80f, 0.76f, 0.70f));
+			var (slotLabel, keyLabel, rebindBtn) = BuildKeybindRow($"Spell Slot {slotIndex + 1}", actionName);
 			grid.AddChild(slotLabel);
-
-			var keyLabel = new Label();
-			keyLabel.Text = GetKeybindLabel(actionName);
-			keyLabel.CustomMinimumSize = new Vector2(60, 0);
-			keyLabel.HorizontalAlignment = HorizontalAlignment.Center;
-			keyLabel.VerticalAlignment = VerticalAlignment.Center;
-			keyLabel.AddThemeFontSizeOverride("font_size", 14);
-			keyLabel.AddThemeColorOverride("font_color", TitleColor);
-			_keybindLabels[actionName] = keyLabel;
 			grid.AddChild(keyLabel);
-
-			var rebindBtn = new Button();
-			rebindBtn.Text = "Rebind";
-			rebindBtn.CustomMinimumSize = new Vector2(80, 28);
-			rebindBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-			rebindBtn.AddThemeFontSizeOverride("font_size", 12);
-
-			var rNormal = MakeBtnStyle(BtnNormalBg, BtnBorder);
-			var rHover = MakeBtnStyle(BtnHoverBg, BtnHoverBdr);
-			rebindBtn.AddThemeStyleboxOverride("normal", rNormal);
-			rebindBtn.AddThemeStyleboxOverride("hover", rHover);
-			rebindBtn.AddThemeStyleboxOverride("pressed", rNormal);
-			rebindBtn.AddThemeStyleboxOverride("focus", rNormal);
-
-			rebindBtn.Pressed += () =>
-			{
-				_actionToRebind = actionName;
-				_rebindPromptLabel!.Visible = true;
-			};
-
 			grid.AddChild(rebindBtn);
 		}
 

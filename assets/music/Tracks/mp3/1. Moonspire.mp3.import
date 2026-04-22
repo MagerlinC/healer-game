@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cya1efqutwc1p"
+path="res://.godot/imported/1. Moonspire.mp3-9b4ac2441f178efcf2ba17180d3a066a.mp3str"
+
+[deps]
+
+source_file="res://assets/music/Tracks/mp3/1. Moonspire.mp3"
+dest_files=["res://.godot/imported/1. Moonspire.mp3-9b4ac2441f178efcf2ba17180d3a066a.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

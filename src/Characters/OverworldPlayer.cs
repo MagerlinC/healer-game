@@ -45,7 +45,7 @@ public partial class OverworldPlayer : CharacterBody2D
 		if (dir != Vector2.Zero)
 		{
 			// Flip sprite to face horizontal movement direction
-			if (dir.X != 0f) _sprite.FlipH = dir.X < 0f;
+			if (dir.X != 0f) _sprite.FlipH = -1 * dir.X < 0f;
 			dir = dir.Normalized();
 		}
 

@@ -1,6 +1,7 @@
 [gd_scene format=4 uid="uid://kh347p4xi7l"]
 
 [ext_resource type="Texture2D" uid="uid://tvhofvs5rsm8" path="res://assets/32rogues/tiles.png" id="2_l1j2j"]
+[ext_resource type="AudioStream" uid="uid://gibgctqev5w8" path="res://assets/music/battle.wav" id="8_rw0xj"]
 [ext_resource type="PackedScene" path="res://levels/Assassin.tscn" id="Scene_assassin"]
 [ext_resource type="PackedScene" uid="uid://djg1i0kxk4dmt" path="res://levels/PartyUI.tscn" id="Scene_partyui"]
 [ext_resource type="PackedScene" path="res://levels/Player.tscn" id="Scene_player"]
@@ -128,3 +129,8 @@ position = Vector2(215, 176)
 CharacterName = "Healer"
 
 [node name="PartyUI" parent="." unique_id=955504976 instance=ExtResource("Scene_partyui")]
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=682025755]
+stream = ExtResource("8_rw0xj")
+volume_db = -8.011
+autoplay = true
