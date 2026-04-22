@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using healerfantasy;
 using healerfantasy.SpellResources;
 using healerfantasy.Talents;
 
@@ -25,365 +26,375 @@ using healerfantasy.Talents;
 /// </summary>
 public partial class TalentSelector : CanvasLayer
 {
-    // ── colours ───────────────────────────────────────────────────────────────
-    static readonly Color OverlayBg   = new(0.00f, 0.00f, 0.00f, 0.72f);
-    static readonly Color PanelBg     = new(0.10f, 0.08f, 0.07f, 0.98f);
-    static readonly Color PanelBorder = new(0.65f, 0.52f, 0.28f);
-    static readonly Color TitleColor  = new(0.95f, 0.84f, 0.50f);
-    static readonly Color HintColor   = new(0.45f, 0.42f, 0.38f);
-    static readonly Color SepColor    = new(0.50f, 0.40f, 0.22f, 0.55f);
-    static readonly Color ArrowColor  = new(0.45f, 0.40f, 0.35f, 0.75f);
+	// ── colours ───────────────────────────────────────────────────────────────
+	static readonly Color OverlayBg = new(0.00f, 0.00f, 0.00f, 0.72f);
+	static readonly Color PanelBg = new(0.10f, 0.08f, 0.07f, 0.98f);
+	static readonly Color PanelBorder = new(0.65f, 0.52f, 0.28f);
+	static readonly Color TitleColor = new(0.95f, 0.84f, 0.50f);
+	static readonly Color HintColor = new(0.45f, 0.42f, 0.38f);
+	static readonly Color SepColor = new(0.50f, 0.40f, 0.22f, 0.55f);
+	static readonly Color ArrowColor = new(0.45f, 0.40f, 0.35f, 0.75f);
 
-    /// <summary>School display order and per-school accent colours.</summary>
-    static readonly (SpellSchool School, string Name, Color Accent)[] SchoolOrder =
-    {
-        (SpellSchool.Generic,     "General",     new Color(0.70f, 0.65f, 0.60f)),
-        (SpellSchool.Holy,        "Holy",         new Color(0.95f, 0.85f, 0.40f)),
-        (SpellSchool.Nature,      "Nature",       new Color(0.40f, 0.80f, 0.35f)),
-        (SpellSchool.Void,        "Void",         new Color(0.65f, 0.35f, 0.85f)),
-        (SpellSchool.Chronomancy, "Chronomancy",  new Color(0.35f, 0.75f, 0.90f)),
-    };
+	/// <summary>School display order and per-school accent colours.</summary>
+	static readonly (SpellSchool School, string Name, Color Accent)[] SchoolOrder =
+	{
+		(SpellSchool.Generic, "General", new Color(0.70f, 0.65f, 0.60f)),
+		(SpellSchool.Holy, "Holy", new Color(0.95f, 0.85f, 0.40f)),
+		(SpellSchool.Nature, "Nature", new Color(0.40f, 0.80f, 0.35f)),
+		(SpellSchool.Void, "Void", new Color(0.65f, 0.35f, 0.85f)),
+		(SpellSchool.Chronomancy, "Chronomancy", new Color(0.35f, 0.75f, 0.90f))
+	};
 
-    // ── state ─────────────────────────────────────────────────────────────────
-    Player  _player;
-    Control _overlay;
-    bool    _isOpen;
+	// ── state ─────────────────────────────────────────────────────────────────
+	Player _player;
+	Control _overlay;
+	bool _isOpen;
 
-    /// <summary>Flat list of every slot — used for sync and apply passes.</summary>
-    readonly List<TalentSlot> _slots = new();
+	/// <summary>Flat list of every slot — used for sync and apply passes.</summary>
+	readonly List<TalentSlot> _slots = new();
 
-    /// <summary>
-    /// Structured lookup used for unlock validation:
-    /// school → row index → slots in that row.
-    /// </summary>
-    readonly Dictionary<SpellSchool, Dictionary<int, List<TalentSlot>>> _slotsBySchoolAndRow = new();
+	/// <summary>
+	/// Structured lookup used for unlock validation:
+	/// school → row index → slots in that row.
+	/// </summary>
+	readonly Dictionary<SpellSchool, Dictionary<int, List<TalentSlot>>> _slotsBySchoolAndRow = new();
 
-    // ── public API ────────────────────────────────────────────────────────────
-    public void Init(Player player) => _player = player;
+	// ── public API ────────────────────────────────────────────────────────────
+	public void Init(Player player)
+	{
+		_player = player;
+	}
 
-    // ── lifecycle ─────────────────────────────────────────────────────────────
-    public override void _Ready()
-    {
-        Layer = 15;
-        ProcessMode = ProcessModeEnum.Always;
+	// ── lifecycle ─────────────────────────────────────────────────────────────
+	public override void _Ready()
+	{
+		Layer = 15;
+		ProcessMode = ProcessModeEnum.Always;
 
-        _overlay = BuildOverlay();
-        AddChild(_overlay);
-        _overlay.Visible = false;
-    }
+		_overlay = BuildOverlay();
+		AddChild(_overlay);
+		_overlay.Visible = false;
+	}
 
-    public override void _UnhandledInput(InputEvent @event)
-    {
-        if (@event is not InputEventKey key || !key.Pressed || key.Echo) return;
+	public override void _UnhandledInput(InputEvent @event)
+	{
+		if (@event is not InputEventKey key || !key.Pressed || key.Echo) return;
 
-        if (key.PhysicalKeycode == Key.T)
-        {
-            Toggle();
-            GetViewport().SetInputAsHandled();
-        }
-        else if (key.PhysicalKeycode == Key.Escape && _isOpen)
-        {
-            Close();
-            GetViewport().SetInputAsHandled();
-        }
-    }
+		if (key.PhysicalKeycode == Key.T)
+		{
+			Toggle();
+			GetViewport().SetInputAsHandled();
+		}
+		else if (key.PhysicalKeycode == Key.Escape && _isOpen)
+		{
+			Close();
+			GetViewport().SetInputAsHandled();
+		}
+	}
 
-    // ── open / close ──────────────────────────────────────────────────────────
-    void Toggle() { if (_isOpen) Close(); else Open(); }
+	// ── open / close ──────────────────────────────────────────────────────────
+	void Toggle()
+	{
+		if (_isOpen) Close();
+		else Open();
+	}
 
-    void Open()
-    {
-        if (_player == null) return;
-        if (GetTree().Paused) return; // another panel is already open
-        SyncSlotsFromPlayer();
-        _isOpen = true;
-        _overlay.Visible = true;
-        GetTree().Paused = true;
-    }
+	void Open()
+	{
+		if (_player == null) return;
+		if (GetTree().Paused) return; // another panel is already open
+		SyncSlotsFromPlayer();
+		_isOpen = true;
+		_overlay.Visible = true;
+		GetTree().Paused = true;
+	}
 
-    void Close()
-    {
-        _isOpen = false;
-        _overlay.Visible = false;
-        GetTree().Paused = false;
-        ApplyTalentsToPlayer();
-    }
+	void Close()
+	{
+		_isOpen = false;
+		_overlay.Visible = false;
+		GetTree().Paused = false;
+		ApplyTalentsToPlayer();
+	}
 
-    // ── talent synchronisation ─────────────────────────────────────────────────
-    void SyncSlotsFromPlayer()
-    {
-        var active = new HashSet<string>();
-        foreach (var t in _player.Talents)
-            active.Add(t.Name);
+	// ── talent synchronisation ─────────────────────────────────────────────────
+	void SyncSlotsFromPlayer()
+	{
+		var active = new HashSet<string>();
+		foreach (var t in _player.Talents)
+			active.Add(t.Name);
 
-        foreach (var slot in _slots)
-            slot.SetSelected(active.Contains(slot.Definition.Name));
+		foreach (var slot in _slots)
+			slot.SetSelected(active.Contains(slot.Definition.Name));
 
-        foreach (var (school, _, _) in SchoolOrder)
-            ValidateTree(school);
-    }
+		foreach (var (school, _, _) in SchoolOrder)
+			ValidateTree(school);
+	}
 
-    void ApplyTalentsToPlayer()
-    {
-        _player.Talents.Clear();
-        foreach (var slot in _slots)
-            if (slot.IsSelected)
-                _player.Talents.Add(slot.Definition.CreateTalent());
-    }
+	void ApplyTalentsToPlayer()
+	{
+		_player.Talents.Clear();
+		var selectedTalentDefs = _slots.Where(s => s.IsSelected).Select(s => s.Definition).ToList();
 
-    // ── unlock validation ──────────────────────────────────────────────────────
-    /// <summary>
-    /// Recalculates locked states for every row in <paramref name="school"/>'s tree.
-    /// Row 0 is always unlocked; row N requires at least one selection in row N−1.
-    /// Processing ascending rows cascades correctly in a single pass.
-    /// </summary>
-    void ValidateTree(SpellSchool school)
-    {
-        if (!_slotsBySchoolAndRow.TryGetValue(school, out var rowDict)) return;
+		_player.Talents = selectedTalentDefs.Select(s => s.CreateTalent()).ToList();
+	}
 
-        foreach (var row in rowDict.Keys.OrderBy(r => r))
-        {
-            var unlocked = row == 0
-                || (rowDict.TryGetValue(row - 1, out var prevRow) && prevRow.Any(s => s.IsSelected));
+	// ── unlock validation ──────────────────────────────────────────────────────
+	/// <summary>
+	/// Recalculates locked states for every row in <paramref name="school"/>'s tree.
+	/// Row 0 is always unlocked; row N requires at least one selection in row N−1.
+	/// Processing ascending rows cascades correctly in a single pass.
+	/// </summary>
+	void ValidateTree(SpellSchool school)
+	{
+		if (!_slotsBySchoolAndRow.TryGetValue(school, out var rowDict)) return;
 
-            foreach (var slot in rowDict[row])
-            {
-                if (!unlocked && slot.IsSelected)
-                    slot.SetSelected(false);
-                slot.SetLocked(!unlocked);
-            }
-        }
-    }
+		foreach (var row in rowDict.Keys.OrderBy(r => r))
+		{
+			var unlocked = row == 0
+			               || rowDict.TryGetValue(row - 1, out var prevRow) && prevRow.Any(s => s.IsSelected);
 
-    void OnSlotToggled(TalentSlot slot) => ValidateTree(slot.Definition.School);
+			foreach (var slot in rowDict[row])
+			{
+				if (!unlocked && slot.IsSelected)
+					slot.SetSelected(false);
+				slot.SetLocked(!unlocked);
+			}
+		}
+	}
 
-    // ── UI construction ───────────────────────────────────────────────────────
-    Control BuildOverlay()
-    {
-        var overlay = new ColorRect();
-        overlay.Color = OverlayBg;
-        overlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        overlay.MouseFilter = Control.MouseFilterEnum.Stop;
-        overlay.AddChild(BuildPanel());
-        return overlay;
-    }
+	void OnSlotToggled(TalentSlot slot)
+	{
+		ValidateTree(slot.Definition.School);
+	}
 
-    PanelContainer BuildPanel()
-    {
-        var panel = new PanelContainer();
+	// ── UI construction ───────────────────────────────────────────────────────
+	Control BuildOverlay()
+	{
+		var overlay = new ColorRect();
+		overlay.Color = OverlayBg;
+		overlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		overlay.MouseFilter = Control.MouseFilterEnum.Stop;
+		overlay.AddChild(BuildPanel());
+		return overlay;
+	}
 
-        var style = new StyleBoxFlat();
-        style.BgColor = PanelBg;
-        style.SetCornerRadiusAll(10);
-        style.SetBorderWidthAll(2);
-        style.BorderColor             = PanelBorder;
-        style.ContentMarginLeft       = 24f;
-        style.ContentMarginRight      = 24f;
-        style.ContentMarginTop        = 18f;
-        style.ContentMarginBottom     = 24f;
-        panel.AddThemeStyleboxOverride("panel", style);
+	PanelContainer BuildPanel()
+	{
+		var panel = new PanelContainer();
 
-        // Fill the viewport with a comfortable margin on each side
-        panel.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        panel.OffsetLeft   =  40f;
-        panel.OffsetRight  = -40f;
-        panel.OffsetTop    =  30f;
-        panel.OffsetBottom = -30f;
+		var style = new StyleBoxFlat();
+		style.BgColor = PanelBg;
+		style.SetCornerRadiusAll(10);
+		style.SetBorderWidthAll(2);
+		style.BorderColor = PanelBorder;
+		style.ContentMarginLeft = 24f;
+		style.ContentMarginRight = 24f;
+		style.ContentMarginTop = 18f;
+		style.ContentMarginBottom = 24f;
+		panel.AddThemeStyleboxOverride("panel", style);
 
-        var vbox = new VBoxContainer();
-        vbox.AddThemeConstantOverride("separation", 14);
-        panel.AddChild(vbox);
+		// Fill the viewport with a comfortable margin on each side
+		panel.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		panel.OffsetLeft = 40f;
+		panel.OffsetRight = -40f;
+		panel.OffsetTop = 30f;
+		panel.OffsetBottom = -30f;
 
-        // ── Title row ────────────────────────────────────────────────────────
-        vbox.AddChild(BuildTitleRow());
-        AddSeparator(vbox, SepColor);
+		var vbox = new VBoxContainer();
+		vbox.AddThemeConstantOverride("separation", 14);
+		panel.AddChild(vbox);
 
-        // ── All schools side-by-side ─────────────────────────────────────────
-        // The scroll container expands to fill the space between title and footer.
-        var schoolView = BuildSchoolColumns();
-        schoolView.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-        vbox.AddChild(schoolView);
+		// ── Title row ────────────────────────────────────────────────────────
+		vbox.AddChild(BuildTitleRow());
+		AddSeparator(vbox, SepColor);
 
-        AddSeparator(vbox, SepColor);
+		// ── All schools side-by-side ─────────────────────────────────────────
+		// The scroll container expands to fill the space between title and footer.
+		var schoolView = BuildSchoolColumns();
+		schoolView.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		vbox.AddChild(schoolView);
 
-        // ── Footer hint ──────────────────────────────────────────────────────
-        var hint = new Label();
-        hint.Text = "Click to select a talent  •  Each row requires a selection in the row above  •  [T] or [Esc] to close";
-        hint.HorizontalAlignment = HorizontalAlignment.Center;
-        hint.AddThemeFontSizeOverride("font_size", 11);
-        hint.AddThemeColorOverride("font_color", HintColor);
-        vbox.AddChild(hint);
+		AddSeparator(vbox, SepColor);
 
-        return panel;
-    }
+		// ── Footer hint ──────────────────────────────────────────────────────
+		var hint = new Label();
+		hint.Text = "Click to select a talent  •  Each row requires a selection in the row above  •  [T] or [Esc] to close";
+		hint.HorizontalAlignment = HorizontalAlignment.Center;
+		hint.AddThemeFontSizeOverride("font_size", 11);
+		hint.AddThemeColorOverride("font_color", HintColor);
+		vbox.AddChild(hint);
 
-    // ── school column layout ──────────────────────────────────────────────────
+		return panel;
+	}
 
-    /// <summary>
-    /// Returns a <see cref="ScrollContainer"/> containing all school columns
-    /// laid out horizontally, separated by vertical rules.
-    /// </summary>
-    Control BuildSchoolColumns()
-    {
-        var scroll = new ScrollContainer();
-        scroll.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        scroll.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
+	// ── school column layout ──────────────────────────────────────────────────
 
-        var hbox = new HBoxContainer();
-        hbox.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-        hbox.AddThemeConstantOverride("separation", 0);
-        scroll.AddChild(hbox);
+	/// <summary>
+	/// Returns a <see cref="ScrollContainer"/> containing all school columns
+	/// laid out horizontally, separated by vertical rules.
+	/// </summary>
+	Control BuildSchoolColumns()
+	{
+		var scroll = new ScrollContainer();
+		scroll.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 
-        for (var i = 0; i < SchoolOrder.Length; i++)
-        {
-            if (i > 0)
-            {
-                // Vertical rule between schools
-                var vsep = new VSeparator();
-                vsep.AddThemeColorOverride("color", SepColor);
-                vsep.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-                hbox.AddChild(vsep);
-            }
+		var hbox = new HBoxContainer();
+		hbox.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		hbox.AddThemeConstantOverride("separation", 0);
+		scroll.AddChild(hbox);
 
-            var (school, name, accent) = SchoolOrder[i];
-            hbox.AddChild(BuildSchoolColumn(school, name, accent));
-        }
+		for (var i = 0; i < SchoolOrder.Length; i++)
+		{
+			if (i > 0)
+			{
+				// Vertical rule between schools
+				var vsep = new VSeparator();
+				vsep.AddThemeColorOverride("color", SepColor);
+				vsep.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+				hbox.AddChild(vsep);
+			}
 
-        return scroll;
-    }
+			var (school, name, accent) = SchoolOrder[i];
+			hbox.AddChild(BuildSchoolColumn(school, name, accent));
+		}
 
-    /// <summary>
-    /// Builds one school column: a coloured header, a tinted separator,
-    /// then talent rows separated by ▼ connectors.
-    /// All created slots are registered in <see cref="_slots"/> and
-    /// <see cref="_slotsBySchoolAndRow"/> for later sync / validation.
-    /// </summary>
-    Control BuildSchoolColumn(SpellSchool school, string colName, Color accent)
-    {
-        // Margin container gives each column breathing room
-        var margin = new MarginContainer();
-        margin.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-        margin.AddThemeConstantOverride("margin_left",   20);
-        margin.AddThemeConstantOverride("margin_right",  20);
-        margin.AddThemeConstantOverride("margin_top",    16);
-        margin.AddThemeConstantOverride("margin_bottom", 16);
+		return scroll;
+	}
 
-        var col = new VBoxContainer();
-        col.AddThemeConstantOverride("separation", 10);
-        col.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-        margin.AddChild(col);
+	/// <summary>
+	/// Builds one school column: a coloured header, a tinted separator,
+	/// then talent rows separated by ▼ connectors.
+	/// All created slots are registered in <see cref="_slots"/> and
+	/// <see cref="_slotsBySchoolAndRow"/> for later sync / validation.
+	/// </summary>
+	Control BuildSchoolColumn(SpellSchool school, string colName, Color accent)
+	{
+		// Margin container gives each column breathing room
+		var margin = new MarginContainer();
+		margin.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		margin.AddThemeConstantOverride("margin_left", 20);
+		margin.AddThemeConstantOverride("margin_right", 20);
+		margin.AddThemeConstantOverride("margin_top", 16);
+		margin.AddThemeConstantOverride("margin_bottom", 16);
 
-        // ── School header ─────────────────────────────────────────────────────
-        var header = new Label();
-        header.Text                = colName;
-        header.HorizontalAlignment = HorizontalAlignment.Center;
-        header.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        header.AddThemeFontSizeOverride("font_size", 16);
-        header.AddThemeColorOverride("font_color", accent);
-        col.AddChild(header);
+		var col = new VBoxContainer();
+		col.AddThemeConstantOverride("separation", 10);
+		col.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		margin.AddChild(col);
 
-        var sep = new HSeparator();
-        sep.AddThemeColorOverride("color", new Color(accent.R, accent.G, accent.B, 0.45f));
-        col.AddChild(sep);
+		// ── School header ─────────────────────────────────────────────────────
+		var header = new Label();
+		header.Text = colName;
+		header.HorizontalAlignment = HorizontalAlignment.Center;
+		header.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		header.AddThemeFontSizeOverride("font_size", 16);
+		header.AddThemeColorOverride("font_color", accent);
+		col.AddChild(header);
 
-        // ── Talent rows ───────────────────────────────────────────────────────
-        var rowGroups = TalentRegistry.AllTalents
-            .Where(t => t.School == school)
-            .GroupBy(t => t.TalentRow)
-            .OrderBy(g => g.Key)
-            .ToList();
+		var sep = new HSeparator();
+		sep.AddThemeColorOverride("color", new Color(accent.R, accent.G, accent.B, 0.45f));
+		col.AddChild(sep);
 
-        if (rowGroups.Count == 0)
-        {
-            var empty = new Label();
-            empty.Text                = "Coming soon!";
-            empty.HorizontalAlignment = HorizontalAlignment.Center;
-            empty.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-            empty.AddThemeFontSizeOverride("font_size", 12);
-            empty.AddThemeColorOverride("font_color", HintColor);
-            col.AddChild(empty);
-            return margin;
-        }
+		// ── Talent rows ───────────────────────────────────────────────────────
+		var rowGroups = TalentRegistry.AllTalents
+			.Where(t => t.School == school)
+			.GroupBy(t => t.TalentRow)
+			.OrderBy(g => g.Key)
+			.ToList();
 
-        for (var i = 0; i < rowGroups.Count; i++)
-        {
-            var rowGroup = rowGroups[i];
-            var rowIndex = rowGroup.Key;
+		if (rowGroups.Count == 0)
+		{
+			var empty = new Label();
+			empty.Text = "Coming soon!";
+			empty.HorizontalAlignment = HorizontalAlignment.Center;
+			empty.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+			empty.AddThemeFontSizeOverride("font_size", 12);
+			empty.AddThemeColorOverride("font_color", HintColor);
+			col.AddChild(empty);
+			return margin;
+		}
 
-            // Row of talent slots
-            var hbox = new HBoxContainer();
-            hbox.Alignment           = BoxContainer.AlignmentMode.Center;
-            hbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-            hbox.AddThemeConstantOverride("separation", 12);
+		for (var i = 0; i < rowGroups.Count; i++)
+		{
+			var rowGroup = rowGroups[i];
+			var rowIndex = rowGroup.Key;
 
-            foreach (var def in rowGroup)
-            {
-                var slot = new TalentSlot(def);
-                slot.Toggled += OnSlotToggled;
-                _slots.Add(slot);
+			// Row of talent slots
+			var hbox = new HBoxContainer();
+			hbox.Alignment = BoxContainer.AlignmentMode.Center;
+			hbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+			hbox.AddThemeConstantOverride("separation", 12);
 
-                if (!_slotsBySchoolAndRow.ContainsKey(school))
-                    _slotsBySchoolAndRow[school] = new Dictionary<int, List<TalentSlot>>();
-                if (!_slotsBySchoolAndRow[school].ContainsKey(rowIndex))
-                    _slotsBySchoolAndRow[school][rowIndex] = new List<TalentSlot>();
-                _slotsBySchoolAndRow[school][rowIndex].Add(slot);
+			foreach (var def in rowGroup)
+			{
+				var slot = new TalentSlot(def);
+				slot.Toggled += OnSlotToggled;
+				_slots.Add(slot);
 
-                hbox.AddChild(slot);
-            }
+				if (!_slotsBySchoolAndRow.ContainsKey(school))
+					_slotsBySchoolAndRow[school] = new Dictionary<int, List<TalentSlot>>();
+				if (!_slotsBySchoolAndRow[school].ContainsKey(rowIndex))
+					_slotsBySchoolAndRow[school][rowIndex] = new List<TalentSlot>();
+				_slotsBySchoolAndRow[school][rowIndex].Add(slot);
 
-            col.AddChild(hbox);
+				hbox.AddChild(slot);
+			}
 
-            // ▼ connector between rows
-            if (i < rowGroups.Count - 1)
-            {
-                var arrow = new Label();
-                arrow.Text                = "▼";
-                arrow.HorizontalAlignment = HorizontalAlignment.Center;
-                arrow.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-                arrow.AddThemeFontSizeOverride("font_size", 18);
-                arrow.AddThemeColorOverride("font_color", ArrowColor);
-                col.AddChild(arrow);
-            }
-        }
+			col.AddChild(hbox);
 
-        return margin;
-    }
+			// ▼ connector between rows
+			if (i < rowGroups.Count - 1)
+			{
+				var arrow = new Label();
+				arrow.Text = "▼";
+				arrow.HorizontalAlignment = HorizontalAlignment.Center;
+				arrow.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+				arrow.AddThemeFontSizeOverride("font_size", 18);
+				arrow.AddThemeColorOverride("font_color", ArrowColor);
+				col.AddChild(arrow);
+			}
+		}
 
-    // ── title row ─────────────────────────────────────────────────────────────
-    Control BuildTitleRow()
-    {
-        var hbox = new HBoxContainer();
+		return margin;
+	}
 
-        var spacer = new Control();
-        spacer.CustomMinimumSize = new Vector2(28, 0);
-        hbox.AddChild(spacer);
+	// ── title row ─────────────────────────────────────────────────────────────
+	Control BuildTitleRow()
+	{
+		var hbox = new HBoxContainer();
 
-        var title = new Label();
-        title.Text                = "Talents";
-        title.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        title.HorizontalAlignment = HorizontalAlignment.Center;
-        title.AddThemeFontSizeOverride("font_size", 22);
-        title.AddThemeColorOverride("font_color", TitleColor);
-        hbox.AddChild(title);
+		var spacer = new Control();
+		spacer.CustomMinimumSize = new Vector2(28, 0);
+		hbox.AddChild(spacer);
 
-        var closeBtn = new Button();
-        closeBtn.Text                    = "✕";
-        closeBtn.Flat                    = true;
-        closeBtn.CustomMinimumSize       = new Vector2(28, 28);
-        closeBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-        closeBtn.AddThemeFontSizeOverride("font_size", 16);
-        closeBtn.AddThemeColorOverride("font_color",       new Color(0.72f, 0.68f, 0.62f));
-        closeBtn.AddThemeColorOverride("font_hover_color", new Color(1.00f, 0.90f, 0.55f));
-        closeBtn.Pressed += Close;
-        hbox.AddChild(closeBtn);
+		var title = new Label();
+		title.Text = "Talents";
+		title.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		title.HorizontalAlignment = HorizontalAlignment.Center;
+		title.AddThemeFontSizeOverride("font_size", 22);
+		title.AddThemeColorOverride("font_color", TitleColor);
+		hbox.AddChild(title);
 
-        return hbox;
-    }
+		var closeBtn = new Button();
+		closeBtn.Text = "✕";
+		closeBtn.Flat = true;
+		closeBtn.CustomMinimumSize = new Vector2(28, 28);
+		closeBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+		closeBtn.AddThemeFontSizeOverride("font_size", 16);
+		closeBtn.AddThemeColorOverride("font_color", new Color(0.72f, 0.68f, 0.62f));
+		closeBtn.AddThemeColorOverride("font_hover_color", new Color(1.00f, 0.90f, 0.55f));
+		closeBtn.Pressed += Close;
+		hbox.AddChild(closeBtn);
 
-    void AddSeparator(VBoxContainer parent, Color color)
-    {
-        var sep = new HSeparator();
-        sep.AddThemeColorOverride("color", color);
-        parent.AddChild(sep);
-    }
+		return hbox;
+	}
+
+	void AddSeparator(VBoxContainer parent, Color color)
+	{
+		var sep = new HSeparator();
+		sep.AddThemeColorOverride("color", color);
+		parent.AddChild(sep);
+	}
 }

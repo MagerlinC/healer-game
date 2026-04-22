@@ -274,7 +274,7 @@ public partial class BringerOfDeath : Character
 		AddAnimFromFiles(frames, "spell", "Spell", 16, 10f, false);
 
 		_sprite.SpriteFrames = frames;
-		_sprite.Scale = new Vector2(0.8f, 0.8f); // scale down to fit the arena
+		_sprite.Scale = new Vector2(1.2f, 1.2f);
 	}
 
 	static void AddAnimFromFiles(SpriteFrames frames, string animName, string folderName,

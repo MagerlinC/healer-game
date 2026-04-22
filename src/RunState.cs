@@ -66,7 +66,8 @@ public partial class RunState : Node
 	public override void _Ready()
 	{
 		Instance = this;
-		InitDefaultSpells();
+		InitSpellsFromPreferences();
+		InitTalentsFromPreferences();
 	}
 
 	// ── public API ────────────────────────────────────────────────────────────
@@ -89,12 +90,21 @@ public partial class RunState : Node
 	/// </summary>
 	public void Reset()
 	{
-		SelectedTalentDefs.Clear();
+		// SelectedTalentDefs.Clear();
 		CurrentBossIndex = 0;
-		InitDefaultSpells();
+		// InitDefaultSpells();
+		// InitTalentsFromStorage();
 	}
 
 	// ── private ───────────────────────────────────────────────────────────────
+
+	void InitSpellsFromPreferences()
+	{
+		if (LoadoutPreferences.HasSavedSpells)
+			SetSpells(LoadoutPreferences.SavedSpells);
+		else
+			InitDefaultSpells();
+	}
 
 	void InitDefaultSpells()
 	{
@@ -103,5 +113,11 @@ public partial class RunState : Node
 			new TouchOfLightSpell(), new WaveOfIncandescenceSpell(), new WildGrowthSpell(),
 			new RewindSpell(), new TimeWarpSpell(), new DecaySpellResource()
 		];
+	}
+
+	void InitTalentsFromPreferences()
+	{
+		if (LoadoutPreferences.HasSavedTalents)
+			SetTalents(LoadoutPreferences.SavedTalents);
 	}
 }

@@ -263,7 +263,7 @@ public partial class DemonSlime : Character
 		AddAnimFromFiles(frames, "cleave", CleavePath, 15, 12f, false);
 
 		_sprite.SpriteFrames = frames;
-		_sprite.Scale = new Vector2(0.55f, 0.55f); // frames are 288×160, scale to fit arena
+		_sprite.Scale = new Vector2(1.2f, 1.2f);
 	}
 
 	static void AddAnimFromFiles(SpriteFrames frames, string animName, string basePath,

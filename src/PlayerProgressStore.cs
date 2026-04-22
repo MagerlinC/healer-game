@@ -74,7 +74,7 @@ public static class PlayerProgressStore
 	/// <returns>The number of levels gained (0 if none).</returns>
 	public static int AddXp(int xp)
 	{
-		int levelsGained = 0;
+		var levelsGained = 0;
 		_data.CurrentXp += xp;
 
 		while (_data.CurrentXp >= XpPerLevel)

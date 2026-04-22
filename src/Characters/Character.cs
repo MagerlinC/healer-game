@@ -83,7 +83,7 @@ public abstract partial class Character : CharacterBody2D
 	/// to obtain the aggregated stat snapshot, and <see cref="GetSpellModifiers"/>
 	/// to collect all active spell modifier instances.
 	/// </summary>
-	public List<Talent> Talents { get; } = new();
+	public List<Talent> Talents { get; set; } = new();
 
 	/// <summary>
 	/// Persistent record of every completed spell cast made by this character.

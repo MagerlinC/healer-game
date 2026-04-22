@@ -14,6 +14,7 @@ public static class AssetConstants
 	public static readonly string CastFinishedSfx = "res://assets/sound-effects/spell-casting/cast-finished.wav";
 
 	public static readonly string ParryRiserSoundPath = "res://assets/sound-effects/riser.mp3";
+	public static readonly string VictorySoundPath = "res://assets/music/victory.mp3";
 
 	/// <summary>Arena background image paths, one per boss encounter.</summary>
 	public static readonly string[] ArenaBackgroundPaths =

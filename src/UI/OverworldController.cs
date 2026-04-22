@@ -72,14 +72,16 @@ public partial class OverworldController : Node2D
 
 	readonly SpellResource?[] _loadout = new SpellResource?[Player.MaxSpellSlots];
 	readonly Dictionary<string, (PanelContainer Panel, StyleBoxFlat Border)> _libraryCards = new();
-	readonly Dictionary<string, (ColorRect Overlay, Label Icon)> _spellLockOverlays = new();
+	// Each spell can appear in multiple tabs (e.g. "All" + its school tab), so we
+	// store a list of overlay node pairs per spell and update them all together.
+	readonly Dictionary<string, List<(ColorRect Overlay, Label Icon)>> _spellLockOverlays = new();
 	(PanelContainer Panel, StyleBoxFlat Border, TextureRect Icon)[]? _loadoutSlots;
 	readonly List<TalentSlot> _talentSlots = new();
 	readonly Dictionary<SpellSchool, Dictionary<int, List<TalentSlot>>> _talentsBySchoolRow = new();
 
 	// ── talent-point HUD ──────────────────────────────────────────────────────
 	Label? _talentPointsLabel;
-	HBoxContainer? _characterProgressLabel;
+	PlayerLevelIndicator? _characterProgressLabel;
 
 	// ── overworld references ──────────────────────────────────────────────────
 	OverworldPlayer? _player;
@@ -291,7 +293,7 @@ public partial class OverworldController : Node2D
 	/// <summary>
 	/// Builds the top-left HUD label showing character level and XP progress.
 	/// </summary>
-	HBoxContainer BuildCharacterProgressLabel()
+	PlayerLevelIndicator BuildCharacterProgressLabel()
 	{
 		var indicator = new PlayerLevelIndicator();
 		indicator.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
@@ -571,7 +573,12 @@ public partial class OverworldController : Node2D
 		panel.AddChild(lockLabel);
 
 		var spellKey = spell.Name ?? spell.GetType().Name;
-		_spellLockOverlays[spellKey] = (lockOverlay, lockLabel);
+		if (!_spellLockOverlays.TryGetValue(spellKey, out var overlayList))
+		{
+			overlayList = new List<(ColorRect Overlay, Label Icon)>();
+			_spellLockOverlays[spellKey] = overlayList;
+		}
+		overlayList.Add((lockOverlay, lockLabel));
 
 		// Set initial lock state
 		var locked = IsSpellLocked(spell);
@@ -641,10 +648,14 @@ public partial class OverworldController : Node2D
 		foreach (var spell in SpellRegistry.AllSpells)
 		{
 			var key = spell.Name ?? spell.GetType().Name;
-			if (!_spellLockOverlays.TryGetValue(key, out var nodes)) continue;
+			if (!_spellLockOverlays.TryGetValue(key, out var overlayList)) continue;
 			var locked = IsSpellLocked(spell);
-			nodes.Overlay.Visible = locked;
-			nodes.Icon.Visible = locked;
+			// Update every card instance (e.g. one in the "All" tab, one in the school tab).
+			foreach (var nodes in overlayList)
+			{
+				nodes.Overlay.Visible = locked;
+				nodes.Icon.Visible = locked;
+			}
 
 			// If a locked spell is currently equipped, remove it from the loadout.
 			if (locked && IsEquipped(spell))
@@ -775,6 +786,7 @@ public partial class OverworldController : Node2D
 
 		RefreshSpellVisuals();
 		RunState.Instance.SetSpells(_loadout);
+		LoadoutPreferences.SaveSpells(_loadout);
 	}
 
 	void ClearLoadoutSlot(int index)
@@ -782,6 +794,7 @@ public partial class OverworldController : Node2D
 		_loadout[index] = null;
 		RefreshSpellVisuals();
 		RunState.Instance.SetSpells(_loadout);
+		LoadoutPreferences.SaveSpells(_loadout);
 	}
 
 	bool IsEquipped(SpellResource spell)
@@ -992,6 +1005,7 @@ public partial class OverworldController : Node2D
 		ValidateTalentTree(slot.Definition.School);
 		CommitTalentsToRunState();
 		UpdateTalentPointsLabel();
+		_characterProgressLabel?.Refresh();
 		// Refresh spell lock overlays — talent choices affect spell availability.
 		RefreshSpellLockVisuals();
 	}
@@ -1013,8 +1027,9 @@ public partial class OverworldController : Node2D
 
 	void CommitTalentsToRunState()
 	{
-		RunState.Instance.SetTalents(
-			_talentSlots.Where(s => s.IsSelected).Select(s => s.Definition));
+		var selected = _talentSlots.Where(s => s.IsSelected).Select(s => s.Definition).ToList();
+		RunState.Instance.SetTalents(selected);
+		LoadoutPreferences.SaveTalents(selected);
 	}
 
 	void SyncTalentSlotsFromRunState()
@@ -1038,6 +1053,7 @@ public partial class OverworldController : Node2D
 		}
 
 		UpdateTalentPointsLabel();
+		_characterProgressLabel?.Refresh();
 		RefreshSpellLockVisuals();
 	}
 
