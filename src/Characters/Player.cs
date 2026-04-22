@@ -300,8 +300,10 @@ public partial class Player : Character
 	public override void _PhysicsProcess(double delta)
 	{
 		if (!IsAlive) return;
-		var direction = Input.GetVector("move_left", "move_right", "move_up", "move_down");
-		Velocity = direction != Vector2.Zero ? direction * Speed : Vector2.Zero;
+		var dir = Input.GetVector("move_left", "move_right", "move_up", "move_down");
+		// TODO: Flip sprite when moving left/right  
+
+		Velocity = dir != Vector2.Zero ? dir * Speed : Vector2.Zero;
 		MoveAndSlide();
 	}
 }

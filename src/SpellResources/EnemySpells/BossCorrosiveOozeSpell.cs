@@ -1,4 +1,5 @@
 using Godot;
+using healerfantasy.CombatLog;
 using healerfantasy.Effects;
 using healerfantasy.SpellSystem;
 
@@ -12,27 +13,27 @@ namespace healerfantasy.SpellResources;
 [GlobalClass]
 public partial class BossCorrosiveOozeSpell : SpellResource
 {
-    public BossCorrosiveOozeSpell()
-    {
-        Name        = "Corrosive Ooze";
-        Description = "Coats the target in acidic slime, burning for 12 damage per second until cleansed.";
-        Tags        = SpellTags.Damage | SpellTags.Nature | SpellTags.Duration;
-        ManaCost    = 0f;
-        CastTime    = 0f;
-        EffectType  = EffectType.Harmful;
-    }
+	public BossCorrosiveOozeSpell()
+	{
+		Name = "Corrosive Ooze";
+		Description = "Coats the target in acidic slime, burning for 12 damage per second until cleansed.";
+		Tags = SpellTags.Damage | SpellTags.Nature | SpellTags.Duration;
+		ManaCost = 0f;
+		CastTime = 0f;
+		EffectType = EffectType.Harmful;
+	}
 
-    public override void Apply(SpellContext ctx)
-    {
-        foreach (var target in ctx.Targets)
-        {
-            target.ApplyEffect(new CorrosiveOozeEffect
-            {
-                AbilityName         = Name,
-                SourceCharacterName = ctx.Caster?.CharacterName,
-                School              = SpellSchool.Nature,
-                Icon                = Icon
-            });
-        }
-    }
+	public override void Apply(SpellContext ctx)
+	{
+		foreach (var target in ctx.Targets)
+		{
+			target.ApplyEffect(new CorrosiveOozeEffect
+			{
+				AbilityName = Name,
+				SourceCharacterName = ctx.Caster?.CharacterName,
+				School = SpellSchool.Nature,
+				Icon = Icon
+			});
+		}
+	}
 }

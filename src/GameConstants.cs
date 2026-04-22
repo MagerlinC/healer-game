@@ -3,6 +3,9 @@
 public static class GameConstants
 {
 	public const string PlayerName = "Healer";
+	public const string TemplarName = "Templar";
+	public const string AssassinName = "Assassin";
+	public const string WizardName = "Wizard";
 
 	public const string Boss1Name = "Crystal Knight";
 	public const string Boss2Name = "Bringer of Death";

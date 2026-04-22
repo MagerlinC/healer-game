@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Godot;
-using healerfantasy;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;

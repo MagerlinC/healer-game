@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using Godot;
 using healerfantasy.CombatLog;
 
 namespace healerfantasy;
@@ -18,49 +20,59 @@ namespace healerfantasy;
 public static class RunHistoryStore
 {
 	// ── data types ────────────────────────────────────────────────────────────
+	const string FileSavePath = "user://run-history.save";
 
-	public sealed class BossEncounterRecord
+	static readonly List<string> PartyNames =
+		[GameConstants.PlayerName, GameConstants.AssassinName, GameConstants.AssassinName, GameConstants.TemplarName];
+
+	public sealed record BossEncounterRecord(
+		string BossName,
+		float TotalHealing,
+		float TotalDamageDealt,
+		float TotalDamageTaken,
+		List<CombatEventRecord> Events
+	);
+
+
+	public sealed record RunRecord(
+		bool IsVictory,
+		long DurationTicks,
+		List<BossEncounterRecord> BossEncounters,
+		DateTime CompletedAt
+	)
 	{
-		public string BossName { get; }
-		public float TotalHealing { get; }
-		public float TotalDamage { get; }
-		public IReadOnlyList<CombatEventRecord> Events { get; }
-
-		public BossEncounterRecord(
-			string bossName, float totalHealing, float totalDamage,
-			List<CombatEventRecord> events)
-		{
-			BossName = bossName;
-			TotalHealing = totalHealing;
-			TotalDamage = totalDamage;
-			Events = events.AsReadOnly();
-		}
-	}
-
-	public sealed class RunRecord
-	{
-		public bool IsVictory { get; }
-		public TimeSpan Duration { get; }
-		public DateTime CompletedAt { get; }
-		public IReadOnlyList<BossEncounterRecord> BossEncounters { get; }
-
-		public RunRecord(bool isVictory, TimeSpan duration,
-			List<BossEncounterRecord> encounters, DateTime completedAt)
-		{
-			IsVictory = isVictory;
-			Duration = duration;
-			BossEncounters = encounters.AsReadOnly();
-			CompletedAt = completedAt;
-		}
-	}
+		public TimeSpan Duration => TimeSpan.FromTicks(DurationTicks);
+	};
 
 	// ── state ─────────────────────────────────────────────────────────────────
 
-	static readonly List<RunRecord> _history = new();
+	static readonly List<RunRecord> _history = LoadRunHistoryFromDisk();
 	static readonly List<BossEncounterRecord> _currentEncounters = new();
 	static DateTime _runStartTime = default;
 
 	public static IReadOnlyList<RunRecord> History => _history.AsReadOnly();
+
+	// Storing and loading from file on disk
+
+	static List<RunRecord> LoadRunHistoryFromDisk()
+	{
+		if (!FileAccess.FileExists(FileSavePath))
+			return [];
+
+		using var saveFile = FileAccess.Open(FileSavePath, FileAccess.ModeFlags.Read);
+		var jsonString = saveFile.GetAsText();
+
+		return JsonSerializer.Deserialize<List<RunRecord>>(jsonString) ?? [];
+	}
+
+	static void WriteRunHistoryRecordToSaveFile(RunRecord record)
+	{
+		var existingHistory = LoadRunHistoryFromDisk();
+		existingHistory.Add(record);
+		using var saveFile = FileAccess.Open(FileSavePath, FileAccess.ModeFlags.Write);
+		var json = JsonSerializer.Serialize(existingHistory);
+		saveFile.StoreLine(json);
+	}
 
 	// ── public API ────────────────────────────────────────────────────────────
 
@@ -85,15 +97,21 @@ public static class RunHistoryStore
 	{
 		var events = CombatLog.CombatLog.Snapshot();
 		var healing = 0f;
-		var damage = 0f;
+		var damageDealt = 0f;
+		var damageTaken = 0f;
 
 		foreach (var e in events)
 		{
 			if (e.Type == CombatEventType.Healing) healing += e.Amount;
-			else damage += e.Amount;
+			else
+			{
+				if (PartyNames.Contains(e.SourceName)) damageDealt += e.Amount;
+				else damageTaken += e.Amount;
+
+			}
 		}
 
-		_currentEncounters.Add(new BossEncounterRecord(bossName, healing, damage, events));
+		_currentEncounters.Add(new BossEncounterRecord(bossName, healing, damageDealt, damageTaken, events));
 	}
 
 	/// <summary>
@@ -105,10 +123,14 @@ public static class RunHistoryStore
 		if (_runStartTime == default) return;
 
 		var duration = DateTime.Now - _runStartTime;
-		_history.Add(new RunRecord(
-			isVictory, duration,
-			new List<BossEncounterRecord>(_currentEncounters),
-			DateTime.Now));
+		var historyRecord =
+			new RunRecord(
+				isVictory,
+				duration.Ticks,
+				new List<BossEncounterRecord>(_currentEncounters),
+				DateTime.Now);
+		_history.Add(historyRecord);
+		WriteRunHistoryRecordToSaveFile(historyRecord);
 
 		_runStartTime = default;
 		_currentEncounters.Clear();

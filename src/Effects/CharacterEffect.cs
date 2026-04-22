@@ -1,4 +1,5 @@
 using Godot;
+using healerfantasy.CombatLog;
 using healerfantasy.Effects;
 using healerfantasy.SpellResources;
 

@@ -9,10 +9,10 @@ namespace healerfantasy.Effects;
 /// </summary>
 public partial class CorrosiveOozeEffect : DamageOverTimeEffect
 {
-    public CorrosiveOozeEffect() : base(damagePerTick: 12f, duration: 10f, tickInterval: 1f)
-    {
-        EffectId  = "CorrosiveOoze";
-        School    = SpellSchool.Nature;
-        IsHarmful = true; // Dispellable
-    }
+	public CorrosiveOozeEffect() : base(12f, 10f, 1f)
+	{
+		EffectId = "CorrosiveOoze";
+		School = SpellSchool.Nature;
+		IsHarmful = true; // Dispellable
+	}
 }

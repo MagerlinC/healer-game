@@ -20,6 +20,7 @@ public partial class DamageOverTimeEffect : CharacterEffect
 	{
 		DamagePerTick = damagePerTick;
 		TickInterval = tickInterval;
+		SourceCharacterName = SourceCharacterName;
 	}
 
 	protected override void OnTick(Character target)

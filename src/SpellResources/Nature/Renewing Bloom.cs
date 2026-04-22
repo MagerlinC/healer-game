@@ -1,5 +1,6 @@
 using Godot;
 using healerfantasy;
+using healerfantasy.CombatLog;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;

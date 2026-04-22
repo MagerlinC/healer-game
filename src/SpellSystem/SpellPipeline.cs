@@ -82,10 +82,10 @@ public static class SpellPipeline
 		var isDirectSpell = !ctx.Tags.HasFlag(SpellTags.Duration);
 		if (isDirectSpell)
 		{
-			bool isDamageSpell  = ctx.Tags.HasFlag(SpellTags.Damage);
-			bool isHealingSpell = ctx.Tags.HasFlag(SpellTags.Healing) && !isDamageSpell;
-			bool isCritSpell    = ctx.Tags.HasFlag(SpellTags.Critical);
-			int  school         = (int)spell.School;
+			var isDamageSpell = ctx.Tags.HasFlag(SpellTags.Damage);
+			var isHealingSpell = ctx.Tags.HasFlag(SpellTags.Healing) && !isDamageSpell;
+			var isCritSpell = ctx.Tags.HasFlag(SpellTags.Critical);
+			var school = (int)spell.School;
 
 			foreach (var target in ctx.Targets)
 			{

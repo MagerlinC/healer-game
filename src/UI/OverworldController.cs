@@ -1010,11 +1010,17 @@ public partial class OverworldController : Node2D
 			healLabel.AddThemeColorOverride("font_color", new Color(0.40f, 0.85f, 0.55f));
 			row.AddChild(healLabel);
 
-			var dmgLabel = new Label();
-			dmgLabel.Text = $"Damage: {enc.TotalDamage:N0}";
-			dmgLabel.AddThemeFontSizeOverride("font_size", 13);
-			dmgLabel.AddThemeColorOverride("font_color", new Color(0.88f, 0.44f, 0.28f));
-			row.AddChild(dmgLabel);
+			var dmgDealtLabel = new Label();
+			dmgDealtLabel.Text = $"Damage dealt: {enc.TotalDamageDealt:N0}";
+			dmgDealtLabel.AddThemeFontSizeOverride("font_size", 13);
+			dmgDealtLabel.AddThemeColorOverride("font_color", new Color(0.88f, 0.44f, 0.28f));
+			row.AddChild(dmgDealtLabel);
+
+			var dmgTakenLabel = new Label();
+			dmgTakenLabel.Text = $"Damage taken: {enc.TotalDamageTaken:N0}";
+			dmgTakenLabel.AddThemeFontSizeOverride("font_size", 13);
+			dmgTakenLabel.AddThemeColorOverride("font_color", new Color(0.88f, 0.44f, 0.28f));
+			row.AddChild(dmgTakenLabel);
 		}
 
 		return vbox;
