@@ -23,7 +23,7 @@ public static class RunHistoryStore
 	const string FileSavePath = "user://run-history.save";
 
 	static readonly List<string> PartyNames =
-		[GameConstants.PlayerName, GameConstants.AssassinName, GameConstants.AssassinName, GameConstants.TemplarName];
+		[GameConstants.PlayerName, GameConstants.WizardName, GameConstants.AssassinName, GameConstants.TemplarName];
 
 	public sealed record BossEncounterRecord(
 		string BossName,

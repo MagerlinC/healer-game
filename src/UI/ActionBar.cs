@@ -64,6 +64,10 @@ public partial class ActionBar : HBoxContainer
 			Callable.From((SpellResource spell, float duration) => OnCooldownStarted(spell, duration))
 		);
 		GlobalAutoLoad.SubscribeToSignal(
+			nameof(Player.GlobalCooldownStarted),
+			Callable.From((float duration) => OnGlobalCooldownStarted(duration))
+		);
+		GlobalAutoLoad.SubscribeToSignal(
 			nameof(Player.Died),
 			Callable.From((Character character) => SetIconShadingBasedOnCharacterDeath(character))
 		);
@@ -163,6 +167,18 @@ public partial class ActionBar : HBoxContainer
 			if (!ReferenceEquals(slot.Spell, spell)) continue;
 			slot.Overlay?.Start(duration);
 			break;
+		}
+	}
+
+	void OnGlobalCooldownStarted(float duration)
+	{
+		foreach (var slot in _slots)
+		{
+			if (slot.Overlay == null) continue;
+			// Don't override a spell that's already on a longer individual cooldown —
+			// its sweep is already running and should keep counting down undisturbed.
+			if (slot.Overlay.IsActive && slot.Overlay.Remaining >= duration) continue;
+			slot.Overlay.Start(duration);
 		}
 	}
 

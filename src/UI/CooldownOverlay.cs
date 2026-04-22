@@ -26,6 +26,9 @@ public partial class CooldownOverlay : Control
     /// <summary>True while the cooldown is counting down.</summary>
     public bool IsActive => _remaining > 0f && _duration > 0f;
 
+    /// <summary>Seconds remaining on the current cooldown. Zero when inactive.</summary>
+    public float Remaining => _remaining;
+
     public override void _Ready()
     {
         _label = new Label();

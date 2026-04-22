@@ -63,6 +63,14 @@ public partial class Player : Character
 	public delegate void CooldownStartedEventHandler(SpellResource spell, float duration);
 
 	/// <summary>
+	/// Emitted whenever the global cooldown is triggered (i.e. after every spell cast).
+	/// <paramref name="duration"/> is <see cref="GlobalCooldown"/> in seconds.
+	/// Used by the action bar to show the GCD sweep on all spell slots.
+	/// </summary>
+	[Signal]
+	public delegate void GlobalCooldownStartedEventHandler(float duration);
+
+	/// <summary>
 	/// Set by World after the scene is ready.
 	/// Used to resolve which party member the mouse is hovering at cast time.
 	/// </summary>
@@ -81,6 +89,10 @@ public partial class Player : Character
 	/// </summary>
 	readonly Dictionary<SpellResource, float> _spellCooldowns = new();
 
+	// ── casting audio ─────────────────────────────────────────────────────────
+	AudioStreamPlayer _castingAudioPlayer = null!;
+	AudioStreamPlayer _castFinishedAudioPlayer = null!;
+
 	// ── lifecycle ────────────────────────────────────────────────────────────
 	public override void _Ready()
 	{
@@ -89,6 +101,7 @@ public partial class Player : Character
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastCancelled));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CooldownStarted));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(GlobalCooldownStarted));
 
 		// Load spell loadout from RunState (set by the Overworld).
 		// RunState always has a valid loadout (defaults if the Overworld was skipped).
@@ -103,6 +116,26 @@ public partial class Player : Character
 			foreach (var def in RunState.Instance.SelectedTalentDefs)
 				Talents.Add(def.CreateTalent());
 		}
+
+		// Casting SFX — looping player restarts itself while _isCasting is true.
+		_castingAudioPlayer = new AudioStreamPlayer();
+		_castingAudioPlayer.Stream = GD.Load<AudioStream>(AssetConstants.CastingSfx);
+		_castingAudioPlayer.VolumeDb = -4f;
+		AddChild(_castingAudioPlayer);
+		_castingAudioPlayer.Finished += OnCastingSfxFinished;
+
+		// One-shot player for the cast-complete sound.
+		_castFinishedAudioPlayer = new AudioStreamPlayer();
+		_castFinishedAudioPlayer.VolumeDb = -18f;
+		_castFinishedAudioPlayer.Stream = GD.Load<AudioStream>(AssetConstants.CastFinishedSfx);
+		AddChild(_castFinishedAudioPlayer);
+	}
+
+	/// <summary>Restarts the casting loop if the cast is still in progress.</summary>
+	void OnCastingSfxFinished()
+	{
+		if (_isCasting)
+			_castingAudioPlayer.Play();
 	}
 
 	// ── spell input ───────────────────────────────────────────────────────────
@@ -153,6 +186,12 @@ public partial class Player : Character
 
 	void FireSpell(SpellResource spell, Character target)
 	{
+		// Clear _isCasting BEFORE Stop() — Godot emits Finished even on manual
+		// Stop() calls, and OnCastingSfxFinished must not restart the loop.
+		_isCasting = false;
+		_castingAudioPlayer.Stop();
+		_castFinishedAudioPlayer.Play();
+
 		SpendMana(spell.ManaCost);
 		SpellPipeline.Cast(spell, this, target);
 
@@ -162,7 +201,6 @@ public partial class Player : Character
 			EmitSignalCooldownStarted(spell, spell.Cooldown);
 		}
 
-		_isCasting = false;
 		_castSpell = null;
 		_castTarget = null;
 	}
@@ -264,11 +302,14 @@ public partial class Player : Character
 					// turns a 2 s cast into ~1.67 s.
 					var adjustedCastTime = spellToCast.CastTime / GetCharacterStats().CastSpeedMultiplier;
 					EmitSignalCastStarted(spellToCast, adjustedCastTime);
+
 					_isCasting = true;
 					_castTimer = adjustedCastTime;
+					_castingAudioPlayer.Play();
 				}
 
 				_globalCooldownTimer = GlobalCooldown;
+				EmitSignalGlobalCooldownStarted(GlobalCooldown);
 			}
 		}
 	}
@@ -290,8 +331,10 @@ public partial class Player : Character
 	/// <summary>Abort the current cast and notify listeners. No mana is refunded.</summary>
 	void CancelCast()
 	{
-		EmitSignalCastCancelled();
+		// Clear _isCasting BEFORE Stop() — same reason as FireSpell.
 		_isCasting = false;
+		_castingAudioPlayer.Stop();
+		EmitSignalCastCancelled();
 		_castSpell = null;
 		_castTarget = null;
 		_castTimer = 0f;

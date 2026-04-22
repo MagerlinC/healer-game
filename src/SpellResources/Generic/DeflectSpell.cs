@@ -41,6 +41,7 @@ public partial class DeflectSpell : SpellResource
 		if (ctx.Caster == null) return;
 		var audio = new AudioStreamPlayer();
 		audio.Stream = GD.Load<AudioStream>(DeflectSoundPath);
+		audio.VolumeDb = -4.0f;
 		ctx.Caster.AddChild(audio);
 		audio.Play();
 		audio.Finished += audio.QueueFree;
