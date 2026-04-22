@@ -9,24 +9,29 @@ using healerfantasy.Talents;
 /// <summary>
 /// Root script for the Overworld scene.
 ///
-/// Provides a pre-run loadout screen with two tabs:
-///   • Spellbook — browse the spell library and assign up to 6 spells.
-///   • Talents   — select talents across all schools (same tree as in-game).
+/// The Overworld is a 2D walkable level using a library background.  Three
+/// interactible objects are placed in world space:
 ///
-/// All selections write directly to <see cref="RunState"/> in real-time.
-/// The "Start Run" button calls <see cref="GlobalAutoLoad.Reset"/> (clearing
-/// any stale signal state from a previous run) then loads World.tscn.
+///   • Spell Tome   → opens the Spellbook selection overlay
+///   • Talent Board → opens the Talent selection overlay
+///   • Run Scroll   → opens the Run History overlay
+///
+/// A persistent HUD (CanvasLayer 5) provides the "Start Run" and
+/// "Main Menu" buttons.  Each selection overlay sits on CanvasLayer 10
+/// and is hidden until the corresponding object is clicked.
+///
+/// All spell/talent selections write directly to <see cref="RunState"/> in
+/// real-time, identical to the old tab-based UI.
 /// </summary>
 public partial class OverworldController : Node2D
 {
-    // ── shared colours (mirror the in-game panel palette) ─────────────────────
-    static readonly Color BgColor       = new(0.07f, 0.06f, 0.06f);
-    static readonly Color PanelBg       = new(0.10f, 0.08f, 0.07f, 0.98f);
-    static readonly Color PanelBorder   = new(0.65f, 0.52f, 0.28f);
-    static readonly Color TitleColor    = new(0.95f, 0.84f, 0.50f);
-    static readonly Color HintColor     = new(0.45f, 0.42f, 0.38f);
-    static readonly Color SepColor      = new(0.50f, 0.40f, 0.22f, 0.55f);
-    static readonly Color ArrowColor    = new(0.45f, 0.40f, 0.35f, 0.75f);
+    // ── shared colours ────────────────────────────────────────────────────────
+    static readonly Color PanelBg     = new(0.07f, 0.06f, 0.06f, 0.97f);
+    static readonly Color PanelBorder = new(0.65f, 0.52f, 0.28f);
+    static readonly Color TitleColor  = new(0.95f, 0.84f, 0.50f);
+    static readonly Color HintColor   = new(0.45f, 0.42f, 0.38f);
+    static readonly Color SepColor    = new(0.50f, 0.40f, 0.22f, 0.55f);
+    static readonly Color ArrowColor  = new(0.45f, 0.40f, 0.35f, 0.75f);
 
     // ── spell panel colours ───────────────────────────────────────────────────
     static readonly Color CardBorderIdle     = new(0.28f, 0.22f, 0.16f);
@@ -35,103 +40,194 @@ public partial class OverworldController : Node2D
     static readonly Color SlotBorderEmpty    = new(0.22f, 0.18f, 0.14f);
     static readonly Color SlotBorderFilled   = new(0.60f, 0.48f, 0.22f);
 
-    const float CardW       = 92f;
-    const float CardH       = 116f;
-    const float CardIconSz  = 64f;
+    const float CardW      = 92f;
+    const float CardH      = 116f;
+    const float CardIconSz = 64f;
+
+    const string DefaultHint = "Walk up to an object and click it to interact";
 
     // ── school definitions ────────────────────────────────────────────────────
     static readonly (SpellSchool? School, string Name)[] SpellSchoolTabs =
     {
-        (null,                   "All"),
-        (SpellSchool.Holy,       "Holy"),
-        (SpellSchool.Nature,     "Nature"),
-        (SpellSchool.Void,       "Void"),
-        (SpellSchool.Chronomancy,"Chronomancy"),
+        (null,                    "All"),
+        (SpellSchool.Holy,        "Holy"),
+        (SpellSchool.Nature,      "Nature"),
+        (SpellSchool.Void,        "Void"),
+        (SpellSchool.Chronomancy, "Chronomancy"),
     };
 
     static readonly (SpellSchool School, string Name, Color Accent)[] TalentSchoolOrder =
     {
         (SpellSchool.Generic,     "General",     new Color(0.70f, 0.65f, 0.60f)),
-        (SpellSchool.Holy,        "Holy",         new Color(0.95f, 0.85f, 0.40f)),
-        (SpellSchool.Nature,      "Nature",       new Color(0.40f, 0.80f, 0.35f)),
-        (SpellSchool.Void,        "Void",         new Color(0.65f, 0.35f, 0.85f)),
-        (SpellSchool.Chronomancy, "Chronomancy",  new Color(0.35f, 0.75f, 0.90f)),
+        (SpellSchool.Holy,        "Holy",        new Color(0.95f, 0.85f, 0.40f)),
+        (SpellSchool.Nature,      "Nature",      new Color(0.40f, 0.80f, 0.35f)),
+        (SpellSchool.Void,        "Void",        new Color(0.65f, 0.35f, 0.85f)),
+        (SpellSchool.Chronomancy, "Chronomancy", new Color(0.35f, 0.75f, 0.90f)),
     };
 
     // ── runtime state ─────────────────────────────────────────────────────────
 
-    /// <summary>Working copy of the spell loadout. Written to RunState on every change.</summary>
     readonly SpellResource?[] _loadout = new SpellResource?[Player.MaxSpellSlots];
-
-    /// <summary>Library card UI refs, keyed by spell name for quick visual refresh.</summary>
     readonly Dictionary<string, (PanelContainer Panel, StyleBoxFlat Border)> _libraryCards = new();
-
-    /// <summary>Loadout slot UI refs, one per index.</summary>
     (PanelContainer Panel, StyleBoxFlat Border, TextureRect Icon)[]? _loadoutSlots;
-
-    /// <summary>All talent slots — used for sync and ValidateTree passes.</summary>
     readonly List<TalentSlot> _talentSlots = new();
-
-    /// <summary>school → row → slots, for unlock validation.</summary>
     readonly Dictionary<SpellSchool, Dictionary<int, List<TalentSlot>>> _talentsBySchoolRow = new();
+
+    // ── overworld references ──────────────────────────────────────────────────
+    OverworldPlayer?  _player;
+    CanvasLayer?      _spellPanel;
+    CanvasLayer?      _talentPanel;
+    CanvasLayer?      _historyPanel;
+    VBoxContainer?    _historyContent;
+    Label?            _hintLabel;
+    readonly List<Area2D> _interactibles = new();
 
     // ── lifecycle ─────────────────────────────────────────────────────────────
 
     public override void _Ready()
     {
-        // Initialise working loadout from RunState
         System.Array.Copy(RunState.Instance.SelectedSpells, _loadout, Player.MaxSpellSlots);
 
-        // Tooltip singleton must exist so spell/talent cards can show tooltips
+        // Tooltip singleton must exist before spell/talent panels are built
         AddChild(new GameTooltip());
 
-        var canvas = new CanvasLayer();
-        AddChild(canvas);
+        // ── Library background ────────────────────────────────────────────────
+        var bg = new Sprite2D();
+        bg.Texture  = GD.Load<Texture2D>("res://assets/backgrounds/overworld/library.png");
+        bg.Centered = true;
+        bg.Position = new Vector2(896f, 512f); // centre of 1792×1024
+        AddChild(bg);
 
-        // Background
-        var bg = new ColorRect();
-        bg.Color       = BgColor;
-        bg.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        bg.MouseFilter = Control.MouseFilterEnum.Stop;
-        canvas.AddChild(bg);
+        // ── Player ────────────────────────────────────────────────────────────
+        _player = new OverworldPlayer();
+        _player.Position = new Vector2(896f, 700f);
+        AddChild(_player);
 
-        // Root layout: top bar | tabs | bottom bar
-        var root = new VBoxContainer();
-        root.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        root.AddThemeConstantOverride("separation", 0);
-        bg.AddChild(root);
+        // ── Interactibles ─────────────────────────────────────────────────────
+        // Positions are approximate for a typical library layout.
+        // Adjust them in the Godot editor if they don't land on the right spots.
+        var spellTome     = MakeInteractible("res://assets/interactibles/spell-tome.png",
+                                             new Vector2(380f,  610f),
+                                             new Vector2(0.055f, 0.055f), 28f);
+        var talentBoard   = MakeInteractible("res://assets/interactibles/talent-board.png",
+                                             new Vector2(896f,  530f),
+                                             new Vector2(0.090f, 0.090f), 50f);
+        var historyScroll = MakeInteractible("res://assets/interactibles/run-history-scroll.png",
+                                             new Vector2(1430f, 610f),
+                                             new Vector2(0.055f, 0.055f), 28f);
 
-        root.AddChild(BuildTopBar());
-        root.AddChild(BuildTabs());
-        root.AddChild(BuildBottomBar());
+        AddChild(spellTome);
+        AddChild(talentBoard);
+        AddChild(historyScroll);
+        _interactibles.Add(spellTome);
+        _interactibles.Add(talentBoard);
+        _interactibles.Add(historyScroll);
 
-        // Sync talent slots from RunState (in case player re-visits the Overworld)
+        // ── Overlay panels (built once, shown/hidden on demand) ───────────────
+        _spellPanel   = BuildOverlayPanel("Spellbook",   BuildSpellbookPane());
+        _talentPanel  = BuildOverlayPanel("Talents",     BuildTalentPane());
+        _historyPanel = BuildOverlayPanel("Run History", BuildRunHistoryPane());
+        AddChild(_spellPanel);
+        AddChild(_talentPanel);
+        AddChild(_historyPanel);
+
+        // ── HUD ───────────────────────────────────────────────────────────────
+        var hud = new CanvasLayer { Layer = 5 };
+        AddChild(hud);
+        _hintLabel = BuildHintLabel();
+        hud.AddChild(_hintLabel);
+        hud.AddChild(BuildHUDButtonBar());
+
+        // ── Wire interactible clicks ──────────────────────────────────────────
+        spellTome.InputEvent += (_, ev, _) =>
+        {
+            if (IsLeftClick(ev)) OpenPanel(_spellPanel);
+        };
+        spellTome.MouseEntered += () => _hintLabel.Text = "Spellbook  •  Click to open";
+        spellTome.MouseExited  += () => _hintLabel.Text = DefaultHint;
+
+        talentBoard.InputEvent += (_, ev, _) =>
+        {
+            if (IsLeftClick(ev)) OpenPanel(_talentPanel);
+        };
+        talentBoard.MouseEntered += () => _hintLabel.Text = "Talent Board  •  Click to open";
+        talentBoard.MouseExited  += () => _hintLabel.Text = DefaultHint;
+
+        historyScroll.InputEvent += (_, ev, _) =>
+        {
+            if (IsLeftClick(ev)) OpenPanel(_historyPanel, rebuildHistory: true);
+        };
+        historyScroll.MouseEntered += () => _hintLabel.Text = "Run History  •  Click to open";
+        historyScroll.MouseExited  += () => _hintLabel.Text = DefaultHint;
+
+        // Sync talent slots from RunState (if player is returning from a run)
         SyncTalentSlotsFromRunState();
     }
 
-    // ── top bar ───────────────────────────────────────────────────────────────
+    // ── panel open / close ────────────────────────────────────────────────────
 
-    Control BuildTopBar()
+    void OpenPanel(CanvasLayer panel, bool rebuildHistory = false)
+    {
+        CloseAllPanels();
+
+        if (rebuildHistory && panel == _historyPanel)
+            RebuildHistoryContent();
+
+        panel.Visible = true;
+        SetInteractiblesPickable(false);
+        _player?.SetPhysicsProcess(false);
+    }
+
+    void CloseAllPanels()
+    {
+        if (_spellPanel  != null) _spellPanel.Visible  = false;
+        if (_talentPanel != null) _talentPanel.Visible = false;
+        if (_historyPanel!= null) _historyPanel.Visible= false;
+        SetInteractiblesPickable(true);
+        _player?.SetPhysicsProcess(true);
+    }
+
+    void SetInteractiblesPickable(bool pickable)
+    {
+        foreach (var a in _interactibles)
+            a.InputPickable = pickable;
+    }
+
+    // ── HUD ───────────────────────────────────────────────────────────────────
+
+    Label BuildHintLabel()
+    {
+        var lbl = new Label();
+        lbl.Text                = DefaultHint;
+        lbl.HorizontalAlignment = HorizontalAlignment.Center;
+        lbl.SetAnchorsPreset(Control.LayoutPreset.TopWide);
+        lbl.OffsetTop           = 10f;
+        lbl.AddThemeFontSizeOverride("font_size", 13);
+        lbl.AddThemeColorOverride("font_color", HintColor);
+        lbl.MouseFilter         = Control.MouseFilterEnum.Ignore;
+        return lbl;
+    }
+
+    Control BuildHUDButtonBar()
     {
         var margin = new MarginContainer();
-        margin.AddThemeConstantOverride("margin_left",   32);
-        margin.AddThemeConstantOverride("margin_right",  32);
-        margin.AddThemeConstantOverride("margin_top",    20);
-        margin.AddThemeConstantOverride("margin_bottom", 12);
+        margin.SetAnchorsPreset(Control.LayoutPreset.BottomWide);
+        margin.GrowVertical = Control.GrowDirection.Begin;
+        margin.AddThemeConstantOverride("margin_left",   24);
+        margin.AddThemeConstantOverride("margin_right",  24);
+        margin.AddThemeConstantOverride("margin_top",    12);
+        margin.AddThemeConstantOverride("margin_bottom", 16);
 
         var hbox = new HBoxContainer();
+        hbox.Alignment = BoxContainer.AlignmentMode.End;
+        hbox.AddThemeConstantOverride("separation", 14);
         margin.AddChild(hbox);
 
-        var title = new Label();
-        title.Text                = "PREPARE FOR BATTLE";
-        title.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        title.AddThemeFontSizeOverride("font_size", 28);
-        title.AddThemeColorOverride("font_color", TitleColor);
-        hbox.AddChild(title);
-
+        // Main Menu button
         var menuBtn = new Button();
         menuBtn.Text                    = "← Main Menu";
         menuBtn.Flat                    = true;
+        menuBtn.CustomMinimumSize       = new Vector2(140f, 44f);
         menuBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
         menuBtn.AddThemeFontSizeOverride("font_size", 14);
         menuBtn.AddThemeColorOverride("font_color",       new Color(0.72f, 0.68f, 0.62f));
@@ -139,75 +235,31 @@ public partial class OverworldController : Node2D
         menuBtn.Pressed += () => GetTree().ChangeSceneToFile("res://levels/MainMenu.tscn");
         hbox.AddChild(menuBtn);
 
-        return margin;
-    }
-
-    // ── tab container ─────────────────────────────────────────────────────────
-
-    Control BuildTabs()
-    {
-        var tabs = new TabContainer();
-        tabs.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-
-        // Give the tabs header a matching dark style
-        var tabStyle = new StyleBoxFlat();
-        tabStyle.BgColor = new Color(0.12f, 0.10f, 0.09f);
-        tabs.AddThemeStyleboxOverride("panel", tabStyle);
-
-        var spellPane = BuildSpellbookPane();
-        spellPane.Name = "Spellbook";
-        tabs.AddChild(spellPane);
-
-        var talentPane = BuildTalentPane();
-        talentPane.Name = "Talents";
-        tabs.AddChild(talentPane);
-
-        return tabs;
-    }
-
-    // ── bottom bar ────────────────────────────────────────────────────────────
-
-    Control BuildBottomBar()
-    {
-        var margin = new MarginContainer();
-        margin.AddThemeConstantOverride("margin_left",   32);
-        margin.AddThemeConstantOverride("margin_right",  32);
-        margin.AddThemeConstantOverride("margin_top",    12);
-        margin.AddThemeConstantOverride("margin_bottom", 20);
-
-        var hbox = new HBoxContainer();
-        margin.AddChild(hbox);
-
-        var fill = new Control();
-        fill.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        hbox.AddChild(fill);
-
+        // Start Run button
         var startBtn = new Button();
         startBtn.Text                    = "Start Run  ▶";
-        startBtn.CustomMinimumSize       = new Vector2(200f, 52f);
+        startBtn.CustomMinimumSize       = new Vector2(180f, 48f);
         startBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-        startBtn.AddThemeFontSizeOverride("font_size", 20);
+        startBtn.AddThemeFontSizeOverride("font_size", 18);
         startBtn.AddThemeColorOverride("font_color",       new Color(0.10f, 0.08f, 0.06f));
         startBtn.AddThemeColorOverride("font_hover_color", new Color(0.06f, 0.04f, 0.02f));
 
         var normalStyle = new StyleBoxFlat();
         normalStyle.BgColor = TitleColor;
         normalStyle.SetCornerRadiusAll(6);
-        normalStyle.SetBorderWidthAll(0);
-        normalStyle.ContentMarginLeft = normalStyle.ContentMarginRight = 24f;
-        normalStyle.ContentMarginTop  = normalStyle.ContentMarginBottom = 12f;
+        normalStyle.ContentMarginLeft = normalStyle.ContentMarginRight = 20f;
+        normalStyle.ContentMarginTop  = normalStyle.ContentMarginBottom = 10f;
 
         var hoverStyle = new StyleBoxFlat();
         hoverStyle.BgColor = new Color(1.00f, 0.92f, 0.60f);
         hoverStyle.SetCornerRadiusAll(6);
-        hoverStyle.ContentMarginLeft = hoverStyle.ContentMarginRight = 24f;
-        hoverStyle.ContentMarginTop  = hoverStyle.ContentMarginBottom = 12f;
+        hoverStyle.ContentMarginLeft = hoverStyle.ContentMarginRight = 20f;
+        hoverStyle.ContentMarginTop  = hoverStyle.ContentMarginBottom = 10f;
 
         startBtn.AddThemeStyleboxOverride("normal",  normalStyle);
         startBtn.AddThemeStyleboxOverride("hover",   hoverStyle);
         startBtn.AddThemeStyleboxOverride("pressed", normalStyle);
         startBtn.AddThemeStyleboxOverride("focus",   normalStyle);
-
         startBtn.Pressed += OnStartRun;
         hbox.AddChild(startBtn);
 
@@ -216,35 +268,141 @@ public partial class OverworldController : Node2D
 
     void OnStartRun()
     {
-        // Commit loadout to RunState (talents are already synced in real-time)
         RunState.Instance.SetSpells(_loadout);
-
-        // Clear any stale signal registrations from a previous run
         GlobalAutoLoad.Reset();
-
+        RunHistoryStore.StartRun();
         GetTree().ChangeSceneToFile("res://levels/World.tscn");
     }
 
+    // ── overlay panel builder ─────────────────────────────────────────────────
+
+    /// <summary>
+    /// Wraps <paramref name="content"/> in a full-screen CanvasLayer overlay
+    /// with a dark dimmer, titled panel, and a Close button.
+    /// The returned layer is hidden by default.
+    /// </summary>
+    CanvasLayer BuildOverlayPanel(string title, Control content)
+    {
+        var layer = new CanvasLayer { Layer = 10 };
+        layer.Visible = false;
+
+        // Dark backdrop — also blocks mouse from reaching world-space nodes
+        var dimmer = new ColorRect();
+        dimmer.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        dimmer.Color       = new Color(0f, 0f, 0f, 0.72f);
+        dimmer.MouseFilter = Control.MouseFilterEnum.Stop;
+        layer.AddChild(dimmer);
+
+        // Inset container — gives 80px side margins, 50px top/bottom
+        var margin = new MarginContainer();
+        margin.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        margin.AddThemeConstantOverride("margin_left",   80);
+        margin.AddThemeConstantOverride("margin_right",  80);
+        margin.AddThemeConstantOverride("margin_top",    50);
+        margin.AddThemeConstantOverride("margin_bottom", 50);
+        margin.MouseFilter = Control.MouseFilterEnum.Ignore;
+        layer.AddChild(margin);
+
+        // Panel background
+        var panelStyle = new StyleBoxFlat();
+        panelStyle.BgColor = PanelBg;
+        panelStyle.SetCornerRadiusAll(8);
+        panelStyle.SetBorderWidthAll(2);
+        panelStyle.BorderColor             = PanelBorder;
+        panelStyle.ContentMarginLeft       = panelStyle.ContentMarginRight  = 20f;
+        panelStyle.ContentMarginTop        = panelStyle.ContentMarginBottom = 16f;
+
+        var panel = new PanelContainer();
+        panel.AddThemeStyleboxOverride("panel", panelStyle);
+        panel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        panel.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
+        margin.AddChild(panel);
+
+        var vbox = new VBoxContainer();
+        vbox.AddThemeConstantOverride("separation", 12);
+        panel.AddChild(vbox);
+
+        // Title bar
+        var titleBar = new HBoxContainer();
+        titleBar.AddThemeConstantOverride("separation", 8);
+        vbox.AddChild(titleBar);
+
+        var titleLabel = new Label();
+        titleLabel.Text                = title;
+        titleLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        titleLabel.AddThemeFontSizeOverride("font_size", 22);
+        titleLabel.AddThemeColorOverride("font_color", TitleColor);
+        titleBar.AddChild(titleLabel);
+
+        var closeBtn = new Button();
+        closeBtn.Text                    = "✕  Close";
+        closeBtn.Flat                    = true;
+        closeBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+        closeBtn.AddThemeFontSizeOverride("font_size", 14);
+        closeBtn.AddThemeColorOverride("font_color",       new Color(0.72f, 0.68f, 0.62f));
+        closeBtn.AddThemeColorOverride("font_hover_color", new Color(0.90f, 0.35f, 0.28f));
+        closeBtn.Pressed += CloseAllPanels;
+        titleBar.AddChild(closeBtn);
+
+        // Separator
+        var sep = new HSeparator();
+        sep.AddThemeColorOverride("color", SepColor);
+        vbox.AddChild(sep);
+
+        // Content fills the rest
+        content.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+        vbox.AddChild(content);
+
+        return layer;
+    }
+
+    // ── interactible factory ──────────────────────────────────────────────────
+
+    Area2D MakeInteractible(string texturePath, Vector2 position,
+                             Vector2 scale, float collisionRadius)
+    {
+        var area = new Area2D();
+        area.Position      = position;
+        area.InputPickable = true;
+        area.Monitoring    = false;
+        area.Monitorable   = false;
+
+        var sprite = new Sprite2D();
+        sprite.Texture = GD.Load<Texture2D>(texturePath);
+        sprite.Scale   = scale;
+        area.AddChild(sprite);
+
+        var collision = new CollisionShape2D();
+        collision.Shape = new CircleShape2D { Radius = collisionRadius };
+        area.AddChild(collision);
+
+        return area;
+    }
+
+    static bool IsLeftClick(InputEvent ev) =>
+        ev is InputEventMouseButton mb &&
+        mb.ButtonIndex == MouseButton.Left &&
+        mb.Pressed;
+
     // ══════════════════════════════════════════════════════════════════════════
-    // SPELLBOOK PANE
+    // SPELLBOOK PANE  (same logic as before — now shown inside an overlay)
     // ══════════════════════════════════════════════════════════════════════════
 
     Control BuildSpellbookPane()
     {
         var margin = new MarginContainer();
-        margin.AddThemeConstantOverride("margin_left",   24);
-        margin.AddThemeConstantOverride("margin_right",  24);
-        margin.AddThemeConstantOverride("margin_top",    16);
-        margin.AddThemeConstantOverride("margin_bottom", 16);
+        margin.AddThemeConstantOverride("margin_left",   16);
+        margin.AddThemeConstantOverride("margin_right",  16);
+        margin.AddThemeConstantOverride("margin_top",    8);
+        margin.AddThemeConstantOverride("margin_bottom", 8);
 
         var vbox = new VBoxContainer();
         vbox.AddThemeConstantOverride("separation", 12);
         margin.AddChild(vbox);
 
-        // Library tabs
         var libTabs = new TabContainer();
         libTabs.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-        libTabs.CustomMinimumSize = new Vector2(0, 300f);
+        libTabs.CustomMinimumSize = new Vector2(0, 280f);
         foreach (var (school, name) in SpellSchoolTabs)
         {
             var pane = BuildSpellLibraryPane(school);
@@ -254,11 +412,8 @@ public partial class OverworldController : Node2D
         vbox.AddChild(libTabs);
 
         AddHSep(vbox);
-
-        // Loadout row
         vbox.AddChild(BuildLoadoutRow());
 
-        // Hint
         var hint = new Label();
         hint.Text                = "Click a spell to equip or unequip it  •  Click a loadout slot to clear it";
         hint.HorizontalAlignment = HorizontalAlignment.Center;
@@ -334,12 +489,12 @@ public partial class OverworldController : Node2D
         panel.AddChild(vbox);
 
         var iconRect = new TextureRect();
-        iconRect.Texture           = spell.Icon;
-        iconRect.CustomMinimumSize = new Vector2(CardIconSz, CardIconSz);
-        iconRect.ExpandMode        = TextureRect.ExpandModeEnum.IgnoreSize;
-        iconRect.StretchMode       = TextureRect.StretchModeEnum.KeepAspectCentered;
+        iconRect.Texture             = spell.Icon;
+        iconRect.CustomMinimumSize   = new Vector2(CardIconSz, CardIconSz);
+        iconRect.ExpandMode          = TextureRect.ExpandModeEnum.IgnoreSize;
+        iconRect.StretchMode         = TextureRect.StretchModeEnum.KeepAspectCentered;
         iconRect.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        iconRect.MouseFilter       = Control.MouseFilterEnum.Ignore;
+        iconRect.MouseFilter         = Control.MouseFilterEnum.Ignore;
         vbox.AddChild(iconRect);
 
         var schoolLabel = new Label();
@@ -414,8 +569,8 @@ public partial class OverworldController : Node2D
                 var s = _loadout[idx];
                 if (s != null) GameTooltip.Show(GameTooltip.FormatSpellTooltip(s));
             };
-            slotPanel.MouseExited += () => GameTooltip.Hide();
-            slotPanel.GuiInput += (ev) =>
+            slotPanel.MouseExited  += () => GameTooltip.Hide();
+            slotPanel.GuiInput     += (ev) =>
             {
                 if (ev is InputEventMouseButton mb && mb.ButtonIndex == MouseButton.Left && mb.Pressed)
                 {
@@ -450,9 +605,9 @@ public partial class OverworldController : Node2D
         panel.AddThemeStyleboxOverride("panel", border);
 
         var inner = new Control();
-        inner.MouseFilter            = Control.MouseFilterEnum.Ignore;
-        inner.SizeFlagsHorizontal    = Control.SizeFlags.ExpandFill;
-        inner.SizeFlagsVertical      = Control.SizeFlags.ExpandFill;
+        inner.MouseFilter         = Control.MouseFilterEnum.Ignore;
+        inner.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        inner.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
         panel.AddChild(inner);
 
         var iconRect = new TextureRect();
@@ -525,22 +680,21 @@ public partial class OverworldController : Node2D
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // TALENT PANE
+    // TALENT PANE  (same logic as before — now shown inside an overlay)
     // ══════════════════════════════════════════════════════════════════════════
 
     Control BuildTalentPane()
     {
         var margin = new MarginContainer();
-        margin.AddThemeConstantOverride("margin_left",   24);
-        margin.AddThemeConstantOverride("margin_right",  24);
-        margin.AddThemeConstantOverride("margin_top",    16);
-        margin.AddThemeConstantOverride("margin_bottom", 16);
+        margin.AddThemeConstantOverride("margin_left",   16);
+        margin.AddThemeConstantOverride("margin_right",  16);
+        margin.AddThemeConstantOverride("margin_top",    8);
+        margin.AddThemeConstantOverride("margin_bottom", 8);
 
         var vbox = new VBoxContainer();
         vbox.AddThemeConstantOverride("separation", 10);
         margin.AddChild(vbox);
 
-        // School columns in a scroll view
         var scroll = new ScrollContainer();
         scroll.SizeFlagsHorizontal = scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 
@@ -623,10 +777,10 @@ public partial class OverworldController : Node2D
             var rowGroup = rowGroups[i];
             var rowIndex = rowGroup.Key;
 
-            var hbox = new HBoxContainer();
-            hbox.Alignment           = BoxContainer.AlignmentMode.Center;
-            hbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-            hbox.AddThemeConstantOverride("separation", 12);
+            var rowBox = new HBoxContainer();
+            rowBox.Alignment           = BoxContainer.AlignmentMode.Center;
+            rowBox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+            rowBox.AddThemeConstantOverride("separation", 12);
 
             foreach (var def in rowGroup)
             {
@@ -640,10 +794,10 @@ public partial class OverworldController : Node2D
                     _talentsBySchoolRow[school][rowIndex] = new List<TalentSlot>();
                 _talentsBySchoolRow[school][rowIndex].Add(slot);
 
-                hbox.AddChild(slot);
+                rowBox.AddChild(slot);
             }
 
-            col.AddChild(hbox);
+            col.AddChild(rowBox);
 
             if (i < rowGroups.Count - 1)
             {
@@ -691,11 +845,144 @@ public partial class OverworldController : Node2D
 
     void SyncTalentSlotsFromRunState()
     {
-        var active = new HashSet<string>(RunState.Instance.SelectedTalentDefs.Select(d => d.Name));
+        var active = new HashSet<string>(
+            RunState.Instance.SelectedTalentDefs.Select(d => d.Name));
         foreach (var slot in _talentSlots)
             slot.SetSelected(active.Contains(slot.Definition.Name));
         foreach (var (school, _, _) in TalentSchoolOrder)
             ValidateTalentTree(school);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // RUN HISTORY PANE
+    // ══════════════════════════════════════════════════════════════════════════
+
+    Control BuildRunHistoryPane()
+    {
+        var margin = new MarginContainer();
+        margin.AddThemeConstantOverride("margin_left",   16);
+        margin.AddThemeConstantOverride("margin_right",  16);
+        margin.AddThemeConstantOverride("margin_top",    8);
+        margin.AddThemeConstantOverride("margin_bottom", 8);
+
+        var scroll = new ScrollContainer();
+        scroll.SizeFlagsHorizontal = scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+        margin.AddChild(scroll);
+
+        _historyContent = new VBoxContainer();
+        _historyContent.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        _historyContent.AddThemeConstantOverride("separation", 16);
+        scroll.AddChild(_historyContent);
+
+        // Populated lazily when the panel opens via RebuildHistoryContent()
+        RebuildHistoryContent();
+
+        return margin;
+    }
+
+    void RebuildHistoryContent()
+    {
+        if (_historyContent == null) return;
+
+        foreach (var child in _historyContent.GetChildren())
+            child.QueueFree();
+
+        var runs = RunHistoryStore.History;
+
+        if (runs.Count == 0)
+        {
+            var empty = new Label();
+            empty.Text                = "No runs recorded yet.\nComplete or attempt a run to see your history here.";
+            empty.HorizontalAlignment = HorizontalAlignment.Center;
+            empty.AutowrapMode        = TextServer.AutowrapMode.Word;
+            empty.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+            empty.AddThemeFontSizeOverride("font_size", 15);
+            empty.AddThemeColorOverride("font_color", HintColor);
+            _historyContent.AddChild(empty);
+            return;
+        }
+
+        // Newest runs first
+        for (var i = runs.Count - 1; i >= 0; i--)
+        {
+            _historyContent.AddChild(BuildRunEntry(i + 1, runs[i]));
+            if (i > 0)
+            {
+                var sep = new HSeparator();
+                sep.AddThemeColorOverride("color", SepColor);
+                _historyContent.AddChild(sep);
+            }
+        }
+    }
+
+    Control BuildRunEntry(int runNumber, RunHistoryStore.RunRecord run)
+    {
+        var vbox = new VBoxContainer();
+        vbox.AddThemeConstantOverride("separation", 6);
+        vbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+
+        // ── Header row ────────────────────────────────────────────────────────
+        var header = new HBoxContainer();
+        header.AddThemeConstantOverride("separation", 12);
+        vbox.AddChild(header);
+
+        var runLabel = new Label();
+        runLabel.Text = $"Run #{runNumber}  •  {run.CompletedAt:MMM d, yyyy  h:mm tt}";
+        runLabel.AddThemeFontSizeOverride("font_size", 14);
+        runLabel.AddThemeColorOverride("font_color", new Color(0.82f, 0.78f, 0.72f));
+        runLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        header.AddChild(runLabel);
+
+        // Duration
+        var durationLabel = new Label();
+        var m = (int)run.Duration.TotalMinutes;
+        var s = run.Duration.Seconds;
+        durationLabel.Text = $"{m}:{s:D2}";
+        durationLabel.AddThemeFontSizeOverride("font_size", 13);
+        durationLabel.AddThemeColorOverride("font_color", HintColor);
+        header.AddChild(durationLabel);
+
+        // Outcome badge
+        var outcome = new Label();
+        outcome.Text = run.IsVictory ? "VICTORY" : "DEFEAT";
+        outcome.AddThemeFontSizeOverride("font_size", 14);
+        outcome.AddThemeColorOverride("font_color",
+            run.IsVictory ? new Color(0.40f, 0.85f, 0.35f)
+                          : new Color(0.85f, 0.28f, 0.22f));
+        header.AddChild(outcome);
+
+        // ── Per-boss rows ─────────────────────────────────────────────────────
+        foreach (var enc in run.BossEncounters)
+        {
+            var row = new HBoxContainer();
+            row.AddThemeConstantOverride("separation", 16);
+            vbox.AddChild(row);
+
+            var pad = new Control();
+            pad.CustomMinimumSize = new Vector2(24f, 0f);
+            row.AddChild(pad);
+
+            var bossName = new Label();
+            bossName.Text                = enc.BossName;
+            bossName.CustomMinimumSize   = new Vector2(160f, 0f);
+            bossName.AddThemeFontSizeOverride("font_size", 13);
+            bossName.AddThemeColorOverride("font_color", new Color(0.88f, 0.84f, 0.78f));
+            row.AddChild(bossName);
+
+            var healLabel = new Label();
+            healLabel.Text = $"Healing: {enc.TotalHealing:N0}";
+            healLabel.AddThemeFontSizeOverride("font_size", 13);
+            healLabel.AddThemeColorOverride("font_color", new Color(0.40f, 0.85f, 0.55f));
+            row.AddChild(healLabel);
+
+            var dmgLabel = new Label();
+            dmgLabel.Text = $"Damage: {enc.TotalDamage:N0}";
+            dmgLabel.AddThemeFontSizeOverride("font_size", 13);
+            dmgLabel.AddThemeColorOverride("font_color", new Color(0.88f, 0.44f, 0.28f));
+            row.AddChild(dmgLabel);
+        }
+
+        return vbox;
     }
 
     // ── shared helpers ────────────────────────────────────────────────────────

@@ -33,6 +33,12 @@ public static class CombatLog
 		Events.RemoveAll(e => e.Timestamp < cutoff);
 	}
 
+	/// <summary>Returns a snapshot copy of all current events.</summary>
+	public static List<CombatEventRecord> Snapshot() => new(Events);
+
+	/// <summary>Clears all recorded events. Call at the start of each boss fight.</summary>
+	public static void Clear() => Events.Clear();
+
 	// ── read ─────────────────────────────────────────────────────────────────
 
 	/// <summary>

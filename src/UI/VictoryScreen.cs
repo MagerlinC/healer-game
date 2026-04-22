@@ -1,18 +1,18 @@
 using Godot;
 using healerfantasy;
+using healerfantasy.CombatLog;
 
 /// <summary>
-/// Full-screen victory overlay shown when the boss dies.
+/// Overlay shown when a boss dies.
 ///
-/// Sits on CanvasLayer 20 (same layer as DeathScreen) and is hidden by default.
-/// Subscribes to <see cref="Character.Died"/> from GlobalAutoLoad; when the
-/// dying character is not friendly (i.e. the boss) <see cref="ShowVictoryScreen"/>
-/// is called.
+/// For encounters 1 and 2 (index 0–1) it shows an "ARENA CLEARED!" screen
+/// with a "Continue" button that advances the run to the next boss.
+/// For the final encounter (index 2) it shows the full "VICTORY!" screen
+/// with "Play Again" and "Main Menu" options.
 ///
-/// Add this node as a child of the World scene root (same as DeathScreen).
-///
-/// ProcessMode is Always so the buttons keep receiving input while the tree
-/// is paused.
+/// Sits on CanvasLayer 20 (same as DeathScreen) and is hidden by default.
+/// ProcessMode is Always so buttons keep receiving input while the tree is
+/// paused.
 /// </summary>
 public partial class VictoryScreen : CanvasLayer
 {
@@ -27,7 +27,16 @@ public partial class VictoryScreen : CanvasLayer
             Callable.From((Character character) =>
             {
                 if (!character.IsFriendly)
-                    ShowVictoryScreen();
+                {
+                    // Snapshot the combat log for this encounter before clearing it.
+                    RunHistoryStore.RecordBossEncounter(character.CharacterName);
+                    CombatLog.Clear();
+
+                    if (RunState.Instance.CurrentBossIndex < 2)
+                        ShowArenaCleared(character.CharacterName);
+                    else
+                        ShowVictoryScreen();
+                }
             }));
 
         // ── Dark overlay ──────────────────────────────────────────────────────
@@ -46,56 +55,105 @@ public partial class VictoryScreen : CanvasLayer
         overlay.AddChild(vbox);
 
         // Title
-        var title = new Label();
-        title.Text                = "VICTORY!";
-        title.HorizontalAlignment = HorizontalAlignment.Center;
-        title.AddThemeFontSizeOverride("font_size", 48);
-        title.AddThemeColorOverride("font_color", new Color(0.95f, 0.84f, 0.50f));
-        vbox.AddChild(title);
+        _titleLabel = new Label();
+        _titleLabel.HorizontalAlignment = HorizontalAlignment.Center;
+        _titleLabel.AddThemeFontSizeOverride("font_size", 48);
+        _titleLabel.AddThemeColorOverride("font_color", new Color(0.95f, 0.84f, 0.50f));
+        vbox.AddChild(_titleLabel);
 
-        var sub = new Label();
-        sub.Text                = "The boss has been defeated.";
-        sub.HorizontalAlignment = HorizontalAlignment.Center;
-        sub.AddThemeFontSizeOverride("font_size", 18);
-        sub.AddThemeColorOverride("font_color", new Color(0.72f, 0.68f, 0.62f));
-        vbox.AddChild(sub);
+        // Subtitle
+        _subLabel = new Label();
+        _subLabel.HorizontalAlignment = HorizontalAlignment.Center;
+        _subLabel.AddThemeFontSizeOverride("font_size", 18);
+        _subLabel.AddThemeColorOverride("font_color", new Color(0.72f, 0.68f, 0.62f));
+        vbox.AddChild(_subLabel);
 
-        // Button row
-        var btnRow = new HBoxContainer();
-        btnRow.Alignment = BoxContainer.AlignmentMode.Center;
-        btnRow.AddThemeConstantOverride("separation", 20);
-        vbox.AddChild(btnRow);
-
-        btnRow.AddChild(MakeButton("Play Again",   new Color(0.18f, 0.14f, 0.10f), new Color(0.65f, 0.52f, 0.28f), OnPlayAgainPressed));
-        btnRow.AddChild(MakeButton("Main Menu",    new Color(0.14f, 0.11f, 0.09f), new Color(0.45f, 0.38f, 0.22f), OnMainMenuPressed));
+        // Button row (populated dynamically when the screen is shown)
+        _btnRow = new HBoxContainer();
+        _btnRow.Alignment = BoxContainer.AlignmentMode.Center;
+        _btnRow.AddThemeConstantOverride("separation", 20);
+        vbox.AddChild(_btnRow);
     }
 
     // ── public API ────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Shows the intermediate "Arena Cleared!" screen between bosses.
+    /// </summary>
+    public void ShowArenaCleared(string defeatedBossName)
+    {
+        if (Visible) return;
+
+        _titleLabel.Text = "ARENA CLEARED!";
+        _subLabel.Text   = $"{defeatedBossName} has been defeated.\nPrepare for the next battle.";
+
+        // Clear any old buttons and build arena-cleared set.
+        foreach (var child in _btnRow.GetChildren())
+            child.QueueFree();
+
+        _btnRow.AddChild(MakeButton(
+            "Continue  ▶",
+            new Color(0.10f, 0.16f, 0.10f),
+            new Color(0.30f, 0.65f, 0.28f),
+            OnContinuePressed));
+
+        Visible = true;
+        GetTree().Paused = true;
+    }
+
+    /// <summary>
+    /// Shows the final victory screen after the last boss is defeated.
+    /// </summary>
     public void ShowVictoryScreen()
     {
         if (Visible) return;
+
+        _titleLabel.Text = "VICTORY!";
+        _subLabel.Text   = "All three arenas have been conquered.";
+
+        foreach (var child in _btnRow.GetChildren())
+            child.QueueFree();
+
+        _btnRow.AddChild(MakeButton("Play Again", new Color(0.18f, 0.14f, 0.10f), new Color(0.65f, 0.52f, 0.28f), OnPlayAgainPressed));
+        _btnRow.AddChild(MakeButton("Main Menu",  new Color(0.14f, 0.11f, 0.09f), new Color(0.45f, 0.38f, 0.22f), OnMainMenuPressed));
+
         Visible = true;
         GetTree().Paused = true;
     }
 
     // ── button callbacks ──────────────────────────────────────────────────────
 
+    void OnContinuePressed()
+    {
+        GetTree().Paused = false;
+        RunState.Instance.AdvanceBoss();
+        GlobalAutoLoad.Reset();
+        GetTree().ChangeSceneToFile("res://levels/World.tscn");
+    }
+
     void OnPlayAgainPressed()
     {
         GetTree().Paused = false;
+        RunHistoryStore.FinalizeRun(true);
         GlobalAutoLoad.Reset();
-        // Keep RunState intact — player goes back to Overworld with their choices
+        RunState.Instance?.Reset();
         GetTree().ChangeSceneToFile("res://levels/Overworld.tscn");
     }
 
     void OnMainMenuPressed()
     {
         GetTree().Paused = false;
+        RunHistoryStore.FinalizeRun(true);
         GlobalAutoLoad.Reset();
         RunState.Instance?.Reset();
         GetTree().ChangeSceneToFile("res://levels/MainMenu.tscn");
     }
+
+    // ── private fields ────────────────────────────────────────────────────────
+
+    Label          _titleLabel = null!;
+    Label          _subLabel   = null!;
+    HBoxContainer  _btnRow     = null!;
 
     // ── helpers ───────────────────────────────────────────────────────────────
 
@@ -103,7 +161,7 @@ public partial class VictoryScreen : CanvasLayer
     {
         var btn = new Button();
         btn.Text                    = text;
-        btn.CustomMinimumSize       = new Vector2(180f, 52f);
+        btn.CustomMinimumSize       = new Vector2(190f, 52f);
         btn.SizeFlagsHorizontal     = Control.SizeFlags.ShrinkCenter;
         btn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
         btn.AddThemeFontSizeOverride("font_size", 18);
@@ -127,9 +185,9 @@ public partial class VictoryScreen : CanvasLayer
         s.BgColor = bg;
         s.SetCornerRadiusAll(6);
         s.SetBorderWidthAll(2);
-        s.BorderColor          = border;
-        s.ContentMarginLeft    = s.ContentMarginRight  = 16f;
-        s.ContentMarginTop     = s.ContentMarginBottom = 10f;
+        s.BorderColor           = border;
+        s.ContentMarginLeft     = s.ContentMarginRight  = 16f;
+        s.ContentMarginTop      = s.ContentMarginBottom = 10f;
         return s;
     }
 }

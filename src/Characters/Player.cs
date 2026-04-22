@@ -25,7 +25,7 @@ public partial class Player : Character
 	/// Always-available generic spells (Dispel, Deflect) sourced from
 	/// <see cref="SpellRegistry.GenericSpells"/>. These live in their own
 	/// action bar and cannot be removed from the loadout. Bound to input
-	/// actions <c>generic_1</c> and <c>generic_2</c>.
+	/// actions <c>dispel</c> and <c>deflect</c>.
 	/// </summary>
 	public SpellResource[] GenericSpells { get; } =
 		SpellRegistry.GenericSpells.ToArray();
@@ -124,9 +124,16 @@ public partial class Player : Character
 	/// </summary>
 	SpellResource? GetGenericSpellForInput()
 	{
-		for (var i = 0; i < GenericSpells.Length; i++)
-			if (Input.IsActionJustPressed($"generic_{i + 1}"))
-				return GenericSpells[i];
+		if (Input.IsActionJustPressed("deflect"))
+		{
+			return GenericSpells.FirstOrDefault(s => s.Name == "deflect");
+		}
+
+		if (Input.IsActionJustPressed("dispel"))
+		{
+			return GenericSpells.FirstOrDefault(s => s.Name == "dispel");
+		}
+
 		return null;
 	}
 

@@ -2,7 +2,6 @@
 
 [ext_resource type="Texture2D" uid="uid://tvhofvs5rsm8" path="res://assets/32rogues/tiles.png" id="2_l1j2j"]
 [ext_resource type="PackedScene" path="res://levels/Assassin.tscn" id="Scene_assassin"]
-[ext_resource type="PackedScene" path="res://levels/CrystalKnight.tscn" id="Scene_crystalknight"]
 [ext_resource type="PackedScene" uid="uid://djg1i0kxk4dmt" path="res://levels/PartyUI.tscn" id="Scene_partyui"]
 [ext_resource type="PackedScene" path="res://levels/Player.tscn" id="Scene_player"]
 [ext_resource type="PackedScene" path="res://levels/Templar.tscn" id="Scene_templar"]
@@ -127,9 +126,5 @@ position = Vector2(164, 216)
 [node name="Healer" parent="." unique_id=1338505269 instance=ExtResource("Scene_player")]
 position = Vector2(215, 176)
 CharacterName = "Healer"
-
-[node name="CrystalKnight" parent="." unique_id=537506893 instance=ExtResource("Scene_crystalknight")]
-position = Vector2(123, 120)
-LifeLossPerSecond = 5.0
 
 [node name="PartyUI" parent="." unique_id=955504976 instance=ExtResource("Scene_partyui")]

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Godot;
 using healerfantasy;
+using healerfantasy.CombatLog;
 
 /// <summary>
 /// Full-screen death overlay shown when every party member has died.
@@ -80,6 +81,13 @@ public partial class DeathScreen : CanvasLayer
 	public void ShowDeathScreen()
 	{
 		if (Visible) return;
+
+		// Record the failed boss encounter and close out the run as a loss.
+		RunHistoryStore.RecordBossEncounter(
+			RunState.Instance?.CurrentBossName ?? "Unknown");
+		CombatLog.Clear();
+		RunHistoryStore.FinalizeRun(false);
+
 		Visible = true;
 		GetTree().Paused = true;
 	}
@@ -91,6 +99,7 @@ public partial class DeathScreen : CanvasLayer
 	{
 		GetTree().Paused = false;
 		GlobalAutoLoad.Reset();
+		RunHistoryStore.StartRun(); // Begin tracking the retry as a new run
 		GetTree().ChangeSceneToFile("res://levels/World.tscn");
 	}
 

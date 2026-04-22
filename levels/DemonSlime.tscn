@@ -1,0 +1,20 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/Characters/Enemies/DemonSlime.cs" id="Script_demon_slime"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
+radius = 18.0
+height = 32.0
+
+[node name="DemonSlime" type="CharacterBody2D"]
+script = ExtResource("Script_demon_slime")
+CharacterName = "Demon Slime"
+MaxHealth = 700.0
+MaxMana = 300.0
+LifeLossPerSecond = 5.0
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 12)
+shape = SubResource("CapsuleShape2D_1")

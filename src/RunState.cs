@@ -36,6 +36,27 @@ public partial class RunState : Node
 
     public bool HasLoadout => SelectedSpells.Any(s => s != null);
 
+    /// <summary>
+    /// Which boss encounter the player is currently on (0 = Crystal Knight,
+    /// 1 = Bringer of Death, 2 = Demon Slime).
+    /// </summary>
+    public int CurrentBossIndex { get; private set; } = 0;
+
+    /// <summary>Display name of the current boss, derived from <see cref="CurrentBossIndex"/>.</summary>
+    public string CurrentBossName => CurrentBossIndex switch
+    {
+        0 => GameConstants.Boss1Name,
+        1 => GameConstants.Boss2Name,
+        2 => GameConstants.Boss3Name,
+        _ => GameConstants.Boss1Name
+    };
+
+    /// <summary>
+    /// Advance to the next boss encounter.
+    /// Called by VictoryScreen when an intermediate boss is defeated.
+    /// </summary>
+    public void AdvanceBoss() => CurrentBossIndex++;
+
     // ── lifecycle ─────────────────────────────────────────────────────────────
 
     public override void _Ready()
@@ -65,6 +86,7 @@ public partial class RunState : Node
     public void Reset()
     {
         SelectedTalentDefs.Clear();
+        CurrentBossIndex = 0;
         InitDefaultSpells();
     }
 

@@ -24,7 +24,8 @@ public partial class BossHealthBar : CharacterFrame
 	static readonly Color BorderHovered = new(0.90f, 0.80f, 0.20f);
 	static readonly Color BarTextColor  = new(0.95f, 0.90f, 0.85f);
 
-	protected override string FrameCharacterName => GameConstants.Boss1Name;
+	// Evaluated dynamically so it always matches whichever boss is active this run.
+	protected override string FrameCharacterName => RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name;
 
 	// ── node refs ─────────────────────────────────────────────────────────────
 	PanelContainer _innerPanel         = null!;
@@ -50,7 +51,8 @@ public partial class BossHealthBar : CharacterFrame
 			nameof(Character.HealthChanged),
 			Callable.From((string charName, float current, float max) =>
 			{
-				if (charName == GameConstants.Boss1Name) UpdateProgress(current, max);
+				if (charName == (RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name))
+					UpdateProgress(charName, current, max);
 			}));
 
 		base._Ready(); // subscribe effect-badge signals
@@ -68,11 +70,11 @@ public partial class BossHealthBar : CharacterFrame
 
 	// ── private ───────────────────────────────────────────────────────────────
 
-	void UpdateProgress(float current, float max)
+	void UpdateProgress(string charName, float current, float max)
 	{
-		_bar.Value                  = Mathf.Clamp(current / max, 0f, 1f);
-		_nameLabel.Text             = GameConstants.Boss1Name;
-		_currentHealthLabel.Text    = $"{current:F0} / {max:F0}";
+		_bar.Value               = Mathf.Clamp(current / max, 0f, 1f);
+		_nameLabel.Text          = charName;
+		_currentHealthLabel.Text = $"{current:F0} / {max:F0}";
 		Visible = true;
 	}
 

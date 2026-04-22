@@ -38,7 +38,7 @@ public partial class GenericActionBar : HBoxContainer
 			child.QueueFree();
 		_slots.Clear();
 
-		var actions = new[] { "generic_1", "generic_2" };
+		var actions = new[] { "dispel", "deflect" };
 		for (var i = 0; i < player.GenericSpells.Length; i++)
 		{
 			var spell = player.GenericSpells[i];
@@ -79,57 +79,57 @@ public partial class GenericActionBar : HBoxContainer
 		panel.CustomMinimumSize = new Vector2(52, 52);
 
 		var border = new StyleBoxFlat();
-		border.BgColor      = new Color(0.10f, 0.08f, 0.12f, 0.95f);
+		border.BgColor = new Color(0.10f, 0.08f, 0.12f, 0.95f);
 		border.SetCornerRadiusAll(4);
 		border.SetBorderWidthAll(2);
-		border.BorderColor  = BorderDefault;
-		border.ContentMarginLeft   = 3f;
-		border.ContentMarginRight  = 3f;
-		border.ContentMarginTop    = 3f;
+		border.BorderColor = BorderDefault;
+		border.ContentMarginLeft = 3f;
+		border.ContentMarginRight = 3f;
+		border.ContentMarginTop = 3f;
 		border.ContentMarginBottom = 3f;
 		panel.AddThemeStyleboxOverride("panel", border);
 
 		var inner = new Control();
-		inner.MouseFilter          = MouseFilterEnum.Ignore;
-		inner.SizeFlagsHorizontal  = SizeFlags.ExpandFill;
-		inner.SizeFlagsVertical    = SizeFlags.ExpandFill;
-		inner.ClipContents         = true;
+		inner.MouseFilter = MouseFilterEnum.Ignore;
+		inner.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		inner.SizeFlagsVertical = SizeFlags.ExpandFill;
+		inner.ClipContents = true;
 		panel.AddChild(inner);
 
 		// Spell icon (optional — null is fine if no icon asset is assigned yet).
 		if (spell.Icon != null)
 		{
-			var iconRect            = new TextureRect();
-			iconRect.Texture        = spell.Icon;
-			iconRect.ExpandMode     = TextureRect.ExpandModeEnum.IgnoreSize;
-			iconRect.StretchMode    = TextureRect.StretchModeEnum.KeepAspectCentered;
+			var iconRect = new TextureRect();
+			iconRect.Texture = spell.Icon;
+			iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+			iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			iconRect.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
 			inner.AddChild(iconRect);
 		}
 
 		// Cooldown overlay.
-		var overlay          = new CooldownOverlay();
+		var overlay = new CooldownOverlay();
 		overlay.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-		overlay.MouseFilter  = MouseFilterEnum.Ignore;
+		overlay.MouseFilter = MouseFilterEnum.Ignore;
 		inner.AddChild(overlay);
 
 		// Keybind label — reads live from InputMap so rebinds are reflected instantly.
 		var label = new Label();
 		label.Text = GetKeybindLabel(actionName);
 		label.AddThemeFontSizeOverride("font_size", 11);
-		label.AddThemeColorOverride("font_color",        new Color(1.00f, 1.00f, 0.85f));
+		label.AddThemeColorOverride("font_color", new Color(1.00f, 1.00f, 0.85f));
 		label.AddThemeColorOverride("font_shadow_color", new Color(0.00f, 0.00f, 0.00f, 0.9f));
 		label.AddThemeConstantOverride("shadow_offset_x", 1);
 		label.AddThemeConstantOverride("shadow_offset_y", 1);
 		label.SetAnchorsAndOffsetsPreset(LayoutPreset.BottomRight);
 		label.GrowHorizontal = GrowDirection.Begin;
-		label.GrowVertical   = GrowDirection.Begin;
+		label.GrowVertical = GrowDirection.Begin;
 		inner.AddChild(label);
 
 		// Tooltip.
 		var tooltipText = GameTooltip.FormatSpellTooltip(spell);
 		panel.MouseEntered += () => GameTooltip.Show(tooltipText);
-		panel.MouseExited  += () => GameTooltip.Hide();
+		panel.MouseExited += () => GameTooltip.Hide();
 
 		return (panel, border, overlay);
 	}

@@ -12,6 +12,12 @@ public partial class GlobalAutoLoad : Node
 	// Maps each emitter node to the set of signal names it has registered.
 	static readonly Dictionary<Node, HashSet<string>> SignalMap = new();
 
+	// Stores subscriptions registered before the emitter node exists so they can
+	// be wired up when the emitter eventually calls RegisterSignalEmitter.
+	// This is needed when UI nodes subscribe in _Ready() before the boss is
+	// added to the scene tree dynamically (e.g. BossHealthBar, BossCastBar).
+	static readonly Dictionary<string, List<Callable>> PendingSubscriptions = new();
+
 	// ── party-slot signal registry ────────────────────────────────────────────
 	// Maps each party-member node to its UI slot index (0 = Templar … 3 = Wizard).
 	static readonly Dictionary<Node, int> PartySlotMap = new();
@@ -38,6 +44,12 @@ public partial class GlobalAutoLoad : Node
 			SignalMap[instance] = new HashSet<string>();
 
 		SignalMap[instance].Add(signalName);
+
+		// Connect any subscriptions that arrived before this emitter registered.
+		if (PendingSubscriptions.TryGetValue(signalName, out var pending))
+			foreach (var cb in pending)
+				if (!instance.IsConnected(signalName, cb))
+					instance.Connect(signalName, cb);
 	}
 
 	public static void UnregisterSignalEmitter(Node instance)
@@ -59,6 +71,12 @@ public partial class GlobalAutoLoad : Node
 					kvp.Key.Connect(signalName, callback);
 			}
 		}
+
+		// Also store for future emitters registered after this subscription.
+		if (!PendingSubscriptions.ContainsKey(signalName))
+			PendingSubscriptions[signalName] = new List<Callable>();
+		if (!PendingSubscriptions[signalName].Contains(callback))
+			PendingSubscriptions[signalName].Add(callback);
 	}
 
 	/// <summary>
@@ -84,5 +102,6 @@ public partial class GlobalAutoLoad : Node
 		SignalMap.Clear();
 		PartySlotMap.Clear();
 		PartySubscriptions.Clear();
+		PendingSubscriptions.Clear();
 	}
 }
