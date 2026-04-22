@@ -374,6 +374,12 @@ public partial class OverworldController : Node2D
 		content.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 		vbox.AddChild(content);
 
+		// Close on escape
+		panel.GuiInput += (ev) =>
+		{
+			if (ev is InputEventKey kb && kb.Keycode == Key.Escape && kb.Pressed)
+				CloseAllPanels();
+		};
 		return layer;
 	}
 

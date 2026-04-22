@@ -119,19 +119,18 @@ public partial class Player : Character
 	// ── spell input ───────────────────────────────────────────────────────────
 
 	/// <summary>
-	/// Returns the generic spell whose key was just pressed, or null.
-	/// Slot 0 → <c>generic_1</c>, slot 1 → <c>generic_2</c>.
+	/// Returns the generic spell (deflect or dispel) whose key was just pressed, or null.
 	/// </summary>
 	SpellResource? GetGenericSpellForInput()
 	{
 		if (Input.IsActionJustPressed("deflect"))
 		{
-			return GenericSpells.FirstOrDefault(s => s.Name == "deflect");
+			return GenericSpells.FirstOrDefault(s => s.Name == "Deflect");
 		}
 
 		if (Input.IsActionJustPressed("dispel"))
 		{
-			return GenericSpells.FirstOrDefault(s => s.Name == "dispel");
+			return GenericSpells.FirstOrDefault(s => s.Name == "Dispel");
 		}
 
 		return null;

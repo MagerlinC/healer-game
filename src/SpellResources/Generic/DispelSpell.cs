@@ -19,7 +19,7 @@ public partial class DispelSpell : SpellResource
 		Description = "Cleanses the target of all harmful effects.";
 		ManaCost = 0f;
 		CastTime = 0f;
-		Cooldown = 10f;
+		Cooldown = 8f;
 		School = SpellSchool.Generic;
 		EffectType = EffectType.Helpful;
 		Tags = SpellTags.None;

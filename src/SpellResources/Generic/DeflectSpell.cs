@@ -25,7 +25,7 @@ public partial class DeflectSpell : SpellResource
 		Description = "Parries an incoming telegraphed attack, reducing its damage to zero. Must be cast during the attack wind-up.";
 		ManaCost = 0f;
 		CastTime = 0f;
-		Cooldown = 20f;
+		Cooldown = 8f;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "generic/deflect.png");
 		School = SpellSchool.Generic;
 		EffectType = EffectType.Helpful;

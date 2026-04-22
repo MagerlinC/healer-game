@@ -466,13 +466,13 @@ public partial class MainMenuUI : Node2D
 		var events = InputMap.ActionGetEvents(actionName);
 		if (events.Count > 0 && events[0] is InputEventKey key)
 		{
-			// Godot's Input Map editor sets Keycode; rebinds we add use PhysicalKeycode.
-			// Prefer PhysicalKeycode when available, fall back to Keycode.
-			var keycode = key.PhysicalKeycode != Key.None ? key.PhysicalKeycode : key.Keycode;
-			if (keycode != Key.None)
-				return OS.GetKeycodeString(keycode);
+			if (key.PhysicalKeycode != Key.None)
+				return key.PhysicalKeycode.ToString().Replace("Key", "");
+
+			if (key.Keycode != Key.None)
+				return key.Keycode.ToString();
 		}
 
-		return actionName.StartsWith("spell_") ? actionName["spell_".Length..] : actionName;
+		return "Unset";
 	}
 }
