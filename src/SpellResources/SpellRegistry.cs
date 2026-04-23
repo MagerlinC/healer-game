@@ -22,21 +22,27 @@ public static class SpellRegistry
 	[
 		new DecaySpellResource(),
 		new ShadowBoltSpell(),
-		new VoidDrainSpell()
+		new VoidDrainSpell(),
+		new SoulShatterSpell(),
+		new DarkPactSpell()
 	];
 
 	public static readonly List<SpellResource> ChronomancySpells =
 	[
 		new RewindSpell(),
 		new TimeWarpSpell(),
-		new TimeLoopSpell()
+		new TimeLoopSpell(),
+		new HasteSpell(),
+		new TemporalWardSpell()
 	];
 
 	public static readonly List<SpellResource> NatureSpells =
 	[
 		new RenewingBloomSpell(),
 		new WildGrowthSpell(),
-		new PoisonBoltSpell()
+		new PoisonBoltSpell(),
+		new BarkskinSpell(),
+		new NourishSpell()
 	];
 
 	public static readonly List<SpellResource> HolySpells =
@@ -44,7 +50,9 @@ public static class SpellRegistry
 		new BurstOfLightSpell(),
 		new ReinvigorateSpell(),
 		new TouchOfLightSpell(),
-		new WaveOfIncandescenceSpell()
+		new WaveOfIncandescenceSpell(),
+		new DivineAegisSpell(),
+		new HolyNovaSpell()
 	];
 
 	public static readonly List<SpellResource> AllSpells = new List<SpellResource>()

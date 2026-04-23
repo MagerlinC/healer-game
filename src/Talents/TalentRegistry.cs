@@ -52,6 +52,26 @@ public static class TalentRegistry
 			School = SpellSchool.Void,
 			Configure = (t, _) =>
 				t.SpellModifiers.Add(new SiphoningVoidTalent())
+		},
+		new()
+		{
+			Name = "Necrotic Touch",
+			Description = "Void damage spells have a 25% chance to apply a free 3-tick, 5-damage-per-tick DoT.",
+			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_20.png",
+			TalentRow = 3,
+			School = SpellSchool.Void,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new NecroticTouchTalent())
+		},
+		new()
+		{
+			Name = "Void Resonance",
+			Description = "Instant-damage Void spells deal 15% more damage if the target has a DoT active.",
+			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_22.png",
+			TalentRow = 3,
+			School = SpellSchool.Void,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new VoidResonanceTalent())
 		}
 	];
 
@@ -86,6 +106,26 @@ public static class TalentRegistry
 			TalentRow = 2,
 			Configure = (t, _) =>
 				t.SpellModifiers.Add(new SacredMomentumTalent())
+		},
+		new()
+		{
+			Name = "Radiant Infusion",
+			Description = "Healing spells grant a 6s buff that increases the target's damage by 15%.",
+			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_15.png",
+			School = SpellSchool.Holy,
+			TalentRow = 3,
+			Configure = (t, icon) =>
+				t.SpellModifiers.Add(new RadiantInfusionTalent { EffectIcon = icon })
+		},
+		new()
+		{
+			Name = "Illumination",
+			Description = "Healing critical strikes refund 50% of the spell's mana cost.",
+			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_16.png",
+			School = SpellSchool.Holy,
+			TalentRow = 3,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new IlluminationTalent())
 		}
 	];
 
@@ -120,6 +160,26 @@ public static class TalentRegistry
 			TalentRow = 2,
 			Configure = (t, _) =>
 				t.SpellModifiers.Add(new FlourishingTalent())
+		},
+		new()
+		{
+			Name = "Deep Roots",
+			Description = "Casting a HoT on a target that already has one active restores 4 mana.",
+			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_18.png",
+			School = SpellSchool.Nature,
+			TalentRow = 3,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new DeepRootsTalent())
+		},
+		new()
+		{
+			Name = "Overgrowth",
+			Description = "HoT spells tick for 20% more on targets above 75% health.",
+			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_19.png",
+			School = SpellSchool.Nature,
+			TalentRow = 3,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new OvergrowthTalent())
 		}
 	];
 
@@ -155,6 +215,26 @@ public static class TalentRegistry
 			TalentRow = 2,
 			Configure = (t, _) =>
 				t.SpellModifiers.Add(new ManaRiftTalent())
+		},
+		new()
+		{
+			Name = "Future Sight",
+			Description = "Chronomancy healing spells are 20% more effective.",
+			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_24.png",
+			School = SpellSchool.Chronomancy,
+			TalentRow = 3,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new FutureSightTalent())
+		},
+		new()
+		{
+			Name = "Temporal Momentum",
+			Description = "Casting a Chronomancy spell makes your next non-Chronomancy spell cost 5 less mana.",
+			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_25.png",
+			School = SpellSchool.Chronomancy,
+			TalentRow = 3,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new TemporalMomentumTalent())
 		}
 	];
 
