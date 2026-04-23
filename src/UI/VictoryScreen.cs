@@ -188,7 +188,7 @@ public partial class VictoryScreen : CanvasLayer
 	static string BuildXpLine(int xpGained, int levelsGained)
 	{
 		var xpText = $"+{xpGained} XP  •  Level {PlayerProgressStore.Level}  •  " +
-		             $"XP: {PlayerProgressStore.CurrentXp}/{PlayerProgressStore.XpPerLevel}";
+		             $"XP: {PlayerProgressStore.CurrentXp}/{PlayerProgressStore.XpToNextLevel(PlayerProgressStore.Level)}";
 		if (levelsGained > 0)
 		{
 			var pointWord = levelsGained == 1 ? "point" : "points";

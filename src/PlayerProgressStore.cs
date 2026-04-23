@@ -9,7 +9,7 @@ namespace healerfantasy;
 ///
 /// Saved to <c>user://player-progress.save</c> and survives game restarts.
 ///
-/// XP to level up is flat: <see cref="XpPerLevel"/> per level.
+/// XP to level up scales linearly: <see cref="XpToNextLevel"/> for the current level.
 /// Each level-up grants:
 ///   • +1 talent point (caps the number of talents selectable per run in the Overworld)
 ///   • +<see cref="MaxHealthBonusPerLevel"/> max health to all friendly characters
@@ -20,11 +20,17 @@ public static class PlayerProgressStore
 
 	const string FileSavePath = "user://player-progress.save";
 
-	/// <summary>XP required to advance each level (flat).</summary>
-	public const int XpPerLevel = 100;
+	/// <summary>Maximum character level the player can reach.</summary>
+	public const int MaxLevel = 30;
+
+	/// <summary>Base XP used in the scaling formula. XP to advance from level N is BaseXpPerLevel × N.</summary>
+	public const int BaseXpPerLevel = 100;
 
 	/// <summary>Additional max health granted to all friendly characters per level gained.</summary>
 	public const float MaxHealthBonusPerLevel = 0f;
+
+	/// <summary>XP required to advance from <paramref name="level"/> to the next level.</summary>
+	public static int XpToNextLevel(int level) => BaseXpPerLevel * level;
 
 	// ── data ──────────────────────────────────────────────────────────────────
 
@@ -33,7 +39,7 @@ public static class PlayerProgressStore
 		/// <summary>Current character level (starts at 1).</summary>
 		public int Level { get; set; } = 1;
 
-		/// <summary>XP progress toward the next level (0 – XpPerLevel-1).</summary>
+		/// <summary>XP progress toward the next level (0 – XpToNextLevel(Level)-1).</summary>
 		public int CurrentXp { get; set; } = 0;
 
 		/// <summary>
@@ -69,21 +75,27 @@ public static class PlayerProgressStore
 
 	/// <summary>
 	/// Awards <paramref name="xp"/> experience, processing any resulting level-ups.
-	/// Saves immediately after any change.
+	/// Saves immediately after any change. Does nothing if already at <see cref="MaxLevel"/>.
 	/// </summary>
 	/// <returns>The number of levels gained (0 if none).</returns>
 	public static int AddXp(int xp)
 	{
+		if (_data.Level >= MaxLevel) return 0;
+
 		var levelsGained = 0;
 		_data.CurrentXp += xp;
 
-		while (_data.CurrentXp >= XpPerLevel)
+		while (_data.Level < MaxLevel && _data.CurrentXp >= XpToNextLevel(_data.Level))
 		{
-			_data.CurrentXp -= XpPerLevel;
+			_data.CurrentXp -= XpToNextLevel(_data.Level);
 			_data.Level++;
 			_data.TalentPoints++;
 			levelsGained++;
 		}
+
+		// At max level there's no next level to progress toward — discard leftover XP.
+		if (_data.Level >= MaxLevel)
+			_data.CurrentXp = 0;
 
 		SaveToDisk();
 		return levelsGained;

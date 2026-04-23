@@ -77,7 +77,7 @@ public partial class PlayerLevelIndicator : HBoxContainer
 		{
 			MinValue            = 0,
 			MaxValue            = 100,
-			Value               = PlayerProgressStore.CurrentXp / (float)PlayerProgressStore.XpPerLevel * 100f,
+			Value               = PlayerProgressStore.CurrentXp / (float)PlayerProgressStore.XpToNextLevel(PlayerProgressStore.Level) * 100f,
 			ShowPercentage      = false,
 			CustomMinimumSize   = new Vector2(0, 10),
 			SizeFlagsHorizontal = SizeFlags.ExpandFill,
@@ -129,7 +129,7 @@ public partial class PlayerLevelIndicator : HBoxContainer
 		_levelLabel.Text = PlayerProgressStore.Level.ToString();
 
 		var currentXp = PlayerProgressStore.CurrentXp;
-		var xpPerLevel = PlayerProgressStore.XpPerLevel;
+		var xpPerLevel = PlayerProgressStore.XpToNextLevel(PlayerProgressStore.Level);
 		_xpBar.Value      = currentXp / (float)xpPerLevel * 100f;
 		_xpTextLabel.Text = $"{currentXp:N0} / {xpPerLevel:N0} XP";
 
