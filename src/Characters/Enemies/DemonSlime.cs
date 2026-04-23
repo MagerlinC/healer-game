@@ -33,7 +33,7 @@ public partial class DemonSlime : Character
 
 	public DemonSlime()
 	{
-		MaxHealth = 1200f;
+		MaxHealth = 1600f;
 	}
 
 	[Signal]
@@ -45,13 +45,15 @@ public partial class DemonSlime : Character
 	// ── tuneable exports ──────────────────────────────────────────────────────
 	[Export] public float MeleeInterval = 3.0f;
 	[Export] public float AcidSpitInterval = 8.0f;
-	[Export] public float OozeInterval = 8.0f;
-	[Export] public float NovaInterval = 12.0f;
+	[Export] public float OozeInterval = 6.0f;
+	[Export] public float NovaInterval = 8.0f;
 	[Export] public float NovaWindupDuration = 3.0f;
+	[Export] public float DetonationZoneInterval = 10.0f;
 
 	[Export] public float MeleeDamage = 25f;
-	[Export] public float AcidSpitDamage = 30f;
+	[Export] public float AcidSpitDamage = 35f;
 	[Export] public float NovaDamage = 50f;
+	[Export] public float DetonationZoneDamage = 70f;
 
 	// ── internal state ────────────────────────────────────────────────────────
 	float _meleeTimer;
@@ -59,11 +61,13 @@ public partial class DemonSlime : Character
 	float _oozeTimer;
 	float _novaTimer;
 	float _novaWindupTimer;
+	float _detonationZoneTimer;
 
 	BossSlimeSlamSpell _slamSpell;
 	BossAcidSpitSpell _acidSpitSpell;
 	BossCorrosiveOozeSpell _oozeSpell;
 	BossToxicNovaSpell _novaSpell;
+	BossDetonationZoneSpell _detonationZoneSpell;
 
 	AnimatedSprite2D _sprite;
 	AudioStreamPlayer _riserPlayer;
@@ -73,7 +77,8 @@ public partial class DemonSlime : Character
 		None,
 		Melee,
 		AcidSpit,
-		Ooze
+		Ooze,
+		DetonationZone
 	}
 
 	PendingAttack _pendingAttack;
@@ -95,11 +100,13 @@ public partial class DemonSlime : Character
 		_acidSpitTimer = AcidSpitInterval;
 		_oozeTimer = OozeInterval;
 		_novaTimer = NovaInterval;
+		_detonationZoneTimer = DetonationZoneInterval;
 
 		_slamSpell = new BossSlimeSlamSpell { DamageAmount = MeleeDamage };
 		_acidSpitSpell = new BossAcidSpitSpell { DamageAmount = AcidSpitDamage };
 		_oozeSpell = new BossCorrosiveOozeSpell();
 		_novaSpell = new BossToxicNovaSpell { DamageAmount = NovaDamage };
+		_detonationZoneSpell = new BossDetonationZoneSpell { DamageAmount = DetonationZoneDamage };
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
@@ -133,6 +140,7 @@ public partial class DemonSlime : Character
 		_acidSpitTimer -= (float)delta;
 		_oozeTimer -= (float)delta;
 		_novaTimer -= (float)delta;
+		_detonationZoneTimer -= (float)delta;
 
 		if (_pendingAttack != PendingAttack.None) return;
 
@@ -155,6 +163,11 @@ public partial class DemonSlime : Character
 		{
 			_novaTimer = NovaInterval;
 			BeginNova();
+		}
+		else if (_detonationZoneTimer <= 0f)
+		{
+			_detonationZoneTimer = DetonationZoneInterval;
+			CastDetonationZone();
 		}
 	}
 
@@ -184,6 +197,17 @@ public partial class DemonSlime : Character
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Ooze;
+		_sprite.Play("cleave");
+	}
+
+	void CastDetonationZone()
+	{
+		// The spell always targets the player via ResolveTargets; we still need
+		// a non-null explicit target for the pipeline — any alive party member works.
+		var anyTarget = PickRandomPartyMember();
+		if (anyTarget == null) return;
+		_pendingTarget = anyTarget;
+		_pendingAttack = PendingAttack.DetonationZone;
 		_sprite.Play("cleave");
 	}
 
@@ -221,6 +245,7 @@ public partial class DemonSlime : Character
 				PendingAttack.Melee => _slamSpell,
 				PendingAttack.AcidSpit => _acidSpitSpell,
 				PendingAttack.Ooze => _oozeSpell,
+				PendingAttack.DetonationZone => _detonationZoneSpell,
 				_ => null
 			};
 			if (spell != null)
@@ -263,7 +288,7 @@ public partial class DemonSlime : Character
 		AddAnimFromFiles(frames, "cleave", CleavePath, 15, 12f, false);
 
 		_sprite.SpriteFrames = frames;
-		_sprite.Scale = new Vector2(1.2f, 1.2f);
+		_sprite.Scale = new Vector2(1.1f, 1.1f);
 	}
 
 	static void AddAnimFromFiles(SpriteFrames frames, string animName, string basePath,

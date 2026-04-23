@@ -12,15 +12,13 @@ public partial class DamageOverTimeEffect : CharacterEffect
 	public float DamagePerTick { get; }
 	public float TickInterval { get; }
 
-	/// <param name="damagePerTick">Health restored on each tick.</param>
-	/// <param name="duration">Total effect duration in seconds.</param>
-	/// <param name="tickInterval">Seconds between heals. Defaults to 1.</param>
-	public DamageOverTimeEffect(float damagePerTick, float duration, float tickInterval = 1f)
+	public DamageOverTimeEffect(float damagePerTick, float duration, float tickInterval = 1f, bool isDispellable = true)
 		: base(duration, tickInterval)
 	{
 		DamagePerTick = damagePerTick;
 		TickInterval = tickInterval;
 		SourceCharacterName = SourceCharacterName;
+		IsDispellable = isDispellable;
 	}
 
 	protected override void OnTick(Character target)

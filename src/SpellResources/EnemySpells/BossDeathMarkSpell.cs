@@ -12,27 +12,28 @@ namespace healerfantasy.SpellResources;
 [GlobalClass]
 public partial class BossDeathMarkSpell : SpellResource
 {
-    public BossDeathMarkSpell()
-    {
-        Name        = "Death Mark";
-        Description = "Brands the target with a necrotic curse, dealing 10 damage per second until cleansed.";
-        Tags        = SpellTags.Damage | SpellTags.Void | SpellTags.Duration;
-        ManaCost    = 0f;
-        CastTime    = 0f;
-        EffectType  = EffectType.Harmful;
-    }
+	float _damageAmountPerTick = 25f;
+	public BossDeathMarkSpell()
+	{
+		Name = "Death Mark";
+		Description = $"Brands the target with a necrotic curse, dealing {_damageAmountPerTick} damage per second until cleansed.";
+		Tags = SpellTags.Damage | SpellTags.Void | SpellTags.Duration;
+		ManaCost = 0f;
+		CastTime = 0f;
+		EffectType = EffectType.Harmful;
+	}
 
-    public override void Apply(SpellContext ctx)
-    {
-        foreach (var target in ctx.Targets)
-        {
-            target.ApplyEffect(new DeathMarkEffect
-            {
-                AbilityName         = Name,
-                SourceCharacterName = ctx.Caster?.CharacterName,
-                School              = SpellSchool.Void,
-                Icon                = Icon
-            });
-        }
-    }
+	public override void Apply(SpellContext ctx)
+	{
+		foreach (var target in ctx.Targets)
+		{
+			target.ApplyEffect(new DeathMarkEffect(_damageAmountPerTick)
+			{
+				AbilityName = Name,
+				SourceCharacterName = ctx.Caster?.CharacterName,
+				School = SpellSchool.Void,
+				Icon = Icon
+			});
+		}
+	}
 }

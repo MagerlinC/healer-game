@@ -216,7 +216,7 @@ public abstract partial class Character : CharacterBody2D
 	{
 		var toRemove = new List<string>();
 		foreach (var (id, effect) in _effects)
-			if (effect.IsHarmful)
+			if (effect.IsHarmful && effect.IsDispellable)
 				toRemove.Add(id);
 		foreach (var id in toRemove)
 			RemoveEffect(id);

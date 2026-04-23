@@ -9,15 +9,16 @@ namespace healerfantasy.SpellResources;
 [Godot.GlobalClass]
 public partial class BossAcidSpitSpell : SpellResource
 {
-	public float DamageAmount = 35f;
+	public float DamageAmount = 45f;
 
 	public BossAcidSpitSpell()
 	{
 		Name = "Acid Spit";
 		Description = "A glob of corrosive acid hurled at a random party member.";
 		Tags = SpellTags.Damage | SpellTags.Nature;
+		EffectType = EffectType.Harmful;
 		ManaCost = 0f;
-		CastTime = 0f;
+		CastTime = 1.0f;
 	}
 
 	public override float GetBaseValue()
@@ -28,6 +29,8 @@ public partial class BossAcidSpitSpell : SpellResource
 	public override void Apply(SpellContext ctx)
 	{
 		foreach (var target in ctx.Targets)
+		{
 			target.TakeDamage(ctx.FinalValue);
+		}
 	}
 }

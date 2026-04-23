@@ -9,10 +9,9 @@ namespace healerfantasy.Effects;
 /// </summary>
 public partial class DeathMarkEffect : DamageOverTimeEffect
 {
-    public DeathMarkEffect() : base(damagePerTick: 10f, duration: 12f, tickInterval: 1f)
-    {
-        EffectId = "DeathMark";
-        School   = SpellSchool.Void;
-        IsHarmful = true; // Dispellable
-    }
+	public DeathMarkEffect(float damagePerTick) : base(damagePerTick, 12f, 1f)
+	{
+		EffectId = "DeathMark";
+		School = SpellSchool.Void;
+	}
 }

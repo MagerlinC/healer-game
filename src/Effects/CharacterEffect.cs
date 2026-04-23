@@ -46,6 +46,8 @@ public abstract partial class CharacterEffect : RefCounted
 	public int MaximumStacks = 0;
 	public int CurrentStacks { get; set; } = 1;
 
+	public bool IsDispellable = false;
+
 	/// <summary>
 	/// Optional icon displayed on the affected character's UI frame.
 	/// Set this from the spell's <c>Act</c> method when constructing the effect.

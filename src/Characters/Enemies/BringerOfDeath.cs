@@ -34,7 +34,7 @@ public partial class BringerOfDeath : Character
 {
 	public BringerOfDeath()
 	{
-		MaxHealth = 1500f;
+		MaxHealth = 1400f;
 	}
 	// ── signals ───────────────────────────────────────────────────────────────
 

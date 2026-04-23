@@ -15,8 +15,7 @@ public partial class CrystalDecayEffect : DamageOverTimeEffect
 {
 	public CrystalDecayEffect() : base(10f, 30f, 1f)
 	{
-		EffectId = "CrystalDecay"; // Unique ID ensures reapplication refreshes instead of stacking
+		EffectId = "CrystalDecay";
 		School = SpellSchool.Void;
-		IsHarmful = true; // Can be cleansed by Dispel
 	}
 }

@@ -13,6 +13,5 @@ public partial class CorrosiveOozeEffect : DamageOverTimeEffect
 	{
 		EffectId = "CorrosiveOoze";
 		School = SpellSchool.Nature;
-		IsHarmful = true; // Dispellable
 	}
 }
