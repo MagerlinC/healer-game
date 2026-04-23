@@ -40,6 +40,9 @@ public partial class World : Node2D
 		// Tooltip singleton must be added first so it is available to all UI nodes.
 		AddChild(new GameTooltip());
 
+		// ── Deflect overlay (darkens the world during parryable boss casts) ──────
+		AddChild(new DeflectOverlay());
+
 		// ── Floating combat text ──────────────────────────────────────────────
 		var fctManager = new FloatingCombatTextManager();
 		AddChild(fctManager);

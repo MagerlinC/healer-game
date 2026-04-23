@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c40c4g2fuaaxn"
-path="res://.godot/imported/healer.png-caa4da7adb7dca209e570c0f5e51f7cc.ctex"
+uid="uid://cbogghmjstg7p"
+path="res://.godot/imported/cast1.png-1f0c2999e9bf12ff1cdf02185ee2a981.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/characters/healer.png"
-dest_files=["res://.godot/imported/healer.png-caa4da7adb7dca209e570c0f5e51f7cc.ctex"]
+source_file="res://assets/characters/healer/cast1.png"
+dest_files=["res://.godot/imported/cast1.png-1f0c2999e9bf12ff1cdf02185ee2a981.ctex"]
 
 [params]
 

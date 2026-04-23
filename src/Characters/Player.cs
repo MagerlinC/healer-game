@@ -89,6 +89,15 @@ public partial class Player : Character
 	/// </summary>
 	readonly Dictionary<SpellResource, float> _spellCooldowns = new();
 
+	// ── animation ─────────────────────────────────────────────────────────────
+	AnimatedSprite2D _sprite = null!;
+
+	/// <summary>
+	/// Duration of the cast animation at SpeedScale 1.0.
+	/// Matches 4 frames at 4 FPS defined in the SpriteFrames resource.
+	/// </summary>
+	const float CastAnimBaseDuration = 1.0f;
+
 	// ── casting audio ─────────────────────────────────────────────────────────
 	AudioStreamPlayer _castingAudioPlayer = null!;
 	AudioStreamPlayer _castFinishedAudioPlayer = null!;
@@ -97,6 +106,8 @@ public partial class Player : Character
 	public override void _Ready()
 	{
 		base._Ready();
+		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+		_sprite.Play("idle");
 		CharacterName = GameConstants.PlayerName;
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastCancelled));
@@ -191,6 +202,8 @@ public partial class Player : Character
 		_isCasting = false;
 		_castingAudioPlayer.Stop();
 		_castFinishedAudioPlayer.Play();
+		_sprite.SpeedScale = 1.0f;
+		_sprite.Play("idle");
 
 		SpendMana(spell.ManaCost);
 		SpellPipeline.Cast(spell, this, target);
@@ -306,6 +319,11 @@ public partial class Player : Character
 					_isCasting = true;
 					_castTimer = adjustedCastTime;
 					_castingAudioPlayer.Play();
+
+					// Scale the cast animation so one full cycle = adjustedCastTime.
+					// Longer casts play slower; shorter casts (or hasted casts) play faster.
+					_sprite.SpeedScale = CastAnimBaseDuration / adjustedCastTime;
+					_sprite.Play("cast");
 				}
 
 				_globalCooldownTimer = GlobalCooldown;
@@ -335,6 +353,8 @@ public partial class Player : Character
 		_isCasting = false;
 		_castingAudioPlayer.Stop();
 		EmitSignalCastCancelled();
+		_sprite.SpeedScale = 1.0f;
+		_sprite.Play("idle");
 		_castSpell = null;
 		_castTarget = null;
 		_castTimer = 0f;

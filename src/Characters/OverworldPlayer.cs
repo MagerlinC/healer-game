@@ -1,3 +1,4 @@
+using System;
 using Godot;
 
 namespace healerfantasy;
@@ -14,15 +15,23 @@ public partial class OverworldPlayer : CharacterBody2D
 {
 	[Export] public float Speed = 80f;
 
-	Sprite2D _sprite = null!;
+	AnimatedSprite2D _sprite = null!;
 
 	public override void _Ready()
 	{
 		// ── Sprite ────────────────────────────────────────────────────────────
-		_sprite = new Sprite2D();
-		_sprite.Texture = GD.Load<Texture2D>("res://assets/32rogues/rogues.png");
-		_sprite.RegionEnabled = true;
-		_sprite.RegionRect = new Rect2(32, 64, 32, 32);
+		var frames = new SpriteFrames();
+		frames.AddAnimation("idle");
+		frames.SetAnimationSpeed("idle", 4.0);
+		frames.SetAnimationLoop("idle", true);
+		foreach (var i in new[] { 1, 2, 3 })
+			frames.AddFrame("idle", GD.Load<Texture2D>($"res://assets/characters/healer/idle{i}.png"));
+
+		_sprite = new AnimatedSprite2D();
+		// quarter size
+		_sprite.Scale = new Vector2(0.15f, 0.15f);
+		_sprite.SpriteFrames = frames;
+		_sprite.Play("idle");
 		AddChild(_sprite);
 
 		// ── Collision ─────────────────────────────────────────────────────────
@@ -30,7 +39,6 @@ public partial class OverworldPlayer : CharacterBody2D
 		collision.Position = new Vector2(0f, 4f);
 		collision.Shape = new CapsuleShape2D { Radius = 8f, Height = 12f };
 		AddChild(collision);
-
 	}
 
 	public override void _PhysicsProcess(double delta)

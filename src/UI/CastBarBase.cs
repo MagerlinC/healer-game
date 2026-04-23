@@ -23,10 +23,23 @@ public abstract partial class CastBarBase : PanelContainer
 	Label       _timeLabel;
 	ProgressBar _bar;
 
+	// ── exposed style boxes — subclasses may animate these ────────────────────
+	protected StyleBoxFlat PanelStyle;
+	protected StyleBoxFlat BarFillStyle;
+
 	// ── cast state ────────────────────────────────────────────────────────────
 	float _duration;
 	float _remaining;
 	bool  _isCasting;
+
+	// ── subclass hooks ────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Called every frame while a cast is in progress.
+	/// <paramref name="progress"/> runs 0 → 1 over the full cast duration.
+	/// Override in subclasses to animate colours, border width, etc.
+	/// </summary>
+	protected virtual void OnCastVisualUpdate(float progress) { }
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 	public override void _Ready()
@@ -43,6 +56,8 @@ public abstract partial class CastBarBase : PanelContainer
 
 		_bar.Value      = Mathf.Clamp(1f - _remaining / _duration, 0f, 1f);
 		_timeLabel.Text = $"{Mathf.Max(0f, _remaining):F1}s";
+
+		OnCastVisualUpdate(Mathf.Clamp(1f - _remaining / _duration, 0f, 1f));
 
 		if (_remaining <= 0f)
 			StopCast();
@@ -101,16 +116,16 @@ public abstract partial class CastBarBase : PanelContainer
 	// ── layout ────────────────────────────────────────────────────────────────
 	void BuildLayout()
 	{
-		var panelStyle = new StyleBoxFlat();
-		panelStyle.BgColor = BgColor;
-		panelStyle.SetCornerRadiusAll(5);
-		panelStyle.SetBorderWidthAll(1);
-		panelStyle.BorderColor        = BorderColor;
-		panelStyle.ContentMarginLeft  = 8f;
-		panelStyle.ContentMarginRight = 8f;
-		panelStyle.ContentMarginTop   = 6f;
-		panelStyle.ContentMarginBottom = 6f;
-		AddThemeStyleboxOverride("panel", panelStyle);
+		PanelStyle = new StyleBoxFlat();
+		PanelStyle.BgColor = BgColor;
+		PanelStyle.SetCornerRadiusAll(5);
+		PanelStyle.SetBorderWidthAll(1);
+		PanelStyle.BorderColor        = BorderColor;
+		PanelStyle.ContentMarginLeft  = 8f;
+		PanelStyle.ContentMarginRight = 8f;
+		PanelStyle.ContentMarginTop   = 6f;
+		PanelStyle.ContentMarginBottom = 6f;
+		AddThemeStyleboxOverride("panel", PanelStyle);
 
 		MouseFilter = MouseFilterEnum.Ignore;
 
@@ -148,10 +163,10 @@ public abstract partial class CastBarBase : PanelContainer
 		barBg.SetCornerRadiusAll(3);
 		_bar.AddThemeStyleboxOverride("background", barBg);
 
-		var barFill = new StyleBoxFlat();
-		barFill.BgColor = BarFillColor;
-		barFill.SetCornerRadiusAll(3);
-		_bar.AddThemeStyleboxOverride("fill", barFill);
+		BarFillStyle = new StyleBoxFlat();
+		BarFillStyle.BgColor = BarFillColor;
+		BarFillStyle.SetCornerRadiusAll(3);
+		_bar.AddThemeStyleboxOverride("fill", BarFillStyle);
 
 		overlay.AddChild(_bar);
 

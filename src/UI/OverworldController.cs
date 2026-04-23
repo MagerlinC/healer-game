@@ -71,7 +71,9 @@ public partial class OverworldController : Node2D
 	// ── runtime state ─────────────────────────────────────────────────────────
 
 	readonly SpellResource?[] _loadout = new SpellResource?[Player.MaxSpellSlots];
+
 	readonly Dictionary<string, (PanelContainer Panel, StyleBoxFlat Border)> _libraryCards = new();
+
 	// Each spell can appear in multiple tabs (e.g. "All" + its school tab), so we
 	// store a list of overlay node pairs per spell and update them all together.
 	readonly Dictionary<string, List<(ColorRect Overlay, Label Icon)>> _spellLockOverlays = new();
@@ -147,7 +149,7 @@ public partial class OverworldController : Node2D
 
 		// ── Player (Last in Render Order) ─────────────────────────────────────
 		_player = new OverworldPlayer();
-		_player.Position = new Vector2(896f, FloorHeight);
+		_player.Position = new Vector2(896f, FloorHeight - 15f);
 		_player.Scale = new Vector2(1.5f, 1.5f);
 		AddChild(_player);
 
@@ -578,6 +580,7 @@ public partial class OverworldController : Node2D
 			overlayList = new List<(ColorRect Overlay, Label Icon)>();
 			_spellLockOverlays[spellKey] = overlayList;
 		}
+
 		overlayList.Add((lockOverlay, lockLabel));
 
 		// Set initial lock state

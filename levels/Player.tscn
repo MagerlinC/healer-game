@@ -1,23 +1,65 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://rgui8intvs0v"]
 
 [ext_resource type="Script" uid="uid://bkua5fxmutm7j" path="res://src/Characters/Player.cs" id="Script_player"]
-[ext_resource type="Texture2D" uid="uid://bgclbkcyu1nle" path="res://assets/32rogues/rogues.png" id="Texture_rogues"]
+[ext_resource type="Texture2D" uid="uid://cbogghmjstg7p" path="res://assets/characters/healer/cast1.png" id="Texture_cast1"]
+[ext_resource type="Texture2D" uid="uid://nrby0r1vb23c" path="res://assets/characters/healer/cast2.png" id="Texture_cast2"]
+[ext_resource type="Texture2D" uid="uid://r6qrpvxn0j16" path="res://assets/characters/healer/cast3.png" id="Texture_cast3"]
+[ext_resource type="Texture2D" uid="uid://dd7ffwrbiyhv0" path="res://assets/characters/healer/cast4.png" id="Texture_cast4"]
+[ext_resource type="Texture2D" uid="uid://nvsa0aosh1uh" path="res://assets/characters/healer/idle1.png" id="Texture_idle1"]
+[ext_resource type="Texture2D" uid="uid://3ahwcsn0ogla" path="res://assets/characters/healer/idle2.png" id="Texture_idle2"]
+[ext_resource type="Texture2D" uid="uid://bsflg16oams2e" path="res://assets/characters/healer/idle3.png" id="Texture_idle3"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_healer"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("Texture_cast1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("Texture_cast2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("Texture_cast3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("Texture_cast4")
+}],
+"loop": true,
+"name": &"cast",
+"speed": 4.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("Texture_idle1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("Texture_idle2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("Texture_idle3")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 8.0
+}]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_player"]
-radius = 8.0
+radius = 6.0
 height = 12.0
 
-[node name="Player" type="CharacterBody2D"]
+[node name="Player" type="CharacterBody2D" unique_id=2031914750]
 script = ExtResource("Script_player")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource("Texture_rogues")
-region_enabled = true
-region_rect = Rect2(32, 64, 32, 32)
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1665185305]
+scale = Vector2(0.13, 0.13)
+sprite_frames = SubResource("SpriteFrames_healer")
+animation = &"idle"
+autoplay = "idle"
+speed_scale = 0.5
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=109809528]
 position = Vector2(0, 4)
 shape = SubResource("CapsuleShape2D_player")
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=952433771]
 zoom = Vector2(3, 3)

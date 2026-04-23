@@ -24,7 +24,7 @@ public static class PlayerProgressStore
 	public const int XpPerLevel = 100;
 
 	/// <summary>Additional max health granted to all friendly characters per level gained.</summary>
-	public const float MaxHealthBonusPerLevel = 10f;
+	public const float MaxHealthBonusPerLevel = 0f;
 
 	// ── data ──────────────────────────────────────────────────────────────────
 
