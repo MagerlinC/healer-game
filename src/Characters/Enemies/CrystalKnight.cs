@@ -50,14 +50,14 @@ public partial class CrystalKnight : Character
 
 	// ── tuneable exports ──────────────────────────────────────────────────────
 	[Export] public float MeleeAttackInterval = 2.0f;
-	[Export] public float SpellCastInterval = 7.0f;
-	[Export] public float DecayInterval = 10.0f;
-	[Export] public float CrushInterval = 12.0f;
+	[Export] public float SpellCastInterval = 4.0f;
+	[Export] public float DecayInterval = 8.0f;
+	[Export] public float CrushInterval = 10.0f;
 	[Export] public float CrushWindupDuration = 3.0f;
 
-	[Export] public float MeleeDamage = 20f;
-	[Export] public float BlastDamage = 15f;
-	[Export] public float CrushDamage = 35f;
+	[Export] public float MeleeDamage = 25f;
+	[Export] public float BlastDamage = 20f;
+	[Export] public float CrushDamage = 45f;
 
 	// ── internal state ────────────────────────────────────────────────────────
 	float _meleeTimer;
