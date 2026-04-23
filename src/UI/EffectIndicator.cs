@@ -20,15 +20,19 @@ public partial class EffectIndicator : PanelContainer
 	Label _countLabel;
 	bool _hovered;
 
-	static readonly Color BadgeBorder = new(0.25f, 0.70f, 0.35f, 0.90f);
+	// Helpful buff color
+	static readonly Color HelpfulBadgeBorder = new(0.25f, 0.70f, 0.35f, 0.90f);
+
+	// Harmful buff color
+	static readonly Color HarmfulBadgeBorder = new(0.70f, 0.25f, 0.35f, 0.90f);
 
 	// ── constructor ──────────────────────────────────────────────────────────
-	public EffectIndicator(CharacterEffect effect)
+	public EffectIndicator(CharacterEffect effect, int indicatorSize = 28)
 	{
 		CharacterEffect = effect;
 		_displayName = FormatDisplayName(effect.EffectId);
 
-		CustomMinimumSize = new Vector2(28, 28);
+		CustomMinimumSize = new Vector2(indicatorSize, indicatorSize);
 		MouseFilter = MouseFilterEnum.Stop; // must be non-Ignore to receive mouse events
 
 		// ── badge style ──────────────────────────────────────────────────────
@@ -36,7 +40,7 @@ public partial class EffectIndicator : PanelContainer
 		style.BgColor = new Color(0.10f, 0.10f, 0.10f, 0.85f);
 		style.SetCornerRadiusAll(3);
 		style.SetBorderWidthAll(1);
-		style.BorderColor = BadgeBorder;
+		style.BorderColor = effect.IsHarmful ? HarmfulBadgeBorder : HelpfulBadgeBorder;
 		style.ContentMarginLeft = 1f;
 		style.ContentMarginRight = 1f;
 		style.ContentMarginTop = 1f;

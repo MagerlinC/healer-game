@@ -37,6 +37,7 @@ public abstract partial class CharacterFrame : VBoxContainer
 	/// </summary>
 	protected readonly HBoxContainer EffectBar;
 
+	public int _effectIndicatorSize = 28;
 	protected CharacterFrame()
 	{
 		EffectBar = new HBoxContainer();
@@ -90,7 +91,8 @@ public abstract partial class CharacterFrame : VBoxContainer
 	{
 		// Remove the stale badge so a refreshed effect doesn't appear twice.
 		HideEffectIndicator(effect.EffectId);
-		EffectBar.AddChild(new EffectIndicator(effect));
+		EffectBar.AddChild(new EffectIndicator(effect, _effectIndicatorSize));
+
 	}
 
 	void HideEffectIndicator(string effectId)

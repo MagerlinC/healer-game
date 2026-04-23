@@ -20,6 +20,7 @@ public partial class BossCorrosiveOozeSpell : SpellResource
 		Tags = SpellTags.Damage | SpellTags.Nature | SpellTags.Duration;
 		ManaCost = 0f;
 		CastTime = 0f;
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/demon-slime/corrosive-ooze.png");
 		EffectType = EffectType.Harmful;
 	}
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://m4f8j0sn7w1o"
-path="res://.godot/imported/embrace-of-death.png-47a9069a2b6b859e9d5f226baeb57b43.ctex"
+uid="uid://67atkxpvdygj"
+path="res://.godot/imported/death-mark.png-2e6dc0688702429c560af5a9b676873b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/spell-icons/enemy/bringer-of-death/embrace-of-death.png"
-dest_files=["res://.godot/imported/embrace-of-death.png-47a9069a2b6b859e9d5f226baeb57b43.ctex"]
+source_file="res://assets/spell-icons/enemy/bringer-of-death/death-mark.png"
+dest_files=["res://.godot/imported/death-mark.png-2e6dc0688702429c560af5a9b676873b.ctex"]
 
 [params]
 

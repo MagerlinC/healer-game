@@ -23,4 +23,11 @@ public class CharacterStats
 	public float HealingMultiplier { get; set; } = 1.0f;
 
 	public float CastSpeedMultiplier { get; set; } = 1.0f;
+
+	/// <summary>
+	/// Multiplier applied to all incoming damage before shield/health reduction.
+	/// Values above 1.0 increase damage taken (debuffs); below 1.0 reduce it (mitigation).
+	/// Default 1.0 (no modification).
+	/// </summary>
+	public float DamageTakenMultiplier { get; set; } = 1.0f;
 }

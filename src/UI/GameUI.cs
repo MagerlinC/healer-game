@@ -77,12 +77,12 @@ public partial class GameUI : CanvasLayer
 		// ── Boss cast bar (shown during telegraphed wind-ups e.g. Structural Crush)
 		var bossCastBar = new BossCastBar();
 		bossCastBar.CustomMinimumSize = new Vector2(280f, 0f);
-		bossCastBar.AnchorLeft  = bossCastBar.AnchorRight = 0.5f;
-		bossCastBar.AnchorTop   = bossCastBar.AnchorBottom = 0f;
+		bossCastBar.AnchorLeft = bossCastBar.AnchorRight = 0.5f;
+		bossCastBar.AnchorTop = bossCastBar.AnchorBottom = 0f;
 		bossCastBar.GrowHorizontal = Control.GrowDirection.Both;
-		bossCastBar.OffsetLeft  = -140f;
-		bossCastBar.OffsetRight =  140f;
-		bossCastBar.OffsetTop   = 100f; // just below the boss health bar + effects row
+		bossCastBar.OffsetLeft = -140f;
+		bossCastBar.OffsetRight = 140f;
+		bossCastBar.OffsetTop = 100f; // just below the boss health bar + effects row
 		bossCastBar.OffsetBottom = 140f;
 		anchor.AddChild(bossCastBar);
 
@@ -123,11 +123,11 @@ public partial class GameUI : CanvasLayer
 		// laid out next to each other without manual pixel-offset arithmetic.
 		var barRow = new HBoxContainer();
 		barRow.AddThemeConstantOverride("separation", 14);
-		barRow.AnchorLeft  = barRow.AnchorRight  = 0.5f;
-		barRow.AnchorTop   = barRow.AnchorBottom = 1f;
+		barRow.AnchorLeft = barRow.AnchorRight = 0.5f;
+		barRow.AnchorTop = barRow.AnchorBottom = 1f;
 		barRow.GrowHorizontal = Control.GrowDirection.Both;
-		barRow.GrowVertical   = Control.GrowDirection.Begin;
-		barRow.OffsetTop    = -152f;
+		barRow.GrowVertical = Control.GrowDirection.Begin;
+		barRow.OffsetTop = -152f;
 		barRow.OffsetBottom = -100f;
 		anchor.AddChild(barRow);
 

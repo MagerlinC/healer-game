@@ -22,17 +22,27 @@ public partial class BossHealthBar : CharacterFrame
 	// ── constants ─────────────────────────────────────────────────────────────
 	static readonly Color BorderDefault = new(0.32f, 0.26f, 0.26f);
 	static readonly Color BorderHovered = new(0.90f, 0.80f, 0.20f);
-	static readonly Color BarTextColor  = new(0.95f, 0.90f, 0.85f);
+	static readonly Color BarTextColor = new(0.95f, 0.90f, 0.85f);
+
+	/// <summary>
+	/// Horizontal inset shared by both the health panel and the effect-badge row,
+	/// so they always align regardless of viewport width.
+	/// </summary>
+	const int SideMargin = 32;
 
 	// Evaluated dynamically so it always matches whichever boss is active this run.
 	protected override string FrameCharacterName => RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name;
 
 	// ── node refs ─────────────────────────────────────────────────────────────
-	PanelContainer _innerPanel         = null!;
-	Label          _nameLabel          = null!;
-	Label          _currentHealthLabel = null!;
-	ProgressBar    _bar                = null!;
+	PanelContainer _innerPanel = null!;
+	Label _nameLabel = null!;
+	Label _currentHealthLabel = null!;
+	ProgressBar _bar = null!;
 
+	public BossHealthBar()
+	{
+		_effectIndicatorSize = 32;
+	}
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 	public override void _Ready()
 	{
@@ -43,8 +53,14 @@ public partial class BossHealthBar : CharacterFrame
 		BuildHealthPanel();
 
 		// ── effect-badge row (below the health bar) ───────────────────────────
-		// EffectBar is created by CharacterFrame; we just place it here.
-		AddChild(EffectBar);
+		// Wrap in the same side margins as the health panel so the badges
+		// align with the bar rather than rendering at the screen edges.
+		var effectMargin = new MarginContainer();
+		effectMargin.AddThemeConstantOverride("margin_left", SideMargin);
+		effectMargin.AddThemeConstantOverride("margin_right", SideMargin);
+		effectMargin.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		effectMargin.AddChild(EffectBar);
+		AddChild(effectMargin);
 
 		// ── subscribe health updates ──────────────────────────────────────────
 		GlobalAutoLoad.SubscribeToSignal(
@@ -72,23 +88,24 @@ public partial class BossHealthBar : CharacterFrame
 
 	void UpdateProgress(string charName, float current, float max)
 	{
-		_bar.Value               = Mathf.Clamp(current / max, 0f, 1f);
-		_nameLabel.Text          = charName;
+		_bar.Value = Mathf.Clamp(current / max, 0f, 1f);
+		_nameLabel.Text = charName;
 		_currentHealthLabel.Text = $"{current:F0} / {max:F0}";
 		Visible = true;
 	}
 
 	void BuildHealthPanel()
 	{
+
 		// Dark outer panel — matches the same dark-red palette as the bar fill.
 		var panelStyle = new StyleBoxFlat();
 		panelStyle.BgColor = new Color(0.15f, 0.05f, 0.05f, 0.8f);
 		panelStyle.SetCornerRadiusAll(5);
 		panelStyle.SetBorderWidthAll(1);
-		panelStyle.BorderColor        = BorderDefault;
-		panelStyle.ContentMarginLeft  = 8f;
+		panelStyle.BorderColor = BorderDefault;
+		panelStyle.ContentMarginLeft = 8f;
 		panelStyle.ContentMarginRight = 8f;
-		panelStyle.ContentMarginTop   = 6f;
+		panelStyle.ContentMarginTop = 6f;
 		panelStyle.ContentMarginBottom = 6f;
 
 		_innerPanel = new PanelContainer();
@@ -96,9 +113,17 @@ public partial class BossHealthBar : CharacterFrame
 		_innerPanel.AddThemeStyleboxOverride("panel", panelStyle);
 
 		_innerPanel.MouseEntered += () => panelStyle.BorderColor = BorderHovered;
-		_innerPanel.MouseExited  += () => panelStyle.BorderColor = BorderDefault;
+		_innerPanel.MouseExited += () => panelStyle.BorderColor = BorderDefault;
 
-		AddChild(_innerPanel);
+		var margin = new MarginContainer();
+		margin.AddThemeConstantOverride("margin_left", SideMargin);
+		margin.AddThemeConstantOverride("margin_right", SideMargin);
+		margin.AddThemeConstantOverride("margin_top", 8);
+		margin.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		AddChild(margin);
+
+
+		margin.AddChild(_innerPanel);
 
 		// ── main row ──────────────────────────────────────────────────────────
 		var row = new HBoxContainer();
@@ -107,21 +132,23 @@ public partial class BossHealthBar : CharacterFrame
 
 		// ── overlay container (bar + overlaid text) ───────────────────────────
 		var overlay = new Control();
-		overlay.MouseFilter         = MouseFilterEnum.Ignore;
+		overlay.MouseFilter = MouseFilterEnum.Ignore;
 		overlay.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		overlay.CustomMinimumSize   = new Vector2(0f, 24f);
+		overlay.CustomMinimumSize = new Vector2(0f, 24f);
 		row.AddChild(overlay);
 
 		// ── progress bar (fills the entire overlay) ───────────────────────────
 		_bar = new ProgressBar();
-		_bar.AnchorLeft = 0; _bar.AnchorRight  = 1;
-		_bar.AnchorTop  = 0; _bar.AnchorBottom = 1;
+		_bar.AnchorLeft = 0;
+		_bar.AnchorRight = 1;
+		_bar.AnchorTop = 0;
+		_bar.AnchorBottom = 1;
 		_bar.OffsetLeft = _bar.OffsetRight = _bar.OffsetTop = _bar.OffsetBottom = 0;
 		_bar.ShowPercentage = false;
-		_bar.MinValue       = 0f;
-		_bar.MaxValue       = 1f;
-		_bar.Value          = 0f;
-		_bar.MouseFilter    = MouseFilterEnum.Ignore;
+		_bar.MinValue = 0f;
+		_bar.MaxValue = 1f;
+		_bar.Value = 0f;
+		_bar.MouseFilter = MouseFilterEnum.Ignore;
 
 		var barBg = new StyleBoxFlat();
 		barBg.BgColor = new Color(0.25f, 0.08f, 0.08f, 0.9f);
@@ -137,9 +164,12 @@ public partial class BossHealthBar : CharacterFrame
 
 		// ── name label (left-aligned, over the bar) ───────────────────────────
 		_nameLabel = new Label();
-		_nameLabel.AnchorLeft   = 0; _nameLabel.AnchorRight  = 1;
-		_nameLabel.AnchorTop    = 0; _nameLabel.AnchorBottom = 1;
-		_nameLabel.OffsetLeft   = 8; _nameLabel.OffsetRight  = -40;
+		_nameLabel.AnchorLeft = 0;
+		_nameLabel.AnchorRight = 1;
+		_nameLabel.AnchorTop = 0;
+		_nameLabel.AnchorBottom = 1;
+		_nameLabel.OffsetLeft = 8;
+		_nameLabel.OffsetRight = -40;
 		_nameLabel.VerticalAlignment = VerticalAlignment.Center;
 		_nameLabel.AddThemeFontSizeOverride("font_size", 14);
 		_nameLabel.AddThemeColorOverride("font_color", BarTextColor);
@@ -148,11 +178,14 @@ public partial class BossHealthBar : CharacterFrame
 
 		// ── health label (right-aligned, over the bar) ────────────────────────
 		_currentHealthLabel = new Label();
-		_currentHealthLabel.AnchorLeft   = 1; _currentHealthLabel.AnchorRight  = 1;
-		_currentHealthLabel.AnchorTop    = 0; _currentHealthLabel.AnchorBottom = 1;
-		_currentHealthLabel.OffsetLeft   = -100; _currentHealthLabel.OffsetRight = -8;
+		_currentHealthLabel.AnchorLeft = 1;
+		_currentHealthLabel.AnchorRight = 1;
+		_currentHealthLabel.AnchorTop = 0;
+		_currentHealthLabel.AnchorBottom = 1;
+		_currentHealthLabel.OffsetLeft = -100;
+		_currentHealthLabel.OffsetRight = -8;
 		_currentHealthLabel.HorizontalAlignment = HorizontalAlignment.Right;
-		_currentHealthLabel.VerticalAlignment   = VerticalAlignment.Center;
+		_currentHealthLabel.VerticalAlignment = VerticalAlignment.Center;
 		_currentHealthLabel.AddThemeFontSizeOverride("font_size", 13);
 		_currentHealthLabel.AddThemeColorOverride("font_color", BarTextColor);
 		_currentHealthLabel.MouseFilter = MouseFilterEnum.Ignore;

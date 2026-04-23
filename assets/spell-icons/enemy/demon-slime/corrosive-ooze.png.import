@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://m4f8j0sn7w1o"
-path="res://.godot/imported/embrace-of-death.png-47a9069a2b6b859e9d5f226baeb57b43.ctex"
+uid="uid://klbjojccs3uy"
+path="res://.godot/imported/corrosive-ooze.png-84151c5760fae0551353314022934be7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/spell-icons/enemy/bringer-of-death/embrace-of-death.png"
-dest_files=["res://.godot/imported/embrace-of-death.png-47a9069a2b6b859e9d5f226baeb57b43.ctex"]
+source_file="res://assets/spell-icons/enemy/demon-slime/corrosive-ooze.png"
+dest_files=["res://.godot/imported/corrosive-ooze.png-84151c5760fae0551353314022934be7.ctex"]
 
 [params]
 

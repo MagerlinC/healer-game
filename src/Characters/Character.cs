@@ -137,6 +137,10 @@ public abstract partial class Character : CharacterBody2D
 	{
 		if (!IsAlive) return;
 
+		// Apply any damage-taken multipliers from active effects/talents (e.g. Death Mark's +25%).
+		var stats = GetCharacterStats();
+		amount *= stats.DamageTakenMultiplier;
+
 		// Shield absorbs damage before health is affected.
 		if (CurrentShield > 0f)
 		{

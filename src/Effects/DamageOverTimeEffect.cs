@@ -19,6 +19,7 @@ public partial class DamageOverTimeEffect : CharacterEffect
 		TickInterval = tickInterval;
 		SourceCharacterName = SourceCharacterName;
 		IsDispellable = isDispellable;
+		IsHarmful = true;
 	}
 
 	protected override void OnTick(Character target)
