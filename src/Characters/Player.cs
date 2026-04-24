@@ -305,7 +305,11 @@ public partial class Player : Character
 				_castTarget = hoveredCharacter;
 				_castSpell = spellToCast;
 
-				if (spellToCast.CastTime == 0.0f)
+				var stats = GetCharacterStats();
+				var isInstant = spellToCast.CastTime == 0.0f
+					|| (stats.NextCastIsInstant && spellToCast.School != SpellSchool.Chronomancy);
+
+				if (isInstant)
 				{
 					FireSpell(_castSpell, _castTarget);
 				}
@@ -313,7 +317,7 @@ public partial class Player : Character
 				{
 					// Divide by the cast-speed multiplier so e.g. 2× Acceleration
 					// turns a 2 s cast into ~1.67 s.
-					var adjustedCastTime = spellToCast.CastTime / GetCharacterStats().CastSpeedMultiplier;
+					var adjustedCastTime = spellToCast.CastTime / stats.CastSpeedMultiplier;
 					EmitSignalCastStarted(spellToCast, adjustedCastTime);
 
 					_isCasting = true;

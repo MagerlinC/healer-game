@@ -96,6 +96,21 @@ public partial class OverworldController : Node2D
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
+	public override void _UnhandledInput(InputEvent ev)
+	{
+		if (ev is InputEventKey kb && kb.Keycode == Key.Escape && kb.Pressed)
+		{
+			var anyOpen = (_spellPanel?.Visible ?? false)
+			              || (_talentPanel?.Visible ?? false)
+			              || (_historyPanel?.Visible ?? false);
+			if (anyOpen)
+			{
+				CloseAllPanels();
+				GetViewport().SetInputAsHandled();
+			}
+		}
+	}
+
 	public override void _Ready()
 	{
 		System.Array.Copy(RunState.Instance.SelectedSpells, _loadout, Player.MaxSpellSlots);
@@ -112,6 +127,10 @@ public partial class OverworldController : Node2D
 		bg.Scale = new Vector2(0.5f, 0.5f);
 		AddChild(bg);
 
+		// Pre-compute background world-space edges for player bounds clamping.
+		var bgHalfW = bg.Texture.GetWidth() * bg.Scale.X / 2f;
+		var bgLeft = bg.Position.X - bgHalfW;
+		var bgRight = bg.Position.X + bgHalfW;
 
 		// ── Interactibles ─────────────────────────────────────────────────────
 		// Positions are approximate for a typical library layout.
@@ -151,6 +170,8 @@ public partial class OverworldController : Node2D
 		_player = new OverworldPlayer();
 		_player.Position = new Vector2(896f, FloorHeight - 15f);
 		_player.Scale = new Vector2(1.5f, 1.5f);
+		_player.XMin = bgLeft;
+		_player.XMax = bgRight;
 		AddChild(_player);
 
 		// ── HUD ───────────────────────────────────────────────────────────────
@@ -636,7 +657,7 @@ public partial class OverworldController : Node2D
 	string GetLockedSpellTooltip(SpellResource spell)
 	{
 		return
-			$"{spell.Name}\nRequires {spell.RequiredSchoolPoints} {spell.School} talent point{(spell.RequiredSchoolPoints > 1 ? "s" : "")} invested.\n" +
+			$"{spell.Name}\n{spell.Description}\nRequires {spell.RequiredSchoolPoints} {spell.School} talent point{(spell.RequiredSchoolPoints > 1 ? "s" : "")} invested.\n" +
 			$"({_talentSlots.Count(s => s.IsSelected && s.Definition.School == spell.School)} / {spell.RequiredSchoolPoints} selected)";
 	}
 

@@ -30,4 +30,11 @@ public class CharacterStats
 	/// Default 1.0 (no modification).
 	/// </summary>
 	public float DamageTakenMultiplier { get; set; } = 1.0f;
+
+	/// <summary>
+	/// When true, the next non-instant spell cast by this character will be
+	/// fired immediately, bypassing the normal cast timer.
+	/// Set by talents such as <see cref="Talents.Chronomancy.TemporalMomentumTalent"/>.
+	/// </summary>
+	public bool NextCastIsInstant { get; set; } = false;
 }

@@ -55,7 +55,7 @@ public partial class CrystalKnight : Character
 	[Export] public float CrushInterval = 10.0f;
 	[Export] public float CrushWindupDuration = 3.0f;
 
-	[Export] public float MeleeDamage = 25f;
+	[Export] public float MeleeDamage = 40f;
 	[Export] public float BlastDamage = 20f;
 	[Export] public float CrushDamage = 45f;
 

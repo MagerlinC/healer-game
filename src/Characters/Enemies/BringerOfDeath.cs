@@ -51,7 +51,7 @@ public partial class BringerOfDeath : Character
 	[Export] public float EmbraceInterval = 15.0f;
 	[Export] public float EmbraceWindupDuration = 3.5f;
 
-	[Export] public float MeleeDamage = 30f;
+	[Export] public float MeleeDamage = 40f;
 	[Export] public float SoulRendDamage = 25f;
 	[Export] public float EmbraceDamage = 60f;
 

@@ -355,6 +355,13 @@ public abstract partial class Character : CharacterBody2D
 		return effect;
 	}
 
+	/// <summary>
+	/// Returns all currently active effects on this character.
+	/// Used by talents that need to enumerate or consume active effects
+	/// (e.g. <see cref="Talents.Void.VoidResonanceTalent"/> consuming DoTs).
+	/// </summary>
+	public IEnumerable<CharacterEffect> GetAllEffects() => _effects.Values;
+
 	void OnDeath()
 	{
 		EmitSignalDied(this);

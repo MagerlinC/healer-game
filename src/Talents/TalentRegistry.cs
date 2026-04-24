@@ -47,7 +47,7 @@ public static class TalentRegistry
 		{
 			Name = "Siphoning Void",
 			Description = "Dealing void damage restores 1 mana.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_10.png",
+			IconPath = AssetConstants.TalentIconAssets + "siphoning-void.png",
 			TalentRow = 2,
 			School = SpellSchool.Void,
 			Configure = (t, _) =>
@@ -66,8 +66,8 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Void Resonance",
-			Description = "Instant-damage Void spells deal 15% more damage if the target has a DoT active.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_22.png",
+			Description = "Casting Shadow Bolt consumes all DoTs on the target, instantly dealing their remaining damage.",
+			IconPath = AssetConstants.TalentIconAssets + "void-resonance.png",
 			TalentRow = 3,
 			School = SpellSchool.Void,
 			Configure = (t, _) =>
@@ -229,12 +229,16 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Temporal Momentum",
-			Description = "Casting a Chronomancy spell makes your next non-Chronomancy spell cost 5 less mana.",
+			Description = "Casting a Chronomancy spell makes your next non-Chronomancy spell instant.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_25.png",
 			School = SpellSchool.Chronomancy,
 			TalentRow = 3,
 			Configure = (t, _) =>
-				t.SpellModifiers.Add(new TemporalMomentumTalent())
+			{
+				var temporalMomentum = new TemporalMomentumTalent();
+				t.SpellModifiers.Add(temporalMomentum);
+				t.CharacterModifiers.Add(temporalMomentum);
+			}
 		}
 	];
 

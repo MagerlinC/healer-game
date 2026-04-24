@@ -1,41 +1,61 @@
+using System.Collections.Generic;
 using healerfantasy.Effects;
+using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.Talents.Void;
 
 /// <summary>
 /// Direct void damage spells resonate with active damage-over-time effects,
-/// dealing more damage when the target is already afflicted by a DoT.
+/// consuming all DoTs on the target to instantly deal all the damage they
+/// would have dealt for their remaining duration.
 ///
-/// Creates a powerful DoT → burst combo: apply Decay first, then follow
-/// up with Shadow Bolt to benefit from the resonance bonus.
+/// Creates a powerful DoT → burst combo: apply Decay (or any other DoT) first,
+/// then follow up with Shadow Bolt to instantly detonate them.
 /// Only applies to instant-damage (non-Duration) void spells.
 /// </summary>
 public class VoidResonanceTalent : ISpellModifier
 {
-    const float BonusMultiplier = 1.15f;
+	public ModifierPriority Priority => ModifierPriority.BASE;
 
-    public ModifierPriority Priority => ModifierPriority.BASE;
+	public void OnBeforeCast(SpellContext ctx)
+	{
+	}
 
-    public void OnBeforeCast(SpellContext ctx) { }
+	public void OnCalculate(SpellContext ctx)
+	{
+		// Trigger off of Shadow bolt
+		if (ctx.Spell.Name != ShadowBoltSpell.SpellName) return;
 
-    public void OnCalculate(SpellContext ctx)
-    {
-        // Only instant-damage Void spells (no Duration tag — excludes Decay itself).
-        if (!ctx.Tags.HasFlag(SpellTags.Void)) return;
-        if (!ctx.Tags.HasFlag(SpellTags.Damage)) return;
-        if (ctx.Tags.HasFlag(SpellTags.Duration)) return;
+		var target = ctx.Target;
+		if (target == null) return;
 
-        // Check if the target has any active DoT (any DamageOverTimeEffect or NecroticTouch).
-        var target = ctx.Target;
-        if (target == null) return;
+		// Collect all active DoTs on the target.
+		var dots = new List<DamageOverTimeEffect>();
+		foreach (var effect in target.GetAllEffects())
+		{
+			if (effect is DamageOverTimeEffect dot)
+				dots.Add(dot);
+		}
 
-        var hasDot = target.GetEffectById(nameof(DamageOverTimeEffect)) != null
-                  || target.GetEffectById("NecroticTouch") != null;
+		if (dots.Count == 0) return;
 
-        if (hasDot)
-            ctx.FinalValue *= BonusMultiplier;
-    }
+		// For each DoT, calculate the damage it would deal over its remaining
+		// duration (remaining ticks × damage per tick), then remove it.
+		var burst = 0f;
+		foreach (var dot in dots)
+		{
+			// Remaining / TickInterval gives fractional ticks left.
+			// We use the full float so a DoT that just ticked still contributes
+			// proportional damage rather than rounding down to zero.
+			burst += dot.Remaining / dot.TickInterval * dot.DamagePerTick;
+			target.RemoveEffect(dot.EffectId);
+		}
 
-    public void OnAfterCast(SpellContext ctx) { }
+		ctx.FinalValue += burst;
+	}
+
+	public void OnAfterCast(SpellContext ctx)
+	{
+	}
 }

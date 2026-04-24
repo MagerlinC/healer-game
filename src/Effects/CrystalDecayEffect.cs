@@ -13,7 +13,7 @@ namespace healerfantasy.Effects;
 /// </summary>
 public partial class CrystalDecayEffect : DamageOverTimeEffect
 {
-	public CrystalDecayEffect() : base(10f, 30f, 1f)
+	public CrystalDecayEffect() : base(20f, 30f, 1f)
 	{
 		EffectId = "CrystalDecay";
 		School = SpellSchool.Void;

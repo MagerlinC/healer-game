@@ -1,5 +1,6 @@
 using Godot;
 using healerfantasy;
+using healerfantasy.Effects;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;
@@ -12,16 +13,18 @@ namespace healerfantasy.SpellResources;
 [GlobalClass]
 public partial class VoidDrainSpell : SpellResource
 {
-	[Export] public float DamageAmount = 20f;
+	[Export] public float DamagePerTick = 10f;
+	[Export] public float Duration = 10f;
+	[Export] public float TickRate = 1.0f;
 
 	/// <summary>Fraction of damage dealt that is returned as healing to the caster.</summary>
-	[Export] public float HealFraction = 0.50f;
+	[Export] public float HealFraction = 0.25f;
 
 	public VoidDrainSpell()
 	{
 		Name = "Void Drain";
 		Description =
-			$"Drains void energy from the target, dealing {DamageAmount} void damage and healing yourself for {(int)(DamageAmount * 0.50f)} HP.";
+			$"Drains void energy from the target, dealing {DamagePerTick} void damage every ${TickRate}s over {Duration}s and healing yourself for {(int)(HealFraction * 100)} of damage dealt.";
 		ManaCost = 10f;
 		CastTime = 0.0f;
 		Cooldown = 4f;
@@ -34,19 +37,18 @@ public partial class VoidDrainSpell : SpellResource
 
 	public override float GetBaseValue()
 	{
-		return DamageAmount;
+		return DamagePerTick;
 	}
 
 	public override void Apply(SpellContext ctx)
 	{
-		ctx.Target?.TakeDamage(ctx.FinalValue);
-
-		var healAmount = ctx.FinalValue * HealFraction;
-		ctx.Caster.Heal(healAmount);
-
-		// The pipeline only emits FCT for ctx.Targets (the enemy).
-		// Emit the self-heal float here so the caster sees their own gain.
-		var isCrit = ctx.Tags.HasFlag(SpellTags.Critical);
-		ctx.Caster.RaiseFloatingCombatText(healAmount, true, (int)School, isCrit);
+		ctx.Target.ApplyEffect(new VoidDrainEffect(DamagePerTick, Duration, HealFraction)
+		{
+			AbilityName = Name,
+			SourceCharacterName = ctx.Caster?.CharacterName,
+			Caster = ctx.Caster,
+			School = SpellSchool.Void,
+			Icon = Icon
+		});
 	}
 }
