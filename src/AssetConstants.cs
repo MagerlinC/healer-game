@@ -16,13 +16,31 @@ public static class AssetConstants
 	public static readonly string ParryRiserSoundPath = "res://assets/sound-effects/riser.mp3";
 	public static readonly string VictorySoundPath = "res://assets/music/victory.mp3";
 
+	static readonly string BackgroundBasePath = "res://assets/backgrounds/";
+
 	/// <summary>Arena background image paths, one per boss encounter (0–2).</summary>
-	public static readonly string[] ArenaBackgroundPaths =
+	public static readonly string[] SpaceArenaBackgroundPaths =
 	{
-		"res://assets/backgrounds/space/1.png",
-		"res://assets/backgrounds/space/2.png",
-		"res://assets/backgrounds/space/3.png"
+		BackgroundBasePath + "space/1.png",
+		BackgroundBasePath + "space/2.png",
+		BackgroundBasePath + "space/3.png"
 	};
+
+	public static readonly string[] ForsakenCitalArenaBackgroundPaths =
+	{
+		BackgroundBasePath + "forsaken-citadel/1.png",
+		BackgroundBasePath + "forsaken-citadel/1.png",
+		BackgroundBasePath + "forsaken-citadel/1.png"
+	};
+
+
+	public static readonly string[] AncientKeepArenaBackgroundPaths =
+	{
+		BackgroundBasePath + "ancient-keep/1.png",
+		BackgroundBasePath + "ancient-keep/1.png",
+		BackgroundBasePath + "ancient-keep/1.png"
+	};
+
 
 	// ── Interactible assets ───────────────────────────────────────────────────
 
@@ -33,7 +51,7 @@ public static class AssetConstants
 
 	// ── Scene backgrounds ─────────────────────────────────────────────────────
 
-	public static readonly string OverworldBackgroundPath = "res://assets/backgrounds/overworld/background.png";
-	public static readonly string MapBackgroundPath = "res://assets/backgrounds/map/world-map.png";
-	public static readonly string CampBackgroundPath = "res://assets/backgrounds/camp/camp.png";
+	public static readonly string OverworldBackgroundPath = BackgroundBasePath + "overworld/background.png";
+	public static readonly string MapBackgroundPath = BackgroundBasePath + "map/world-map.png";
+	public static readonly string CampBackgroundPath = BackgroundBasePath + "camp/camp.png";
 }

@@ -37,28 +37,28 @@ public class DungeonDefinition
 	[
 		new()
 		{
-			Name                 = "The Ancient Keep",
-			MapPosition          = new Vector2(260f, 730f),
-			BossScenePaths       = GameConstants.BossScenePaths,
-			ArenaBackgroundPaths = AssetConstants.ArenaBackgroundPaths,
-			XpRewards            = GameConstants.BossXpRewards,
+			Name = "The Ancient Keep",
+			MapPosition = new Vector2(260f, 730f),
+			BossScenePaths = GameConstants.BossScenePaths,
+			ArenaBackgroundPaths = AssetConstants.AncientKeepArenaBackgroundPaths,
+			XpRewards = GameConstants.BossXpRewards
 		},
 		new()
 		{
-			Name                 = "The Forsaken Citadel",
-			MapPosition          = new Vector2(880f, 490f),
-			BossScenePaths       = GameConstants.BossScenePaths,
-			ArenaBackgroundPaths = AssetConstants.ArenaBackgroundPaths,
-			XpRewards            = GameConstants.BossXpRewards,
+			Name = "The Forsaken Citadel",
+			MapPosition = new Vector2(880f, 490f),
+			BossScenePaths = GameConstants.BossScenePaths,
+			ArenaBackgroundPaths = AssetConstants.ForsakenCitalArenaBackgroundPaths,
+			XpRewards = GameConstants.BossXpRewards
 		},
 		new()
 		{
-			Name                 = "The Void Sanctum",
-			MapPosition          = new Vector2(1540f, 240f),
-			BossScenePaths       = GameConstants.BossScenePaths,
-			ArenaBackgroundPaths = AssetConstants.ArenaBackgroundPaths,
-			XpRewards            = GameConstants.BossXpRewards,
-		},
+			Name = "The Void Sanctum",
+			MapPosition = new Vector2(1540f, 240f),
+			BossScenePaths = GameConstants.BossScenePaths,
+			ArenaBackgroundPaths = AssetConstants.SpaceArenaBackgroundPaths,
+			XpRewards = GameConstants.BossXpRewards
+		}
 	];
 
 	/// <summary>
@@ -67,7 +67,7 @@ public class DungeonDefinition
 	/// </summary>
 	public static readonly Vector2[] CampMapPositions =
 	[
-		new Vector2(575f, 610f),
-		new Vector2(1215f, 370f),
+		new(575f, 610f),
+		new(1215f, 370f)
 	];
 }
