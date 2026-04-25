@@ -30,14 +30,14 @@ public partial class OverworldController : LoadoutController
 	{
 		// ── Library background ────────────────────────────────────────────────
 		var bg = new Sprite2D();
-		bg.Texture  = GD.Load<Texture2D>(AssetConstants.OverworldBackgroundPath);
+		bg.Texture = GD.Load<Texture2D>(AssetConstants.OverworldBackgroundPath);
 		bg.Centered = true;
 		bg.Position = new Vector2(1920f / 2f, 1080f / 2f);
-		bg.Scale    = new Vector2(0.5f, 0.5f);
+		bg.Scale = new Vector2(0.5f, 0.5f);
 		AddChild(bg);
 
 		var bgHalfW = bg.Texture.GetWidth() * bg.Scale.X / 2f;
-		var bgLeft  = bg.Position.X - bgHalfW;
+		var bgLeft = bg.Position.X - bgHalfW;
 		var bgRight = bg.Position.X + bgHalfW;
 
 		// ── Interactibles ─────────────────────────────────────────────────────
@@ -48,7 +48,8 @@ public partial class OverworldController : LoadoutController
 		var historyScroll = MakeInteractible(AssetConstants.RunScrollInteractiblePath,
 			new Vector2(696f, FloorHeight), new Vector2(0.055f, 0.055f), 28f);
 		var mapItem = MakeInteractible(AssetConstants.MapInteractiblePath,
-			new Vector2(490f, FloorHeight - 20f), new Vector2(0.100f, 0.100f), 28f);
+			new Vector2(525f, FloorHeight), new Vector2(0.100f, 0.100f), 28f);
+		mapItem.Scale = new Vector2(1.2f, 1.2f);
 
 		AddChild(spellTome);
 		AddChild(talentBoard);
@@ -67,9 +68,9 @@ public partial class OverworldController : LoadoutController
 		// ── Player ────────────────────────────────────────────────────────────
 		_player = new OverworldPlayer();
 		_player.Position = new Vector2(896f, FloorHeight - 15f);
-		_player.Scale    = new Vector2(1.5f, 1.5f);
-		_player.XMin     = bgLeft;
-		_player.XMax     = bgRight;
+		_player.Scale = new Vector2(1.5f, 1.5f);
+		_player.XMin = bgLeft;
+		_player.XMax = bgRight;
 		AddChild(_player);
 
 		// ── HUD ───────────────────────────────────────────────────────────────
@@ -81,21 +82,33 @@ public partial class OverworldController : LoadoutController
 		hud.AddChild(_characterProgressLabel);
 
 		// ── Wire interactible clicks ──────────────────────────────────────────
-		spellTome.InputEvent += (_, ev, _) => { if (IsLeftClick(ev)) OpenPanel(_spellPanel!); };
+		spellTome.InputEvent += (_, ev, _) =>
+		{
+			if (IsLeftClick(ev)) OpenPanel(_spellPanel!);
+		};
 		spellTome.MouseEntered += () => _hintLabel!.Text = "Spellbook  •  Click to open";
-		spellTome.MouseExited  += () => _hintLabel!.Text = DefaultHint;
+		spellTome.MouseExited += () => _hintLabel!.Text = DefaultHint;
 
-		talentBoard.InputEvent += (_, ev, _) => { if (IsLeftClick(ev)) OpenPanel(_talentPanel!); };
+		talentBoard.InputEvent += (_, ev, _) =>
+		{
+			if (IsLeftClick(ev)) OpenPanel(_talentPanel!);
+		};
 		talentBoard.MouseEntered += () => _hintLabel!.Text = "Talent Board  •  Click to open";
-		talentBoard.MouseExited  += () => _hintLabel!.Text = DefaultHint;
+		talentBoard.MouseExited += () => _hintLabel!.Text = DefaultHint;
 
-		historyScroll.InputEvent += (_, ev, _) => { if (IsLeftClick(ev)) OpenHistoryPanel(); };
+		historyScroll.InputEvent += (_, ev, _) =>
+		{
+			if (IsLeftClick(ev)) OpenHistoryPanel();
+		};
 		historyScroll.MouseEntered += () => _hintLabel!.Text = "Run History  •  Click to open";
-		historyScroll.MouseExited  += () => _hintLabel!.Text = DefaultHint;
+		historyScroll.MouseExited += () => _hintLabel!.Text = DefaultHint;
 
-		mapItem.InputEvent += (_, ev, _) => { if (IsLeftClick(ev)) OnOpenMap(); };
+		mapItem.InputEvent += (_, ev, _) =>
+		{
+			if (IsLeftClick(ev)) OnOpenMap();
+		};
 		mapItem.MouseEntered += () => _hintLabel!.Text = "World Map  •  Plan your journey";
-		mapItem.MouseExited  += () => _hintLabel!.Text = DefaultHint;
+		mapItem.MouseExited += () => _hintLabel!.Text = DefaultHint;
 	}
 
 	void OpenHistoryPanel()
@@ -125,10 +138,10 @@ public partial class OverworldController : LoadoutController
 	Control BuildRunHistoryPane()
 	{
 		var margin = new MarginContainer();
-		margin.AddThemeConstantOverride("margin_left",   16);
-		margin.AddThemeConstantOverride("margin_right",  16);
-		margin.AddThemeConstantOverride("margin_top",     8);
-		margin.AddThemeConstantOverride("margin_bottom",  8);
+		margin.AddThemeConstantOverride("margin_left", 16);
+		margin.AddThemeConstantOverride("margin_right", 16);
+		margin.AddThemeConstantOverride("margin_top", 8);
+		margin.AddThemeConstantOverride("margin_bottom", 8);
 
 		var scroll = new ScrollContainer();
 		scroll.SizeFlagsHorizontal = scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
@@ -154,7 +167,7 @@ public partial class OverworldController : LoadoutController
 			var empty = new Label();
 			empty.Text = "No runs recorded yet.\nComplete or attempt a run to see your history here.";
 			empty.HorizontalAlignment = HorizontalAlignment.Center;
-			empty.AutowrapMode        = TextServer.AutowrapMode.Word;
+			empty.AutowrapMode = TextServer.AutowrapMode.Word;
 			empty.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 			empty.AddThemeFontSizeOverride("font_size", 15);
 			empty.AddThemeColorOverride("font_color", HintColor);
@@ -241,6 +254,7 @@ public partial class OverworldController : LoadoutController
 			dmgTakenLabel.AddThemeColorOverride("font_color", new Color(0.88f, 0.44f, 0.28f));
 			row.AddChild(dmgTakenLabel);
 		}
+
 		return vbox;
 	}
 }

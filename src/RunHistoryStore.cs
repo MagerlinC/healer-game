@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Godot;
 using healerfantasy.CombatLog;
+using healerfantasy.Items;
 
 namespace healerfantasy;
 
@@ -38,7 +39,12 @@ public static class RunHistoryStore
 		bool IsVictory,
 		long DurationTicks,
 		List<BossEncounterRecord> BossEncounters,
-		DateTime CompletedAt
+		DateTime CompletedAt,
+		/// <summary>
+		/// Display names of items equipped at the time the run was finalised.
+		/// Null on records saved before the item system was introduced.
+		/// </summary>
+		List<string>? ItemsUsed = null
 	)
 	{
 		public TimeSpan Duration => TimeSpan.FromTicks(DurationTicks);
@@ -128,11 +134,15 @@ public static class RunHistoryStore
 				isVictory,
 				duration.Ticks,
 				new List<BossEncounterRecord>(_currentEncounters),
-				DateTime.Now);
+				DateTime.Now,
+				ItemStore.GetEquippedItemNames());
 		_history.Add(historyRecord);
 		WriteRunHistoryRecordToSaveFile(historyRecord);
 
 		_runStartTime = default;
 		_currentEncounters.Clear();
+
+		// Items are run-scoped and lost after the run ends.
+		ItemStore.Clear();
 	}
 }

@@ -48,6 +48,12 @@ public static class AssetConstants
 	public static readonly string TalentBoardInteractiblePath = "res://assets/interactibles/talent-board.png";
 	public static readonly string RunScrollInteractiblePath = "res://assets/interactibles/run-history-scroll.png";
 	public static readonly string MapInteractiblePath = "res://assets/interactibles/map.png";
+	public static readonly string ArmoryInteractiblePath = "res://assets/interactibles/armory.png";
+
+	// ── Item assets ───────────────────────────────────────────────────────────
+
+	/// <summary>Returns the res:// path for staff icon n (1–5).</summary>
+	public static string StaveIconPath(int n) => $"res://assets/items/staves/{n}.png";
 
 	// ── Scene backgrounds ─────────────────────────────────────────────────────
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using healerfantasy.Items;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellResources.Chronomancy;
 using healerfantasy.Talents;
@@ -161,6 +162,7 @@ public partial class RunState : Node
 		CompletedDungeons = 0;
 		CompletedCamps = 0;
 		CurrentBossIndexInDungeon = 0;
+		ItemStore.Clear();
 	}
 
 	// ── Private ───────────────────────────────────────────────────────────────

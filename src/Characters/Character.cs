@@ -4,6 +4,7 @@ using System.Linq;
 using Godot;
 using healerfantasy;
 using healerfantasy.Effects;
+using healerfantasy.Items;
 using healerfantasy.SpellSystem;
 
 /// <summary>
@@ -77,13 +78,25 @@ public abstract partial class Character : CharacterBody2D
 	/// </summary>
 	public float CurrentShield { get; private set; }
 
-	// ── spell / talent system ─────────────────────────────────────────────────
+	// ── spell / talent / item system ──────────────────────────────────────────
 	/// <summary>
 	/// Talents assigned to this character. Call <see cref="GetCharacterStats"/>
 	/// to obtain the aggregated stat snapshot, and <see cref="GetSpellModifiers"/>
 	/// to collect all active spell modifier instances.
 	/// </summary>
 	public List<Talent> Talents { get; set; } = new();
+
+	/// <summary>
+	/// Items currently equipped on this character for the active run.
+	/// Their <see cref="EquippableItem.CharacterModifiers"/> feed into
+	/// <see cref="GetCharacterStats"/> and their
+	/// <see cref="EquippableItem.SpellModifiers"/> into
+	/// <see cref="GetSpellModifiers"/>, using the same pipelines as Talents.
+	///
+	/// For the player character, populated from <see cref="ItemStore"/> in
+	/// <c>Player._Ready()</c>. NPC characters leave this empty.
+	/// </summary>
+	public List<EquippableItem> EquippedItems { get; set; } = new();
 
 	/// <summary>
 	/// Persistent record of every completed spell cast made by this character.
@@ -273,6 +286,11 @@ public abstract partial class Character : CharacterBody2D
 		foreach (var mod in talent.CharacterModifiers)
 			mod.Modify(stats);
 
+		// Apply modifiers from equipped items (same pipeline as talents).
+		foreach (var item in EquippedItems)
+		foreach (var mod in item.CharacterModifiers)
+			mod.Modify(stats);
+
 		// Also apply any active effect that acts as a character modifier
 		// (e.g. AccelerationEffect contributing to CastSpeedMultiplier).
 		// Mirrors how GetSpellModifiers handles ISpellModifier effects.
@@ -293,6 +311,11 @@ public abstract partial class Character : CharacterBody2D
 	{
 		foreach (var talent in Talents)
 		foreach (var mod in talent.SpellModifiers)
+			yield return mod;
+
+		// Yield spell modifiers from equipped items (Legendary effects).
+		foreach (var item in EquippedItems)
+		foreach (var mod in item.SpellModifiers)
 			yield return mod;
 
 		foreach (var effect in _effects.Values)

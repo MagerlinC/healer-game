@@ -1,6 +1,7 @@
 using Godot;
 using healerfantasy;
 using healerfantasy.CombatLog;
+using healerfantasy.Items;
 
 /// <summary>
 /// Overlay shown when a boss dies.
@@ -53,20 +54,25 @@ public partial class VictoryScreen : CanvasLayer
 					: 100;
 				var levelsGained = PlayerProgressStore.AddXp(xpReward);
 
+				// Roll for item drop.
+				var droppedItem = ItemRegistry.RollDrop(character.CharacterName);
+				if (droppedItem != null)
+					ItemStore.AddToInventory(droppedItem);
+
 				if (!RunState.Instance.IsLastBossInDungeon)
 				{
 					// Mid-dungeon: more bosses to fight.
-					ShowArenaCleared(character.CharacterName, xpReward, levelsGained);
+					ShowArenaCleared(character.CharacterName, xpReward, levelsGained, droppedItem);
 				}
 				else if (!RunState.Instance.IsLastDungeon)
 				{
 					// Last boss but not the last dungeon → head to camp.
-					ShowDungeonCleared(character.CharacterName, xpReward, levelsGained);
+					ShowDungeonCleared(character.CharacterName, xpReward, levelsGained, droppedItem);
 				}
 				else
 				{
 					// Final boss of the entire run → full victory!
-					ShowVictoryScreen(xpReward, levelsGained);
+					ShowVictoryScreen(xpReward, levelsGained, droppedItem);
 				}
 			}));
 
@@ -105,6 +111,11 @@ public partial class VictoryScreen : CanvasLayer
 		_xpLabel.AddThemeColorOverride("font_color", new Color(0.55f, 0.85f, 0.95f));
 		vbox.AddChild(_xpLabel);
 
+		// Item drop section — populated on boss death when loot drops, hidden otherwise.
+		_itemSection = new VBoxContainer();
+		_itemSection.Visible = false;
+		vbox.AddChild(_itemSection);
+
 		_btnRow = new HBoxContainer();
 		_btnRow.Alignment = BoxContainer.AlignmentMode.Center;
 		_btnRow.AddThemeConstantOverride("separation", 20);
@@ -113,13 +124,15 @@ public partial class VictoryScreen : CanvasLayer
 
 	// ── public API ────────────────────────────────────────────────────────────
 
-	public void ShowArenaCleared(string defeatedBossName, int xpGained, int levelsGained)
+	public void ShowArenaCleared(string defeatedBossName, int xpGained, int levelsGained,
+		EquippableItem? droppedItem = null)
 	{
 		if (Visible) return;
 		_audioPlayer.Play();
 		_titleLabel.Text = "ARENA CLEARED!";
 		_subLabel.Text   = $"{defeatedBossName} has been defeated.\nPrepare for the next battle.";
 		_xpLabel.Text    = BuildXpLine(xpGained, levelsGained);
+		BuildItemSection(droppedItem);
 
 		ClearButtons();
 		_btnRow.AddChild(MakeButton("Continue  ▶",
@@ -131,13 +144,15 @@ public partial class VictoryScreen : CanvasLayer
 		GetTree().Paused = true;
 	}
 
-	public void ShowDungeonCleared(string defeatedBossName, int xpGained, int levelsGained)
+	public void ShowDungeonCleared(string defeatedBossName, int xpGained, int levelsGained,
+		EquippableItem? droppedItem = null)
 	{
 		if (Visible) return;
 		_audioPlayer.Play();
 		_titleLabel.Text = "DUNGEON CLEARED!";
 		_subLabel.Text   = $"{defeatedBossName} has been defeated.\nHead to camp and prepare for the next dungeon.";
 		_xpLabel.Text    = BuildXpLine(xpGained, levelsGained);
+		BuildItemSection(droppedItem);
 
 		ClearButtons();
 		_btnRow.AddChild(MakeButton("Rest at Camp  ▶",
@@ -149,13 +164,14 @@ public partial class VictoryScreen : CanvasLayer
 		GetTree().Paused = true;
 	}
 
-	public void ShowVictoryScreen(int xpGained, int levelsGained)
+	public void ShowVictoryScreen(int xpGained, int levelsGained, EquippableItem? droppedItem = null)
 	{
 		if (Visible) return;
 		_audioPlayer.Play();
 		_titleLabel.Text = "VICTORY!";
 		_subLabel.Text   = "All dungeons have been conquered. The realm is saved!";
 		_xpLabel.Text    = BuildXpLine(xpGained, levelsGained);
+		BuildItemSection(droppedItem);
 
 		ClearButtons();
 		_btnRow.AddChild(MakeButton("Play Again",
@@ -208,6 +224,7 @@ public partial class VictoryScreen : CanvasLayer
 	Label _titleLabel = null!;
 	Label _subLabel   = null!;
 	Label _xpLabel    = null!;
+	Control _itemSection = null!;
 	HBoxContainer _btnRow = null!;
 
 	// ── helpers ───────────────────────────────────────────────────────────────
@@ -216,6 +233,178 @@ public partial class VictoryScreen : CanvasLayer
 	{
 		foreach (var child in _btnRow.GetChildren()) child.QueueFree();
 	}
+
+	// ── item drop display ─────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Populates (or clears) the item section of the victory screen.
+	/// Shows the dropped item's icon, name (rarity-coloured), and an equip button
+	/// if the slot is currently empty — otherwise "Added to Armory".
+	/// </summary>
+	void BuildItemSection(EquippableItem? item)
+	{
+		foreach (var child in _itemSection.GetChildren()) child.QueueFree();
+
+		if (item == null)
+		{
+			_itemSection.Visible = false;
+			return;
+		}
+
+		_itemSection.Visible = true;
+
+		var sep = new HSeparator();
+		sep.AddThemeColorOverride("color", new Color(0.50f, 0.40f, 0.22f, 0.55f));
+		_itemSection.AddChild(sep);
+
+		var dropLabel = new Label();
+		dropLabel.Text = "✦  Item Found!";
+		dropLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		dropLabel.AddThemeFontSizeOverride("font_size", 14);
+		dropLabel.AddThemeColorOverride("font_color", new Color(0.80f, 0.72f, 0.50f));
+		_itemSection.AddChild(dropLabel);
+
+		// Icon + name row
+		var row = new HBoxContainer();
+		row.Alignment = BoxContainer.AlignmentMode.Center;
+		row.AddThemeConstantOverride("separation", 10);
+		_itemSection.AddChild(row);
+
+		if (item.Icon != null)
+		{
+			var iconRect = new TextureRect();
+			iconRect.Texture     = item.Icon;
+			iconRect.CustomMinimumSize = new Vector2(40f, 40f);
+			iconRect.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
+			iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+			iconRect.MouseFilter = Control.MouseFilterEnum.Ignore;
+			row.AddChild(iconRect);
+		}
+
+		var nameCol = new VBoxContainer();
+		nameCol.AddThemeConstantOverride("separation", 2);
+		row.AddChild(nameCol);
+
+		var rarityLabel = new Label();
+		rarityLabel.Text = item.Rarity.ToString().ToUpper();
+		rarityLabel.AddThemeFontSizeOverride("font_size", 10);
+		rarityLabel.AddThemeColorOverride("font_color", RarityColor(item.Rarity));
+		rarityLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+		nameCol.AddChild(rarityLabel);
+
+		var nameLabel = new Label();
+		nameLabel.Text = item.Name;
+		nameLabel.AddThemeFontSizeOverride("font_size", 16);
+		nameLabel.AddThemeColorOverride("font_color", RarityColor(item.Rarity));
+		nameLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+		nameCol.AddChild(nameLabel);
+
+		var descLabel = new Label();
+		descLabel.Text = item.Description;
+		descLabel.AddThemeFontSizeOverride("font_size", 12);
+		descLabel.AddThemeColorOverride("font_color", new Color(0.80f, 0.76f, 0.68f));
+		descLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+		nameCol.AddChild(descLabel);
+
+		// Equip / swap button — always available.
+		// If the slot is occupied, ItemStore.Equip displaces the old item to inventory.
+		var currentlyEquipped = ItemStore.GetEquipped(item.Slot);
+		var isEquipped        = currentlyEquipped != null && currentlyEquipped == item;
+
+		if (!isEquipped)
+		{
+			if (currentlyEquipped != null)
+			{
+				// Show what's currently equipped so the player can make an informed swap.
+				var vsLabel = new Label();
+				vsLabel.Text = "▼  Currently Equipped";
+				vsLabel.HorizontalAlignment = HorizontalAlignment.Center;
+				vsLabel.AddThemeFontSizeOverride("font_size", 11);
+				vsLabel.AddThemeColorOverride("font_color", new Color(0.50f, 0.48f, 0.44f));
+				_itemSection.AddChild(vsLabel);
+
+				var oldRow = new HBoxContainer();
+				oldRow.Alignment = BoxContainer.AlignmentMode.Center;
+				oldRow.AddThemeConstantOverride("separation", 10);
+				_itemSection.AddChild(oldRow);
+
+				if (currentlyEquipped.Icon != null)
+				{
+					var oldIcon = new TextureRect();
+					oldIcon.Texture           = currentlyEquipped.Icon;
+					oldIcon.CustomMinimumSize = new Vector2(40f, 40f);
+					oldIcon.ExpandMode        = TextureRect.ExpandModeEnum.IgnoreSize;
+					oldIcon.StretchMode       = TextureRect.StretchModeEnum.KeepAspectCentered;
+					oldIcon.MouseFilter       = Control.MouseFilterEnum.Ignore;
+					oldRow.AddChild(oldIcon);
+				}
+
+				var oldCol = new VBoxContainer();
+				oldCol.AddThemeConstantOverride("separation", 2);
+				oldRow.AddChild(oldCol);
+
+				var oldRarityLabel = new Label();
+				oldRarityLabel.Text = currentlyEquipped.Rarity.ToString().ToUpper();
+				oldRarityLabel.AddThemeFontSizeOverride("font_size", 10);
+				oldRarityLabel.AddThemeColorOverride("font_color", RarityColor(currentlyEquipped.Rarity));
+				oldRarityLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+				oldCol.AddChild(oldRarityLabel);
+
+				var oldNameLabel = new Label();
+				oldNameLabel.Text = currentlyEquipped.Name;
+				oldNameLabel.AddThemeFontSizeOverride("font_size", 15);
+				oldNameLabel.AddThemeColorOverride("font_color", RarityColor(currentlyEquipped.Rarity));
+				oldNameLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+				oldCol.AddChild(oldNameLabel);
+
+				var oldDescLabel = new Label();
+				oldDescLabel.Text = currentlyEquipped.Description;
+				oldDescLabel.AddThemeFontSizeOverride("font_size", 12);
+				oldDescLabel.AddThemeColorOverride("font_color", new Color(0.72f, 0.68f, 0.62f));
+				oldDescLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+				oldCol.AddChild(oldDescLabel);
+
+				var intoArmoryLabel = new Label();
+				intoArmoryLabel.Text = "→ moves to your Armory";
+				intoArmoryLabel.HorizontalAlignment = HorizontalAlignment.Center;
+				intoArmoryLabel.AddThemeFontSizeOverride("font_size", 11);
+				intoArmoryLabel.AddThemeColorOverride("font_color", new Color(0.50f, 0.48f, 0.44f));
+				_itemSection.AddChild(intoArmoryLabel);
+			}
+
+			var equipBtn = MakeButton(currentlyEquipped == null ? "Equip Now" : "Swap",
+				new Color(0.10f, 0.10f, 0.16f),
+				RarityColor(item.Rarity),
+				() =>
+				{
+					ItemStore.Equip(item); // displaces old item to inventory automatically
+					foreach (var child in _itemSection.GetChildren()) child.QueueFree();
+					BuildItemSection(item);
+				});
+			equipBtn.CustomMinimumSize = new Vector2(160f, 38f);
+			var btnRow = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
+			btnRow.AddChild(equipBtn);
+			_itemSection.AddChild(btnRow);
+		}
+		else
+		{
+			// Item was just equipped — confirm to player.
+			var equippedLabel = new Label();
+			equippedLabel.Text = "✓  Equipped";
+			equippedLabel.HorizontalAlignment = HorizontalAlignment.Center;
+			equippedLabel.AddThemeFontSizeOverride("font_size", 13);
+			equippedLabel.AddThemeColorOverride("font_color", new Color(0.40f, 0.80f, 0.45f));
+			_itemSection.AddChild(equippedLabel);
+		}
+	}
+
+	static Color RarityColor(ItemRarity rarity) => rarity switch
+	{
+		ItemRarity.Rare      => new Color(0.35f, 0.55f, 1.00f),   // blue
+		ItemRarity.Epic      => new Color(0.70f, 0.30f, 0.90f),   // purple
+		ItemRarity.Legendary => new Color(1.00f, 0.55f, 0.05f),   // orange
+		_                    => new Color(0.80f, 0.78f, 0.72f)
+	};
 
 	static string BuildXpLine(int xpGained, int levelsGained)
 	{

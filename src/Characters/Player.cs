@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using healerfantasy;
+using healerfantasy.Items;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
@@ -127,6 +128,12 @@ public partial class Player : Character
 			foreach (var def in RunState.Instance.SelectedTalentDefs)
 				Talents.Add(def.CreateTalent());
 		}
+
+		// Apply equipped items from ItemStore.
+		// ItemStore is updated by the Armory (in Camp) and the VictoryScreen equip button.
+		// Each World scene load reads the current state, so changes made in Camp persist here.
+		foreach (var item in ItemStore.GetEquippedItems())
+			EquippedItems.Add(item);
 
 		// Casting SFX — looping player restarts itself while _isCasting is true.
 		_castingAudioPlayer = new AudioStreamPlayer();

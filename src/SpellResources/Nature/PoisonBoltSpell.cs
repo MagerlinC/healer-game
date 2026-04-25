@@ -12,7 +12,7 @@ namespace healerfantasy.SpellResources;
 public partial class PoisonBoltSpell : SpellResource
 {
 	[Export] public float InstantDamage = 10f;
-	[Export] public float DamagePerTick = 8f;
+	[Export] public float DamagePerTick = 10f;
 	[Export] public float EffectDuration = 8f;
 	[Export] public float TickInterval = 1f;
 
