@@ -28,7 +28,6 @@ public partial class OverworldController : LoadoutController
 
 	protected override void SetupScene()
 	{
-		// ── Library background ────────────────────────────────────────────────
 		var bg = new Sprite2D();
 		bg.Texture = GD.Load<Texture2D>(AssetConstants.OverworldBackgroundPath);
 		bg.Centered = true;

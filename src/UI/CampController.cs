@@ -26,14 +26,9 @@ public partial class CampController : LoadoutController
 
 	protected override void SetupScene()
 	{
-		// ── Camera (matches Overworld zoom so background fills the screen) ────
-		var camera = new Camera2D();
-		camera.Zoom = new Vector2(2f, 2f);
-		//AddChild(camera);
-
 		// ── Camp background ───────────────────────────────────────────────────
 		var bg = new Sprite2D();
-		bg.Texture = GD.Load<Texture2D>(AssetConstants.CampBackgroundPath);
+		bg.Texture = GD.Load<Texture2D>(AssetConstants.OverworldBackgroundPath);
 		bg.Centered = true;
 		bg.Position = new Vector2(1920f / 2f, 1080f / 2f);
 		bg.Scale = new Vector2(0.5f, 0.5f);
@@ -53,13 +48,13 @@ public partial class CampController : LoadoutController
 		// Map is on the left so it's prominent — the player came here to rest,
 		// spell/talent editing is in the middle/right, Armory on far right.
 		var mapItem = MakeInteractible(AssetConstants.MapInteractiblePath,
-			new Vector2(440f, FloorHeight - 20f), new Vector2(0.100f, 0.100f), 28f);
+			new Vector2(560f, FloorHeight), new Vector2(0.125f, 0.125f), 28f);
 		var spellTome = MakeInteractible(AssetConstants.SpellTomeInteractiblePath,
 			new Vector2(680f, FloorHeight - 12f), new Vector2(0.080f, 0.080f), 28f);
 		var talentBoard = MakeInteractible(AssetConstants.TalentBoardInteractiblePath,
 			new Vector2(890f, FloorHeight), new Vector2(0.090f, 0.090f), 50f);
 		var armory = MakeInteractible(AssetConstants.ArmoryInteractiblePath,
-			new Vector2(1120f, FloorHeight - 10f), new Vector2(0.090f, 0.090f), 36f);
+			new Vector2(1120f, FloorHeight - 10f), new Vector2(0.125f, 0.125f), 36f);
 
 		AddChild(mapItem);
 		AddChild(spellTome);
