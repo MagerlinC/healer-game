@@ -19,14 +19,15 @@ using healerfantasy;
 public partial class MapScreenController : Node2D
 {
 	// Map node positions in viewport space (1920×1080).
-	// Arranged SW→NE: Dungeon 0, Camp 0, Dungeon 1, Camp 1, Dungeon 2
+	// Arranged NW→SE following the map terrain path:
+	//   Dungeon 0 (mountains) → Camp 0 → Dungeon 1 (centre) → Camp 1 → Dungeon 2 (lower-right)
 	static readonly Vector2[] NodeCentres =
 	{
-		new(260f, 730f), // Dungeon 0
-		new(575f, 610f), // Camp 0
-		new(880f, 490f), // Dungeon 1
-		new(1215f, 370f), // Camp 1
-		new(1540f, 240f) // Dungeon 2
+		new(235f, 310f),  // Dungeon 0 — upper-left, mountain peaks
+		new(430f, 543f),  // Camp 0    — left-centre
+		new(700f, 700f),  // Dungeon 1 — centre
+		new(1215f, 780f), // Camp 1    — right-centre
+		new(1490f, 964f)  // Dungeon 2 — lower-right
 	};
 
 	static readonly bool[] IsDungeon = { true, false, true, false, true };
