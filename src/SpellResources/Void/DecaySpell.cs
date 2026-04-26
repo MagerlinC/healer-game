@@ -43,6 +43,7 @@ public partial class DecaySpellResource : SpellResource
 			Icon = Icon,
 			SourceCharacterName = ctx.Caster.CharacterName,
 			AbilityName = Name,
+			Description = Description,
 			School = School
 		});
 	}

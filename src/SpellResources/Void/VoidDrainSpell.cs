@@ -45,6 +45,7 @@ public partial class VoidDrainSpell : SpellResource
 		ctx.Target.ApplyEffect(new VoidDrainEffect(DamagePerTick, Duration, HealFraction)
 		{
 			AbilityName = Name,
+			Description = Description,
 			SourceCharacterName = ctx.Caster?.CharacterName,
 			Caster = ctx.Caster,
 			School = SpellSchool.Void,

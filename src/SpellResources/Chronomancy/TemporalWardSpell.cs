@@ -56,7 +56,8 @@ public partial class TemporalWardSpell : SpellResource
                 Icon = ctx.Spell.Icon,
                 School = School,
                 SourceCharacterName = ctx.Caster.CharacterName,
-                AbilityName = Name
+                AbilityName = Name,
+                Description = Description
             });
         }
     }

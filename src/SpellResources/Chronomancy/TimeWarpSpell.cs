@@ -45,7 +45,8 @@ public partial class TimeWarpSpell : SpellResource
 			{
 				Icon = Icon,
 				SourceCharacterName = ctx.Caster.CharacterName,
-				AbilityName = Name
+				AbilityName = Name,
+				Description = Description
 			});
 	}
 }

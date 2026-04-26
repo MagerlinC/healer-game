@@ -19,16 +19,21 @@ public partial class BossTwstsVoidCataclysmSpell : SpellResource
 
 	public BossTwstsVoidCataclysmSpell()
 	{
-		Name        = "Void Cataclysm";
-		Description = "A cataclysmic eruption of void energy — three detonations strike the entire party in rapid succession. Each can be deflected independently.";
-		Tags        = SpellTags.Damage | SpellTags.Void;
-		ManaCost    = 0f;
-		CastTime    = 0f;
-		Parryable   = true;
-		EffectType  = EffectType.Harmful;
+		Name = "Void Cataclysm";
+		Description =
+			"A cataclysmic eruption of void energy — three detonations strike the entire party in rapid succession. Each can be deflected independently.";
+		Tags = SpellTags.Damage | SpellTags.Void;
+		ManaCost = 0f;
+		CastTime = 0f;
+		Parryable = true;
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/that-which-swallowed-the-stars/void-cataclysm.png");
+		EffectType = EffectType.Harmful;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	/// <summary>Targets the entire living party.</summary>
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)

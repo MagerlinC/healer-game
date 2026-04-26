@@ -29,6 +29,7 @@ public static class ItemRegistry
 		(GameConstants.Boss1Name, () => new CrystalStaff()),
 		(GameConstants.Boss2Name, () => new DeathweaveStaff()),
 		(GameConstants.Boss3Name, () => new SlimewardenSceptre()),
+		(GameConstants.SanctumBoss1Name, () => new VoidWeaver()),
 		(null, () => new ArcaneAccelerator()),
 		(null, () => new StaffOfEternalFlame())
 	];

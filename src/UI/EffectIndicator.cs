@@ -110,7 +110,11 @@ public partial class EffectIndicator : PanelContainer
 
 	string TooltipText()
 	{
-		return $"{_displayName}\n{Mathf.CeilToInt(CharacterEffect.Remaining)}s remaining";
+		var description = CharacterEffect.Description;
+		var body = string.IsNullOrEmpty(description)
+			? ""
+			: $"{description}\n";
+		return $"{_displayName}\n{Mathf.CeilToInt(CharacterEffect.Remaining)}s remaining\n{body}";
 	}
 
 	/// <summary>

@@ -31,6 +31,7 @@ public partial class BossCorrosiveOozeSpell : SpellResource
 			target.ApplyEffect(new CorrosiveOozeEffect
 			{
 				AbilityName = Name,
+				Description = Description,
 				SourceCharacterName = ctx.Caster?.CharacterName,
 				School = SpellSchool.Nature,
 				Icon = Icon

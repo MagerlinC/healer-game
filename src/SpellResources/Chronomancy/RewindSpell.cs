@@ -29,7 +29,8 @@ public partial class RewindSpell : SpellResource
 		{
 			Icon = Icon,
 			SourceCharacterName = ctx.Caster.CharacterName,
-			AbilityName = Name
+			AbilityName = Name,
+			Description = Description
 		});
 	}
 }

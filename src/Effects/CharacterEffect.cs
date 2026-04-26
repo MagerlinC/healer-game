@@ -64,6 +64,9 @@ public abstract partial class CharacterEffect : RefCounted
 	/// <summary>Display name of the spell or talent that applied this effect.</summary>
 	public string AbilityName { get; set; }
 
+	/// <summary>Flavour/tooltip description of the spell or talent that applied this effect.</summary>
+	public string Description { get; set; }
+
 	/// <summary>
 	/// Spell school of this effect, used to colour floating combat text on each tick.
 	/// Set this from the spell's <c>Apply</c> method when constructing the effect.

@@ -43,7 +43,8 @@ public partial class TimeLoopSpell : SpellResource
 		{
 			Icon = Icon,
 			SourceCharacterName = ctx.Caster.CharacterName,
-			AbilityName = Name
+			AbilityName = Name,
+			Description = Description
 		});
 	}
 }

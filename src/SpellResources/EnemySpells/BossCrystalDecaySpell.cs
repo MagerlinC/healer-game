@@ -30,6 +30,7 @@ public partial class BossCrystalDecaySpell : SpellResource
 			target.ApplyEffect(new CrystalDecayEffect
 			{
 				AbilityName = Name,
+				Description = Description,
 				SourceCharacterName = ctx.Caster?.CharacterName,
 				School = SpellSchool.Void,
 				Icon = Icon

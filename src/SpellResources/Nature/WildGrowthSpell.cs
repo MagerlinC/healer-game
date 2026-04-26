@@ -51,6 +51,7 @@ public partial class WildGrowthSpell : SpellResource
 				Icon = Icon,
 				SourceCharacterName = ctx.Caster.CharacterName,
 				AbilityName = Name,
+				Description = Description,
 				School = School
 			});
 	}
