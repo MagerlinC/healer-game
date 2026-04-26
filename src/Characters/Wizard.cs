@@ -39,16 +39,8 @@ public partial class Wizard : PartyMember
 
     void CastArcaneBlast()
     {
-        var boss = FindBoss();
+        var boss = FindPreferredBoss();
         if (boss == null) return;
         SpellPipeline.Cast(_arcaneBlast, this, boss);
-    }
-
-    Character FindBoss()
-    {
-        foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
-            if (node is Character c && c.IsAlive)
-                return c;
-        return null;
     }
 }

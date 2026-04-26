@@ -26,7 +26,7 @@ public static class AssetConstants
 		BackgroundBasePath + "space/3.png"
 	};
 
-	public static readonly string[] ForsakenCitalArenaBackgroundPaths =
+	public static readonly string[] ForsakenCitadelArenaBackgroundPaths =
 	{
 		BackgroundBasePath + "forsaken-citadel/1.png",
 		BackgroundBasePath + "forsaken-citadel/1.png",
@@ -53,7 +53,10 @@ public static class AssetConstants
 	// ── Item assets ───────────────────────────────────────────────────────────
 
 	/// <summary>Returns the res:// path for staff icon n (1–5).</summary>
-	public static string StaveIconPath(int n) => $"res://assets/items/staves/{n}.png";
+	public static string StaveIconPath(int n)
+	{
+		return $"res://assets/items/staves/{n}.png";
+	}
 
 	// ── Scene backgrounds ─────────────────────────────────────────────────────
 

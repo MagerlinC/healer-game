@@ -16,69 +16,84 @@ namespace healerfantasy.Items;
 /// </summary>
 public static class ItemStore
 {
-    static readonly List<EquippableItem> _inventory = new();
-    static readonly Dictionary<EquipSlot, EquippableItem> _equipped = new();
+	static readonly List<EquippableItem> _inventory = new();
+	static readonly Dictionary<EquipSlot, EquippableItem> _equipped = new();
 
-    public static IReadOnlyList<EquippableItem> Inventory => _inventory.AsReadOnly();
-    public static IReadOnlyDictionary<EquipSlot, EquippableItem> Equipped => _equipped;
+	public static IReadOnlyList<EquippableItem> Inventory => _inventory.AsReadOnly();
+	public static IReadOnlyDictionary<EquipSlot, EquippableItem> Equipped => _equipped;
 
-    /// <summary>True if the player has at least one item (equipped or in inventory).</summary>
-    public static bool HasAnyItems => _inventory.Count > 0 || _equipped.Count > 0;
+	/// <summary>True if the player has at least one item (equipped or in inventory).</summary>
+	public static bool HasAnyItems => _inventory.Count > 0 || _equipped.Count > 0;
 
-    // ── mutations ─────────────────────────────────────────────────────────────
+	public static bool HasItem(string itemId)
+	{
+		return _inventory.Any(i => i.ItemId == itemId);
+	}
 
-    /// <summary>
-    /// Add a newly-dropped item to the unequipped inventory.
-    /// The player can later equip it via the Armory or immediately on the
-    /// VictoryScreen.
-    /// </summary>
-    public static void AddToInventory(EquippableItem item) => _inventory.Add(item);
+	// ── mutations ─────────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Equip <paramref name="item"/> into its <see cref="EquipSlot"/>.
-    /// Any item previously occupying that slot is moved back to inventory.
-    /// </summary>
-    public static void Equip(EquippableItem item)
-    {
-        if (_equipped.TryGetValue(item.Slot, out var displaced))
-            _inventory.Add(displaced);
-        _equipped[item.Slot] = item;
-        _inventory.Remove(item);
-    }
+	/// <summary>
+	/// Add a newly-dropped item to the unequipped inventory.
+	/// The player can later equip it via the Armory or immediately on the
+	/// VictoryScreen.
+	/// </summary>
+	public static void AddToInventory(EquippableItem item)
+	{
+		_inventory.Add(item);
+	}
 
-    /// <summary>Move the equipped item in <paramref name="slot"/> back to inventory.</summary>
-    public static void Unequip(EquipSlot slot)
-    {
-        if (_equipped.TryGetValue(slot, out var item))
-        {
-            _inventory.Add(item);
-            _equipped.Remove(slot);
-        }
-    }
+	/// <summary>
+	/// Equip <paramref name="item"/> into its <see cref="EquipSlot"/>.
+	/// Any item previously occupying that slot is moved back to inventory.
+	/// </summary>
+	public static void Equip(EquippableItem item)
+	{
+		if (_equipped.TryGetValue(item.Slot, out var displaced))
+			_inventory.Add(displaced);
+		_equipped[item.Slot] = item;
+		_inventory.Remove(item);
+	}
 
-    // ── queries ───────────────────────────────────────────────────────────────
+	/// <summary>Move the equipped item in <paramref name="slot"/> back to inventory.</summary>
+	public static void Unequip(EquipSlot slot)
+	{
+		if (_equipped.TryGetValue(slot, out var item))
+		{
+			_inventory.Add(item);
+			_equipped.Remove(slot);
+		}
+	}
 
-    public static EquippableItem? GetEquipped(EquipSlot slot) =>
-        _equipped.TryGetValue(slot, out var item) ? item : null;
+	// ── queries ───────────────────────────────────────────────────────────────
 
-    public static IEnumerable<EquippableItem> GetEquippedItems() => _equipped.Values;
+	public static EquippableItem? GetEquipped(EquipSlot slot)
+	{
+		return _equipped.TryGetValue(slot, out var item) ? item : null;
+	}
 
-    /// <summary>
-    /// Returns display names of all currently-equipped items.
-    /// Used by <see cref="RunHistoryStore"/> to log items before clearing state.
-    /// </summary>
-    public static List<string> GetEquippedItemNames() =>
-        _equipped.Values.Select(i => i.Name).ToList();
+	public static IEnumerable<EquippableItem> GetEquippedItems()
+	{
+		return _equipped.Values;
+	}
 
-    // ── lifecycle ─────────────────────────────────────────────────────────────
+	/// <summary>
+	/// Returns display names of all currently-equipped items.
+	/// Used by <see cref="RunHistoryStore"/> to log items before clearing state.
+	/// </summary>
+	public static List<string> GetEquippedItemNames()
+	{
+		return _equipped.Values.Select(i => i.Name).ToList();
+	}
 
-    /// <summary>
-    /// Reset all item state. Call at the start of each new run and after a run
-    /// is finalised and logged.
-    /// </summary>
-    public static void Clear()
-    {
-        _inventory.Clear();
-        _equipped.Clear();
-    }
+	// ── lifecycle ─────────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Reset all item state. Call at the start of each new run and after a run
+	/// is finalised and logged.
+	/// </summary>
+	public static void Clear()
+	{
+		_inventory.Clear();
+		_equipped.Clear();
+	}
 }

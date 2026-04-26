@@ -145,8 +145,9 @@ public abstract partial class Character : CharacterBody2D
 	/// <summary>
 	/// Apply damage. The shield absorbs damage first; any remainder reduces
 	/// health. Triggers death on the first zero-health crossing.
+	/// Override in subclasses to intercept damage (e.g. boss immunity phases).
 	/// </summary>
-	public void TakeDamage(float amount)
+	public virtual void TakeDamage(float amount)
 	{
 		if (!IsAlive) return;
 
@@ -250,15 +251,26 @@ public abstract partial class Character : CharacterBody2D
 		}
 	}
 
-	public void RefreshAllPlayerEffects()
+	public enum EffectFilter
+	{
+		All,
+		HarmfulOnly,
+		FriendlyOnly
+	}
+
+	public void RefreshAllPlayerEffects(EffectFilter filter = EffectFilter.All)
 	{
 		if (_effects.Count == 0) return;
 
-		foreach (var effect in _effects.Values)
+		foreach (var effect in _effects.Values.Where(effect => effect.SourceCharacterName == GameConstants.PlayerName))
 		{
-			if (effect.SourceCharacterName == GameConstants.PlayerName)
+			switch (filter)
 			{
-				effect.Refresh();
+				case EffectFilter.All:
+				case EffectFilter.FriendlyOnly when !effect.IsHarmful:
+				case EffectFilter.HarmfulOnly when effect.IsHarmful:
+					effect.Refresh();
+					break;
 			}
 		}
 	}
@@ -383,7 +395,10 @@ public abstract partial class Character : CharacterBody2D
 	/// Used by talents that need to enumerate or consume active effects
 	/// (e.g. <see cref="Talents.Void.VoidResonanceTalent"/> consuming DoTs).
 	/// </summary>
-	public IEnumerable<CharacterEffect> GetAllEffects() => _effects.Values;
+	public IEnumerable<CharacterEffect> GetAllEffects()
+	{
+		return _effects.Values;
+	}
 
 	void OnDeath()
 	{

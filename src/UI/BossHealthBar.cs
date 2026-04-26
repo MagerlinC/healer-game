@@ -30,8 +30,12 @@ public partial class BossHealthBar : CharacterFrame
 	/// </summary>
 	const int SideMargin = 32;
 
+	// When non-null this overrides RunState to show a specific boss (e.g. second twin).
+	readonly string? _bossNameOverride;
+
 	// Evaluated dynamically so it always matches whichever boss is active this run.
-	protected override string FrameCharacterName => RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name;
+	protected override string FrameCharacterName =>
+		_bossNameOverride ?? RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name;
 
 	// ── node refs ─────────────────────────────────────────────────────────────
 	PanelContainer _innerPanel = null!;
@@ -39,8 +43,13 @@ public partial class BossHealthBar : CharacterFrame
 	Label _currentHealthLabel = null!;
 	ProgressBar _bar = null!;
 
-	public BossHealthBar()
+	/// <param name="bossNameOverride">
+	/// When provided, this bar tracks the named character instead of
+	/// <see cref="RunState.CurrentBossName"/>. Used for the secondary Astral Twin health bar.
+	/// </param>
+	public BossHealthBar(string? bossNameOverride = null)
 	{
+		_bossNameOverride = bossNameOverride;
 		_effectIndicatorSize = 32;
 	}
 	// ── lifecycle ─────────────────────────────────────────────────────────────
@@ -67,7 +76,8 @@ public partial class BossHealthBar : CharacterFrame
 			nameof(Character.HealthChanged),
 			Callable.From((string charName, float current, float max) =>
 			{
-				if (charName == (RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name))
+				var expected = _bossNameOverride ?? (RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name);
+				if (charName == expected)
 					UpdateProgress(charName, current, max);
 			}));
 
@@ -85,6 +95,17 @@ public partial class BossHealthBar : CharacterFrame
 	}
 
 	// ── private ───────────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Initialise the bar with known values immediately after it is added to the
+	/// scene tree (before the first HealthChanged signal arrives).  Call this
+	/// whenever the tracked character's current health is already known — e.g.
+	/// for a secondary boss bar created after the boss's _Ready() has already run.
+	/// </summary>
+	public void Init(string charName, float current, float max)
+	{
+		UpdateProgress(charName, current, max);
+	}
 
 	void UpdateProgress(string charName, float current, float max)
 	{

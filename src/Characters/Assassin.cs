@@ -39,16 +39,8 @@ public partial class Assassin : PartyMember
 
     void PerformSinisterStrike()
     {
-        var boss = FindBoss();
+        var boss = FindPreferredBoss();
         if (boss == null) return;
         SpellPipeline.Cast(_sinisterStrike, this, boss);
-    }
-
-    Character FindBoss()
-    {
-        foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
-            if (node is Character c && c.IsAlive)
-                return c;
-        return null;
     }
 }

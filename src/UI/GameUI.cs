@@ -27,10 +27,18 @@ public partial class GameUI : CanvasLayer
 {
 	PartyFrames _partyFrames;
 	BossHealthBar _bossHealthBar;
+	BossHealthBar? _secondaryBossHealthBar;
+	BossCastBar _bossCastBar = null!;
 	ActionBar _actionBar;
 	GenericActionBar _genericActionBar;
 	CombatMeter _healingMeter;
 	CombatMeter _damageMeter;
+	Control _anchor = null!;
+
+	// Stored so GetHoveredCharacter can return the right Character object and
+	// fall back to the alive twin when one is dead.
+	Character? _primaryBossCharacter;
+	Character? _secondaryBossCharacter;
 
 	public override void _Ready()
 	{
@@ -38,10 +46,11 @@ public partial class GameUI : CanvasLayer
 
 		// Full-screen anchor.  Pass filter means blank UI areas never eat mouse
 		// events — only explicit interactive children capture input.
-		var anchor = new Control();
-		anchor.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		anchor.MouseFilter = Control.MouseFilterEnum.Pass;
-		AddChild(anchor);
+		_anchor = new Control();
+		_anchor.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		_anchor.MouseFilter = Control.MouseFilterEnum.Pass;
+		AddChild(_anchor);
+		var anchor = _anchor;
 
 		// ── Cast bar ──────────────────────────────────────────────────────────
 		var castBar = new CastBar();
@@ -75,7 +84,8 @@ public partial class GameUI : CanvasLayer
 		anchor.AddChild(_bossHealthBar);
 
 		// ── Boss cast bar (shown during telegraphed wind-ups e.g. Structural Crush)
-		var bossCastBar = new BossCastBar();
+		_bossCastBar = new BossCastBar();
+		var bossCastBar = _bossCastBar;
 		bossCastBar.CustomMinimumSize = new Vector2(280f, 0f);
 		bossCastBar.AnchorLeft = bossCastBar.AnchorRight = 0.5f;
 		bossCastBar.AnchorTop = bossCastBar.AnchorBottom = 0f;
@@ -167,11 +177,26 @@ public partial class GameUI : CanvasLayer
 		_damageMeter?.RegisterCharacter(character.CharacterName);
 	}
 
-	/// <summary>Returns the Character whose party frame the cursor is over, or null.</summary>
-	public Character GetHoveredCharacter()
+	/// <summary>Returns the Character whose party frame or boss health bar the cursor is over, or null.</summary>
+	public Character? GetHoveredCharacter()
 	{
-		if (_bossHealthBar.IsHovered()) return GetTree().GetNodesInGroup(GameConstants.BossGroupName).FirstOrDefault() as Character;
+		// Secondary bar hover — prefer secondary boss if alive, else fall back to primary.
+		if (_secondaryBossHealthBar?.IsHovered() == true)
+			return AliveOrFallback(_secondaryBossCharacter, _primaryBossCharacter);
+
+		// Primary bar hover — prefer primary boss if alive, else fall back to secondary.
+		if (_bossHealthBar.IsHovered())
+			return AliveOrFallback(_primaryBossCharacter, _secondaryBossCharacter);
+
 		return _partyFrames.GetHoveredCharacter();
+	}
+
+	/// <summary>Returns <paramref name="preferred"/> if alive, otherwise <paramref name="fallback"/> if alive, otherwise null.</summary>
+	static Character? AliveOrFallback(Character? preferred, Character? fallback)
+	{
+		if (preferred?.IsAlive == true) return preferred;
+		if (fallback?.IsAlive  == true) return fallback;
+		return null;
 	}
 
 
@@ -191,5 +216,42 @@ public partial class GameUI : CanvasLayer
 	public void BuildGenericActionBar(Player player)
 	{
 		_genericActionBar.Build(player);
+	}
+
+	/// <summary>
+	/// Register the boss Characters so hover-targeting knows which Character
+	/// to return for each health bar.  Call this once from World after the boss
+	/// scene is loaded.  For single-boss encounters pass only <paramref name="primary"/>.
+	/// </summary>
+	public void SetBossCharacters(Character primary, Character? secondary = null)
+	{
+		_primaryBossCharacter   = primary;
+		_secondaryBossCharacter = secondary;
+	}
+
+	/// <summary>
+	/// Add a second boss health bar for <paramref name="secondBoss"/>.
+	/// The bar is initialised immediately with the character's current health so
+	/// it is visible from the start of the fight rather than waiting for the first
+	/// damage event.  Called by World when it detects a multi-boss scene.
+	/// </summary>
+	public void ShowSecondaryBossBar(Character secondBoss)
+	{
+		if (_secondaryBossHealthBar != null) return; // already added
+
+		_secondaryBossHealthBar = new BossHealthBar(secondBoss.CharacterName);
+		_secondaryBossHealthBar.CustomMinimumSize = new Vector2(400f, 0f);
+		_secondaryBossHealthBar.SetAnchorsPreset(Control.LayoutPreset.TopWide);
+		_secondaryBossHealthBar.OffsetTop = 80f;    // below the primary bar
+		_secondaryBossHealthBar.OffsetBottom = 160f;
+		_anchor.AddChild(_secondaryBossHealthBar);
+
+		// Initialise immediately — the character's _Ready() already fired so the
+		// initial HealthChanged signal has already been missed.
+		_secondaryBossHealthBar.Init(secondBoss.CharacterName, secondBoss.CurrentHealth, secondBoss.MaxHealth);
+
+		// Push the boss cast bar down so it clears both health bars.
+		_bossCastBar.OffsetTop    = 170f;
+		_bossCastBar.OffsetBottom = 210f;
 	}
 }

@@ -57,14 +57,29 @@ public partial class RunState : Node
 	/// <summary>Backward-compat alias — World.cs and DeathScreen still reference this.</summary>
 	public int CurrentBossIndex => CurrentBossIndexInDungeon;
 
-	/// <summary>Name of the current boss (for RunHistoryStore). Falls back to GameConstants ordering.</summary>
-	public string CurrentBossName => CurrentBossIndexInDungeon switch
+	/// <summary>
+	/// Display name of the current boss.
+	/// Uses the dungeon's explicit <see cref="DungeonDefinition.BossNames"/> array when
+	/// available; falls back to the shared Boss1/2/3Name constants for older dungeons
+	/// that don't define per-boss names.
+	/// </summary>
+	public string CurrentBossName
 	{
-		0 => GameConstants.Boss1Name,
-		1 => GameConstants.Boss2Name,
-		2 => GameConstants.Boss3Name,
-		_ => "Unknown"
-	};
+		get
+		{
+			var names = CurrentDungeon.BossNames;
+			if (names != null && names.Length > CurrentBossIndexInDungeon)
+				return names[CurrentBossIndexInDungeon];
+
+			return CurrentBossIndexInDungeon switch
+			{
+				0 => GameConstants.Boss1Name,
+				1 => GameConstants.Boss2Name,
+				2 => GameConstants.Boss3Name,
+				_ => "Unknown"
+			};
+		}
+	}
 
 	/// <summary>Definition of the dungeon currently being fought or about to be entered.</summary>
 	public DungeonDefinition CurrentDungeon =>

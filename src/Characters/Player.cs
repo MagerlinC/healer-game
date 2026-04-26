@@ -212,6 +212,10 @@ public partial class Player : Character
 		_sprite.SpeedScale = 1.0f;
 		_sprite.Play("idle");
 
+		// Tell party members which boss to focus when the player attacks one directly.
+		if (spell.EffectType == EffectType.Harmful && target != null && target.IsInGroup(GameConstants.BossGroupName))
+			PartyMember.NotifyPlayerAttackedBoss(target);
+
 		SpendMana(spell.ManaCost);
 		SpellPipeline.Cast(spell, this, target);
 
@@ -272,7 +276,8 @@ public partial class Player : Character
 			if (genericSpell != null && !IsOnCooldown(genericSpell))
 			{
 				var target = ResolveTargetWithFallback(GameUI?.GetHoveredCharacter(), genericSpell);
-				FireGenericSpell(genericSpell, target);
+				if (target != null)
+					FireGenericSpell(genericSpell, target);
 			}
 		}
 
@@ -306,6 +311,7 @@ public partial class Player : Character
 				// Lock in the target at cast-start: whichever party frame is under
 				// the cursor, or self if the cursor is not over any frame.
 				var hoveredCharacter = ResolveTargetWithFallback(GameUI?.GetHoveredCharacter(), spellToCast);
+				if (hoveredCharacter == null) return; // no valid target (all bosses dead, etc.)
 				if (spellToCast.EffectType == EffectType.Harmful && hoveredCharacter.IsFriendly)
 					return;
 
@@ -343,13 +349,28 @@ public partial class Player : Character
 		}
 	}
 
-	Character ResolveTargetWithFallback(Character? target, SpellResource spell)
+	Character? ResolveTargetWithFallback(Character? target, SpellResource spell)
 	{
 		if (target == null)
 		{
-			return spell.EffectType == EffectType.Helpful
-				? this
-				: GetTree().GetFirstNodeInGroup(GameConstants.BossGroupName) as Character;
+			if (spell.EffectType == EffectType.Helpful)
+				return this;
+
+			// Return the first *alive* boss — GetFirstNodeInGroup gives an arbitrary
+			// ordering and may return a dead character in multi-boss encounters.
+			foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
+				if (node is Character c && c.IsAlive) return c;
+
+			return null;
+		}
+
+		// If the resolved target is a dead boss (e.g. player had the dead twin's
+		// health bar hovered), fall back to any alive boss.
+		if (!target.IsAlive && target.IsInGroup(GameConstants.BossGroupName))
+		{
+			foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
+				if (node is Character c && c.IsAlive) return c;
+			return null;
 		}
 
 		return target;

@@ -45,16 +45,8 @@ public partial class Templar : PartyMember
 
 	void PerformShieldBash()
 	{
-		var boss = FindBoss();
+		var boss = FindPreferredBoss();
 		if (boss == null) return;
 		SpellPipeline.Cast(_shieldBash, this, boss);
-	}
-
-	Character FindBoss()
-	{
-		foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
-			if (node is Character c && c.IsAlive)
-				return c;
-		return null;
 	}
 }

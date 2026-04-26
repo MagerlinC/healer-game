@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using healerfantasy.SpellResources;
+
 namespace healerfantasy.SpellSystem;
 
 /// <summary>
@@ -23,6 +26,15 @@ public class CharacterStats
 	public float HealingMultiplier { get; set; } = 1.0f;
 
 	public float CastSpeedMultiplier { get; set; } = 1.0f;
+
+	public Dictionary<SpellSchool, float> SpellSchoolDamageMultipliers = new()
+	{
+		{ SpellSchool.Nature, 1.0f },
+		{ SpellSchool.Holy, 1.0f },
+		{ SpellSchool.Void, 1.0f },
+		{ SpellSchool.Chronomancy, 1.0f },
+		{ SpellSchool.Generic, 1.0f }
+	};
 
 	/// <summary>
 	/// Multiplier applied to all incoming damage before shield/health reduction.

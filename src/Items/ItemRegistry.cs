@@ -20,41 +20,64 @@ namespace healerfantasy.Items;
 /// </summary>
 public static class ItemRegistry
 {
-    /// <summary>
-    /// (BossName | null, factory).
-    /// null BossName = item may drop from any boss.
-    /// </summary>
-    static readonly List<(string? BossName, Func<EquippableItem> Factory)> LootTable =
-    [
-        (GameConstants.Boss1Name, () => new CrystalStaff()),
-        (GameConstants.Boss2Name, () => new DeathweaveStaff()),
-        (GameConstants.Boss3Name, () => new SlimewardenSceptre()),
-        (null,                    () => new ArcaneAccelerator()),
-        (null,                    () => new StaffOfEternalFlame()),
-    ];
+	/// <summary>
+	/// (BossName | null, factory).
+	/// null BossName = item may drop from any boss.
+	/// </summary>
+	static readonly List<(string? BossName, Func<EquippableItem> Factory)> LootTable =
+	[
+		(GameConstants.Boss1Name, () => new CrystalStaff()),
+		(GameConstants.Boss2Name, () => new DeathweaveStaff()),
+		(GameConstants.Boss3Name, () => new SlimewardenSceptre()),
+		(null, () => new ArcaneAccelerator()),
+		(null, () => new StaffOfEternalFlame())
+	];
 
-    /// <summary>Overall chance that any boss drops an item (0–1).</summary>
-    const float DropChance = 0.70f;
+	const float NothingWeight = 0.3f;
+	const float RareWeight = 0.3f;
+	const float EpicWeight = 0.25f;
+	const float LegendaryWeight = 0.15f;
 
-    /// <summary>
-    /// Roll the loot table for the given boss.
-    /// Returns a fresh item instance, or null when the drop roll fails.
-    ///
-    /// The eligible pool is all entries whose BossName matches
-    /// <paramref name="bossName"/> plus all any-boss entries.
-    /// One item is chosen uniformly at random from the pool.
-    /// </summary>
-    public static EquippableItem? RollDrop(string bossName)
-    {
-        if (GD.Randf() > DropChance) return null;
+	static ItemRarity? RollRarity()
+	{
+		var roll = GD.Randf();
+		if (roll < NothingWeight) return null;
+		return roll switch
+		{
+			< RareWeight => ItemRarity.Rare,
+			< RareWeight + EpicWeight => ItemRarity.Epic,
+			_ => ItemRarity.Legendary
+		};
+	}
 
-        var pool = LootTable
-            .Where(e => e.BossName == null || e.BossName == bossName)
-            .ToList();
+	public static EquippableItem? RollDrop(string bossName)
+	{
 
-        if (pool.Count == 0) return null;
+		var rarity = RollRarity();
+		if (rarity == null) return null;
 
-        var idx = (int)(GD.Randi() % (uint)pool.Count);
-        return pool[idx].Factory();
-    }
+		var bossPool = LootTable
+			.Where(e => e.BossName == bossName)
+			.Where(e => e.Factory().Rarity == rarity)
+			.ToList();
+
+		// Prefer boss drops
+		if (bossPool.Count > 0)
+		{
+			var idx = (int)(GD.Randi() % (uint)bossPool.Count);
+			return bossPool[idx].Factory();
+		}
+
+		var genericPool = LootTable
+			.Where(e => e.BossName == null)
+			.Where(e => e.Factory().Rarity == rarity)
+			.ToList();
+		if (genericPool.Count > 0)
+		{
+			var idx = (int)(GD.Randi() % (uint)genericPool.Count);
+			return genericPool[idx].Factory();
+		}
+
+		return null;
+	}
 }

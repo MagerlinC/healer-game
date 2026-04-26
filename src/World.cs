@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 using healerfantasy;
 using healerfantasy.CombatLog;
@@ -12,6 +13,10 @@ using healerfantasy.UI;
 ///
 /// A single World scene serves all boss fights across all dungeons — the boss
 /// and background are instantiated at runtime.
+///
+/// Multi-boss scenes (e.g. Astral Twins) are supported: when the loaded scene's
+/// root is a plain Node2D the code collects all Character children in the boss
+/// group and registers each one individually for FCT and health bars.
 ///
 /// Slot order matches PartyUI.MemberDefs:
 ///   0 = Templar | 1 = Healer (Player) | 2 = Assassin | 3 = Wizard
@@ -53,15 +58,48 @@ public partial class World : Node2D
 
 		// ── Boss — instantiated from current dungeon definition ───────────────
 		var bossScene = GD.Load<PackedScene>(dungeon.BossScenePaths[bossIndex]);
-		var boss      = bossScene.Instantiate<Character>();
-		boss.Position = new Vector2(123f, 120f);
-		AddChild(boss);
+		var bossRoot  = bossScene.Instantiate();
+
+		// Position the boss (or its container) in the arena.
+		if (bossRoot is Node2D bossNode2D)
+			bossNode2D.Position = new Vector2(123f, 120f);
+
+		AddChild(bossRoot);
+
+		// Collect all Character nodes that are tagged as bosses.
+		// Single-boss scenes: the root IS the Character.
+		// Multi-boss scenes (e.g. AstralTwins): root is a plain Node2D with
+		// Character children, each of which is already in the boss group via
+		// their own _Ready().
+		var bossCharacters = new List<Character>();
+		if (bossRoot is Character singleBoss)
+		{
+			bossCharacters.Add(singleBoss);
+		}
+		else
+		{
+			foreach (var child in bossRoot.GetChildren())
+				if (child is Character c)
+					bossCharacters.Add(c);
+		}
+
+		foreach (var b in bossCharacters)
+			fctManager.Register(b);
+
+		// Register boss character refs for hover-targeting and health bar management.
+		ui.SetBossCharacters(
+			bossCharacters[0],
+			bossCharacters.Count > 1 ? bossCharacters[1] : null);
+
+		// If there is more than one boss (e.g. Astral Twins), show a secondary
+		// health bar for the second boss beneath the primary one.
+		if (bossCharacters.Count > 1)
+			ui.ShowSecondaryBossBar(bossCharacters[1]);
 
 		fctManager.Register(player);
 		fctManager.Register(templar);
 		fctManager.Register(assassin);
 		fctManager.Register(wizard);
-		fctManager.Register(boss);
 
 		ui.BindCharacter(0, templar);
 		ui.BindCharacter(1, player);

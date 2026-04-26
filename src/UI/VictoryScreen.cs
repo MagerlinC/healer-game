@@ -28,11 +28,11 @@ public partial class VictoryScreen : CanvasLayer
 
 	public override void _Ready()
 	{
-		Layer       = 20;
-		Visible     = false;
+		Layer = 20;
+		Visible = false;
 		ProcessMode = ProcessModeEnum.Always;
 
-		_audioPlayer.Stream   = GD.Load<AudioStream>(AssetConstants.VictorySoundPath);
+		_audioPlayer.Stream = GD.Load<AudioStream>(AssetConstants.VictorySoundPath);
 		_audioPlayer.VolumeDb = -4f;
 		AddChild(_audioPlayer);
 
@@ -42,21 +42,27 @@ public partial class VictoryScreen : CanvasLayer
 			{
 				if (character.IsFriendly) return;
 
+				// For multi-boss encounters (e.g. The Astral Twins), only show the
+				// victory screen when ALL bosses are dead.
+				foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
+					if (node is Character c && c != character && c.IsAlive)
+						return;
+
 				// Snapshot this boss encounter before clearing the rolling log.
 				RunHistoryStore.RecordBossEncounter(character.CharacterName);
 				CombatLog.Clear();
 
 				// Award XP.
-				var dungeon    = RunState.Instance.CurrentDungeon;
-				var bossIndex  = RunState.Instance.CurrentBossIndexInDungeon;
-				var xpReward   = bossIndex < dungeon.XpRewards.Length
+				var dungeon = RunState.Instance.CurrentDungeon;
+				var bossIndex = RunState.Instance.CurrentBossIndexInDungeon;
+				var xpReward = bossIndex < dungeon.XpRewards.Length
 					? dungeon.XpRewards[bossIndex]
 					: 100;
 				var levelsGained = PlayerProgressStore.AddXp(xpReward);
 
 				// Roll for item drop.
 				var droppedItem = ItemRegistry.RollDrop(character.CharacterName);
-				if (droppedItem != null)
+				if (droppedItem != null && !ItemStore.HasItem(droppedItem.ItemId))
 					ItemStore.AddToInventory(droppedItem);
 
 				if (!RunState.Instance.IsLastBossInDungeon)
@@ -79,7 +85,7 @@ public partial class VictoryScreen : CanvasLayer
 		// ── Dark overlay ──────────────────────────────────────────────────────
 		var overlay = new ColorRect();
 		overlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		overlay.Color       = new Color(0f, 0f, 0f, 0.80f);
+		overlay.Color = new Color(0f, 0f, 0f, 0.80f);
 		overlay.MouseFilter = Control.MouseFilterEnum.Stop;
 		AddChild(overlay);
 
@@ -87,7 +93,7 @@ public partial class VictoryScreen : CanvasLayer
 		var vbox = new VBoxContainer();
 		vbox.SetAnchorsPreset(Control.LayoutPreset.Center);
 		vbox.GrowHorizontal = Control.GrowDirection.Both;
-		vbox.GrowVertical   = Control.GrowDirection.Both;
+		vbox.GrowVertical = Control.GrowDirection.Both;
 		vbox.AddThemeConstantOverride("separation", 20);
 		overlay.AddChild(vbox);
 
@@ -99,14 +105,14 @@ public partial class VictoryScreen : CanvasLayer
 
 		_subLabel = new Label();
 		_subLabel.HorizontalAlignment = HorizontalAlignment.Center;
-		_subLabel.AutowrapMode        = TextServer.AutowrapMode.Word;
+		_subLabel.AutowrapMode = TextServer.AutowrapMode.Word;
 		_subLabel.AddThemeFontSizeOverride("font_size", 18);
 		_subLabel.AddThemeColorOverride("font_color", new Color(0.72f, 0.68f, 0.62f));
 		vbox.AddChild(_subLabel);
 
 		_xpLabel = new Label();
 		_xpLabel.HorizontalAlignment = HorizontalAlignment.Center;
-		_xpLabel.AutowrapMode        = TextServer.AutowrapMode.Word;
+		_xpLabel.AutowrapMode = TextServer.AutowrapMode.Word;
 		_xpLabel.AddThemeFontSizeOverride("font_size", 16);
 		_xpLabel.AddThemeColorOverride("font_color", new Color(0.55f, 0.85f, 0.95f));
 		vbox.AddChild(_xpLabel);
@@ -130,8 +136,8 @@ public partial class VictoryScreen : CanvasLayer
 		if (Visible) return;
 		_audioPlayer.Play();
 		_titleLabel.Text = "ARENA CLEARED!";
-		_subLabel.Text   = $"{defeatedBossName} has been defeated.\nPrepare for the next battle.";
-		_xpLabel.Text    = BuildXpLine(xpGained, levelsGained);
+		_subLabel.Text = $"{defeatedBossName} has been defeated.\nPrepare for the next battle.";
+		_xpLabel.Text = BuildXpLine(xpGained, levelsGained);
 		BuildItemSection(droppedItem);
 
 		ClearButtons();
@@ -140,7 +146,7 @@ public partial class VictoryScreen : CanvasLayer
 			new Color(0.30f, 0.65f, 0.28f),
 			OnArenaContinuePressed));
 
-		Visible          = true;
+		Visible = true;
 		GetTree().Paused = true;
 	}
 
@@ -150,8 +156,8 @@ public partial class VictoryScreen : CanvasLayer
 		if (Visible) return;
 		_audioPlayer.Play();
 		_titleLabel.Text = "DUNGEON CLEARED!";
-		_subLabel.Text   = $"{defeatedBossName} has been defeated.\nHead to camp and prepare for the next dungeon.";
-		_xpLabel.Text    = BuildXpLine(xpGained, levelsGained);
+		_subLabel.Text = $"{defeatedBossName} has been defeated.\nHead to camp and prepare for the next dungeon.";
+		_xpLabel.Text = BuildXpLine(xpGained, levelsGained);
 		BuildItemSection(droppedItem);
 
 		ClearButtons();
@@ -160,7 +166,7 @@ public partial class VictoryScreen : CanvasLayer
 			new Color(0.28f, 0.52f, 0.75f),
 			OnDungeonClearedContinuePressed));
 
-		Visible          = true;
+		Visible = true;
 		GetTree().Paused = true;
 	}
 
@@ -169,8 +175,8 @@ public partial class VictoryScreen : CanvasLayer
 		if (Visible) return;
 		_audioPlayer.Play();
 		_titleLabel.Text = "VICTORY!";
-		_subLabel.Text   = "All dungeons have been conquered. The realm is saved!";
-		_xpLabel.Text    = BuildXpLine(xpGained, levelsGained);
+		_subLabel.Text = "All dungeons have been conquered. The realm is saved!";
+		_xpLabel.Text = BuildXpLine(xpGained, levelsGained);
 		BuildItemSection(droppedItem);
 
 		ClearButtons();
@@ -179,7 +185,7 @@ public partial class VictoryScreen : CanvasLayer
 		_btnRow.AddChild(MakeButton("Main Menu",
 			new Color(0.14f, 0.11f, 0.09f), new Color(0.45f, 0.38f, 0.22f), OnMainMenuPressed));
 
-		Visible          = true;
+		Visible = true;
 		GetTree().Paused = true;
 	}
 
@@ -222,8 +228,8 @@ public partial class VictoryScreen : CanvasLayer
 	// ── private fields ────────────────────────────────────────────────────────
 
 	Label _titleLabel = null!;
-	Label _subLabel   = null!;
-	Label _xpLabel    = null!;
+	Label _subLabel = null!;
+	Label _xpLabel = null!;
 	Control _itemSection = null!;
 	HBoxContainer _btnRow = null!;
 
@@ -269,7 +275,7 @@ public partial class VictoryScreen : CanvasLayer
 
 		// ── Two-card row ──────────────────────────────────────────────────────
 		var currentlyEquipped = ItemStore.GetEquipped(item.Slot);
-		var isEquipped        = currentlyEquipped != null && currentlyEquipped == item;
+		var isEquipped = currentlyEquipped != null && currentlyEquipped == item;
 
 		var cardRow = new HBoxContainer();
 		cardRow.Alignment = BoxContainer.AlignmentMode.Center;
@@ -279,18 +285,20 @@ public partial class VictoryScreen : CanvasLayer
 		// Left card — found item
 		cardRow.AddChild(BuildItemCard(
 			item,
-			footerText:  null,
-			footerColor: default,
-			button: isEquipped ? null : MakeButton("Equip",
-				new Color(0.10f, 0.10f, 0.16f),
-				RarityColor(item.Rarity),
-				() =>
-				{
-					ItemStore.Equip(item);
-					foreach (var child in _itemSection.GetChildren()) child.QueueFree();
-					BuildItemSection(item);
-				}),
-			confirmedEquip: isEquipped
+			null,
+			default,
+			isEquipped
+				? null
+				: MakeButton("Equip",
+					new Color(0.10f, 0.10f, 0.16f),
+					RarityColor(item.Rarity),
+					() =>
+					{
+						ItemStore.Equip(item);
+						foreach (var child in _itemSection.GetChildren()) child.QueueFree();
+						BuildItemSection(item);
+					}),
+			isEquipped
 		));
 
 		// Right card — currently equipped item (only when slot is occupied)
@@ -298,10 +306,10 @@ public partial class VictoryScreen : CanvasLayer
 		{
 			cardRow.AddChild(BuildItemCard(
 				currentlyEquipped,
-				footerText:  "→ moves to your Armory",
-				footerColor: new Color(0.50f, 0.48f, 0.44f),
-				button: null,
-				confirmedEquip: false
+				"→ moves to your Armory",
+				new Color(0.50f, 0.48f, 0.44f),
+				null,
+				false
 			));
 		}
 	}
@@ -317,10 +325,10 @@ public partial class VictoryScreen : CanvasLayer
 		cardStyle.SetCornerRadiusAll(6);
 		cardStyle.SetBorderWidthAll(2);
 		cardStyle.BorderColor = confirmedEquip
-			? new Color(0.40f, 0.80f, 0.45f)   // green when just equipped
+			? new Color(0.40f, 0.80f, 0.45f) // green when just equipped
 			: RarityColor(item.Rarity);
-		cardStyle.ContentMarginLeft  = cardStyle.ContentMarginRight  = 14f;
-		cardStyle.ContentMarginTop   = cardStyle.ContentMarginBottom = 12f;
+		cardStyle.ContentMarginLeft = cardStyle.ContentMarginRight = 14f;
+		cardStyle.ContentMarginTop = cardStyle.ContentMarginBottom = 12f;
 
 		var card = new PanelContainer();
 		card.AddThemeStyleboxOverride("panel", cardStyle);
@@ -336,12 +344,12 @@ public partial class VictoryScreen : CanvasLayer
 		if (item.Icon != null)
 		{
 			var iconRect = new TextureRect();
-			iconRect.Texture           = item.Icon;
+			iconRect.Texture = item.Icon;
 			iconRect.CustomMinimumSize = new Vector2(48f, 48f);
-			iconRect.ExpandMode        = TextureRect.ExpandModeEnum.IgnoreSize;
-			iconRect.StretchMode       = TextureRect.StretchModeEnum.KeepAspectCentered;
+			iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+			iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			iconRect.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
-			iconRect.MouseFilter       = Control.MouseFilterEnum.Ignore;
+			iconRect.MouseFilter = Control.MouseFilterEnum.Ignore;
 			col.AddChild(iconRect);
 		}
 
@@ -407,13 +415,16 @@ public partial class VictoryScreen : CanvasLayer
 		return card;
 	}
 
-	static Color RarityColor(ItemRarity rarity) => rarity switch
+	static Color RarityColor(ItemRarity rarity)
 	{
-		ItemRarity.Rare      => new Color(0.35f, 0.55f, 1.00f),   // blue
-		ItemRarity.Epic      => new Color(0.70f, 0.30f, 0.90f),   // purple
-		ItemRarity.Legendary => new Color(1.00f, 0.55f, 0.05f),   // orange
-		_                    => new Color(0.80f, 0.78f, 0.72f)
-	};
+		return rarity switch
+		{
+			ItemRarity.Rare => new Color(0.35f, 0.55f, 1.00f), // blue
+			ItemRarity.Epic => new Color(0.70f, 0.30f, 0.90f), // purple
+			ItemRarity.Legendary => new Color(1.00f, 0.55f, 0.05f), // orange
+			_ => new Color(0.80f, 0.78f, 0.72f)
+		};
+	}
 
 	static string BuildXpLine(int xpGained, int levelsGained)
 	{
@@ -426,28 +437,29 @@ public partial class VictoryScreen : CanvasLayer
 				? $"\n✦  LEVEL UP!  ✦  +1 talent point  •  All party members gain +{PlayerProgressStore.MaxHealthBonusPerLevel:0} max health"
 				: $"\n✦  LEVEL UP ×{levelsGained}!  ✦  +{levelsGained} talent {pointWord}  •  All party members gain +{levelsGained * PlayerProgressStore.MaxHealthBonusPerLevel:0} max health";
 		}
+
 		return xpText;
 	}
 
 	static Button MakeButton(string text, Color bgColor, Color borderColor, System.Action onPressed)
 	{
 		var btn = new Button();
-		btn.Text              = text;
+		btn.Text = text;
 		btn.CustomMinimumSize = new Vector2(190f, 52f);
-		btn.SizeFlagsHorizontal     = Control.SizeFlags.ShrinkCenter;
+		btn.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
 		btn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
 		btn.AddThemeFontSizeOverride("font_size", 18);
-		btn.AddThemeColorOverride("font_color",       new Color(0.90f, 0.87f, 0.83f));
+		btn.AddThemeColorOverride("font_color", new Color(0.90f, 0.87f, 0.83f));
 		btn.AddThemeColorOverride("font_hover_color", new Color(0.95f, 0.84f, 0.50f));
 
 		var normal = MakeStyle(bgColor, borderColor);
-		var hover  = MakeStyle(
+		var hover = MakeStyle(
 			new Color(bgColor.R + 0.08f, bgColor.G + 0.06f, bgColor.B + 0.04f),
 			borderColor * 1.3f);
-		btn.AddThemeStyleboxOverride("normal",  normal);
-		btn.AddThemeStyleboxOverride("hover",   hover);
+		btn.AddThemeStyleboxOverride("normal", normal);
+		btn.AddThemeStyleboxOverride("hover", hover);
 		btn.AddThemeStyleboxOverride("pressed", normal);
-		btn.AddThemeStyleboxOverride("focus",   normal);
+		btn.AddThemeStyleboxOverride("focus", normal);
 		btn.Pressed += onPressed;
 		return btn;
 	}
@@ -458,9 +470,9 @@ public partial class VictoryScreen : CanvasLayer
 		s.BgColor = bg;
 		s.SetCornerRadiusAll(6);
 		s.SetBorderWidthAll(2);
-		s.BorderColor          = border;
-		s.ContentMarginLeft    = s.ContentMarginRight  = 16f;
-		s.ContentMarginTop     = s.ContentMarginBottom = 10f;
+		s.BorderColor = border;
+		s.ContentMarginLeft = s.ContentMarginRight = 16f;
+		s.ContentMarginTop = s.ContentMarginBottom = 10f;
 		return s;
 	}
 }

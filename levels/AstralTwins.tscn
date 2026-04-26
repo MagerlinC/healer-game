@@ -1,0 +1,38 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/Characters/Enemies/AstralTwin.cs" id="Script_twin"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_Dawn"]
+radius = 14.0
+height = 24.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_Dusk"]
+radius = 14.0
+height = 24.0
+
+[node name="AstralTwins" type="Node2D"]
+
+[node name="AstralTwinDawn" type="CharacterBody2D" parent="."]
+script = ExtResource("Script_twin")
+CharacterName = "Astral Twin (Dawn)"
+MaxMana = 200.0
+position = Vector2(-90, 0)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="AstralTwinDawn"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AstralTwinDawn"]
+position = Vector2(0, 10)
+shape = SubResource("CapsuleShape2D_Dawn")
+
+[node name="AstralTwinDusk" type="CharacterBody2D" parent="."]
+script = ExtResource("Script_twin")
+CharacterName = "Astral Twin (Dusk)"
+MaxMana = 200.0
+position = Vector2(90, 0)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="AstralTwinDusk"]
+flip_h = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AstralTwinDusk"]
+position = Vector2(0, 10)
+shape = SubResource("CapsuleShape2D_Dusk")
