@@ -59,7 +59,11 @@ public static class ItemRegistry
 
 		var bossPool = LootTable
 			.Where(e => e.BossName == bossName)
-			.Where(e => e.Factory().Rarity == rarity)
+			.Where(e =>
+			{
+				var item = e.Factory();
+				return item.Rarity == rarity && !ItemStore.HasFoundItem(item.ItemId);
+			})
 			.ToList();
 
 		// Prefer boss drops
@@ -71,7 +75,11 @@ public static class ItemRegistry
 
 		var genericPool = LootTable
 			.Where(e => e.BossName == null)
-			.Where(e => e.Factory().Rarity == rarity)
+			.Where(e =>
+			{
+				var item = e.Factory();
+				return item.Rarity == rarity && !ItemStore.HasFoundItem(item.ItemId);
+			})
 			.ToList();
 		if (genericPool.Count > 0)
 		{

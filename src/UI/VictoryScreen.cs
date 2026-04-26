@@ -62,7 +62,7 @@ public partial class VictoryScreen : CanvasLayer
 
 				// Roll for item drop.
 				var droppedItem = ItemRegistry.RollDrop(character.CharacterName);
-				if (droppedItem != null && !ItemStore.HasFoundItem(droppedItem.ItemId))
+				if (droppedItem != null)
 					ItemStore.AddToInventory(droppedItem);
 
 				if (!RunState.Instance.IsLastBossInDungeon)

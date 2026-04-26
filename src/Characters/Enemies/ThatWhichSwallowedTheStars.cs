@@ -74,7 +74,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 
 	BossTwstsBeamSpell _beamSpell;
 	BossTwstsVoidCataclysmSpell _cataclysmSpell;
-	AudioStream _phaseTwoMusic;
+	AudioStreamOggVorbis _phaseTwoMusic;
 
 	AnimatedSprite2D _sprite;
 	AudioStreamPlayer _riserPlayer;
@@ -132,7 +132,8 @@ public partial class ThatWhichSwallowedTheStars : Character
 		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.ParryRiserSoundPath);
 		AddChild(_riserPlayer);
 
-		_phaseTwoMusic = GD.Load<AudioStream>(AssetConstants.FinalBossPhase2MusicPath);
+		_phaseTwoMusic = GD.Load<AudioStreamOggVorbis>(AssetConstants.FinalBossPhase2MusicPath);
+		_phaseTwoMusic.Loop = true;
 
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
 		SetupAnimations();
@@ -347,6 +348,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 			_worldMusicPlayer.Stream = _phaseTwoMusic;
 			_worldMusicPlayer.Play();
 		}
+
 		_sprite.Play("reveal");
 
 		if (_fightCamera == null)

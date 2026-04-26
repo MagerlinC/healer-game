@@ -35,6 +35,34 @@ public class DungeonDefinition
 	[
 		new()
 		{
+			Name = "The Ancient Keep",
+			MapPosition = new Vector2(260f, 730f),
+			BossScenePaths = GameConstants.BossScenePaths,
+			ArenaBackgroundPaths = AssetConstants.AncientKeepArenaBackgroundPaths,
+			XpRewards = GameConstants.BossXpRewards,
+			BossNames = new[]
+			{
+				GameConstants.Boss1Name,
+				GameConstants.Boss2Name,
+				GameConstants.Boss3Name
+			}
+		},
+		new()
+		{
+			Name = "The Forsaken Citadel",
+			MapPosition = new Vector2(880f, 490f),
+			BossScenePaths = GameConstants.BossScenePaths,
+			ArenaBackgroundPaths = AssetConstants.ForsakenCitadelArenaBackgroundPaths,
+			XpRewards = GameConstants.BossXpRewards,
+			BossNames = new[]
+			{
+				GameConstants.Boss1Name,
+				GameConstants.Boss2Name,
+				GameConstants.Boss3Name
+			}
+		},
+		new()
+		{
 			Name = "The Sanctum of Stars",
 			MapPosition = new Vector2(1540f, 240f),
 			BossScenePaths = GameConstants.SanctumBossScenePaths,
@@ -46,23 +74,6 @@ public class DungeonDefinition
 				GameConstants.SanctumBoss2Name, // "Astral Twin (Dawn)"  — primary twin for health bar
 				GameConstants.SanctumBoss3Name // "That Which Swallowed the Stars"
 			}
-		},
-		new()
-		{
-			Name = "The Ancient Keep",
-			MapPosition = new Vector2(260f, 730f),
-			BossScenePaths = GameConstants.BossScenePaths,
-			ArenaBackgroundPaths = AssetConstants.AncientKeepArenaBackgroundPaths,
-			XpRewards = GameConstants.BossXpRewards
-			// BossNames not set — RunState falls back to Boss1/2/3Name defaults.
-		},
-		new()
-		{
-			Name = "The Forsaken Citadel",
-			MapPosition = new Vector2(880f, 490f),
-			BossScenePaths = GameConstants.BossScenePaths,
-			ArenaBackgroundPaths = AssetConstants.ForsakenCitadelArenaBackgroundPaths,
-			XpRewards = GameConstants.BossXpRewards
 		}
 	];
 
