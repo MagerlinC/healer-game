@@ -154,7 +154,8 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Flourishing",
-			Description = "After healing a target, the most-injured untreated party member is also healed for 6 HP.",
+			Description =
+				"Casting a healing spell on a target causes the most-injured party member to be healed for 8 HP.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_8.png",
 			School = SpellSchool.Nature,
 			TalentRow = 2,

@@ -37,6 +37,7 @@ public partial class RenewingBloomSpell : SpellResource
 		// ctx.FinalValue is the modifier-adjusted per-tick heal amount.
 		ctx.Target?.ApplyEffect(new Effects.HealOverTimeEffect(ctx.FinalValue, EffectDuration, TickInterval)
 		{
+			EffectId = Name,
 			Icon = Icon,
 			SourceCharacterName = ctx.Caster.CharacterName,
 			AbilityName = Name,

@@ -48,6 +48,7 @@ public partial class WildGrowthSpell : SpellResource
 		foreach (var target in ctx.Targets)
 			target.ApplyEffect(new Effects.HealOverTimeEffect(ctx.FinalValue, EffectDuration, TickInterval)
 			{
+				EffectId = Name,
 				Icon = Icon,
 				SourceCharacterName = ctx.Caster.CharacterName,
 				AbilityName = Name,
