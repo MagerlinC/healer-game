@@ -22,8 +22,8 @@ RunState="*res://src/RunState.cs"
 
 [display]
 
-window/size/viewport_width=1920
-window/size/viewport_height=1080
+window/size/viewport_width=2550
+window/size/viewport_height=1440
 
 [dotnet]
 

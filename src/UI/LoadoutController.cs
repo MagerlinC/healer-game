@@ -97,8 +97,25 @@ public abstract partial class LoadoutController : Node2D
 		}
 	}
 
+	// ── reference resolution ─────────────────────────────────────────────────
+	// All world-space positions (background, interactibles, player) are authored
+	// for a 1920×1080 canvas.  We scale the root Node2D so they map correctly
+	// onto whatever viewport the player is actually using.  CanvasLayer children
+	// (panels, HUD) are unaffected — they always render in screen space.
+	const float RefW = 1920f;
+	const float RefH = 1080f;
+
 	public override void _Ready()
 	{
+		// ── Viewport-aware world scaling ──────────────────────────────────────
+		// Scale the root Node2D uniformly so the 1920×1080 world fits the
+		// viewport, then offset it to centre the content (letterbox / pillarbox).
+		// CanvasLayer children ignore this transform and stay full-screen.
+		var vp   = GetViewport().GetVisibleRect().Size;
+		float s  = Mathf.Min(vp.X / RefW, vp.Y / RefH);
+		Scale    = new Vector2(s, s);
+		Position = new Vector2((vp.X - RefW * s) / 2f, (vp.Y - RefH * s) / 2f);
+
 		System.Array.Copy(RunState.Instance.SelectedSpells, _loadout, Player.MaxSpellSlots);
 		AddChild(new GameTooltip());
 
