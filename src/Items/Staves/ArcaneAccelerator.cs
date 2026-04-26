@@ -17,7 +17,7 @@ public class ArcaneAccelerator : EquippableItem
 	public ArcaneAccelerator()
 	{
 		Name = "Arcane Accelerator";
-		Description = "+15% cast speed.\n+10% damage multiplier.";
+		Description = "+15% cast speed.\n10% increased damage.";
 		Rarity = ItemRarity.Epic;
 		Slot = EquipSlot.Staff;
 		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(4));
@@ -28,8 +28,8 @@ public class ArcaneAccelerator : EquippableItem
 	{
 		public void Modify(CharacterStats stats)
 		{
-			stats.IncreasedCastSpeed *= 1.15f;
-			stats.IncreasedDamage *= 1.10f;
+			stats.IncreasedCastSpeed += 0.15f;
+			stats.IncreasedDamage += 0.10f;
 		}
 	}
 }

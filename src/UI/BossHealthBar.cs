@@ -50,7 +50,7 @@ public partial class BossHealthBar : CharacterFrame
 	public BossHealthBar(string? bossNameOverride = null)
 	{
 		_bossNameOverride = bossNameOverride;
-		_effectIndicatorSize = 32;
+		_effectIndicatorSize = 36;
 	}
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 	public override void _Ready()

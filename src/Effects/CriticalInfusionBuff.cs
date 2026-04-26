@@ -33,16 +33,22 @@ public partial class CriticalInfusionBuff : CharacterEffect, ISpellModifier
 	{
 	}
 
+	bool SpellIsDoT(SpellContext ctx)
+	{
+		return ctx.Tags.HasFlag(SpellTags.Duration);
+	}
+
 	public void OnCalculate(SpellContext ctx)
 	{
-		if (ctx.Tags.HasFlag(SpellTags.Damage) || ctx.Tags.HasFlag(SpellTags.Healing))
+
+		if (SpellIsDoT(ctx) && ctx.Tags.HasFlag(SpellTags.Damage) || ctx.Tags.HasFlag(SpellTags.Healing))
 			ctx.FinalValue *= BonusScaling;
 	}
 
 	public void OnAfterCast(SpellContext ctx)
 	{
 		// Consume the buff after it has boosted a damage spell.
-		if (ctx.Tags.HasFlag(SpellTags.Damage) || ctx.Tags.HasFlag(SpellTags.Healing))
+		if (!SpellIsDoT(ctx) && (ctx.Tags.HasFlag(SpellTags.Damage) || ctx.Tags.HasFlag(SpellTags.Healing)))
 			ctx.Caster.RemoveEffect(EffectId);
 	}
 

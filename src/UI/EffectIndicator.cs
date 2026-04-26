@@ -27,7 +27,7 @@ public partial class EffectIndicator : PanelContainer
 	static readonly Color HarmfulBadgeBorder = new(0.70f, 0.25f, 0.35f, 0.90f);
 
 	// ── constructor ──────────────────────────────────────────────────────────
-	public EffectIndicator(CharacterEffect effect, int indicatorSize = 28)
+	public EffectIndicator(CharacterEffect effect, int indicatorSize = 32)
 	{
 		CharacterEffect = effect;
 		_displayName = FormatDisplayName(effect.EffectId);

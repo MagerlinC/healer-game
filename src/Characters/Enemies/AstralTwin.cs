@@ -59,7 +59,7 @@ public partial class AstralTwin : Character
 	[Export] public float ConvergenceInterval = 14.0f;
 	[Export] public float ConvergenceWindupDuration = 3.0f;
 
-	[Export] public float StrikeDamage = 50f;
+	[Export] public float StrikeDamage = 20f;
 	[Export] public float StarfallDamage = 40f;
 	[Export] public float ConvergenceDamage = 80f;
 
