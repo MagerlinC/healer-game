@@ -44,11 +44,12 @@ public partial class BossTwstsConsumeEffect : CharacterEffect
 
 	public BossTwstsConsumeEffect() : base(30f, 1f)
 	{
-		EffectId = "TwstsConsume";
+		EffectId = "Consume";
 		School = SpellSchool.Void;
 		IsDispellable = true;
 		IsHarmful = true;
 		Icon = Icon;
+		Description = Description;
 	}
 
 	protected override void OnTick(Character target)

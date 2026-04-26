@@ -29,18 +29,15 @@ using healerfantasy.SpellSystem;
 ///   wait too long and the mounting damage threatens to kill the target.
 ///
 /// • Every <see cref="CataclysmInterval"/> seconds — Void Cataclysm:
-///   a three-part sequence, each part independently deflectable —
+///   three consecutive 1.5-second parryable casts, each fully independent —
 ///
-///   1. Wind-up (2.5 s): the "cast" animation plays; CastWindupStarted emitted
-///      to show the boss cast bar and activate the DeflectOverlay.
-///   2. Hit 1 (1.5 s parry window): CastWindupStarted re-emitted so the
-///      DeflectOverlay activates for this hit; parry window opens; on
-///      resolution — deal 65 damage to the whole party unless deflected.
-///   3. Hit 2 (1.5 s): same as above.
-///   4. Hit 3 (1.5 s): same; CastWindupEnded emitted after resolution.
+///   1. Hit 1 (1.5 s): CastWindupStarted emitted, riser plays, parry window
+///      opens; on resolution — deal 65 damage to the whole party unless deflected.
+///   2. Hit 2 (1.5 s): same as above.
+///   3. Hit 3 (1.5 s): same; CastWindupEnded emitted after resolution.
 ///
-///   Between hits the boss plays the "cast" animation again as a brief visual.
-///   The DeflectOverlay and riser sound fire for EACH of the three waves.
+///   The "cast" animation, cast bar, and riser sound all fire for EACH wave,
+///   so each hit looks and sounds identical to a normal parryable boss cast.
 ///
 /// Animations loaded from individual PNGs at runtime:
 ///   res://assets/enemies/that-which-swallowed-the-stars/
@@ -71,7 +68,6 @@ public partial class ThatWhichSwallowedTheStars : Character
 	[Export] public float BeamInterval = 8.0f;
 	[Export] public float ConsumeInterval = 25.0f;
 	[Export] public float CataclysmInterval = 20.0f;
-	[Export] public float CataclysmWindup = 2.5f; // initial wind-up before hit 1
 	[Export] public float CataclysmHitWindow = 1.5f; // parry window duration per hit
 
 	[Export] public float MeleeDamage = 30f;
@@ -112,10 +108,9 @@ public partial class ThatWhichSwallowedTheStars : Character
 	enum CataclysmPhase
 	{
 		None,
-		Windup, // initial cast animation plays, boss bar counts down
 		Hit1, // parry window 1 — 1.5 s
 		Hit2, // parry window 2 — 1.5 s
-		Hit3 // parry window 3 — 1.5 s
+		Hit3  // parry window 3 — 1.5 s
 	}
 
 	CataclysmPhase _cataclysmPhase;
@@ -289,16 +284,10 @@ public partial class ThatWhichSwallowedTheStars : Character
 		SpellPipeline.Cast(_consumeSpell, this, anyTarget);
 	}
 
-	/// <summary>Kicks off the Void Cataclysm wind-up (phase: Windup).</summary>
+	/// <summary>Kicks off Void Cataclysm — immediately opens the first parryable hit window.</summary>
 	void BeginCataclysm()
 	{
-		_cataclysmPhase = CataclysmPhase.Windup;
-		_cataclysmPhaseTimer = CataclysmWindup;
-
-		// Cast bar + overlay for the initial wind-up.
-		_riserPlayer.Play();
-		EmitSignalCastWindupStarted(_cataclysmSpell.Name, _cataclysmSpell.Icon, CataclysmWindup);
-		_sprite.Play("cast");
+		StartCataclysmHit(CataclysmPhase.Hit1);
 	}
 
 	/// <summary>
@@ -309,12 +298,6 @@ public partial class ThatWhichSwallowedTheStars : Character
 	{
 		switch (_cataclysmPhase)
 		{
-			case CataclysmPhase.Windup:
-				// Wind-up cast bar ends → close it, then open the first hit window.
-				EmitSignalCastWindupEnded();
-				StartCataclysmHit(CataclysmPhase.Hit1);
-				break;
-
 			case CataclysmPhase.Hit1:
 				// Close Hit 1 overlay, resolve, open Hit 2.
 				EmitSignalCastWindupEnded();
