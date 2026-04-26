@@ -40,6 +40,7 @@ public class NecroticTouchTalent : ISpellModifier
 		{
 			EffectId = "NecroticTouch",
 			School = SpellSchool.Void,
+			Icon = GD.Load<Texture2D>(AssetConstants.TalentIconAssets + "void/necrotic-touch"),
 			SourceCharacterName = ctx.Caster.CharacterName,
 			AbilityName = "Necrotic Touch"
 		};

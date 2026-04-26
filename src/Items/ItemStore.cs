@@ -25,9 +25,9 @@ public static class ItemStore
 	/// <summary>True if the player has at least one item (equipped or in inventory).</summary>
 	public static bool HasAnyItems => _inventory.Count > 0 || _equipped.Count > 0;
 
-	public static bool HasItem(string itemId)
+	public static bool HasFoundItem(string itemId)
 	{
-		return _inventory.Any(i => i.ItemId == itemId);
+		return _inventory.Concat(_equipped.Values).Any(i => i.ItemId == itemId);
 	}
 
 	// ── mutations ─────────────────────────────────────────────────────────────

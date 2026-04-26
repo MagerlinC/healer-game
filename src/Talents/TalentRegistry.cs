@@ -47,7 +47,7 @@ public static class TalentRegistry
 		{
 			Name = "Siphoning Void",
 			Description = "Dealing void damage restores 1 mana.",
-			IconPath = AssetConstants.TalentIconAssets + "siphoning-void.png",
+			IconPath = AssetConstants.TalentIconAssets + "void/siphoning-void.png",
 			TalentRow = 2,
 			School = SpellSchool.Void,
 			Configure = (t, _) =>
@@ -57,7 +57,7 @@ public static class TalentRegistry
 		{
 			Name = "Necrotic Touch",
 			Description = "Void damage spells have a 25% chance to apply a free 3-tick, 5-damage-per-tick DoT.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_20.png",
+			IconPath = AssetConstants.TalentIconAssets + "void/necrotic-touch.png",
 			TalentRow = 3,
 			School = SpellSchool.Void,
 			Configure = (t, _) =>
@@ -67,7 +67,7 @@ public static class TalentRegistry
 		{
 			Name = "Void Resonance",
 			Description = "Casting Shadow Bolt consumes all DoTs on the target, instantly dealing their remaining damage.",
-			IconPath = AssetConstants.TalentIconAssets + "void-resonance.png",
+			IconPath = AssetConstants.TalentIconAssets + "void/void-resonance.png",
 			TalentRow = 3,
 			School = SpellSchool.Void,
 			Configure = (t, _) =>

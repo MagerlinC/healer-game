@@ -86,7 +86,7 @@ public partial class CampController : LoadoutController
 		progressLabel.Text = BuildProgressText();
 		progressLabel.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
 		progressLabel.OffsetLeft = 20f;
-		progressLabel.OffsetTop = 40f;
+		progressLabel.OffsetTop = 80f;
 		progressLabel.AddThemeFontSizeOverride("font_size", 15);
 		progressLabel.AddThemeColorOverride("font_color", new Color(0.75f, 0.65f, 0.45f));
 		progressLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
