@@ -18,10 +18,10 @@ public partial class PartyFrames : Control
 	// ── per-member config ─────────────────────────────────────────────────────
 	static readonly (string Name, Color BarColor, float MaxHp)[] MemberDefs =
 	{
-		("Templar",                  new Color(0.88f, 0.30f, 0.50f), 150f), // rose-red
-		(GameConstants.PlayerName,   new Color(0.35f, 0.78f, 0.22f),  80f), // poison-green
-		("Assassin",                 new Color(0.85f, 0.78f, 0.15f), 100f), // golden-yellow
-		("Wizard",                   new Color(0.20f, 0.50f, 0.95f),  70f), // sapphire-blue
+		("Templar", new Color(0.88f, 0.30f, 0.50f), 150f), // rose-red
+		(GameConstants.HealerName, new Color(0.35f, 0.78f, 0.22f), 80f), // poison-green
+		("Assassin", new Color(0.85f, 0.78f, 0.15f), 100f), // golden-yellow
+		("Wizard", new Color(0.20f, 0.50f, 0.95f), 70f) // sapphire-blue
 	};
 
 	// ── node refs ─────────────────────────────────────────────────────────────
@@ -37,9 +37,9 @@ public partial class PartyFrames : Control
 		hbox.MouseFilter = MouseFilterEnum.Pass;
 		hbox.AddThemeConstantOverride("separation", 6);
 		hbox.SetAnchorsPreset(LayoutPreset.Center);
-		hbox.Position     += new Vector2(0, 250); // push down from centre
+		hbox.Position += new Vector2(0, 250); // push down from centre
 		hbox.GrowHorizontal = GrowDirection.Both;
-		hbox.GrowVertical   = GrowDirection.Both;
+		hbox.GrowVertical = GrowDirection.Both;
 		AddChild(hbox);
 
 		for (var i = 0; i < MemberDefs.Length; i++)

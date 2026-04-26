@@ -109,7 +109,7 @@ public partial class Player : Character
 		base._Ready();
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
 		_sprite.Play("idle");
-		CharacterName = GameConstants.PlayerName;
+		CharacterName = GameConstants.HealerName;
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastCancelled));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CooldownStarted));

@@ -123,6 +123,7 @@ public partial class CrystalKnight : Character
 
 		// ── sprite setup ──────────────────────────────────────────────────────
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+		_sprite.Scale = new Vector2(1.2f, 1.2f);
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");

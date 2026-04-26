@@ -2,7 +2,7 @@
 
 public static class GameConstants
 {
-	public const string PlayerName = "Healer";
+	public const string HealerName = "Healer";
 	public const string TemplarName = "Templar";
 	public const string AssassinName = "Assassin";
 	public const string WizardName = "Wizard";
@@ -14,8 +14,10 @@ public static class GameConstants
 
 	// ── Boss names — Sanctum of Stars ─────────────────────────────────────────
 	public const string SanctumBoss1Name = "The Nightborne";
+
 	/// <summary>Primary (Dawn) twin — matches the CharacterName used on that node.</summary>
 	public const string SanctumBoss2Name = "Astral Twin (Dawn)";
+
 	public const string SanctumBoss3Name = "That Which Swallowed the Stars";
 
 	public const string BossGroupName = "boss";

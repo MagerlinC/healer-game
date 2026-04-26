@@ -15,13 +15,23 @@ public partial class Assassin : PartyMember
 
     float _attackTimer;
     AssassinSinisterStrikeSpell _sinisterStrike;
+    AnimatedSprite2D _sprite = null!;
 
     public override void _Ready()
     {
         base._Ready();
+        _sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+        _sprite.Play("idle");
+        _sprite.AnimationFinished += OnAnimationFinished;
         // Stagger first attack so it doesn't sync with the Templar.
-        _attackTimer   = AttackInterval * 0.7f;
+        _attackTimer = AttackInterval * 0.7f;
         _sinisterStrike = new AssassinSinisterStrikeSpell();
+    }
+
+    void OnAnimationFinished()
+    {
+        if (_sprite.Animation == "attack")
+            _sprite.Play("idle");
     }
 
     public override void _Process(double delta)
@@ -41,6 +51,7 @@ public partial class Assassin : PartyMember
     {
         var boss = FindPreferredBoss();
         if (boss == null) return;
+        _sprite.Play("attack");
         SpellPipeline.Cast(_sinisterStrike, this, boss);
     }
 }

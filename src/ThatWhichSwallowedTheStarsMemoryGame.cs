@@ -245,7 +245,8 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 				Amount = DamageAmount,
 				Type = CombatEventType.Damage,
 				IsCrit = false,
-				Description = "A fragment of a stolen memory replays across the arena. Stand in the correct positions to avoid taking damage."
+				Description =
+					"A fragment of a stolen memory replays across the arena. Stand in the correct positions to avoid taking damage."
 			});
 		}
 	}
@@ -255,7 +256,7 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 		foreach (var node in GetTree().GetNodesInGroup("party"))
 			if (node is Character character
 			    && character.IsAlive
-			    && character.CharacterName == GameConstants.PlayerName)
+			    && character.CharacterName == GameConstants.HealerName)
 				return character;
 
 		return null;

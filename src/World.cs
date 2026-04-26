@@ -128,5 +128,9 @@ public partial class World : Node2D
 		// ── Victory / dungeon-cleared screen ──────────────────────────────────
 		var victoryScreen = new VictoryScreen();
 		AddChild(victoryScreen);
+
+		// ── Pause menu (Escape key) ────────────────────────────────────────────
+		var pauseMenu = new healerfantasy.UI.PauseMenu();
+		AddChild(pauseMenu);
 	}
 }

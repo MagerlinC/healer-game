@@ -44,7 +44,7 @@ public partial class ManaBar : Control
 			nameof(Character.ManaChanged),
 			Callable.From((string characterName, float current, float max) =>
 			{
-				if (characterName == GameConstants.PlayerName) OnManaChanged(current, max);
+				if (characterName == GameConstants.HealerName) OnManaChanged(current, max);
 			})
 		);
 	}

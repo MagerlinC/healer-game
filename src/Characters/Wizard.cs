@@ -15,13 +15,23 @@ public partial class Wizard : PartyMember
 
     float _castTimer;
     WizardArcaneBlastSpell _arcaneBlast;
+    AnimatedSprite2D _sprite = null!;
 
     public override void _Ready()
     {
         base._Ready();
+        _sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+        _sprite.Play("idle");
+        _sprite.AnimationFinished += OnAnimationFinished;
         // Stagger first cast so it doesn't overlap with the melee members.
-        _castTimer  = CastInterval * 0.6f;
+        _castTimer = CastInterval * 0.6f;
         _arcaneBlast = new WizardArcaneBlastSpell();
+    }
+
+    void OnAnimationFinished()
+    {
+        if (_sprite.Animation == "attack")
+            _sprite.Play("idle");
     }
 
     public override void _Process(double delta)
@@ -41,6 +51,7 @@ public partial class Wizard : PartyMember
     {
         var boss = FindPreferredBoss();
         if (boss == null) return;
+        _sprite.Play("attack");
         SpellPipeline.Cast(_arcaneBlast, this, boss);
     }
 }

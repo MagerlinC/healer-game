@@ -19,54 +19,57 @@ namespace healerfantasy.SpellResources;
 [Godot.GlobalClass]
 public partial class BossDetonationZoneSpell : SpellResource
 {
-    public float DamageAmount = 70f;
+	public float DamageAmount = 70f;
 
-    public BossDetonationZoneSpell()
-    {
-        Name        = "Detonation Zone";
-        Description = "Marks the healer's position with an unstable zone of volatile energy. "
-                    + "After 3 seconds the zone detonates, dealing heavy damage to anyone still inside.";
-        // Duration tag prevents the pipeline from emitting instant floating combat
-        // text or a combat-log record — the DetonationZone node handles those itself
-        // when it actually detonates.
-        Tags        = SpellTags.Damage | SpellTags.Duration;
-        ManaCost    = 0f;
-        CastTime    = 0f;
-        Parryable   = false;
-        EffectType  = EffectType.Harmful;
-    }
+	public BossDetonationZoneSpell()
+	{
+		Name = "Detonation Zone";
+		Description = "Marks the healer's position with an unstable zone of volatile energy. "
+		              + "After 3 seconds the zone detonates, dealing heavy damage to anyone still inside.";
+		// Duration tag prevents the pipeline from emitting instant floating combat
+		// text or a combat-log record — the DetonationZone node handles those itself
+		// when it actually detonates.
+		Tags = SpellTags.Damage | SpellTags.Duration;
+		ManaCost = 0f;
+		CastTime = 0f;
+		Parryable = false;
+		EffectType = EffectType.Harmful;
+	}
 
-    public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
-    /// <summary>
-    /// Always resolves to the player (Healer), regardless of who the caster
-    /// nominally aimed at. This ensures the zone is centred on the player's
-    /// position so the counterplay is purely about moving out of it.
-    /// </summary>
-    public override List<Character> ResolveTargets(Character caster, Character explicitTarget)
-    {
-        foreach (var node in caster.GetTree().GetNodesInGroup("party"))
-            if (node is Character c && c.IsAlive && c.CharacterName == GameConstants.PlayerName)
-                return new List<Character> { c };
+	/// <summary>
+	/// Always resolves to the player (Healer), regardless of who the caster
+	/// nominally aimed at. This ensures the zone is centred on the player's
+	/// position so the counterplay is purely about moving out of it.
+	/// </summary>
+	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)
+	{
+		foreach (var node in caster.GetTree().GetNodesInGroup("party"))
+			if (node is Character c && c.IsAlive && c.CharacterName == GameConstants.HealerName)
+				return new List<Character> { c };
 
-        // Fallback — should not happen in normal play.
-        return new List<Character>();
-    }
+		// Fallback — should not happen in normal play.
+		return new List<Character>();
+	}
 
-    /// <summary>
-    /// Spawns a <see cref="DetonationZone"/> node at the player's current
-    /// world position. The zone node owns its countdown, visual, and detonation
-    /// logic independently of any character effect.
-    /// </summary>
-    public override void Apply(SpellContext ctx)
-    {
-        if (ctx.Targets.Count == 0) return;
+	/// <summary>
+	/// Spawns a <see cref="DetonationZone"/> node at the player's current
+	/// world position. The zone node owns its countdown, visual, and detonation
+	/// logic independently of any character effect.
+	/// </summary>
+	public override void Apply(SpellContext ctx)
+	{
+		if (ctx.Targets.Count == 0) return;
 
-        var player = ctx.Targets[0];
-        var zone   = new DetonationZone { DamageAmount = ctx.FinalValue };
-        zone.GlobalPosition = player.GlobalPosition;
+		var player = ctx.Targets[0];
+		var zone = new DetonationZone { DamageAmount = ctx.FinalValue };
+		zone.GlobalPosition = player.GlobalPosition;
 
-        // Add as a sibling of the boss so it lives in the same scene layer.
-        ctx.Caster.GetParent().AddChild(zone);
-    }
+		// Add as a sibling of the boss so it lives in the same scene layer.
+		ctx.Caster.GetParent().AddChild(zone);
+	}
 }

@@ -22,17 +22,17 @@ using healerfantasy.UI;
 public partial class OverworldController : LoadoutController
 {
 	// ── overworld-only panels ─────────────────────────────────────────────────
-	CanvasLayer?    _historyPanel;
-	VBoxContainer?  _historyContent;
+	CanvasLayer? _historyPanel;
+	VBoxContainer? _historyContent;
 
 	// ── encounter detail modal ─────────────────────────────────────────────────
-	CanvasLayer?    _detailModalLayer;
-	Label?          _detailModalTitle;
-	VBoxContainer?  _detailModalContent;
+	CanvasLayer? _detailModalLayer;
+	Label? _detailModalTitle;
+	VBoxContainer? _detailModalContent;
 
 	static readonly HashSet<string> PartyMemberNames = new()
 	{
-		GameConstants.PlayerName,
+		GameConstants.HealerName,
 		GameConstants.TemplarName,
 		GameConstants.AssassinName,
 		GameConstants.WizardName
@@ -50,13 +50,13 @@ public partial class OverworldController : LoadoutController
 		AddChild(bg);
 
 		var bgHalfW = bg.Texture.GetWidth() * bg.Scale.X / 2f;
-		var bgLeft  = bg.Position.X - bgHalfW;
+		var bgLeft = bg.Position.X - bgHalfW;
 		var bgRight = bg.Position.X + bgHalfW;
 
 		// ── Interactibles ─────────────────────────────────────────────────────
-		var spellTome    = MakeInteractible(AssetConstants.SpellTomeInteractiblePath,
+		var spellTome = MakeInteractible(AssetConstants.SpellTomeInteractiblePath,
 			new Vector2(996f, FloorHeight - 12f), new Vector2(0.080f, 0.080f), 28f);
-		var talentBoard  = MakeInteractible(AssetConstants.TalentBoardInteractiblePath,
+		var talentBoard = MakeInteractible(AssetConstants.TalentBoardInteractiblePath,
 			new Vector2(796f, FloorHeight), new Vector2(0.090f, 0.090f), 50f);
 		var historyScroll = MakeInteractible(AssetConstants.RunScrollInteractiblePath,
 			new Vector2(696f, FloorHeight), new Vector2(0.055f, 0.055f), 28f);
@@ -85,7 +85,7 @@ public partial class OverworldController : LoadoutController
 		// ── Player ────────────────────────────────────────────────────────────
 		_player = new OverworldPlayer();
 		_player.Position = new Vector2(896f, FloorHeight - 15f);
-		_player.Scale    = new Vector2(1.5f, 1.5f);
+		_player.Scale = new Vector2(1.5f, 1.5f);
 		_player.XMin = bgLeft;
 		_player.XMax = bgRight;
 		AddChild(_player);
@@ -104,28 +104,28 @@ public partial class OverworldController : LoadoutController
 			if (IsLeftClick(ev)) OpenPanel(_spellPanel!);
 		};
 		spellTome.MouseEntered += () => _hintLabel!.Text = "Spellbook  •  Click to open";
-		spellTome.MouseExited  += () => _hintLabel!.Text = DefaultHint;
+		spellTome.MouseExited += () => _hintLabel!.Text = DefaultHint;
 
 		talentBoard.InputEvent += (_, ev, _) =>
 		{
 			if (IsLeftClick(ev)) OpenPanel(_talentPanel!);
 		};
 		talentBoard.MouseEntered += () => _hintLabel!.Text = "Talent Board  •  Click to open";
-		talentBoard.MouseExited  += () => _hintLabel!.Text = DefaultHint;
+		talentBoard.MouseExited += () => _hintLabel!.Text = DefaultHint;
 
 		historyScroll.InputEvent += (_, ev, _) =>
 		{
 			if (IsLeftClick(ev)) OpenHistoryPanel();
 		};
 		historyScroll.MouseEntered += () => _hintLabel!.Text = "Run History  •  Click to open";
-		historyScroll.MouseExited  += () => _hintLabel!.Text = DefaultHint;
+		historyScroll.MouseExited += () => _hintLabel!.Text = DefaultHint;
 
 		mapItem.InputEvent += (_, ev, _) =>
 		{
 			if (IsLeftClick(ev)) OnOpenMap();
 		};
 		mapItem.MouseEntered += () => _hintLabel!.Text = "World Map  •  Plan your journey";
-		mapItem.MouseExited  += () => _hintLabel!.Text = DefaultHint;
+		mapItem.MouseExited += () => _hintLabel!.Text = DefaultHint;
 	}
 
 	void OpenHistoryPanel()
@@ -155,10 +155,10 @@ public partial class OverworldController : LoadoutController
 	Control BuildRunHistoryPane()
 	{
 		var margin = new MarginContainer();
-		margin.AddThemeConstantOverride("margin_left",   16);
-		margin.AddThemeConstantOverride("margin_right",  16);
-		margin.AddThemeConstantOverride("margin_top",     8);
-		margin.AddThemeConstantOverride("margin_bottom",  8);
+		margin.AddThemeConstantOverride("margin_left", 16);
+		margin.AddThemeConstantOverride("margin_right", 16);
+		margin.AddThemeConstantOverride("margin_top", 8);
+		margin.AddThemeConstantOverride("margin_bottom", 8);
 
 		var scroll = new ScrollContainer();
 		scroll.SizeFlagsHorizontal = scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
@@ -184,7 +184,7 @@ public partial class OverworldController : LoadoutController
 			var empty = new Label();
 			empty.Text = "No runs recorded yet.\nComplete or attempt a run to see your history here.";
 			empty.HorizontalAlignment = HorizontalAlignment.Center;
-			empty.AutowrapMode        = TextServer.AutowrapMode.Word;
+			empty.AutowrapMode = TextServer.AutowrapMode.Word;
 			empty.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 			empty.AddThemeFontSizeOverride("font_size", 15);
 			empty.AddThemeColorOverride("font_color", HintColor);
@@ -243,12 +243,12 @@ public partial class OverworldController : LoadoutController
 			var encNormal = new StyleBoxFlat();
 			encNormal.BgColor = new Color(0f, 0f, 0f, 0f);
 			var encHover = new StyleBoxFlat();
-			encHover.BgColor            = new Color(1f, 1f, 1f, 0.04f);
+			encHover.BgColor = new Color(1f, 1f, 1f, 0.04f);
 			encHover.SetCornerRadiusAll(4);
 
 			var encPanel = new PanelContainer();
 			encPanel.AddThemeStyleboxOverride("panel", encNormal);
-			encPanel.MouseFilter             = Control.MouseFilterEnum.Stop;
+			encPanel.MouseFilter = Control.MouseFilterEnum.Stop;
 			encPanel.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
 			vbox.AddChild(encPanel);
 
@@ -260,15 +260,15 @@ public partial class OverworldController : LoadoutController
 
 			var pad = new Control();
 			pad.CustomMinimumSize = new Vector2(24f, 0f);
-			pad.MouseFilter       = Control.MouseFilterEnum.Ignore;
+			pad.MouseFilter = Control.MouseFilterEnum.Ignore;
 			row.AddChild(pad);
 
 			var bossName = new Label();
-			bossName.Text                 = enc.BossName;
-			bossName.CustomMinimumSize    = new Vector2(160f, 0f);
+			bossName.Text = enc.BossName;
+			bossName.CustomMinimumSize = new Vector2(160f, 0f);
 			bossName.AddThemeFontSizeOverride("font_size", 13);
 			bossName.AddThemeColorOverride("font_color", new Color(0.88f, 0.84f, 0.78f));
-			bossName.MouseFilter          = Control.MouseFilterEnum.Ignore;
+			bossName.MouseFilter = Control.MouseFilterEnum.Ignore;
 			row.AddChild(bossName);
 
 			var healLabel = new Label();
@@ -295,7 +295,7 @@ public partial class OverworldController : LoadoutController
 			// Right-aligned "Details ▸" hint
 			var spacer = new Control();
 			spacer.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-			spacer.MouseFilter         = Control.MouseFilterEnum.Ignore;
+			spacer.MouseFilter = Control.MouseFilterEnum.Ignore;
 			row.AddChild(spacer);
 
 			var detailsHint = new Label();
@@ -343,7 +343,7 @@ public partial class OverworldController : LoadoutController
 		// Full-screen dimmer — also acts as a click-outside-to-close target
 		var dimmer = new ColorRect();
 		dimmer.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		dimmer.Color       = new Color(0f, 0f, 0f, 0.60f);
+		dimmer.Color = new Color(0f, 0f, 0f, 0.60f);
 		dimmer.MouseFilter = Control.MouseFilterEnum.Stop;
 		layer.AddChild(dimmer);
 
@@ -356,10 +356,10 @@ public partial class OverworldController : LoadoutController
 		// Inset margin so the panel doesn't stretch edge-to-edge
 		var margin = new MarginContainer();
 		margin.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		margin.AddThemeConstantOverride("margin_left",   180);
-		margin.AddThemeConstantOverride("margin_right",  180);
-		margin.AddThemeConstantOverride("margin_top",     60);
-		margin.AddThemeConstantOverride("margin_bottom",  60);
+		margin.AddThemeConstantOverride("margin_left", 180);
+		margin.AddThemeConstantOverride("margin_right", 180);
+		margin.AddThemeConstantOverride("margin_top", 60);
+		margin.AddThemeConstantOverride("margin_bottom", 60);
 		margin.MouseFilter = Control.MouseFilterEnum.Ignore;
 		layer.AddChild(margin);
 
@@ -368,8 +368,8 @@ public partial class OverworldController : LoadoutController
 		panelStyle.SetCornerRadiusAll(8);
 		panelStyle.SetBorderWidthAll(2);
 		panelStyle.BorderColor = PanelBorder;
-		panelStyle.ContentMarginLeft  = panelStyle.ContentMarginRight  = 24f;
-		panelStyle.ContentMarginTop   = panelStyle.ContentMarginBottom = 18f;
+		panelStyle.ContentMarginLeft = panelStyle.ContentMarginRight = 24f;
+		panelStyle.ContentMarginTop = panelStyle.ContentMarginBottom = 18f;
 
 		var panel = new PanelContainer();
 		panel.AddThemeStyleboxOverride("panel", panelStyle);
@@ -397,7 +397,7 @@ public partial class OverworldController : LoadoutController
 		closeBtn.Flat = true;
 		closeBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
 		closeBtn.AddThemeFontSizeOverride("font_size", 14);
-		closeBtn.AddThemeColorOverride("font_color",       new Color(0.72f, 0.68f, 0.62f));
+		closeBtn.AddThemeColorOverride("font_color", new Color(0.72f, 0.68f, 0.62f));
 		closeBtn.AddThemeColorOverride("font_hover_color", new Color(0.90f, 0.35f, 0.28f));
 		closeBtn.Pressed += () => layer.Visible = false;
 		titleBar.AddChild(closeBtn);
@@ -439,13 +439,13 @@ public partial class OverworldController : LoadoutController
 		statsRow.AddThemeConstantOverride("separation", 48);
 		_detailModalContent.AddChild(statsRow);
 
-		statsRow.AddChild(MakeStatPill("Healing Done",  $"{enc.TotalHealing:N0}",      new Color(0.35f, 0.80f, 0.50f)));
-		statsRow.AddChild(MakeStatPill("Damage Dealt",  $"{enc.TotalDamageDealt:N0}",  new Color(0.88f, 0.55f, 0.28f)));
-		statsRow.AddChild(MakeStatPill("Damage Taken",  $"{enc.TotalDamageTaken:N0}",  new Color(0.85f, 0.28f, 0.22f)));
+		statsRow.AddChild(MakeStatPill("Healing Done", $"{enc.TotalHealing:N0}", new Color(0.35f, 0.80f, 0.50f)));
+		statsRow.AddChild(MakeStatPill("Damage Dealt", $"{enc.TotalDamageDealt:N0}", new Color(0.88f, 0.55f, 0.28f)));
+		statsRow.AddChild(MakeStatPill("Damage Taken", $"{enc.TotalDamageTaken:N0}", new Color(0.85f, 0.28f, 0.22f)));
 
 		// ── Per-ability tables ────────────────────────────────────────────────
-		BuildDetailSection(_detailModalContent, enc.Events, isHealing: false);
-		BuildDetailSection(_detailModalContent, enc.Events, isHealing: true);
+		BuildDetailSection(_detailModalContent, enc.Events, false);
+		BuildDetailSection(_detailModalContent, enc.Events, true);
 
 		_detailModalLayer.Visible = true;
 	}
@@ -461,14 +461,14 @@ public partial class OverworldController : LoadoutController
 		vbox.AddThemeConstantOverride("separation", 2);
 
 		var valueLabel = new Label();
-		valueLabel.Text                = value;
+		valueLabel.Text = value;
 		valueLabel.HorizontalAlignment = HorizontalAlignment.Center;
 		valueLabel.AddThemeFontSizeOverride("font_size", 22);
 		valueLabel.AddThemeColorOverride("font_color", valueColor);
 		vbox.AddChild(valueLabel);
 
 		var descLabel = new Label();
-		descLabel.Text                = descriptor;
+		descLabel.Text = descriptor;
 		descLabel.HorizontalAlignment = HorizontalAlignment.Center;
 		descLabel.AddThemeFontSizeOverride("font_size", 12);
 		descLabel.AddThemeColorOverride("font_color", new Color(0.48f, 0.44f, 0.38f));
@@ -492,7 +492,7 @@ public partial class OverworldController : LoadoutController
 		var filtered = isHealing
 			? events.Where(e => e.Type == CombatEventType.Healing).ToList()
 			: events.Where(e => e.Type == CombatEventType.Damage
-			                 && PartyMemberNames.Contains(e.TargetName)).ToList();
+			                    && PartyMemberNames.Contains(e.TargetName)).ToList();
 
 		if (filtered.Count == 0) return;
 
@@ -501,17 +501,17 @@ public partial class OverworldController : LoadoutController
 		var rows = filtered
 			.GroupBy(e => (e.AbilityName, Context: isHealing ? e.TargetName : e.SourceName))
 			.Select(g => (
-				Ability:     g.Key.AbilityName,
-				Context:     g.Key.Context,
-				Total:       g.Sum(e => e.Amount),
-				Hits:        g.Count(),
-				Crits:       g.Count(e => e.IsCrit),
+				Ability: g.Key.AbilityName,
+				Context: g.Key.Context,
+				Total: g.Sum(e => e.Amount),
+				Hits: g.Count(),
+				Crits: g.Count(e => e.IsCrit),
 				Description: g.First().Description
 			))
 			.OrderByDescending(r => r.Total)
 			.ToList();
 
-		float grandTotal = rows.Sum(r => r.Total);
+		var grandTotal = rows.Sum(r => r.Total);
 
 		// ── Separator + section header ────────────────────────────────────────
 		var topSep = new HSeparator();
@@ -519,7 +519,7 @@ public partial class OverworldController : LoadoutController
 		parent.AddChild(topSep);
 
 		var sectionHeader = new Label();
-		sectionHeader.Text                = isHealing ? "HEALING DONE" : "DAMAGE TAKEN";
+		sectionHeader.Text = isHealing ? "HEALING DONE" : "DAMAGE TAKEN";
 		sectionHeader.HorizontalAlignment = HorizontalAlignment.Center;
 		sectionHeader.AddThemeFontSizeOverride("font_size", 14);
 		sectionHeader.AddThemeColorOverride("font_color",
@@ -532,15 +532,15 @@ public partial class OverworldController : LoadoutController
 		table.AddThemeConstantOverride("separation", 1);
 		parent.AddChild(table);
 
-		string contextColHeader = isHealing ? "Target" : "Source";
-		string totalColHeader   = isHealing ? "Total Healed" : "Total Dmg";
+		var contextColHeader = isHealing ? "Target" : "Source";
+		var totalColHeader = isHealing ? "Total Healed" : "Total Dmg";
 
 		table.AddChild(MakeDetailRow("Ability", contextColHeader, "Hits", "★", totalColHeader,
-			isHeader: true, isHealing: isHealing));
+			true, isHealing: isHealing));
 
 		AddDetailSeparator(table, new Color(0.42f, 0.38f, 0.33f, 0.55f));
 
-		bool alt = false;
+		var alt = false;
 		foreach (var row in rows)
 		{
 			table.AddChild(MakeDetailRow(
@@ -549,7 +549,7 @@ public partial class OverworldController : LoadoutController
 				row.Hits.ToString(),
 				row.Crits > 0 ? row.Crits.ToString() : "–",
 				$"{row.Total:0}",
-				isHeader: false, isAlt: alt, isHealing: isHealing,
+				false, alt, isHealing: isHealing,
 				abilityDescription: row.Description
 			));
 			alt = !alt;
@@ -557,7 +557,7 @@ public partial class OverworldController : LoadoutController
 
 		AddDetailSeparator(table, new Color(0.42f, 0.38f, 0.33f, 0.55f));
 		table.AddChild(MakeDetailRow("Total", "", "", "", $"{grandTotal:0}",
-			isHeader: false, isTotal: true, isHealing: isHealing));
+			false, isTotal: true, isHealing: isHealing));
 	}
 
 	/// <summary>
@@ -570,15 +570,15 @@ public partial class OverworldController : LoadoutController
 		string? abilityDescription = null)
 	{
 		var bg = isHeader ? new Color(0.10f, 0.08f, 0.07f)
-		       : isTotal  ? new Color(0.20f, 0.14f, 0.11f)
-		       : isAlt    ? new Color(0.18f, 0.13f, 0.11f)
-		                  : new Color(0.14f, 0.10f, 0.09f);
+			: isTotal ? new Color(0.20f, 0.14f, 0.11f)
+			: isAlt ? new Color(0.18f, 0.13f, 0.11f)
+			: new Color(0.14f, 0.10f, 0.09f);
 
 		var panel = new PanelContainer();
 		var style = new StyleBoxFlat();
 		style.BgColor = bg;
-		style.ContentMarginLeft  = style.ContentMarginRight = 8f;
-		style.ContentMarginTop   = style.ContentMarginBottom = 4f;
+		style.ContentMarginLeft = style.ContentMarginRight = 8f;
+		style.ContentMarginTop = style.ContentMarginBottom = 4f;
 		panel.AddThemeStyleboxOverride("panel", style);
 		panel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 
@@ -587,29 +587,30 @@ public partial class OverworldController : LoadoutController
 		row.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		panel.AddChild(row);
 
-		var bodyColor    = new Color(0.88f, 0.84f, 0.78f);
-		var headerColor  = new Color(0.58f, 0.54f, 0.48f);
-		var totalColor   = isHealing ? new Color(0.40f, 0.90f, 0.55f) : new Color(0.95f, 0.55f, 0.35f);
+		var bodyColor = new Color(0.88f, 0.84f, 0.78f);
+		var headerColor = new Color(0.58f, 0.54f, 0.48f);
+		var totalColor = isHealing ? new Color(0.40f, 0.90f, 0.55f) : new Color(0.95f, 0.55f, 0.35f);
 		var contextColor = new Color(0.65f, 0.60f, 0.55f);
-		var critColor    = new Color(0.95f, 0.72f, 0.28f);
-		var dimColor     = new Color(0.48f, 0.44f, 0.40f);
+		var critColor = new Color(0.95f, 0.72f, 0.28f);
+		var dimColor = new Color(0.48f, 0.44f, 0.40f);
 
-		int baseSize = isHeader ? 12 : 13;
+		var baseSize = isHeader ? 12 : 13;
 
 		// Ability name
-		Color abilityColor = isHeader ? headerColor : isTotal ? totalColor : bodyColor;
+		var abilityColor = isHeader ? headerColor : isTotal ? totalColor : bodyColor;
 		var abilityCell = DetailCell(ability, 195f, abilityColor, isTotal ? 14 : baseSize, HorizontalAlignment.Left);
 		// Wire description tooltip on data rows that have one
 		if (!isHeader && !isTotal && !string.IsNullOrEmpty(abilityDescription))
 		{
 			abilityCell.MouseFilter = Control.MouseFilterEnum.Stop;
 			abilityCell.MouseEntered += () => GameTooltip.Show($"{ability}\n{abilityDescription}");
-			abilityCell.MouseExited  += () => GameTooltip.Hide();
+			abilityCell.MouseExited += () => GameTooltip.Hide();
 		}
+
 		row.AddChild(abilityCell);
 
 		// Context (source or target)
-		Color ctxColor = isHeader ? headerColor : isTotal ? new Color(0f, 0f, 0f, 0f) : contextColor;
+		var ctxColor = isHeader ? headerColor : isTotal ? new Color(0f, 0f, 0f, 0f) : contextColor;
 		row.AddChild(DetailCell(context, 140f, ctxColor, baseSize, HorizontalAlignment.Left));
 
 		// Hits
@@ -617,10 +618,10 @@ public partial class OverworldController : LoadoutController
 			isHeader ? headerColor : isTotal ? dimColor : bodyColor, baseSize, HorizontalAlignment.Center));
 
 		// Crits (gold when non-zero)
-		Color critCellColor = isHeader   ? headerColor
-		                    : isTotal    ? dimColor
-		                    : crits != "–" ? critColor
-		                                  : dimColor;
+		var critCellColor = isHeader ? headerColor
+			: isTotal ? dimColor
+			: crits != "–" ? critColor
+			: dimColor;
 		row.AddChild(DetailCell(crits, 36f, critCellColor, baseSize, HorizontalAlignment.Center));
 
 		// Total (right-aligned, larger on the total row)
@@ -635,13 +636,13 @@ public partial class OverworldController : LoadoutController
 	static Label DetailCell(string text, float minWidth, Color color, int fontSize, HorizontalAlignment align)
 	{
 		var lbl = new Label();
-		lbl.Text                  = text;
-		lbl.CustomMinimumSize     = new Vector2(minWidth, 0f);
-		lbl.SizeFlagsHorizontal   = Control.SizeFlags.ShrinkBegin;
-		lbl.HorizontalAlignment   = align;
+		lbl.Text = text;
+		lbl.CustomMinimumSize = new Vector2(minWidth, 0f);
+		lbl.SizeFlagsHorizontal = Control.SizeFlags.ShrinkBegin;
+		lbl.HorizontalAlignment = align;
 		lbl.AddThemeFontSizeOverride("font_size", fontSize);
 		lbl.AddThemeColorOverride("font_color", color);
-		lbl.ClipText              = true;
+		lbl.ClipText = true;
 		return lbl;
 	}
 

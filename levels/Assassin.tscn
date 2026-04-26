@@ -1,21 +1,51 @@
 [gd_scene format=3]
 
-[ext_resource type="Texture2D" uid="uid://bgclbkcyu1nle" path="res://assets/32rogues/rogues.png" id="Texture_rogues"]
-[ext_resource type="Script" uid="uid://di875q73nxbls" path="res://src/Characters/PartyMember.cs" id="Script_member"]
+[ext_resource type="Script" uid="uid://dsksxu4j24h25" path="res://src/Characters/Assassin.cs" id="Script_assassin"]
+[ext_resource type="Texture2D" path="res://assets/characters/assassin/idle1.png" id="Texture_idle1"]
+[ext_resource type="Texture2D" path="res://assets/characters/assassin/idle2.png" id="Texture_idle2"]
+[ext_resource type="Texture2D" path="res://assets/characters/assassin/attack1.png" id="Texture_attack1"]
+[ext_resource type="Texture2D" path="res://assets/characters/assassin/attack2.png" id="Texture_attack2"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_assassin"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("Texture_idle1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("Texture_idle2")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 4.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("Texture_attack1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("Texture_attack2")
+}],
+"loop": false,
+"name": &"attack",
+"speed": 6.0
+}]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
 radius = 8.0
 height = 12.0
 
 [node name="Assassin" type="CharacterBody2D"]
-script = ExtResource("Script_member")
+script = ExtResource("Script_assassin")
 CharacterName = "Assassin"
 MaxHealth = 80.0
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource("Texture_rogues")
-region_enabled = true
-region_rect = Rect2(96, 0, 32, 32)
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(0.104, 0.104)
+flip_h = true
+sprite_frames = SubResource("SpriteFrames_assassin")
+animation = &"idle"
+autoplay = "idle"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, 4)

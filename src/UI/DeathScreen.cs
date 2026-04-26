@@ -21,7 +21,7 @@ public partial class DeathScreen : CanvasLayer
 	/// <summary>The four friendly party member names used to filter damage-taken events.</summary>
 	static readonly HashSet<string> PartyMemberNames = new()
 	{
-		GameConstants.PlayerName,
+		GameConstants.HealerName,
 		GameConstants.TemplarName,
 		GameConstants.AssassinName,
 		GameConstants.WizardName
@@ -83,8 +83,8 @@ public partial class DeathScreen : CanvasLayer
 		btnRow.AddThemeConstantOverride("separation", 20);
 		vbox.AddChild(btnRow);
 
-		btnRow.AddChild(MakeButton("New Run",    new Color(0.50f, 0.20f, 0.20f), OnNewRunPressed));
-		btnRow.AddChild(MakeButton("Main Menu",  new Color(0.35f, 0.30f, 0.22f), OnMainMenuPressed));
+		btnRow.AddChild(MakeButton("New Run", new Color(0.50f, 0.20f, 0.20f), OnNewRunPressed));
+		btnRow.AddChild(MakeButton("Main Menu", new Color(0.35f, 0.30f, 0.22f), OnMainMenuPressed));
 	}
 
 	// ── public API ────────────────────────────────────────────────────────────
@@ -126,17 +126,17 @@ public partial class DeathScreen : CanvasLayer
 		var rows = partyDamage
 			.GroupBy(e => (e.AbilityName, e.SourceName))
 			.Select(g => (
-				Ability:     g.Key.AbilityName,
-				Source:      g.Key.SourceName,
-				Total:       g.Sum(e => e.Amount),
-				Hits:        g.Count(),
-				Crits:       g.Count(e => e.IsCrit),
+				Ability: g.Key.AbilityName,
+				Source: g.Key.SourceName,
+				Total: g.Sum(e => e.Amount),
+				Hits: g.Count(),
+				Crits: g.Count(e => e.IsCrit),
 				Description: g.First().Description
 			))
 			.OrderByDescending(r => r.Total)
 			.ToList();
 
-		float grandTotal = rows.Sum(r => r.Total);
+		var grandTotal = rows.Sum(r => r.Total);
 
 		// ── top divider ───────────────────────────────────────────────────────
 		AddSeparator(new Color(0.60f, 0.22f, 0.18f, 0.55f));
@@ -151,7 +151,7 @@ public partial class DeathScreen : CanvasLayer
 
 		// ── scrollable table ──────────────────────────────────────────────────
 		// Show at most ~7 rows before requiring scroll (each row ≈ 28 px).
-		const float RowHeight  = 28f;
+		const float RowHeight = 28f;
 		const float HeaderHeight = 30f;
 		const float TableWidth = 560f;
 
@@ -168,11 +168,11 @@ public partial class DeathScreen : CanvasLayer
 		scroll.AddChild(table);
 
 		// Column header row
-		table.AddChild(MakeRow("Ability", "Source", "Hits", "★", "Total Dmg", isHeader: true));
+		table.AddChild(MakeRow("Ability", "Source", "Hits", "★", "Total Dmg", true));
 		AddTableSeparator(table);
 
 		// Data rows
-		bool alt = false;
+		var alt = false;
 		foreach (var row in rows)
 		{
 			table.AddChild(MakeRow(
@@ -181,8 +181,8 @@ public partial class DeathScreen : CanvasLayer
 				row.Hits.ToString(),
 				row.Crits > 0 ? row.Crits.ToString() : "–",
 				$"{row.Total:0}",
-				isHeader: false,
-				isAlt: alt,
+				false,
+				alt,
 				abilityDescription: row.Description
 			));
 			alt = !alt;
@@ -190,7 +190,7 @@ public partial class DeathScreen : CanvasLayer
 
 		// Grand total row
 		AddTableSeparator(table);
-		table.AddChild(MakeRow("Total", "", "", "", $"{grandTotal:0}", isHeader: false, isTotal: true));
+		table.AddChild(MakeRow("Total", "", "", "", $"{grandTotal:0}", false, isTotal: true));
 
 		// ── bottom divider ────────────────────────────────────────────────────
 		AddSeparator(new Color(0.60f, 0.22f, 0.18f, 0.55f));
@@ -209,15 +209,15 @@ public partial class DeathScreen : CanvasLayer
 	{
 		// Background colours
 		var bg = isHeader ? new Color(0.10f, 0.08f, 0.07f)
-		       : isTotal  ? new Color(0.20f, 0.14f, 0.11f)
-		       : isAlt    ? new Color(0.18f, 0.13f, 0.11f)
-		                  : new Color(0.14f, 0.10f, 0.09f);
+			: isTotal ? new Color(0.20f, 0.14f, 0.11f)
+			: isAlt ? new Color(0.18f, 0.13f, 0.11f)
+			: new Color(0.14f, 0.10f, 0.09f);
 
 		var panel = new PanelContainer();
 		var style = new StyleBoxFlat();
 		style.BgColor = bg;
-		style.ContentMarginLeft  = style.ContentMarginRight = 8f;
-		style.ContentMarginTop   = style.ContentMarginBottom = 4f;
+		style.ContentMarginLeft = style.ContentMarginRight = 8f;
+		style.ContentMarginTop = style.ContentMarginBottom = 4f;
 		panel.AddThemeStyleboxOverride("panel", style);
 
 		var row = new HBoxContainer();
@@ -225,39 +225,40 @@ public partial class DeathScreen : CanvasLayer
 		panel.AddChild(row);
 
 		// Named colours
-		var bodyColor   = new Color(0.88f, 0.84f, 0.78f);
+		var bodyColor = new Color(0.88f, 0.84f, 0.78f);
 		var headerColor = new Color(0.58f, 0.54f, 0.48f);
-		var totalColor  = new Color(0.95f, 0.55f, 0.35f);
+		var totalColor = new Color(0.95f, 0.55f, 0.35f);
 		var sourceColor = new Color(0.65f, 0.60f, 0.55f);
-		var critColor   = new Color(0.95f, 0.72f, 0.28f);
-		var dimColor    = new Color(0.48f, 0.44f, 0.40f);
+		var critColor = new Color(0.95f, 0.72f, 0.28f);
+		var dimColor = new Color(0.48f, 0.44f, 0.40f);
 
-		int baseSize = isHeader ? 12 : 13;
+		var baseSize = isHeader ? 12 : 13;
 
 		// ── Ability name ─────────────────────────────────────────────────────
-		Color abilityColor = isHeader ? headerColor : isTotal ? totalColor : bodyColor;
+		var abilityColor = isHeader ? headerColor : isTotal ? totalColor : bodyColor;
 		var abilityCell = Cell(ability, 195f, abilityColor, isTotal ? 14 : baseSize, HorizontalAlignment.Left);
 		// Wire description tooltip on data rows that have one
 		if (!isHeader && !isTotal && !string.IsNullOrEmpty(abilityDescription))
 		{
 			abilityCell.MouseFilter = Control.MouseFilterEnum.Stop;
 			abilityCell.MouseEntered += () => GameTooltip.Show($"{ability}\n{abilityDescription}");
-			abilityCell.MouseExited  += () => GameTooltip.Hide();
+			abilityCell.MouseExited += () => GameTooltip.Hide();
 		}
+
 		row.AddChild(abilityCell);
 
 		// ── Source ───────────────────────────────────────────────────────────
-		Color srcColor = isHeader ? headerColor : isTotal ? new Color(0f, 0f, 0f, 0f) : sourceColor;
+		var srcColor = isHeader ? headerColor : isTotal ? new Color(0f, 0f, 0f, 0f) : sourceColor;
 		row.AddChild(Cell(source, 130f, srcColor, baseSize, HorizontalAlignment.Left));
 
 		// ── Hits ─────────────────────────────────────────────────────────────
 		row.AddChild(Cell(hits, 44f, isHeader ? headerColor : isTotal ? dimColor : bodyColor, baseSize, HorizontalAlignment.Center));
 
 		// ── Crits (gold when non-zero) ────────────────────────────────────────
-		Color critCellColor = isHeader   ? headerColor
-		                    : isTotal    ? dimColor
-		                    : crits != "–" ? critColor
-		                                  : dimColor;
+		var critCellColor = isHeader ? headerColor
+			: isTotal ? dimColor
+			: crits != "–" ? critColor
+			: dimColor;
 		row.AddChild(Cell(crits, 36f, critCellColor, baseSize, HorizontalAlignment.Center));
 
 		// ── Total damage ─────────────────────────────────────────────────────
@@ -326,15 +327,15 @@ public partial class DeathScreen : CanvasLayer
 		btn.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
 		btn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
 		btn.AddThemeFontSizeOverride("font_size", 18);
-		btn.AddThemeColorOverride("font_color",       new Color(0.90f, 0.87f, 0.83f));
+		btn.AddThemeColorOverride("font_color", new Color(0.90f, 0.87f, 0.83f));
 		btn.AddThemeColorOverride("font_hover_color", new Color(0.95f, 0.84f, 0.50f));
 
 		var normal = MakeStyle(new Color(0.16f, 0.11f, 0.11f), borderColor);
-		var hover  = MakeStyle(new Color(0.26f, 0.16f, 0.14f), borderColor * 1.4f);
-		btn.AddThemeStyleboxOverride("normal",  normal);
-		btn.AddThemeStyleboxOverride("hover",   hover);
+		var hover = MakeStyle(new Color(0.26f, 0.16f, 0.14f), borderColor * 1.4f);
+		btn.AddThemeStyleboxOverride("normal", normal);
+		btn.AddThemeStyleboxOverride("hover", hover);
 		btn.AddThemeStyleboxOverride("pressed", normal);
-		btn.AddThemeStyleboxOverride("focus",   normal);
+		btn.AddThemeStyleboxOverride("focus", normal);
 
 		btn.Pressed += onPressed;
 		return btn;
@@ -348,7 +349,7 @@ public partial class DeathScreen : CanvasLayer
 		s.SetBorderWidthAll(2);
 		s.BorderColor = border;
 		s.ContentMarginLeft = s.ContentMarginRight = 16f;
-		s.ContentMarginTop  = s.ContentMarginBottom = 10f;
+		s.ContentMarginTop = s.ContentMarginBottom = 10f;
 		return s;
 	}
 }

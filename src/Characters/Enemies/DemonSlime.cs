@@ -261,7 +261,7 @@ public partial class DemonSlime : Character
 	Character FindHealer()
 	{
 		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.CharacterName == GameConstants.PlayerName && c.IsAlive)
+			if (node is Character c && c.CharacterName == GameConstants.HealerName && c.IsAlive)
 				return c;
 		return null;
 	}

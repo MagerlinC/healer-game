@@ -162,7 +162,7 @@ public partial class GameUI : CanvasLayer
 			nameof(Character.ManaChanged),
 			Callable.From((string characterName, float current, float max) =>
 			{
-				if (characterName == GameConstants.PlayerName) _actionBar.SetIconShadingBasedOnPlayerMana(current, max);
+				if (characterName == GameConstants.HealerName) _actionBar.SetIconShadingBasedOnPlayerMana(current, max);
 			}));
 	}
 
@@ -198,7 +198,7 @@ public partial class GameUI : CanvasLayer
 	static Character? AliveOrFallback(Character? preferred, Character? fallback)
 	{
 		if (preferred?.IsAlive == true) return preferred;
-		if (fallback?.IsAlive  == true) return fallback;
+		if (fallback?.IsAlive == true) return fallback;
 		return null;
 	}
 
@@ -228,7 +228,7 @@ public partial class GameUI : CanvasLayer
 	/// </summary>
 	public void SetBossCharacters(Character primary, Character? secondary = null)
 	{
-		_primaryBossCharacter   = primary;
+		_primaryBossCharacter = primary;
 		_secondaryBossCharacter = secondary;
 	}
 
@@ -245,7 +245,7 @@ public partial class GameUI : CanvasLayer
 		_secondaryBossHealthBar = new BossHealthBar(secondBoss.CharacterName);
 		_secondaryBossHealthBar.CustomMinimumSize = new Vector2(400f, 0f);
 		_secondaryBossHealthBar.SetAnchorsPreset(Control.LayoutPreset.TopWide);
-		_secondaryBossHealthBar.OffsetTop = 80f;    // below the primary bar
+		_secondaryBossHealthBar.OffsetTop = 80f; // below the primary bar
 		_secondaryBossHealthBar.OffsetBottom = 160f;
 		_anchor.AddChild(_secondaryBossHealthBar);
 
@@ -254,7 +254,7 @@ public partial class GameUI : CanvasLayer
 		_secondaryBossHealthBar.Init(secondBoss.CharacterName, secondBoss.CurrentHealth, secondBoss.MaxHealth);
 
 		// Push the boss cast bar down so it clears both health bars.
-		_bossCastBar.OffsetTop    = 170f;
+		_bossCastBar.OffsetTop = 170f;
 		_bossCastBar.OffsetBottom = 210f;
 	}
 }

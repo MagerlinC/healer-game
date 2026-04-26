@@ -276,7 +276,7 @@ public abstract partial class Character : CharacterBody2D
 	{
 		if (_effects.Count == 0) return;
 
-		foreach (var effect in _effects.Values.Where(effect => effect.SourceCharacterName == GameConstants.PlayerName))
+		foreach (var effect in _effects.Values.Where(effect => effect.SourceCharacterName == GameConstants.HealerName))
 		{
 			switch (filter)
 			{
