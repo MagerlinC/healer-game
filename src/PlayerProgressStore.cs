@@ -123,4 +123,15 @@ public static class PlayerProgressStore
 		using var file = FileAccess.Open(FileSavePath, FileAccess.ModeFlags.Write);
 		file.StoreLine(JsonSerializer.Serialize(_data));
 	}
+
+	/// <summary>
+	/// Deletes the player progress save file from disk and resets all
+	/// in-memory state to default values (level 1, 0 XP, 0 talent points).
+	/// </summary>
+	public static void DeleteSaveFile()
+	{
+		if (FileAccess.FileExists(FileSavePath))
+			DirAccess.RemoveAbsolute(ProjectSettings.GlobalizePath(FileSavePath));
+		_data = new ProgressData();
+	}
 }

@@ -38,4 +38,11 @@ public readonly struct CombatEventRecord
 
 	public CombatEventType Type { get; init; }
 	public bool IsCrit { get; init; }
+
+	/// <summary>
+	/// Flavour description of the spell or effect that produced this event.
+	/// Null on records created before this field was introduced (older saves).
+	/// Used by the history/death-screen UI to show a hover tooltip.
+	/// </summary>
+	public string? Description { get; init; }
 }

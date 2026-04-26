@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.SpellResources.Generic;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;
@@ -20,7 +21,8 @@ public partial class BossEmbraceOfDeathSpell : SpellResource
 	public BossEmbraceOfDeathSpell()
 	{
 		Name = "Embrace of Death";
-		Description = "The Bringer envelops the entire party in a crushing wave of necrotic energy — unless deflected.";
+		Description =
+			$"The Bringer of Death envelops the entire party in a crushing wave of necrotic energy, dealing {DamageAmount} void damage unless deflected.";
 		Tags = SpellTags.Damage | SpellTags.Void;
 		ManaCost = 0f;
 		CastTime = 0f;
@@ -46,6 +48,7 @@ public partial class BossEmbraceOfDeathSpell : SpellResource
 
 	public override void Apply(SpellContext ctx)
 	{
+		DeflectSpell.PlayDeflectFailedSound(ctx.Caster);
 		foreach (var target in ctx.Targets)
 			target.TakeDamage(ctx.FinalValue);
 	}

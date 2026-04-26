@@ -244,7 +244,8 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 				AbilityName = "Stolen Memory",
 				Amount = DamageAmount,
 				Type = CombatEventType.Damage,
-				IsCrit = false
+				IsCrit = false,
+				Description = "A fragment of a stolen memory replays across the arena. Stand in the correct positions to avoid taking damage."
 			});
 		}
 	}

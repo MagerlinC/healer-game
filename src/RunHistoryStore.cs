@@ -145,4 +145,17 @@ public static class RunHistoryStore
 		// Items are run-scoped and lost after the run ends.
 		ItemStore.Clear();
 	}
+
+	/// <summary>
+	/// Deletes the run history save file from disk and clears the in-memory
+	/// history list. Any in-progress run tracking is also reset.
+	/// </summary>
+	public static void DeleteSaveFile()
+	{
+		if (FileAccess.FileExists(FileSavePath))
+			DirAccess.RemoveAbsolute(ProjectSettings.GlobalizePath(FileSavePath));
+		_history.Clear();
+		_currentEncounters.Clear();
+		_runStartTime = default;
+	}
 }

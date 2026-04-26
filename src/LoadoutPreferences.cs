@@ -129,4 +129,15 @@ public static class LoadoutPreferences
         using var file = FileAccess.Open(FileSavePath, FileAccess.ModeFlags.Write);
         file.StoreLine(JsonSerializer.Serialize(_data));
     }
+
+    /// <summary>
+    /// Deletes the loadout preferences save file from disk and resets all
+    /// in-memory state (spell selections and talent choices) to defaults.
+    /// </summary>
+    public static void DeleteSaveFile()
+    {
+        if (FileAccess.FileExists(FileSavePath))
+            DirAccess.RemoveAbsolute(ProjectSettings.GlobalizePath(FileSavePath));
+        _data = new PreferencesData();
+    }
 }

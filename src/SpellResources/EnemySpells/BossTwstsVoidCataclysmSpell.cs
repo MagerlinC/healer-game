@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.SpellResources.Generic;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;
@@ -47,6 +48,7 @@ public partial class BossTwstsVoidCataclysmSpell : SpellResource
 
 	public override void Apply(SpellContext ctx)
 	{
+		DeflectSpell.PlayDeflectFailedSound(ctx.Caster);
 		foreach (var target in ctx.Targets)
 			target.TakeDamage(ctx.FinalValue);
 	}

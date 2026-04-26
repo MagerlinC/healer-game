@@ -36,6 +36,7 @@ public partial class DamageOverTimeEffect : CharacterEffect
 			TargetName = target.CharacterName,
 			AbilityName = AbilityName ?? EffectId,
 			Amount = DamagePerTick,
+			Description = Description,
 			Type = CombatEventType.Damage,
 			IsCrit = false
 		});

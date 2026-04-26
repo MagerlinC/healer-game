@@ -106,7 +106,8 @@ public partial class DetonationZone : Node2D
 				AbilityName = "Detonation Zone",
 				Amount = DamageAmount,
 				Type = CombatEventType.Damage,
-				IsCrit = false
+				IsCrit = false,
+				Description = "A volatile zone left by the Demon Slime that explodes after a short delay, dealing heavy damage to anyone caught in the blast."
 			});
 		}
 

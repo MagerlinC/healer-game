@@ -31,6 +31,13 @@ public partial class MainMenuUI : Node2D
 	static readonly Color BtnBorder = new(0.55f, 0.44f, 0.24f);
 	static readonly Color BtnHoverBdr = new(0.85f, 0.70f, 0.35f);
 
+	static readonly Color DangerBtnNormalBg = new(0.22f, 0.07f, 0.07f);
+	static readonly Color DangerBtnHoverBg  = new(0.35f, 0.10f, 0.10f);
+	static readonly Color DangerBtnBorder   = new(0.70f, 0.25f, 0.25f);
+	static readonly Color DangerBtnHoverBdr = new(0.95f, 0.35f, 0.35f);
+	static readonly Color DangerTextColor   = new(0.95f, 0.55f, 0.55f);
+	static readonly Color WarningTextColor  = new(0.90f, 0.78f, 0.30f);
+
 	const string KeybindSavePath = "user://keybinds.cfg";
 	const string KeybindSection = "spell_hotkeys";
 
@@ -38,6 +45,10 @@ public partial class MainMenuUI : Node2D
 	string? _actionToRebind;
 	Label? _rebindPromptLabel;
 	readonly Dictionary<string, Label> _keybindLabels = new();
+
+	// ── delete-save confirmation state ────────────────────────────────────────
+	Control? _deleteConfirmRow;
+	Button?  _deleteInitialBtn;
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -280,6 +291,27 @@ public partial class MainMenuUI : Node2D
 		hint.AddThemeColorOverride("font_color", HintColor);
 		vbox.AddChild(hint);
 
+		// ── Danger Zone ───────────────────────────────────────────────────────
+		var dangerSep = new HSeparator();
+		dangerSep.AddThemeColorOverride("color", new Color(0.55f, 0.20f, 0.20f, 0.60f));
+		vbox.AddChild(dangerSep);
+
+		var dangerHeader = new Label();
+		dangerHeader.Text = "Save Data";
+		dangerHeader.HorizontalAlignment = HorizontalAlignment.Center;
+		dangerHeader.AddThemeFontSizeOverride("font_size", 14);
+		dangerHeader.AddThemeColorOverride("font_color", new Color(0.75f, 0.45f, 0.45f));
+		vbox.AddChild(dangerHeader);
+
+		// Initial delete button
+		_deleteInitialBtn = MakeDangerButton("Delete Save Data", OnDeleteSavePressed);
+		vbox.AddChild(_deleteInitialBtn);
+
+		// Confirmation row (hidden until the delete button is clicked)
+		_deleteConfirmRow = BuildDeleteConfirmRow(overlay);
+		_deleteConfirmRow.Visible = false;
+		vbox.AddChild(_deleteConfirmRow);
+
 		return overlay;
 	}
 
@@ -451,5 +483,81 @@ public partial class MainMenuUI : Node2D
 		}
 
 		return "Unset";
+	}
+
+	// ── danger-zone helpers ───────────────────────────────────────────────────
+
+	Button MakeDangerButton(string text, System.Action onPressed)
+	{
+		var btn = new Button();
+		btn.Text = text;
+		btn.CustomMinimumSize = new Vector2(240f, 44f);
+		btn.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+		btn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+		btn.AddThemeFontSizeOverride("font_size", 15);
+		btn.AddThemeColorOverride("font_color", DangerTextColor);
+		btn.AddThemeColorOverride("font_hover_color", new Color(1f, 0.75f, 0.75f));
+
+		var normal = MakeBtnStyle(DangerBtnNormalBg, DangerBtnBorder);
+		var hover  = MakeBtnStyle(DangerBtnHoverBg,  DangerBtnHoverBdr);
+		btn.AddThemeStyleboxOverride("normal",  normal);
+		btn.AddThemeStyleboxOverride("hover",   hover);
+		btn.AddThemeStyleboxOverride("pressed", normal);
+		btn.AddThemeStyleboxOverride("focus",   normal);
+
+		btn.Pressed += onPressed;
+		return btn;
+	}
+
+	Control BuildDeleteConfirmRow(Control overlay)
+	{
+		var container = new VBoxContainer();
+		container.AddThemeConstantOverride("separation", 8);
+
+		var warningLabel = new Label();
+		warningLabel.Text = "This will permanently delete all progress, run history,\nand saved loadout preferences. This cannot be undone.";
+		warningLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		warningLabel.AddThemeFontSizeOverride("font_size", 12);
+		warningLabel.AddThemeColorOverride("font_color", WarningTextColor);
+		container.AddChild(warningLabel);
+
+		var btnRow = new HBoxContainer();
+		btnRow.Alignment = BoxContainer.AlignmentMode.Center;
+		btnRow.AddThemeConstantOverride("separation", 12);
+
+		var confirmBtn = MakeDangerButton("Yes, Delete Everything", () => OnConfirmDeletePressed(overlay));
+		confirmBtn.CustomMinimumSize = new Vector2(200f, 40f);
+		btnRow.AddChild(confirmBtn);
+
+		var cancelBtn = MakeMenuButton("Cancel", OnCancelDeletePressed);
+		cancelBtn.CustomMinimumSize = new Vector2(100f, 40f);
+		btnRow.AddChild(cancelBtn);
+
+		container.AddChild(btnRow);
+		return container;
+	}
+
+	void OnDeleteSavePressed()
+	{
+		_deleteInitialBtn!.Visible = false;
+		_deleteConfirmRow!.Visible = true;
+	}
+
+	void OnCancelDeletePressed()
+	{
+		_deleteConfirmRow!.Visible = false;
+		_deleteInitialBtn!.Visible = true;
+	}
+
+	void OnConfirmDeletePressed(Control overlay)
+	{
+		PlayerProgressStore.DeleteSaveFile();
+		RunHistoryStore.DeleteSaveFile();
+		LoadoutPreferences.DeleteSaveFile();
+
+		// Close the settings panel and reset confirmation UI state
+		overlay.Visible = false;
+		_deleteConfirmRow!.Visible = false;
+		_deleteInitialBtn!.Visible = true;
 	}
 }

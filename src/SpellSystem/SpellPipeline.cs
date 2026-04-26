@@ -117,7 +117,8 @@ public static class SpellPipeline
 					AbilityName = spell.Name,
 					Amount = ctx.FinalValue,
 					Type = CombatEventType.Healing,
-					IsCrit = ctx.Tags.HasFlag(SpellTags.Critical)
+					IsCrit = ctx.Tags.HasFlag(SpellTags.Critical),
+					Description = spell.Description
 				});
 			}
 			else if (ctx.Tags.HasFlag(SpellTags.Damage) && isDirectSpell)
@@ -130,7 +131,8 @@ public static class SpellPipeline
 					AbilityName = spell.Name,
 					Amount = ctx.FinalValue,
 					Type = CombatEventType.Damage,
-					IsCrit = ctx.Tags.HasFlag(SpellTags.Critical)
+					IsCrit = ctx.Tags.HasFlag(SpellTags.Critical),
+					Description = spell.Description
 				});
 			}
 		}

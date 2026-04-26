@@ -46,4 +46,13 @@ public partial class DeflectSpell : SpellResource
 		audio.Play();
 		audio.Finished += audio.QueueFree;
 	}
+	public static void PlayDeflectFailedSound(Character caster)
+	{
+		var audio = new AudioStreamPlayer();
+		audio.Stream = GD.Load<AudioStream>(AssetConstants.DeflectFailedSoundPath);
+		audio.VolumeDb = -4.0f;
+		caster.AddChild(audio);
+		audio.Play();
+		audio.Finished += audio.QueueFree;
+	}
 }

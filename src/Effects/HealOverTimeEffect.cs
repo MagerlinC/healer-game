@@ -36,6 +36,7 @@ public partial class HealOverTimeEffect : CharacterEffect
 			TargetName = target.CharacterName,
 			AbilityName = AbilityName ?? EffectId,
 			Amount = HealPerTick,
+			Description = Description,
 			Type = CombatEventType.Healing,
 			IsCrit = false
 		});

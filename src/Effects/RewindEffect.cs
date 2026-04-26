@@ -32,6 +32,7 @@ public partial class RewindEffect : CharacterEffect
 			TargetName = target.CharacterName,
 			AbilityName = AbilityName ?? EffectId,
 			Amount = missingHealth,
+			Description = Description,
 			Type = CombatEventType.Healing,
 			IsCrit = false
 		});
