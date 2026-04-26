@@ -15,43 +15,50 @@ namespace healerfantasy.Items.Staves;
 /// </summary>
 public class StaffOfEternalFlame : EquippableItem
 {
-    public override string ItemId => "staff_of_eternal_flame";
+	public override string ItemId => "staff_of_eternal_flame";
 
-    public StaffOfEternalFlame()
-    {
-        Name        = "Staff of the Eternal Flame";
-        Description = "+20% healing multiplier.\nCritical healing strikes restore 5 mana.";
-        Rarity      = ItemRarity.Legendary;
-        Slot        = EquipSlot.Staff;
-        Icon        = GD.Load<Texture2D>(AssetConstants.StaveIconPath(5));
-        CharacterModifiers.Add(new HealingModifier());
-        SpellModifiers.Add(new ManaOnCritHealModifier());
-    }
+	public StaffOfEternalFlame()
+	{
+		Name = "Staff of the Eternal Flame";
+		Description = "20% increased healing.\nCritical healing strikes restore 5 mana.";
+		Rarity = ItemRarity.Legendary;
+		Slot = EquipSlot.Staff;
+		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(5));
+		CharacterModifiers.Add(new HealingModifier());
+		SpellModifiers.Add(new ManaOnCritHealModifier());
+	}
 
-    // ── modifiers ─────────────────────────────────────────────────────────────
+	// ── modifiers ─────────────────────────────────────────────────────────────
 
-    class HealingModifier : ICharacterModifier
-    {
-        public void Modify(CharacterStats stats) => stats.HealingMultiplier *= 1.20f;
-    }
+	class HealingModifier : ICharacterModifier
+	{
+		public void Modify(CharacterStats stats)
+		{
+			stats.IncreasedHealing += 0.20f;
+		}
+	}
 
-    /// <summary>
-    /// After each spell cast, checks whether it was a critical healing strike.
-    /// If so, restores 5 mana to the caster — the "Eternal Flame" legendary effect.
-    /// </summary>
-    class ManaOnCritHealModifier : ISpellModifier
-    {
-        public ModifierPriority Priority => ModifierPriority.ADDITIVE;
+	/// <summary>
+	/// After each spell cast, checks whether it was a critical healing strike.
+	/// If so, restores 5 mana to the caster — the "Eternal Flame" legendary effect.
+	/// </summary>
+	class ManaOnCritHealModifier : ISpellModifier
+	{
+		public ModifierPriority Priority => ModifierPriority.BASE;
 
-        public void OnBeforeCast(SpellContext context) { }
-        public void OnCalculate(SpellContext context) { }
+		public void OnBeforeCast(SpellContext context)
+		{
+		}
+		public void OnCalculate(SpellContext context)
+		{
+		}
 
-        public void OnAfterCast(SpellContext context)
-        {
-            var isCritHeal = context.Tags.HasFlag(SpellTags.Critical)
-                          && context.Tags.HasFlag(SpellTags.Healing);
-            if (isCritHeal)
-                context.Caster.RestoreMana(5f);
-        }
-    }
+		public void OnAfterCast(SpellContext context)
+		{
+			var isCritHeal = context.Tags.HasFlag(SpellTags.Critical)
+			                 && context.Tags.HasFlag(SpellTags.Healing);
+			if (isCritHeal)
+				context.Caster.RestoreMana(5f);
+		}
+	}
 }

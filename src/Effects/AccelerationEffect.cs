@@ -16,7 +16,7 @@ public partial class AccelerationEffect : CharacterEffect, ICharacterModifier
 {
 	public const int MaxStacks = 5;
 
-	/// <summary>Cast-speed bonus added to <see cref="CharacterStats.CastSpeedMultiplier"/> per stack.</summary>
+	/// <summary>Cast-speed bonus added to <see cref="CharacterStats.IncreasedCastSpeed"/> per stack.</summary>
 	public float CastSpeedPerStack { get; } = 0.10f; // +10 % per stack
 
 	public AccelerationEffect(float duration)
@@ -49,6 +49,6 @@ public partial class AccelerationEffect : CharacterEffect, ICharacterModifier
 	/// </summary>
 	public void Modify(CharacterStats stats)
 	{
-		stats.CastSpeedMultiplier += CastSpeedPerStack * CurrentStacks;
+		stats.IncreasedCastSpeed += CastSpeedPerStack * CurrentStacks;
 	}
 }

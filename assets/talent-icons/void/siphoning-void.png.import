@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c3roa4qcgo3lf"
-path="res://.godot/imported/siphoning-void.png-81f2cf685a5202664f6cc4fa3bd39a3a.ctex"
+uid="uid://c1mydxmnnnbsm"
+path="res://.godot/imported/siphoning-void.png-d7550215ee3440efdaa4f6205bdbcf26.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/talent-icons/siphoning-void.png"
-dest_files=["res://.godot/imported/siphoning-void.png-81f2cf685a5202664f6cc4fa3bd39a3a.ctex"]
+source_file="res://assets/talent-icons/void/siphoning-void.png"
+dest_files=["res://.godot/imported/siphoning-void.png-d7550215ee3440efdaa4f6205bdbcf26.ctex"]
 
 [params]
 

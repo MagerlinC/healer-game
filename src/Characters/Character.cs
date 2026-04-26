@@ -290,8 +290,8 @@ public abstract partial class Character : CharacterBody2D
 			MaxMana = MaxMana,
 			CritChance = BaseCritChance,
 			CritMultiplier = 1.5f,
-			DamageMultiplier = 1.0f,
-			HealingMultiplier = 1.0f
+			IncreasedDamage = 1.0f,
+			IncreasedHealing = 1.0f
 		};
 
 		foreach (var talent in Talents)
@@ -403,5 +403,12 @@ public abstract partial class Character : CharacterBody2D
 	void OnDeath()
 	{
 		EmitSignalDied(this);
+		foreach (var effect in _effects.Values)
+			effect.OnExpired(this);
+		_effects.Clear();
+		// Unregister signals
+		GlobalAutoLoad.UnregisterSignalEmitter(this);
+		// dispose
+		QueueFree();
 	}
 }

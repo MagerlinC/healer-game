@@ -9,10 +9,10 @@ namespace healerfantasy.Talents.Chronomancy;
 /// </summary>
 public class TemporalFlowTalent : ICharacterModifier
 {
-    const float CastSpeedBonus = 0.15f;
+	const float CastSpeedBonus = 0.15f;
 
-    public void Modify(CharacterStats stats)
-    {
-        stats.CastSpeedMultiplier += CastSpeedBonus;
-    }
+	public void Modify(CharacterStats stats)
+	{
+		stats.IncreasedCastSpeed += CastSpeedBonus;
+	}
 }

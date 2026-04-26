@@ -12,20 +12,20 @@ namespace healerfantasy.Effects;
 /// </summary>
 public partial class RadiantInfusionEffect : CharacterEffect, ICharacterModifier
 {
-    /// <summary>Flat addition to DamageMultiplier while active. 0.15 = +15% damage.</summary>
-    public float DamageBonus { get; }
+	/// <summary>Flat addition to DamageMultiplier while active. 0.15 = +15% damage.</summary>
+	public float DamageBonus { get; }
 
-    public RadiantInfusionEffect(float duration, float damageBonus = 0.15f)
-        : base(duration, 0f)
-    {
-        EffectId = "RadiantInfusion";
-        DamageBonus = damageBonus;
-    }
+	public RadiantInfusionEffect(float duration, float damageBonus = 0.15f)
+		: base(duration, 0f)
+	{
+		EffectId = "RadiantInfusion";
+		DamageBonus = damageBonus;
+	}
 
-    // ── ICharacterModifier ────────────────────────────────────────────────────
+	// ── ICharacterModifier ────────────────────────────────────────────────────
 
-    public void Modify(CharacterStats stats)
-    {
-        stats.DamageMultiplier += DamageBonus;
-    }
+	public void Modify(CharacterStats stats)
+	{
+		stats.IncreasedDamage += DamageBonus;
+	}
 }

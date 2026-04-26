@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ptjku1ckndi2"
-path="res://.godot/imported/necrotic-touch.png-a799b029385f6bc7f6781d9eeaaa636b.ctex"
+uid="uid://io26jjbrd0mn"
+path="res://.godot/imported/necrotic-touch.png-be6d9d4b759bf93be95c002f6eae8a5c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/talent-icons/necrotic-touch.png"
-dest_files=["res://.godot/imported/necrotic-touch.png-a799b029385f6bc7f6781d9eeaaa636b.ctex"]
+source_file="res://assets/talent-icons/void/necrotic-touch.png"
+dest_files=["res://.godot/imported/necrotic-touch.png-be6d9d4b759bf93be95c002f6eae8a5c.ctex"]
 
 [params]
 

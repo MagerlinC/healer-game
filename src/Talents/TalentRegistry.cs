@@ -219,12 +219,16 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Future Sight",
-			Description = "Chronomancy healing spells are 20% more effective.",
+			Description =
+				"Casting a chronomancy spell applies a buff that causes the next non-chronomancy spell cast within 10 seconds to always crit.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_24.png",
 			School = SpellSchool.Chronomancy,
 			TalentRow = 3,
-			Configure = (t, _) =>
-				t.SpellModifiers.Add(new FutureSightTalent())
+			Configure = (t, icon) =>
+				t.SpellModifiers.Add(new FutureSightTalent
+				{
+					EffectIcon = icon
+				})
 		},
 		new()
 		{

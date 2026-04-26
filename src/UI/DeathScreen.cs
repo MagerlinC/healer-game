@@ -68,8 +68,8 @@ public partial class DeathScreen : CanvasLayer
 		btnRow.AddThemeConstantOverride("separation", 20);
 		vbox.AddChild(btnRow);
 
-		btnRow.AddChild(MakeButton("Retry",       new Color(0.50f, 0.20f, 0.20f), OnRetryPressed));
-		btnRow.AddChild(MakeButton("Main Menu",   new Color(0.35f, 0.30f, 0.22f), OnMainMenuPressed));
+		btnRow.AddChild(MakeButton("New Run", new Color(0.50f, 0.20f, 0.20f), OnNewRunPressed));
+		btnRow.AddChild(MakeButton("Main Menu", new Color(0.35f, 0.30f, 0.22f), OnMainMenuPressed));
 	}
 
 	// ── public API ────────────────────────────────────────────────────────────
@@ -95,12 +95,12 @@ public partial class DeathScreen : CanvasLayer
 	// ── private ───────────────────────────────────────────────────────────────
 
 	/// <summary>Restart the same boss fight with the same RunState loadout.</summary>
-	void OnRetryPressed()
+	void OnNewRunPressed()
 	{
 		GetTree().Paused = false;
 		GlobalAutoLoad.Reset();
-		RunHistoryStore.StartRun(); // Begin tracking the retry as a new run
-		GetTree().ChangeSceneToFile("res://levels/World.tscn");
+		// RunHistoryStore.StartRun(); // Begin tracking the retry as a new run
+		GetTree().ChangeSceneToFile("res://levels/Overworld.tscn");
 	}
 
 	/// <summary>Return to Main Menu and reset RunState for a fresh run.</summary>
@@ -114,23 +114,23 @@ public partial class DeathScreen : CanvasLayer
 
 	// ── helpers ───────────────────────────────────────────────────────────────
 
-	static Button MakeButton(string text, Color borderColor, System.Action onPressed)
+	static Button MakeButton(string text, Color borderColor, Action onPressed)
 	{
 		var btn = new Button();
-		btn.Text                    = text;
-		btn.CustomMinimumSize       = new Vector2(180f, 52f);
-		btn.SizeFlagsHorizontal     = Control.SizeFlags.ShrinkCenter;
+		btn.Text = text;
+		btn.CustomMinimumSize = new Vector2(180f, 52f);
+		btn.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
 		btn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
 		btn.AddThemeFontSizeOverride("font_size", 18);
-		btn.AddThemeColorOverride("font_color",       new Color(0.90f, 0.87f, 0.83f));
+		btn.AddThemeColorOverride("font_color", new Color(0.90f, 0.87f, 0.83f));
 		btn.AddThemeColorOverride("font_hover_color", new Color(0.95f, 0.84f, 0.50f));
 
 		var normal = MakeStyle(new Color(0.16f, 0.11f, 0.11f), borderColor);
-		var hover  = MakeStyle(new Color(0.26f, 0.16f, 0.14f), borderColor * 1.4f);
-		btn.AddThemeStyleboxOverride("normal",  normal);
-		btn.AddThemeStyleboxOverride("hover",   hover);
+		var hover = MakeStyle(new Color(0.26f, 0.16f, 0.14f), borderColor * 1.4f);
+		btn.AddThemeStyleboxOverride("normal", normal);
+		btn.AddThemeStyleboxOverride("hover", hover);
 		btn.AddThemeStyleboxOverride("pressed", normal);
-		btn.AddThemeStyleboxOverride("focus",   normal);
+		btn.AddThemeStyleboxOverride("focus", normal);
 
 		btn.Pressed += onPressed;
 		return btn;
@@ -142,9 +142,9 @@ public partial class DeathScreen : CanvasLayer
 		s.BgColor = bg;
 		s.SetCornerRadiusAll(6);
 		s.SetBorderWidthAll(2);
-		s.BorderColor          = border;
-		s.ContentMarginLeft    = s.ContentMarginRight  = 16f;
-		s.ContentMarginTop     = s.ContentMarginBottom = 10f;
+		s.BorderColor = border;
+		s.ContentMarginLeft = s.ContentMarginRight = 16f;
+		s.ContentMarginTop = s.ContentMarginBottom = 10f;
 		return s;
 	}
 }

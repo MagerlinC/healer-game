@@ -14,7 +14,7 @@ public class VoidWeaver : EquippableItem
 	{
 		Name = "Void Weaver";
 		Description =
-			"+20% void damage multiplier. Dealing void damage has a chance to refresh all damage over time effects on the target";
+			"20% increased void damage. Dealing void damage has a chance to refresh all damage over time effects on the target";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Staff;
 		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(6));
@@ -26,13 +26,13 @@ public class VoidWeaver : EquippableItem
 	{
 		public void Modify(CharacterStats stats)
 		{
-			stats.SpellSchoolDamageMultipliers[SpellSchool.Void] += 1.20f;
+			stats.SpellSchoolDamageMultipliers[SpellSchool.Void] += 0.20f;
 		}
 	}
 
 	class RefreshDotsModifier : ISpellModifier
 	{
-		public ModifierPriority Priority => ModifierPriority.ADDITIVE;
+		public ModifierPriority Priority => ModifierPriority.BASE;
 
 		public void OnBeforeCast(SpellContext context)
 		{

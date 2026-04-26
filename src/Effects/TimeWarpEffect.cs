@@ -11,24 +11,24 @@ namespace healerfantasy.Effects;
 /// </summary>
 public partial class TimeWarpEffect : CharacterEffect, ICharacterModifier
 {
-    /// <summary>Flat cast-speed bonus while the effect is active.</summary>
-    public float CastSpeedBonus { get; }
+	/// <summary>Flat cast-speed bonus while the effect is active.</summary>
+	public float CastSpeedBonus { get; }
 
-    public TimeWarpEffect(float duration, float castSpeedBonus = 0.20f)
-        : base(duration, 0f)
-    {
-        EffectId = "TimeWarp";
-        CastSpeedBonus = castSpeedBonus;
-    }
+	public TimeWarpEffect(float duration, float castSpeedBonus = 0.20f)
+		: base(duration, 0f)
+	{
+		EffectId = "TimeWarp";
+		CastSpeedBonus = castSpeedBonus;
+	}
 
-    // ── ICharacterModifier ────────────────────────────────────────────────────
+	// ── ICharacterModifier ────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Contributes a flat cast-speed bonus to the character's stat snapshot
-    /// while this effect is active.
-    /// </summary>
-    public void Modify(CharacterStats stats)
-    {
-        stats.CastSpeedMultiplier += CastSpeedBonus;
-    }
+	/// <summary>
+	/// Contributes a flat cast-speed bonus to the character's stat snapshot
+	/// while this effect is active.
+	/// </summary>
+	public void Modify(CharacterStats stats)
+	{
+		stats.IncreasedCastSpeed += CastSpeedBonus;
+	}
 }

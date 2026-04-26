@@ -46,7 +46,7 @@ public partial class Player : Character
 	/// <param name="spell">The spell being cast.</param>
 	/// <param name="adjustedCastTime">
 	/// The actual cast duration after applying the caster's
-	/// <see cref="CharacterStats.CastSpeedMultiplier"/>. Use this for
+	/// <see cref="CharacterStats.IncreasedCastSpeed"/>. Use this for
 	/// UI timers rather than <see cref="SpellResources.SpellResource.CastTime"/>.
 	/// </param>
 	[Signal]
@@ -320,7 +320,7 @@ public partial class Player : Character
 
 				var stats = GetCharacterStats();
 				var isInstant = spellToCast.CastTime == 0.0f
-					|| (stats.NextCastIsInstant && spellToCast.School != SpellSchool.Chronomancy);
+				                || stats.NextCastIsInstant && spellToCast.School != SpellSchool.Chronomancy;
 
 				if (isInstant)
 				{
@@ -330,7 +330,7 @@ public partial class Player : Character
 				{
 					// Divide by the cast-speed multiplier so e.g. 2× Acceleration
 					// turns a 2 s cast into ~1.67 s.
-					var adjustedCastTime = spellToCast.CastTime / stats.CastSpeedMultiplier;
+					var adjustedCastTime = spellToCast.CastTime / stats.IncreasedCastSpeed;
 					EmitSignalCastStarted(spellToCast, adjustedCastTime);
 
 					_isCasting = true;
@@ -359,7 +359,8 @@ public partial class Player : Character
 			// Return the first *alive* boss — GetFirstNodeInGroup gives an arbitrary
 			// ordering and may return a dead character in multi-boss encounters.
 			foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
-				if (node is Character c && c.IsAlive) return c;
+				if (node is Character c && c.IsAlive)
+					return c;
 
 			return null;
 		}
@@ -369,7 +370,8 @@ public partial class Player : Character
 		if (!target.IsAlive && target.IsInGroup(GameConstants.BossGroupName))
 		{
 			foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
-				if (node is Character c && c.IsAlive) return c;
+				if (node is Character c && c.IsAlive)
+					return c;
 			return null;
 		}
 

@@ -53,13 +53,18 @@ public static class SpellPipeline
 		foreach (var mod in modifiers)
 			mod.OnBeforeCast(ctx);
 
-		// ── 6. Apply stat multipliers, then OnCalculate ─────────────────────
+		// ── 6. Apply stat modifiers/crits, then OnCalculate ─────────────────────
 		ctx.FinalValue = ctx.BaseValue;
 
+		var damageForSchool = ctx.CasterStats.SpellSchoolDamageMultipliers[spell.School];
+		var totalIncreasedDamage = ctx.CasterStats.IncreasedDamage + damageForSchool;
 		if (ctx.Tags.HasFlag(SpellTags.Damage))
-			ctx.FinalValue *= ctx.CasterStats.DamageMultiplier;
+		{
+			ctx.FinalValue *= 1.0f + totalIncreasedDamage;
+		}
+
 		if (ctx.Tags.HasFlag(SpellTags.Healing))
-			ctx.FinalValue *= ctx.CasterStats.HealingMultiplier;
+			ctx.FinalValue *= 1.0f + ctx.CasterStats.IncreasedHealing;
 
 		foreach (var mod in modifiers)
 			mod.OnCalculate(ctx);

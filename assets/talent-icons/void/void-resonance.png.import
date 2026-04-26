@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bp1raq2fvk16n"
-path="res://.godot/imported/void-resonance.png-72334000694d2bd00269bc95b560141f.ctex"
+uid="uid://da70itm2niboh"
+path="res://.godot/imported/void-resonance.png-2e21253dce1ceaef8ffd49545d86b937.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/talent-icons/void-resonance.png"
-dest_files=["res://.godot/imported/void-resonance.png-72334000694d2bd00269bc95b560141f.ctex"]
+source_file="res://assets/talent-icons/void/void-resonance.png"
+dest_files=["res://.godot/imported/void-resonance.png-2e21253dce1ceaef8ffd49545d86b937.ctex"]
 
 [params]
 

@@ -19,13 +19,13 @@ public class CharacterStats
 	/// <summary>How much FinalValue is multiplied on a crit. Default 1.5×.</summary>
 	public float CritMultiplier { get; set; } = 1.5f;
 
-	/// <summary>Multiplier applied to all damage spells before modifier pipeline runs. Default 1.0.</summary>
-	public float DamageMultiplier { get; set; } = 1.0f;
+	/// <summary>Modifier applied to all damage spells before modifier pipeline runs.</summary>
+	public float IncreasedDamage { get; set; } = 0.0f;
 
-	/// <summary>Multiplier applied to all healing spells before modifier pipeline runs. Default 1.0.</summary>
-	public float HealingMultiplier { get; set; } = 1.0f;
+	/// <summary>Modifier applied to all healing spells before modifier pipeline runs.</summary>
+	public float IncreasedHealing { get; set; } = 0.0f;
 
-	public float CastSpeedMultiplier { get; set; } = 1.0f;
+	public float IncreasedCastSpeed { get; set; } = 1.0f;
 
 	public Dictionary<SpellSchool, float> SpellSchoolDamageMultipliers = new()
 	{
@@ -49,4 +49,6 @@ public class CharacterStats
 	/// Set by talents such as <see cref="Talents.Chronomancy.TemporalMomentumTalent"/>.
 	/// </summary>
 	public bool NextCastIsInstant { get; set; } = false;
+
+	public bool NextCastIsCrit { get; set; } = false;
 }
