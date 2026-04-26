@@ -27,13 +27,13 @@ public class CharacterStats
 
 	public float IncreasedCastSpeed { get; set; } = 1.0f;
 
-	public Dictionary<SpellSchool, float> SpellSchoolDamageMultipliers = new()
+	public Dictionary<SpellSchool, float> SpellSchoolIncreasedDamage = new()
 	{
-		{ SpellSchool.Nature, 1.0f },
-		{ SpellSchool.Holy, 1.0f },
-		{ SpellSchool.Void, 1.0f },
-		{ SpellSchool.Chronomancy, 1.0f },
-		{ SpellSchool.Generic, 1.0f }
+		{ SpellSchool.Nature, 0.0f },
+		{ SpellSchool.Holy, 0.0f },
+		{ SpellSchool.Void, 0.0f },
+		{ SpellSchool.Chronomancy, 0.0f },
+		{ SpellSchool.Generic, 0.0f }
 	};
 
 	/// <summary>

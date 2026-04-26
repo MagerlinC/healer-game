@@ -6,7 +6,7 @@ public static class AssetConstants
 	public static readonly string SpellIconAssets = "res://assets/spell-icons/";
 	public static readonly string TalentIconAssets = "res://assets/talent-icons/";
 
-	public static readonly string BossMusicPath = "res://assets/music/battle.wav";
+	public static readonly string FinalBossPhase2MusicPath = "res://assets/music/boss-battle.wav";
 
 	public static readonly string MainMenuPath = "res://assets/backgrounds/main-menu/background.png";
 

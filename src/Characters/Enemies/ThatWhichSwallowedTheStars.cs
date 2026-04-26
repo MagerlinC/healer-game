@@ -42,7 +42,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 {
 	public ThatWhichSwallowedTheStars()
 	{
-		MaxHealth = 2200f;
+		MaxHealth = 5000f;
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────
@@ -55,24 +55,32 @@ public partial class ThatWhichSwallowedTheStars : Character
 
 	// ── tuneable exports ──────────────────────────────────────────────────────
 
-	[Export] public float BeamInterval         = 8.0f;
-	[Export] public float CataclysmInterval    = 20.0f;
-	[Export] public float CataclysmWindup      = 2.5f;    // initial wind-up before hit 1
-	[Export] public float CataclysmHitWindow   = 1.5f;    // parry window duration per hit
+	[Export] public float BeamInterval = 8.0f;
+	[Export] public float CataclysmInterval = 20.0f;
+	[Export] public float CataclysmWindup = 2.5f; // initial wind-up before hit 1
+	[Export] public float CataclysmHitWindow = 1.5f; // parry window duration per hit
 
-	[Export] public float BeamDamage       = 75f;
-	[Export] public float CataclysmDamage  = 65f;         // per hit
+	[Export] public float BeamDamage = 75f;
+	[Export] public float CataclysmDamage = 65f; // per hit
+	[Export] public float PhaseTransitionDuration = 6.0f;
+	[Export] public float MemoryGameInitialDelay = 6.0f;
+	[Export] public float MemoryGameInterval = 18.0f;
+	[Export] public float MemoryGameDamage = 120f;
 
 	// ── internal state ────────────────────────────────────────────────────────
 
 	float _beamTimer;
 	float _cataclysmTimer;
 
-	BossTwstsBeamSpell          _beamSpell;
+	BossTwstsBeamSpell _beamSpell;
 	BossTwstsVoidCataclysmSpell _cataclysmSpell;
 
-	AnimatedSprite2D  _sprite;
+	AnimatedSprite2D _sprite;
 	AudioStreamPlayer _riserPlayer;
+	AudioStreamPlayer _phaseTwoMusicPlayer;
+	AudioStreamPlayer _worldMusicPlayer;
+	AudioStream _worldMusicOriginalStream;
+	Camera2D _fightCamera;
 
 	// Beam is a one-shot animation → spell.
 	bool _beamPending;
@@ -83,14 +91,21 @@ public partial class ThatWhichSwallowedTheStars : Character
 	enum CataclysmPhase
 	{
 		None,
-		Windup,    // initial cast animation plays, boss bar counts down
-		Hit1,      // parry window 1 — 1.5 s
-		Hit2,      // parry window 2 — 1.5 s
-		Hit3       // parry window 3 — 1.5 s
+		Windup, // initial cast animation plays, boss bar counts down
+		Hit1, // parry window 1 — 1.5 s
+		Hit2, // parry window 2 — 1.5 s
+		Hit3 // parry window 3 — 1.5 s
 	}
 
 	CataclysmPhase _cataclysmPhase;
-	float          _cataclysmPhaseTimer;
+	float _cataclysmPhaseTimer;
+	bool _phaseTwoStarted;
+	bool _phaseTransitionActive;
+	float _phaseTransitionTimer;
+	float _memoryGameTimer;
+	float _cameraShakeTimer;
+	Vector2 _cameraBaseOffset;
+	ThatWhichSwallowedTheStarsMemoryGame _memoryGame;
 
 	const string AssetBase = "res://assets/enemies/that-which-swallowed-the-stars/";
 
@@ -105,11 +120,11 @@ public partial class ThatWhichSwallowedTheStars : Character
 		IsFriendly = false;
 
 		// Stagger first attacks — give the player a brief moment before the onslaught.
-		_beamTimer      = BeamInterval;
+		_beamTimer = BeamInterval;
 		_cataclysmTimer = CataclysmInterval;
 
-		_beamSpell       = new BossTwstsBeamSpell          { DamageAmount = BeamDamage };
-		_cataclysmSpell  = new BossTwstsVoidCataclysmSpell { DamageAmount = CataclysmDamage };
+		_beamSpell = new BossTwstsBeamSpell { DamageAmount = BeamDamage };
+		_cataclysmSpell = new BossTwstsVoidCataclysmSpell { DamageAmount = CataclysmDamage };
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
@@ -118,16 +133,47 @@ public partial class ThatWhichSwallowedTheStars : Character
 		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.ParryRiserSoundPath);
 		AddChild(_riserPlayer);
 
+		_phaseTwoMusicPlayer = new AudioStreamPlayer();
+		_phaseTwoMusicPlayer.Stream = GD.Load<AudioStream>(AssetConstants.FinalBossPhase2MusicPath);
+		_phaseTwoMusicPlayer.ProcessMode = ProcessModeEnum.Always;
+		EnableLooping(_phaseTwoMusicPlayer.Stream);
+		AddChild(_phaseTwoMusicPlayer);
+
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
+
+		_fightCamera = GetViewport().GetCamera2D();
+		_worldMusicPlayer = GetParent()?.GetNodeOrNull<AudioStreamPlayer>("AudioStreamPlayer");
+		_worldMusicOriginalStream = _worldMusicPlayer?.Stream;
 	}
 
 	public override void _Process(double delta)
 	{
 		base._Process(delta);
+
+		if (_phaseTransitionActive)
+		{
+			UpdatePhaseTransition((float)delta);
+			return;
+		}
+
 		if (!IsAlive) return;
+
+		if (_memoryGame != null && IsInstanceValid(_memoryGame))
+			return;
+
+		if (_phaseTwoStarted)
+		{
+			_memoryGameTimer -= (float)delta;
+			if (_memoryGameTimer <= 0f)
+			{
+				_memoryGameTimer = MemoryGameInterval;
+				BeginMemoryGame();
+				return;
+			}
+		}
 
 		// ── Void Cataclysm state machine ──────────────────────────────────────
 		if (_cataclysmPhase != CataclysmPhase.None)
@@ -139,7 +185,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 		}
 
 		// ── Regular attack timers ─────────────────────────────────────────────
-		_beamTimer      -= (float)delta;
+		_beamTimer -= (float)delta;
 		_cataclysmTimer -= (float)delta;
 
 		if (_beamPending) return; // beam animation in flight
@@ -158,11 +204,30 @@ public partial class ThatWhichSwallowedTheStars : Character
 
 	// ── combat actions ────────────────────────────────────────────────────────
 
+	public override void TakeDamage(float amount)
+	{
+		if (_phaseTransitionActive)
+			return;
+
+		if (!_phaseTwoStarted)
+		{
+			var adjustedDamage = amount * GetCharacterStats().DamageTakenMultiplier;
+			var remainingDamage = Mathf.Max(0f, adjustedDamage - CurrentShield);
+			if (remainingDamage >= CurrentHealth)
+			{
+				TriggerPhaseTwoTransition();
+				return;
+			}
+		}
+
+		base.TakeDamage(amount);
+	}
+
 	void PerformBeam()
 	{
 		var target = PickRandomPartyMember();
 		if (target == null) return;
-		_beamTarget  = target;
+		_beamTarget = target;
 		_beamPending = true;
 		_sprite.Play("beam");
 	}
@@ -170,7 +235,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 	/// <summary>Kicks off the Void Cataclysm wind-up (phase: Windup).</summary>
 	void BeginCataclysm()
 	{
-		_cataclysmPhase      = CataclysmPhase.Windup;
+		_cataclysmPhase = CataclysmPhase.Windup;
 		_cataclysmPhaseTimer = CataclysmWindup;
 
 		// One cast bar for the full wind-up.  The three hits that follow fire
@@ -220,7 +285,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 	/// </summary>
 	void StartCataclysmHit(CataclysmPhase phase)
 	{
-		_cataclysmPhase      = phase;
+		_cataclysmPhase = phase;
 		_cataclysmPhaseTimer = CataclysmHitWindow;
 
 		_riserPlayer.Play();
@@ -250,7 +315,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 			if (_beamTarget != null && _beamTarget.IsAlive)
 				SpellPipeline.Cast(_beamSpell, this, _beamTarget);
 
-			_beamTarget  = null;
+			_beamTarget = null;
 			_beamPending = false;
 		}
 
@@ -260,6 +325,99 @@ public partial class ThatWhichSwallowedTheStars : Character
 	}
 
 	// ── targeting helper ──────────────────────────────────────────────────────
+
+	void TriggerPhaseTwoTransition()
+	{
+		if (_phaseTransitionActive || _phaseTwoStarted)
+			return;
+
+		_phaseTransitionActive = true;
+		_phaseTransitionTimer = PhaseTransitionDuration;
+		_cameraShakeTimer = PhaseTransitionDuration;
+		_memoryGameTimer = MemoryGameInitialDelay;
+		_beamPending = false;
+		_beamTarget = null;
+		_cataclysmPhase = CataclysmPhase.None;
+		_cataclysmPhaseTimer = 0f;
+
+		if (CurrentShield > 0f)
+			RemoveShield(CurrentShield);
+
+		SetCurrentHealthDirect(0f);
+		EmitSignalCastWindupEnded();
+		ProcessMode = ProcessModeEnum.Always;
+		if (_worldMusicPlayer != null)
+		{
+			_worldMusicPlayer.ProcessMode = ProcessModeEnum.Always;
+			_worldMusicPlayer.Stop();
+			_worldMusicPlayer.Stream = _phaseTwoMusicPlayer.Stream;
+			_worldMusicPlayer.Play();
+		}
+		else
+		{
+			_phaseTwoMusicPlayer.Play();
+		}
+		_sprite.Play("reveal");
+
+		if (_fightCamera == null)
+			_fightCamera = GetViewport().GetCamera2D();
+		if (_fightCamera != null)
+			_cameraBaseOffset = _fightCamera.Offset;
+
+		GetTree().Paused = true;
+	}
+
+	void UpdatePhaseTransition(float delta)
+	{
+		_phaseTransitionTimer -= delta;
+		_cameraShakeTimer = Mathf.Max(_cameraShakeTimer - delta, 0f);
+		UpdateCameraShake();
+
+		if (_phaseTransitionTimer > 0f)
+			return;
+
+		GetTree().Paused = false;
+		_phaseTransitionActive = false;
+		_phaseTwoStarted = true;
+		ProcessMode = ProcessModeEnum.Inherit;
+		SetCurrentHealthDirect(MaxHealth);
+		RestoreCamera();
+		_sprite.Play("idle");
+	}
+
+	void BeginMemoryGame()
+	{
+		_memoryGame = new ThatWhichSwallowedTheStarsMemoryGame
+		{
+			DamageAmount = MemoryGameDamage,
+			BossName = CharacterName,
+			GlobalPosition = GlobalPosition
+		};
+		_memoryGame.Completed += OnMemoryGameCompleted;
+		GetParent().AddChild(_memoryGame);
+	}
+
+	void OnMemoryGameCompleted()
+	{
+		_memoryGame = null;
+	}
+
+	void UpdateCameraShake()
+	{
+		if (_fightCamera == null)
+			return;
+
+		var strength = 6f + 8f * (_cameraShakeTimer / Mathf.Max(PhaseTransitionDuration, 0.01f));
+		_fightCamera.Offset = _cameraBaseOffset + new Vector2(
+			(float)GD.RandRange(-strength, strength),
+			(float)GD.RandRange(-strength, strength));
+	}
+
+	void RestoreCamera()
+	{
+		if (_fightCamera != null)
+			_fightCamera.Offset = _cameraBaseOffset;
+	}
 
 	Character PickRandomPartyMember()
 	{
@@ -286,9 +444,9 @@ public partial class ThatWhichSwallowedTheStars : Character
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");
 
-		AddAnimFromFiles(frames, "idle",    "idle",    2, 4f,  true);
-		AddAnimFromFiles(frames, "beam",    "beam",    3, 10f, false);
-		AddAnimFromFiles(frames, "cast",    "cast",    3, 8f,  false);
+		AddAnimFromFiles(frames, "idle", "idle", 2, 4f, true);
+		AddAnimFromFiles(frames, "beam", "beam", 3, 10f, false);
+		AddAnimFromFiles(frames, "cast", "cast", 3, 8f, false);
 
 		// Single-frame "default" pose for the initial reveal.
 		var defaultAnim = "reveal";
@@ -312,5 +470,13 @@ public partial class ThatWhichSwallowedTheStars : Character
 			var texture = GD.Load<Texture2D>(AssetBase + $"{filePrefix}{i}.png");
 			frames.AddFrame(animName, texture);
 		}
+	}
+
+	static void EnableLooping(AudioStream stream)
+	{
+		if (stream is AudioStreamWav wav)
+			wav.LoopMode = AudioStreamWav.LoopModeEnum.Forward;
+		else if (stream is AudioStreamOggVorbis ogg)
+			ogg.Loop = true;
 	}
 }

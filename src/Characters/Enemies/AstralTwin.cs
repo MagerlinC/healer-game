@@ -94,6 +94,7 @@ public partial class AstralTwin : Character
 
 	/// <summary>Reference to the sibling twin — wired up lazily after _Ready.</summary>
 	AstralTwin _sibling;
+	DiedEventHandler _siblingDiedHandler;
 
 	const string AssetBase = "res://assets/enemies/astral-twins/";
 
@@ -132,6 +133,8 @@ public partial class AstralTwin : Character
 
 	void FindSibling()
 	{
+		if (IsBeingRemoved || !GodotObject.IsInstanceValid(this)) return;
+
 		foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
 			if (node is AstralTwin twin && twin != this)
 			{
@@ -139,9 +142,16 @@ public partial class AstralTwin : Character
 				// When the sibling dies any active phase shield on this twin becomes
 				// unbreakable (nothing can call NotifySiblingHit any more), so we
 				// clear it immediately and retire all remaining thresholds.
-				_sibling.Died += _ => OnSiblingDied();
+				_siblingDiedHandler = OnSiblingDiedFromSignal;
+				_sibling.Died += _siblingDiedHandler;
 				break;
 			}
+	}
+
+	void OnSiblingDiedFromSignal(Character _)
+	{
+		if (IsBeingRemoved) return;
+		OnSiblingDied();
 	}
 
 	void OnSiblingDied()
@@ -211,7 +221,8 @@ public partial class AstralTwin : Character
 		base.TakeDamage(amount);
 
 		// Any successful hit on this twin immediately breaks the sibling's shield.
-		_sibling?.NotifySiblingHit();
+		if (GodotObject.IsInstanceValid(_sibling) && !_sibling.IsBeingRemoved && !_sibling.IsQueuedForDeletion())
+			_sibling.NotifySiblingHit();
 
 		// Check whether crossing a threshold triggers our OWN shield.
 		CheckShieldThresholds(healthBefore);
@@ -304,7 +315,7 @@ public partial class AstralTwin : Character
 		// Phase shields require a living sibling to break them — skip entirely
 		// once the sibling is gone (OnSiblingDied will have retired the thresholds,
 		// but this guard catches any race where the signal fires late).
-		if (_sibling == null || !_sibling.IsAlive) return;
+		if (!GodotObject.IsInstanceValid(_sibling) || _sibling.IsBeingRemoved || _sibling.IsQueuedForDeletion() || !_sibling.IsAlive) return;
 		for (var i = 0; i < ShieldThresholds.Length; i++)
 		{
 			if (_thresholdUsed[i]) continue;
@@ -344,6 +355,17 @@ public partial class AstralTwin : Character
 		_isPhaseShielded = false;
 		_sprite.Play("idle");
 		GD.Print($"[AstralTwin] {CharacterName}'s phase shield has been broken!");
+	}
+
+	public override void _ExitTree()
+	{
+		if (_sprite != null)
+			_sprite.AnimationFinished -= OnAnimationFinished;
+
+		if (GodotObject.IsInstanceValid(_sibling) && _siblingDiedHandler != null)
+			_sibling.Died -= _siblingDiedHandler;
+
+		base._ExitTree();
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────

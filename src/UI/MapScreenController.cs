@@ -23,11 +23,11 @@ public partial class MapScreenController : Node2D
 	//   Dungeon 0 (mountains) → Camp 0 → Dungeon 1 (centre) → Camp 1 → Dungeon 2 (lower-right)
 	static readonly Vector2[] NodeCentres =
 	{
-		new(235f, 310f),  // Dungeon 0 — upper-left, mountain peaks
-		new(430f, 543f),  // Camp 0    — left-centre
-		new(700f, 700f),  // Dungeon 1 — centre
+		new(235f, 310f), // Dungeon 0 — upper-left, mountain peaks
+		new(430f, 543f), // Camp 0    — left-centre
+		new(700f, 700f), // Dungeon 1 — centre
 		new(1215f, 780f), // Camp 1    — right-centre
-		new(1490f, 964f)  // Dungeon 2 — lower-right
+		new(1490f, 964f) // Dungeon 2 — lower-right
 	};
 
 	static readonly bool[] IsDungeon = { true, false, true, false, true };
@@ -360,9 +360,7 @@ public partial class MapScreenController : Node2D
 				case RunState.MapNodeState.Available:
 					sub = "▶  Available";
 					subColor = ColAvailable;
-					body = $"Bosses:\n" +
-					       string.Join("\n", new[] { "  • Crystal Knight", "  • Bringer of Death", "  • Demon Slime" }
-						       .Take(def.BossCount));
+					body = $"Bosses:\n" + def.BossNames.Join("\n");
 					break;
 				case RunState.MapNodeState.Completed:
 					sub = "✓  Cleared";

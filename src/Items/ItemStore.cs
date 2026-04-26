@@ -27,7 +27,9 @@ public static class ItemStore
 
 	public static bool HasFoundItem(string itemId)
 	{
-		return _inventory.Concat(_equipped.Values).Any(i => i.ItemId == itemId);
+		var isInInventory = _inventory.Any(i => i.ItemId == itemId);
+		var isEquipped = _equipped.Values.Any(i => i.ItemId == itemId);
+		return isInInventory || isEquipped;
 	}
 
 	// ── mutations ─────────────────────────────────────────────────────────────

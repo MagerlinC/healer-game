@@ -26,7 +26,7 @@ public class VoidWeaver : EquippableItem
 	{
 		public void Modify(CharacterStats stats)
 		{
-			stats.SpellSchoolDamageMultipliers[SpellSchool.Void] += 0.20f;
+			stats.SpellSchoolIncreasedDamage[SpellSchool.Void] += 0.20f;
 		}
 	}
 

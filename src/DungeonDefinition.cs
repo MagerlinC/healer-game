@@ -35,6 +35,20 @@ public class DungeonDefinition
 	[
 		new()
 		{
+			Name = "The Sanctum of Stars",
+			MapPosition = new Vector2(1540f, 240f),
+			BossScenePaths = GameConstants.SanctumBossScenePaths,
+			ArenaBackgroundPaths = AssetConstants.SpaceArenaBackgroundPaths,
+			XpRewards = GameConstants.SanctumBossXpRewards,
+			BossNames = new[]
+			{
+				GameConstants.SanctumBoss1Name, // "The Nightborne"
+				GameConstants.SanctumBoss2Name, // "Astral Twin (Dawn)"  — primary twin for health bar
+				GameConstants.SanctumBoss3Name // "That Which Swallowed the Stars"
+			}
+		},
+		new()
+		{
 			Name = "The Ancient Keep",
 			MapPosition = new Vector2(260f, 730f),
 			BossScenePaths = GameConstants.BossScenePaths,
@@ -49,20 +63,6 @@ public class DungeonDefinition
 			BossScenePaths = GameConstants.BossScenePaths,
 			ArenaBackgroundPaths = AssetConstants.ForsakenCitadelArenaBackgroundPaths,
 			XpRewards = GameConstants.BossXpRewards
-		},
-		new()
-		{
-			Name = "The Sanctum of Stars",
-			MapPosition = new Vector2(1540f, 240f),
-			BossScenePaths = GameConstants.SanctumBossScenePaths,
-			ArenaBackgroundPaths = AssetConstants.SpaceArenaBackgroundPaths,
-			XpRewards = GameConstants.SanctumBossXpRewards,
-			BossNames = new[]
-			{
-				GameConstants.SanctumBoss1Name,    // "The Nightborne"
-				GameConstants.SanctumBoss2Name,    // "Astral Twin (Dawn)"  — primary twin for health bar
-				GameConstants.SanctumBoss3Name     // "That Which Swallowed the Stars"
-			}
 		}
 	];
 

@@ -69,6 +69,7 @@ public abstract partial class Character : CharacterBody2D
 	public float CurrentHealth { get; private set; }
 	public float CurrentMana { get; private set; }
 	public bool IsAlive => CurrentHealth > 0f;
+	public bool IsBeingRemoved { get; private set; }
 
 	/// <summary>
 	/// Current shield points. Damage is absorbed by the shield before
@@ -132,6 +133,8 @@ public abstract partial class Character : CharacterBody2D
 
 	public override void _Process(double delta)
 	{
+		if (IsBeingRemoved) return;
+
 		if (IsAlive)
 		{
 			RestoreMana(ManaRegenPerSecond * (float)delta);
@@ -181,6 +184,17 @@ public abstract partial class Character : CharacterBody2D
 	{
 		if (!IsAlive) return;
 		CurrentHealth = Mathf.Min(CurrentHealth + amount, MaxHealth);
+		EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
+	}
+
+	/// <summary>
+	/// Force the character's current health to a specific value without running
+	/// the normal damage / death pipeline. Intended for encounter scripts that
+	/// need bespoke phase-transition behaviour.
+	/// </summary>
+	protected void SetCurrentHealthDirect(float amount)
+	{
+		CurrentHealth = Mathf.Clamp(amount, 0f, MaxHealth);
 		EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
 	}
 
@@ -344,6 +358,7 @@ public abstract partial class Character : CharacterBody2D
 	/// </summary>
 	public void RaiseFloatingCombatText(float amount, bool isHealing, int school, bool isCrit)
 	{
+		if (IsBeingRemoved || IsQueuedForDeletion()) return;
 		EmitSignalFloatingCombatText(amount, isHealing, school, isCrit);
 	}
 
@@ -402,13 +417,17 @@ public abstract partial class Character : CharacterBody2D
 
 	void OnDeath()
 	{
+		IsBeingRemoved = true;
 		EmitSignalDied(this);
 		foreach (var effect in _effects.Values)
 			effect.OnExpired(this);
 		_effects.Clear();
-		// Unregister signals
+	}
+
+	public override void _ExitTree()
+	{
+		IsBeingRemoved = true;
 		GlobalAutoLoad.UnregisterSignalEmitter(this);
-		// dispose
-		QueueFree();
+		base._ExitTree();
 	}
 }

@@ -56,7 +56,7 @@ public static class SpellPipeline
 		// ── 6. Apply stat modifiers/crits, then OnCalculate ─────────────────────
 		ctx.FinalValue = ctx.BaseValue;
 
-		var damageForSchool = ctx.CasterStats.SpellSchoolDamageMultipliers[spell.School];
+		var damageForSchool = ctx.CasterStats.SpellSchoolIncreasedDamage[spell.School];
 		var totalIncreasedDamage = ctx.CasterStats.IncreasedDamage + damageForSchool;
 		if (ctx.Tags.HasFlag(SpellTags.Damage))
 		{
@@ -94,6 +94,9 @@ public static class SpellPipeline
 
 			foreach (var target in ctx.Targets)
 			{
+				if (!GodotObject.IsInstanceValid(target) || target.IsBeingRemoved || target.IsQueuedForDeletion())
+					continue;
+
 				if (isDamageSpell)
 					target.RaiseFloatingCombatText(ctx.FinalValue, false, school, isCritSpell);
 				else if (isHealingSpell)

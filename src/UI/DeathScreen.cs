@@ -99,6 +99,7 @@ public partial class DeathScreen : CanvasLayer
 	{
 		GetTree().Paused = false;
 		GlobalAutoLoad.Reset();
+		RunState.Instance.Reset();
 		// RunHistoryStore.StartRun(); // Begin tracking the retry as a new run
 		GetTree().ChangeSceneToFile("res://levels/Overworld.tscn");
 	}

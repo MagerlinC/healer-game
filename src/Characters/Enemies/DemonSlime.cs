@@ -204,7 +204,7 @@ public partial class DemonSlime : Character
 	{
 		// The spell always targets the player via ResolveTargets; we still need
 		// a non-null explicit target for the pipeline — any alive party member works.
-		var anyTarget = PickRandomPartyMember();
+		var anyTarget = FindHealer();
 		if (anyTarget == null) return;
 		_pendingTarget = anyTarget;
 		_pendingAttack = PendingAttack.DetonationZone;
@@ -258,11 +258,18 @@ public partial class DemonSlime : Character
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
+	Character FindHealer()
+	{
+		foreach (var node in GetTree().GetNodesInGroup("party"))
+			if (node is Character c && c.CharacterName == GameConstants.PlayerName && c.IsAlive)
+				return c;
+		return null;
+	}
 
 	Character FindTank()
 	{
 		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.CharacterName == "Templar" && c.IsAlive)
+			if (node is Character c && c.CharacterName == GameConstants.TemplarName && c.IsAlive)
 				return c;
 		return null;
 	}
