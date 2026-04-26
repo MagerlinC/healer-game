@@ -303,9 +303,8 @@ public abstract partial class Character : CharacterBody2D
 			MaxHealth = MaxHealth,
 			MaxMana = MaxMana,
 			CritChance = BaseCritChance,
-			CritMultiplier = 1.5f,
-			IncreasedDamage = 1.0f,
-			IncreasedHealing = 1.0f
+			// Templar damage reduction
+			DamageTakenMultiplier = Name == GameConstants.TemplarName ? 0.8f : 1.0f
 		};
 
 		foreach (var talent in Talents)

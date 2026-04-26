@@ -59,8 +59,13 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 		_arenaRect = BuildArenaRect();
 		BuildTiles();
 
-		for (var i = 0; i < 3; i++)
-			_safeQuadrants.Add(_rng.RandiRange(0, 3));
+		_safeQuadrants.Add(_rng.RandiRange(0, 3));
+		for (var i = 1; i < 3; i++)
+		{
+			var previousQuadrant = _safeQuadrants[i - 1];
+			var adjacentQuadrants = GetAdjacentQuadrants(previousQuadrant);
+			_safeQuadrants.Add(adjacentQuadrants[_rng.RandiRange(0, adjacentQuadrants.Count - 1)]);
+		}
 
 		StartPreviewStep(0);
 	}
@@ -265,6 +270,17 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 			1 => new Rect2(origin + new Vector2(half.X, 0f), half),
 			2 => new Rect2(origin + new Vector2(0f, half.Y), half),
 			_ => new Rect2(origin + half, half)
+		};
+	}
+
+	List<int> GetAdjacentQuadrants(int quadrantIndex)
+	{
+		return quadrantIndex switch
+		{
+			0 => new List<int> { 1, 2 },
+			1 => new List<int> { 0, 3 },
+			2 => new List<int> { 0, 3 },
+			_ => new List<int> { 1, 2 }
 		};
 	}
 

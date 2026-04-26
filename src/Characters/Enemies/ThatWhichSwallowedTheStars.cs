@@ -60,7 +60,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 	[Export] public float CataclysmWindup = 2.5f; // initial wind-up before hit 1
 	[Export] public float CataclysmHitWindow = 1.5f; // parry window duration per hit
 
-	[Export] public float BeamDamage = 75f;
+	[Export] public float BeamDamage = 50f;
 	[Export] public float CataclysmDamage = 65f; // per hit
 	[Export] public float PhaseTransitionDuration = 6.0f;
 	[Export] public float MemoryGameInitialDelay = 6.0f;
@@ -74,12 +74,11 @@ public partial class ThatWhichSwallowedTheStars : Character
 
 	BossTwstsBeamSpell _beamSpell;
 	BossTwstsVoidCataclysmSpell _cataclysmSpell;
+	AudioStream _phaseTwoMusic;
 
 	AnimatedSprite2D _sprite;
 	AudioStreamPlayer _riserPlayer;
-	AudioStreamPlayer _phaseTwoMusicPlayer;
 	AudioStreamPlayer _worldMusicPlayer;
-	AudioStream _worldMusicOriginalStream;
 	Camera2D _fightCamera;
 
 	// Beam is a one-shot animation → spell.
@@ -133,11 +132,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.ParryRiserSoundPath);
 		AddChild(_riserPlayer);
 
-		_phaseTwoMusicPlayer = new AudioStreamPlayer();
-		_phaseTwoMusicPlayer.Stream = GD.Load<AudioStream>(AssetConstants.FinalBossPhase2MusicPath);
-		_phaseTwoMusicPlayer.ProcessMode = ProcessModeEnum.Always;
-		EnableLooping(_phaseTwoMusicPlayer.Stream);
-		AddChild(_phaseTwoMusicPlayer);
+		_phaseTwoMusic = GD.Load<AudioStream>(AssetConstants.FinalBossPhase2MusicPath);
 
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
 		SetupAnimations();
@@ -146,7 +141,6 @@ public partial class ThatWhichSwallowedTheStars : Character
 
 		_fightCamera = GetViewport().GetCamera2D();
 		_worldMusicPlayer = GetParent()?.GetNodeOrNull<AudioStreamPlayer>("AudioStreamPlayer");
-		_worldMusicOriginalStream = _worldMusicPlayer?.Stream;
 	}
 
 	public override void _Process(double delta)
@@ -346,16 +340,12 @@ public partial class ThatWhichSwallowedTheStars : Character
 		SetCurrentHealthDirect(0f);
 		EmitSignalCastWindupEnded();
 		ProcessMode = ProcessModeEnum.Always;
-		if (_worldMusicPlayer != null)
+		if (_worldMusicPlayer != null && _phaseTwoMusic != null)
 		{
 			_worldMusicPlayer.ProcessMode = ProcessModeEnum.Always;
 			_worldMusicPlayer.Stop();
-			_worldMusicPlayer.Stream = _phaseTwoMusicPlayer.Stream;
+			_worldMusicPlayer.Stream = _phaseTwoMusic;
 			_worldMusicPlayer.Play();
-		}
-		else
-		{
-			_phaseTwoMusicPlayer.Play();
 		}
 		_sprite.Play("reveal");
 
@@ -380,6 +370,8 @@ public partial class ThatWhichSwallowedTheStars : Character
 		_phaseTransitionActive = false;
 		_phaseTwoStarted = true;
 		ProcessMode = ProcessModeEnum.Inherit;
+		if (_worldMusicPlayer != null)
+			_worldMusicPlayer.ProcessMode = ProcessModeEnum.Inherit;
 		SetCurrentHealthDirect(MaxHealth);
 		RestoreCamera();
 		_sprite.Play("idle");
@@ -472,11 +464,4 @@ public partial class ThatWhichSwallowedTheStars : Character
 		}
 	}
 
-	static void EnableLooping(AudioStream stream)
-	{
-		if (stream is AudioStreamWav wav)
-			wav.LoopMode = AudioStreamWav.LoopModeEnum.Forward;
-		else if (stream is AudioStreamOggVorbis ogg)
-			ogg.Loop = true;
-	}
 }

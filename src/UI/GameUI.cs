@@ -65,14 +65,17 @@ public partial class GameUI : CanvasLayer
 
 		// ── Mana bar ──────────────────────────────────────────────────────────
 		var manaBar = new ManaBar();
-		manaBar.CustomMinimumSize = new Vector2(280f, 0f);
+		manaBar.CustomMinimumSize = new Vector2(140f, 140f);
 		manaBar.AnchorLeft = 0.1f;
 		manaBar.AnchorRight = 0.1f;
 		manaBar.AnchorTop = 0.9f;
 		manaBar.AnchorBottom = 0.9f;
 		manaBar.GrowHorizontal = Control.GrowDirection.Both;
-		manaBar.OffsetLeft = -140f;
-		manaBar.OffsetRight = 140f;
+		manaBar.GrowVertical = Control.GrowDirection.Both;
+		manaBar.OffsetLeft = -70f;
+		manaBar.OffsetRight = 70f;
+		manaBar.OffsetTop = -70f;
+		manaBar.OffsetBottom = 70f;
 		anchor.AddChild(manaBar);
 
 		// ── Boss health bar ───────────────────────────────────────────────────
