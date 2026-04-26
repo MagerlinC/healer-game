@@ -13,28 +13,40 @@ using healerfantasy.SpellSystem;
 ///
 /// Behaviour
 /// ─────────
+/// • Every <see cref="MeleeAttackInterval"/> seconds — Void Tendril Strike:
+///   a melee swipe at the tank (Templar), falling back to a random party
+///   member if the Templar is dead. Uses the "cast" animation.
+///
 /// • Every <see cref="BeamInterval"/> seconds — Stellar Beam: fires a sustained
 ///   beam of void-star energy at a random party member for heavy damage;
 ///   uses the "beam" animation.
+///
+/// • Every <see cref="ConsumeInterval"/> seconds — Consume: applies an
+///   escalating void DoT to every party member simultaneously.  The DoT
+///   deals increasing damage over 30 seconds and heals the boss when
+///   dispelled.  Heal amount is proportional to the remaining duration at
+///   the time of dispel — dispel early and the boss recovers significantly;
+///   wait too long and the mounting damage threatens to kill the target.
 ///
 /// • Every <see cref="CataclysmInterval"/> seconds — Void Cataclysm:
 ///   a three-part sequence, each part independently deflectable —
 ///
 ///   1. Wind-up (2.5 s): the "cast" animation plays; CastWindupStarted emitted
-///      to show the boss cast bar.
-///   2. Hit 1 (1.5 s parry window): CastWindupStarted re-emitted; parry window
-///      opens; on resolution — deal 65 damage to the whole party unless deflected.
+///      to show the boss cast bar and activate the DeflectOverlay.
+///   2. Hit 1 (1.5 s parry window): CastWindupStarted re-emitted so the
+///      DeflectOverlay activates for this hit; parry window opens; on
+///      resolution — deal 65 damage to the whole party unless deflected.
 ///   3. Hit 2 (1.5 s): same as above.
 ///   4. Hit 3 (1.5 s): same; CastWindupEnded emitted after resolution.
 ///
 ///   Between hits the boss plays the "cast" animation again as a brief visual.
-///   The existing DeflectOverlay and riser sound fire for EACH of the three waves.
+///   The DeflectOverlay and riser sound fire for EACH of the three waves.
 ///
 /// Animations loaded from individual PNGs at runtime:
 ///   res://assets/enemies/that-which-swallowed-the-stars/
 ///   "idle"    — idle1–idle2         (looping)
 ///   "beam"    — beam1–beam3         (one-shot → idle)
-///   "cast"    — cast1–cast3         (used for both wind-up and inter-hit)
+///   "cast"    — cast1–cast3         (used for melee, wind-up, and inter-hit)
 ///   "default" — default.png         (single static frame, used for the initial
 ///                                    reveal beat; falls through to idle in-fight)
 /// </summary>
@@ -55,24 +67,31 @@ public partial class ThatWhichSwallowedTheStars : Character
 
 	// ── tuneable exports ──────────────────────────────────────────────────────
 
-	[Export] public float BeamInterval = 8.0f;
-	[Export] public float CataclysmInterval = 20.0f;
-	[Export] public float CataclysmWindup = 2.5f; // initial wind-up before hit 1
-	[Export] public float CataclysmHitWindow = 1.5f; // parry window duration per hit
+	[Export] public float MeleeAttackInterval  = 3.0f;
+	[Export] public float BeamInterval         = 8.0f;
+	[Export] public float ConsumeInterval      = 25.0f;
+	[Export] public float CataclysmInterval    = 20.0f;
+	[Export] public float CataclysmWindup      = 2.5f;  // initial wind-up before hit 1
+	[Export] public float CataclysmHitWindow   = 1.5f;  // parry window duration per hit
 
-	[Export] public float BeamDamage = 50f;
-	[Export] public float CataclysmDamage = 65f; // per hit
-	[Export] public float PhaseTransitionDuration = 6.0f;
-	[Export] public float MemoryGameInitialDelay = 6.0f;
-	[Export] public float MemoryGameInterval = 18.0f;
-	[Export] public float MemoryGameDamage = 120f;
+	[Export] public float MeleeDamage          = 30f;
+	[Export] public float BeamDamage           = 50f;
+	[Export] public float CataclysmDamage      = 65f;   // per hit
+	[Export] public float PhaseTransitionDuration   = 6.0f;
+	[Export] public float MemoryGameInitialDelay    = 6.0f;
+	[Export] public float MemoryGameInterval        = 18.0f;
+	[Export] public float MemoryGameDamage          = 120f;
 
 	// ── internal state ────────────────────────────────────────────────────────
 
+	float _meleeTimer;
 	float _beamTimer;
+	float _consumeTimer;
 	float _cataclysmTimer;
 
-	BossTwstsBeamSpell _beamSpell;
+	BossTwstsMeleeAttackSpell  _meleeSpell;
+	BossTwstsBeamSpell         _beamSpell;
+	BossTwstsConsumeSpell      _consumeSpell;
 	BossTwstsVoidCataclysmSpell _cataclysmSpell;
 	AudioStreamOggVorbis _phaseTwoMusic;
 
@@ -81,9 +100,12 @@ public partial class ThatWhichSwallowedTheStars : Character
 	AudioStreamPlayer _worldMusicPlayer;
 	Camera2D _fightCamera;
 
-	// Beam is a one-shot animation → spell.
+	// Beam is a one-shot animation → spell; melee similarly uses the "cast" animation.
 	bool _beamPending;
 	Character _beamTarget;
+
+	bool _meleePending;
+	Character _meleeTarget;
 
 	// ── Void Cataclysm state machine ──────────────────────────────────────────
 
@@ -91,9 +113,9 @@ public partial class ThatWhichSwallowedTheStars : Character
 	{
 		None,
 		Windup, // initial cast animation plays, boss bar counts down
-		Hit1, // parry window 1 — 1.5 s
-		Hit2, // parry window 2 — 1.5 s
-		Hit3 // parry window 3 — 1.5 s
+		Hit1,   // parry window 1 — 1.5 s
+		Hit2,   // parry window 2 — 1.5 s
+		Hit3    // parry window 3 — 1.5 s
 	}
 
 	CataclysmPhase _cataclysmPhase;
@@ -119,17 +141,21 @@ public partial class ThatWhichSwallowedTheStars : Character
 		IsFriendly = false;
 
 		// Stagger first attacks — give the player a brief moment before the onslaught.
-		_beamTimer = BeamInterval;
+		_meleeTimer     = MeleeAttackInterval;
+		_beamTimer      = BeamInterval;
+		_consumeTimer   = ConsumeInterval;
 		_cataclysmTimer = CataclysmInterval;
 
-		_beamSpell = new BossTwstsBeamSpell { DamageAmount = BeamDamage };
+		_meleeSpell     = new BossTwstsMeleeAttackSpell  { DamageAmount  = MeleeDamage };
+		_beamSpell      = new BossTwstsBeamSpell         { DamageAmount  = BeamDamage };
+		_consumeSpell   = new BossTwstsConsumeSpell();
 		_cataclysmSpell = new BossTwstsVoidCataclysmSpell { DamageAmount = CataclysmDamage };
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
 
 		_riserPlayer = new AudioStreamPlayer();
-		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.ParryRiserSoundPath);
+		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.DeflectRiserSoundPath);
 		AddChild(_riserPlayer);
 
 		_phaseTwoMusic = GD.Load<AudioStreamOggVorbis>(AssetConstants.FinalBossPhase2MusicPath);
@@ -140,7 +166,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
 
-		_fightCamera = GetViewport().GetCamera2D();
+		_fightCamera     = GetViewport().GetCamera2D();
 		_worldMusicPlayer = GetParent()?.GetNodeOrNull<AudioStreamPlayer>("AudioStreamPlayer");
 	}
 
@@ -180,10 +206,22 @@ public partial class ThatWhichSwallowedTheStars : Character
 		}
 
 		// ── Regular attack timers ─────────────────────────────────────────────
-		_beamTimer -= (float)delta;
+		_meleeTimer     -= (float)delta;
+		_beamTimer      -= (float)delta;
+		_consumeTimer   -= (float)delta;
 		_cataclysmTimer -= (float)delta;
 
-		if (_beamPending) return; // beam animation in flight
+		// Consume fires independently — it requires no animation and does not
+		// block other attacks.  Fire it whenever its timer expires, even if
+		// another attack is mid-animation.
+		if (_consumeTimer <= 0f)
+		{
+			_consumeTimer = ConsumeInterval;
+			CastConsume();
+		}
+
+		// Animation-gated attacks share the sprite, so only one can be active.
+		if (_beamPending || _meleePending) return;
 
 		if (_beamTimer <= 0f)
 		{
@@ -194,6 +232,11 @@ public partial class ThatWhichSwallowedTheStars : Character
 		{
 			_cataclysmTimer = CataclysmInterval;
 			BeginCataclysm();
+		}
+		else if (_meleeTimer <= 0f)
+		{
+			_meleeTimer = MeleeAttackInterval;
+			PerformMeleeAttack();
 		}
 	}
 
@@ -218,23 +261,40 @@ public partial class ThatWhichSwallowedTheStars : Character
 		base.TakeDamage(amount);
 	}
 
+	void PerformMeleeAttack()
+	{
+		var target = FindTank() ?? PickRandomPartyMember();
+		if (target == null) return;
+		_meleeTarget  = target;
+		_meleePending = true;
+		_sprite.Play("cast"); // brief one-shot swipe animation
+	}
+
 	void PerformBeam()
 	{
 		var target = PickRandomPartyMember();
 		if (target == null) return;
-		_beamTarget = target;
+		_beamTarget  = target;
 		_beamPending = true;
 		_sprite.Play("beam");
+	}
+
+	void CastConsume()
+	{
+		// ResolveTargets in BossTwstsConsumeSpell returns the whole party, so the
+		// explicit target here is just a seed — pick any alive party member.
+		var anyTarget = PickRandomPartyMember();
+		if (anyTarget == null) return;
+		SpellPipeline.Cast(_consumeSpell, this, anyTarget);
 	}
 
 	/// <summary>Kicks off the Void Cataclysm wind-up (phase: Windup).</summary>
 	void BeginCataclysm()
 	{
-		_cataclysmPhase = CataclysmPhase.Windup;
+		_cataclysmPhase      = CataclysmPhase.Windup;
 		_cataclysmPhaseTimer = CataclysmWindup;
 
-		// One cast bar for the full wind-up.  The three hits that follow fire
-		// without additional cast bars — each is heralded only by the riser sound.
+		// Cast bar + overlay for the initial wind-up.
 		_riserPlayer.Play();
 		EmitSignalCastWindupStarted(_cataclysmSpell.Name, _cataclysmSpell.Icon, CataclysmWindup);
 		_sprite.Play("cast");
@@ -249,23 +309,28 @@ public partial class ThatWhichSwallowedTheStars : Character
 		switch (_cataclysmPhase)
 		{
 			case CataclysmPhase.Windup:
-				// Wind-up cast bar ends → close it, then immediately open the first
-				// parry window.  No new cast bar is shown for the individual hits.
+				// Wind-up cast bar ends → close it, then open the first hit window.
 				EmitSignalCastWindupEnded();
 				StartCataclysmHit(CataclysmPhase.Hit1);
 				break;
 
 			case CataclysmPhase.Hit1:
+				// Close Hit 1 overlay, resolve, open Hit 2.
+				EmitSignalCastWindupEnded();
 				ResolveCataclysmHit(1);
 				StartCataclysmHit(CataclysmPhase.Hit2);
 				break;
 
 			case CataclysmPhase.Hit2:
+				// Close Hit 2 overlay, resolve, open Hit 3.
+				EmitSignalCastWindupEnded();
 				ResolveCataclysmHit(2);
 				StartCataclysmHit(CataclysmPhase.Hit3);
 				break;
 
 			case CataclysmPhase.Hit3:
+				// Close Hit 3 overlay, resolve, done.
+				EmitSignalCastWindupEnded();
 				ResolveCataclysmHit(3);
 				_cataclysmPhase = CataclysmPhase.None;
 				_sprite.Play("idle");
@@ -275,15 +340,17 @@ public partial class ThatWhichSwallowedTheStars : Character
 
 	/// <summary>
 	/// Opens a parry window for one Cataclysm hit.
-	/// Deliberately does NOT emit CastWindupStarted — the single cast bar shown
-	/// during the wind-up phase is sufficient; we don't want three extra bars.
+	/// Emits <see cref="CastWindupStarted"/> so the DeflectOverlay activates
+	/// for this hit's 1.5-second window, and plays the riser cue.
 	/// </summary>
 	void StartCataclysmHit(CataclysmPhase phase)
 	{
-		_cataclysmPhase = phase;
+		_cataclysmPhase      = phase;
 		_cataclysmPhaseTimer = CataclysmHitWindow;
 
+		// Riser + overlay for each individual hit.
 		_riserPlayer.Play();
+		EmitSignalCastWindupStarted(_cataclysmSpell.Name, _cataclysmSpell.Icon, CataclysmHitWindow);
 		ParryWindowManager.OpenWindow();
 		_sprite.Play("cast");
 	}
@@ -310,8 +377,18 @@ public partial class ThatWhichSwallowedTheStars : Character
 			if (_beamTarget != null && _beamTarget.IsAlive)
 				SpellPipeline.Cast(_beamSpell, this, _beamTarget);
 
-			_beamTarget = null;
+			_beamTarget  = null;
 			_beamPending = false;
+		}
+
+		// Melee animation completes → deal damage.
+		if (_meleePending)
+		{
+			if (_meleeTarget != null && _meleeTarget.IsAlive)
+				SpellPipeline.Cast(_meleeSpell, this, _meleeTarget);
+
+			_meleeTarget  = null;
+			_meleePending = false;
 		}
 
 		// Return to idle only when no cataclysm is running (it manages the sprite directly).
@@ -319,7 +396,19 @@ public partial class ThatWhichSwallowedTheStars : Character
 			_sprite.Play("idle");
 	}
 
-	// ── targeting helper ──────────────────────────────────────────────────────
+	// ── targeting helpers ─────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Returns the alive party member named "Templar" (the tank),
+	/// or null if none is found.
+	/// </summary>
+	Character FindTank()
+	{
+		foreach (var node in GetTree().GetNodesInGroup("party"))
+			if (node is Character c && c.CharacterName == GameConstants.TemplarName && c.IsAlive)
+				return c;
+		return null;
+	}
 
 	void TriggerPhaseTwoTransition()
 	{
@@ -327,13 +416,15 @@ public partial class ThatWhichSwallowedTheStars : Character
 			return;
 
 		_phaseTransitionActive = true;
-		_phaseTransitionTimer = PhaseTransitionDuration;
-		_cameraShakeTimer = PhaseTransitionDuration;
-		_memoryGameTimer = MemoryGameInitialDelay;
-		_beamPending = false;
-		_beamTarget = null;
-		_cataclysmPhase = CataclysmPhase.None;
-		_cataclysmPhaseTimer = 0f;
+		_phaseTransitionTimer  = PhaseTransitionDuration;
+		_cameraShakeTimer      = PhaseTransitionDuration;
+		_memoryGameTimer       = MemoryGameInitialDelay;
+		_beamPending           = false;
+		_beamTarget            = null;
+		_meleePending          = false;
+		_meleeTarget           = null;
+		_cataclysmPhase        = CataclysmPhase.None;
+		_cataclysmPhaseTimer   = 0f;
 
 		if (CurrentShield > 0f)
 			RemoveShield(CurrentShield);
@@ -362,16 +453,16 @@ public partial class ThatWhichSwallowedTheStars : Character
 	void UpdatePhaseTransition(float delta)
 	{
 		_phaseTransitionTimer -= delta;
-		_cameraShakeTimer = Mathf.Max(_cameraShakeTimer - delta, 0f);
+		_cameraShakeTimer      = Mathf.Max(_cameraShakeTimer - delta, 0f);
 		UpdateCameraShake();
 
 		if (_phaseTransitionTimer > 0f)
 			return;
 
-		GetTree().Paused = false;
+		GetTree().Paused  = false;
 		_phaseTransitionActive = false;
-		_phaseTwoStarted = true;
-		ProcessMode = ProcessModeEnum.Inherit;
+		_phaseTwoStarted  = true;
+		ProcessMode       = ProcessModeEnum.Inherit;
 		if (_worldMusicPlayer != null)
 			_worldMusicPlayer.ProcessMode = ProcessModeEnum.Inherit;
 		SetCurrentHealthDirect(MaxHealth);
@@ -383,8 +474,8 @@ public partial class ThatWhichSwallowedTheStars : Character
 	{
 		_memoryGame = new ThatWhichSwallowedTheStarsMemoryGame
 		{
-			DamageAmount = MemoryGameDamage,
-			BossName = CharacterName,
+			DamageAmount   = MemoryGameDamage,
+			BossName       = CharacterName,
 			GlobalPosition = GlobalPosition
 		};
 		_memoryGame.Completed += OnMemoryGameCompleted;
@@ -438,9 +529,9 @@ public partial class ThatWhichSwallowedTheStars : Character
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");
 
-		AddAnimFromFiles(frames, "idle", "idle", 2, 4f, true);
+		AddAnimFromFiles(frames, "idle", "idle", 2, 4f,  true);
 		AddAnimFromFiles(frames, "beam", "beam", 3, 10f, false);
-		AddAnimFromFiles(frames, "cast", "cast", 3, 8f, false);
+		AddAnimFromFiles(frames, "cast", "cast", 3, 8f,  false);
 
 		// Single-frame "default" pose for the initial reveal.
 		var defaultAnim = "reveal";
@@ -450,7 +541,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 		frames.AddFrame(defaultAnim, GD.Load<Texture2D>(AssetBase + "default.png"));
 
 		_sprite.SpriteFrames = frames;
-		_sprite.Scale = new Vector2(0.35f, 0.35f);
+		_sprite.Scale        = new Vector2(0.35f, 0.35f);
 	}
 
 	static void AddAnimFromFiles(SpriteFrames frames, string animName,
@@ -465,5 +556,4 @@ public partial class ThatWhichSwallowedTheStars : Character
 			frames.AddFrame(animName, texture);
 		}
 	}
-
 }

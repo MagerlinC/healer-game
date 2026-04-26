@@ -37,10 +37,10 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 	int _stepIndex;
 
 	const float PreviewDuration = 1.0f;
-	const float PreviewGapDuration = 0.50f;
+	const float PreviewGapDuration = 1.00f;
 	const float RecallDelayDuration = 2.0f;
 	const float ReplayDuration = 1.0f;
-	const float ReplayGapDuration = 0.50f;
+	const float ReplayGapDuration = 1.00f;
 	const float ArenaPadding = 64f;
 
 	enum State

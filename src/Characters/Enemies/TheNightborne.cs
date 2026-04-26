@@ -49,15 +49,15 @@ public partial class TheNightborne : Character
 
 	// ── tuneable exports ──────────────────────────────────────────────────────
 
-	[Export] public float ShadowStrikeInterval    = 2.5f;
-	[Export] public float VoidLanceInterval        = 7.0f;
-	[Export] public float NightVeilInterval        = 10.0f;
-	[Export] public float UmbralEruptionInterval   = 16.0f;
-	[Export] public float UmbralWindupDuration     = 3.5f;
+	[Export] public float ShadowStrikeInterval = 2.5f;
+	[Export] public float VoidLanceInterval = 7.0f;
+	[Export] public float NightVeilInterval = 10.0f;
+	[Export] public float UmbralEruptionInterval = 16.0f;
+	[Export] public float UmbralWindupDuration = 3.5f;
 
-	[Export] public float ShadowStrikeDamage  = 60f;
-	[Export] public float VoidLanceDamage     = 45f;
-	[Export] public float UmbralDamage        = 90f;
+	[Export] public float ShadowStrikeDamage = 60f;
+	[Export] public float VoidLanceDamage = 45f;
+	[Export] public float UmbralDamage = 90f;
 
 	// ── internal state ────────────────────────────────────────────────────────
 
@@ -68,14 +68,21 @@ public partial class TheNightborne : Character
 	float _umbralWindupTimer;
 
 	BossNightborneShadowStrikeSpell _shadowStrikeSpell;
-	BossNightborneVoidLanceSpell    _voidLanceSpell;
-	BossNightborneNightVeilSpell    _nightVeilSpell;
+	BossNightborneVoidLanceSpell _voidLanceSpell;
+	BossNightborneNightVeilSpell _nightVeilSpell;
 	BossNightborneUmbralEruptionSpell _umbralEruptionSpell;
 
 	AnimatedSprite2D _sprite;
 	AudioStreamPlayer _riserPlayer;
 
-	enum PendingAttack { None, ShadowStrike, VoidLance, NightVeil }
+	enum PendingAttack
+	{
+		None,
+		ShadowStrike,
+		VoidLance,
+		NightVeil
+	}
+
 	PendingAttack _pendingAttack;
 	Character _pendingTarget;
 
@@ -92,21 +99,21 @@ public partial class TheNightborne : Character
 		IsFriendly = false;
 
 		// Stagger initial timers so attacks don't all fire simultaneously.
-		_shadowStrikeTimer  = ShadowStrikeInterval;
-		_voidLanceTimer     = VoidLanceInterval;
-		_nightVeilTimer     = NightVeilInterval;
-		_umbralTimer        = UmbralEruptionInterval;
+		_shadowStrikeTimer = ShadowStrikeInterval;
+		_voidLanceTimer = VoidLanceInterval;
+		_nightVeilTimer = NightVeilInterval;
+		_umbralTimer = UmbralEruptionInterval;
 
-		_shadowStrikeSpell    = new BossNightborneShadowStrikeSpell   { DamageAmount = ShadowStrikeDamage };
-		_voidLanceSpell       = new BossNightborneVoidLanceSpell       { DamageAmount = VoidLanceDamage };
-		_nightVeilSpell       = new BossNightborneNightVeilSpell();
-		_umbralEruptionSpell  = new BossNightborneUmbralEruptionSpell  { DamageAmount = UmbralDamage };
+		_shadowStrikeSpell = new BossNightborneShadowStrikeSpell { DamageAmount = ShadowStrikeDamage };
+		_voidLanceSpell = new BossNightborneVoidLanceSpell { DamageAmount = VoidLanceDamage };
+		_nightVeilSpell = new BossNightborneNightVeilSpell();
+		_umbralEruptionSpell = new BossNightborneUmbralEruptionSpell { DamageAmount = UmbralDamage };
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
 
 		_riserPlayer = new AudioStreamPlayer();
-		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.ParryRiserSoundPath);
+		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.DeflectRiserSoundPath);
 		AddChild(_riserPlayer);
 
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
@@ -131,9 +138,9 @@ public partial class TheNightborne : Character
 		if (_umbralWindupTimer > 0f) return;
 
 		_shadowStrikeTimer -= (float)delta;
-		_voidLanceTimer    -= (float)delta;
-		_nightVeilTimer    -= (float)delta;
-		_umbralTimer       -= (float)delta;
+		_voidLanceTimer -= (float)delta;
+		_nightVeilTimer -= (float)delta;
+		_umbralTimer -= (float)delta;
 
 		if (_pendingAttack != PendingAttack.None) return;
 
@@ -223,9 +230,9 @@ public partial class TheNightborne : Character
 			SpellResource spell = _pendingAttack switch
 			{
 				PendingAttack.ShadowStrike => _shadowStrikeSpell,
-				PendingAttack.VoidLance    => _voidLanceSpell,
-				PendingAttack.NightVeil    => _nightVeilSpell,
-				_                          => null
+				PendingAttack.VoidLance => _voidLanceSpell,
+				PendingAttack.NightVeil => _nightVeilSpell,
+				_ => null
 			};
 			if (spell != null)
 				SpellPipeline.Cast(spell, this, _pendingTarget);
@@ -270,11 +277,11 @@ public partial class TheNightborne : Character
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");
 
-		AddAnimFromFiles(frames, "idle",   9,  8f,  true);
+		AddAnimFromFiles(frames, "idle", 9, 8f, true);
 		AddAnimFromFiles(frames, "attack", 12, 12f, false);
-		AddAnimFromFiles(frames, "run",    6,  10f, false);
-		AddAnimFromFiles(frames, "hurt",   5,  10f, false);
-		AddAnimFromFiles(frames, "death",  23, 10f, false);
+		AddAnimFromFiles(frames, "run", 6, 10f, false);
+		AddAnimFromFiles(frames, "hurt", 5, 10f, false);
+		AddAnimFromFiles(frames, "death", 23, 10f, false);
 
 		_sprite.SpriteFrames = frames;
 		_sprite.Scale = new Vector2(1.2f, 1.2f);
@@ -288,7 +295,7 @@ public partial class TheNightborne : Character
 		frames.SetAnimationSpeed(animName, fps);
 		for (var i = 1; i <= count; i++)
 		{
-			var path    = $"{FrameBase}{animName}/{animName}_{i}.png";
+			var path = $"{FrameBase}{animName}/{animName}_{i}.png";
 			var texture = GD.Load<Texture2D>(path);
 			frames.AddFrame(animName, texture);
 		}

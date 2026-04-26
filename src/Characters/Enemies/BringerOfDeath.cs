@@ -81,7 +81,7 @@ public partial class BringerOfDeath : Character
 	PendingAttack _pendingAttack;
 	Character _pendingTarget;
 
-	const string RiserSoundPath = "res://assets/sound-effects/riser.mp3";
+	readonly string _riserSoundPath = AssetConstants.DeflectRiserSoundPath;
 
 	// Individual-sprite base path
 	const string SpritePath = "res://assets/enemies/bringer-of-death/Individual Sprite/";
@@ -110,7 +110,7 @@ public partial class BringerOfDeath : Character
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
 
 		_riserPlayer = new AudioStreamPlayer();
-		_riserPlayer.Stream = GD.Load<AudioStream>(RiserSoundPath);
+		_riserPlayer.Stream = GD.Load<AudioStream>(_riserSoundPath);
 		AddChild(_riserPlayer);
 
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");

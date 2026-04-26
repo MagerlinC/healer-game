@@ -112,7 +112,7 @@ public partial class DemonSlime : Character
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
 
 		_riserPlayer = new AudioStreamPlayer();
-		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.ParryRiserSoundPath);
+		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.DeflectRiserSoundPath);
 		AddChild(_riserPlayer);
 
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");

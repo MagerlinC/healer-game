@@ -13,7 +13,7 @@ public static class AssetConstants
 	public static readonly string CastingSfx = "res://assets/sound-effects/spell-casting/casting.wav";
 	public static readonly string CastFinishedSfx = "res://assets/sound-effects/spell-casting/cast-finished.wav";
 
-	public static readonly string ParryRiserSoundPath = "res://assets/sound-effects/riser.mp3";
+	public static readonly string DeflectRiserSoundPath = "res://assets/sound-effects/riser.mp3";
 	public static readonly string VictorySoundPath = "res://assets/music/victory.mp3";
 
 	static readonly string BackgroundBasePath = "res://assets/backgrounds/";

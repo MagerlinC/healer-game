@@ -54,13 +54,13 @@ public partial class AstralTwin : Character
 
 	// ── tuneable exports ──────────────────────────────────────────────────────
 
-	[Export] public float StrikeInterval            = 2.5f;
-	[Export] public float StarfallInterval          = 7.0f;
-	[Export] public float ConvergenceInterval       = 14.0f;
+	[Export] public float StrikeInterval = 2.5f;
+	[Export] public float StarfallInterval = 7.0f;
+	[Export] public float ConvergenceInterval = 14.0f;
 	[Export] public float ConvergenceWindupDuration = 3.0f;
 
-	[Export] public float StrikeDamage      = 50f;
-	[Export] public float StarfallDamage    = 40f;
+	[Export] public float StrikeDamage = 50f;
+	[Export] public float StarfallDamage = 40f;
 	[Export] public float ConvergenceDamage = 80f;
 
 	// ── internal state ────────────────────────────────────────────────────────
@@ -70,14 +70,20 @@ public partial class AstralTwin : Character
 	float _convergenceTimer;
 	float _convergenceWindupTimer;
 
-	BossAstralStrikeSpell   _strikeSpell;
+	BossAstralStrikeSpell _strikeSpell;
 	BossAstralStarfallSpell _starfallSpell;
-	BossAstralNovaSpell     _novaSpell;
+	BossAstralNovaSpell _novaSpell;
 
 	AnimatedSprite2D _sprite;
 	AudioStreamPlayer _riserPlayer;
 
-	enum PendingAttack { None, Strike, Starfall }
+	enum PendingAttack
+	{
+		None,
+		Strike,
+		Starfall
+	}
+
 	PendingAttack _pendingAttack;
 	Character _pendingTarget;
 
@@ -90,10 +96,12 @@ public partial class AstralTwin : Character
 	/// Each threshold is used exactly once.
 	/// </summary>
 	static readonly float[] ShieldThresholds = { 0.75f, 0.50f, 0.25f };
+
 	readonly bool[] _thresholdUsed = new bool[3];
 
 	/// <summary>Reference to the sibling twin — wired up lazily after _Ready.</summary>
 	AstralTwin _sibling;
+
 	DiedEventHandler _siblingDiedHandler;
 
 	const string AssetBase = "res://assets/enemies/astral-twins/";
@@ -107,19 +115,19 @@ public partial class AstralTwin : Character
 		AddToGroup(GameConstants.BossGroupName);
 		IsFriendly = false;
 
-		_strikeTimer      = StrikeInterval;
-		_starfallTimer    = StarfallInterval;
+		_strikeTimer = StrikeInterval;
+		_starfallTimer = StarfallInterval;
 		_convergenceTimer = ConvergenceInterval;
 
-		_strikeSpell   = new BossAstralStrikeSpell   { DamageAmount = StrikeDamage };
+		_strikeSpell = new BossAstralStrikeSpell { DamageAmount = StrikeDamage };
 		_starfallSpell = new BossAstralStarfallSpell { DamageAmount = StarfallDamage };
-		_novaSpell     = new BossAstralNovaSpell     { DamageAmount = ConvergenceDamage };
+		_novaSpell = new BossAstralNovaSpell { DamageAmount = ConvergenceDamage };
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
 
 		_riserPlayer = new AudioStreamPlayer();
-		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.ParryRiserSoundPath);
+		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.DeflectRiserSoundPath);
 		AddChild(_riserPlayer);
 
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
@@ -133,7 +141,7 @@ public partial class AstralTwin : Character
 
 	void FindSibling()
 	{
-		if (IsBeingRemoved || !GodotObject.IsInstanceValid(this)) return;
+		if (IsBeingRemoved || !IsInstanceValid(this)) return;
 
 		foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
 			if (node is AstralTwin twin && twin != this)
@@ -180,8 +188,8 @@ public partial class AstralTwin : Character
 
 		if (_convergenceWindupTimer > 0f) return;
 
-		_strikeTimer      -= (float)delta;
-		_starfallTimer    -= (float)delta;
+		_strikeTimer -= (float)delta;
+		_starfallTimer -= (float)delta;
 		_convergenceTimer -= (float)delta;
 
 		if (_pendingAttack != PendingAttack.None) return;
@@ -217,11 +225,11 @@ public partial class AstralTwin : Character
 			return;
 		}
 
-		float healthBefore = CurrentHealth;
+		var healthBefore = CurrentHealth;
 		base.TakeDamage(amount);
 
 		// Any successful hit on this twin immediately breaks the sibling's shield.
-		if (GodotObject.IsInstanceValid(_sibling) && !_sibling.IsBeingRemoved && !_sibling.IsQueuedForDeletion())
+		if (IsInstanceValid(_sibling) && !_sibling.IsBeingRemoved && !_sibling.IsQueuedForDeletion())
 			_sibling.NotifySiblingHit();
 
 		// Check whether crossing a threshold triggers our OWN shield.
@@ -292,9 +300,9 @@ public partial class AstralTwin : Character
 		{
 			SpellResource spell = _pendingAttack switch
 			{
-				PendingAttack.Strike   => _strikeSpell,
+				PendingAttack.Strike => _strikeSpell,
 				PendingAttack.Starfall => _starfallSpell,
-				_                      => null
+				_ => null
 			};
 			if (spell != null)
 				SpellPipeline.Cast(spell, this, _pendingTarget);
@@ -315,11 +323,11 @@ public partial class AstralTwin : Character
 		// Phase shields require a living sibling to break them — skip entirely
 		// once the sibling is gone (OnSiblingDied will have retired the thresholds,
 		// but this guard catches any race where the signal fires late).
-		if (!GodotObject.IsInstanceValid(_sibling) || _sibling.IsBeingRemoved || _sibling.IsQueuedForDeletion() || !_sibling.IsAlive) return;
+		if (!IsInstanceValid(_sibling) || _sibling.IsBeingRemoved || _sibling.IsQueuedForDeletion() || !_sibling.IsAlive) return;
 		for (var i = 0; i < ShieldThresholds.Length; i++)
 		{
 			if (_thresholdUsed[i]) continue;
-			float pct = ShieldThresholds[i];
+			var pct = ShieldThresholds[i];
 			if (healthBefore / MaxHealth > pct && CurrentHealth / MaxHealth <= pct)
 			{
 				_thresholdUsed[i] = true;
@@ -336,8 +344,8 @@ public partial class AstralTwin : Character
 		// If a one-shot animation (attack/casting) was in flight, interrupting it
 		// means AnimationFinished will never fire — clear pending state now so the
 		// boss can resume attacking after the shield breaks.
-		_pendingAttack  = PendingAttack.None;
-		_pendingTarget  = null;
+		_pendingAttack = PendingAttack.None;
+		_pendingTarget = null;
 
 		// If a Convergence wind-up was counting down, cancel it cleanly.
 		if (_convergenceWindupTimer > 0f)
@@ -362,7 +370,7 @@ public partial class AstralTwin : Character
 		if (_sprite != null)
 			_sprite.AnimationFinished -= OnAnimationFinished;
 
-		if (GodotObject.IsInstanceValid(_sibling) && _siblingDiedHandler != null)
+		if (IsInstanceValid(_sibling) && _siblingDiedHandler != null)
 			_sibling.Died -= _siblingDiedHandler;
 
 		base._ExitTree();
@@ -399,9 +407,9 @@ public partial class AstralTwin : Character
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");
 
-		AddAnimFromFiles(frames, "idle",     "idle",    3, 6f, true);
-		AddAnimFromFiles(frames, "attack",   "attack",  3, 10f, false);
-		AddAnimFromFiles(frames, "casting",  "casting", 4, 8f, false);
+		AddAnimFromFiles(frames, "idle", "idle", 3, 6f, true);
+		AddAnimFromFiles(frames, "attack", "attack", 3, 10f, false);
+		AddAnimFromFiles(frames, "casting", "casting", 4, 8f, false);
 
 		// Shielded: single static frame, looping so the sprite stays on it.
 		frames.AddAnimation("shielded");
