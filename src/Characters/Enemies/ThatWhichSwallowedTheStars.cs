@@ -67,20 +67,20 @@ public partial class ThatWhichSwallowedTheStars : Character
 
 	// ── tuneable exports ──────────────────────────────────────────────────────
 
-	[Export] public float MeleeAttackInterval  = 3.0f;
-	[Export] public float BeamInterval         = 8.0f;
-	[Export] public float ConsumeInterval      = 25.0f;
-	[Export] public float CataclysmInterval    = 20.0f;
-	[Export] public float CataclysmWindup      = 2.5f;  // initial wind-up before hit 1
-	[Export] public float CataclysmHitWindow   = 1.5f;  // parry window duration per hit
+	[Export] public float MeleeAttackInterval = 3.0f;
+	[Export] public float BeamInterval = 8.0f;
+	[Export] public float ConsumeInterval = 25.0f;
+	[Export] public float CataclysmInterval = 20.0f;
+	[Export] public float CataclysmWindup = 2.5f; // initial wind-up before hit 1
+	[Export] public float CataclysmHitWindow = 1.5f; // parry window duration per hit
 
-	[Export] public float MeleeDamage          = 30f;
-	[Export] public float BeamDamage           = 50f;
-	[Export] public float CataclysmDamage      = 65f;   // per hit
-	[Export] public float PhaseTransitionDuration   = 6.0f;
-	[Export] public float MemoryGameInitialDelay    = 6.0f;
-	[Export] public float MemoryGameInterval        = 18.0f;
-	[Export] public float MemoryGameDamage          = 120f;
+	[Export] public float MeleeDamage = 30f;
+	[Export] public float BeamDamage = 50f;
+	[Export] public float CataclysmDamage = 65f; // per hit
+	[Export] public float PhaseTransitionDuration = 6.0f;
+	[Export] public float MemoryGameInitialDelay = 6.0f;
+	[Export] public float MemoryGameInterval = 18.0f;
+	[Export] public float MemoryGameDamage = 120f;
 
 	// ── internal state ────────────────────────────────────────────────────────
 
@@ -89,9 +89,9 @@ public partial class ThatWhichSwallowedTheStars : Character
 	float _consumeTimer;
 	float _cataclysmTimer;
 
-	BossTwstsMeleeAttackSpell  _meleeSpell;
-	BossTwstsBeamSpell         _beamSpell;
-	BossTwstsConsumeSpell      _consumeSpell;
+	BossTwstsMeleeAttackSpell _meleeSpell;
+	BossTwstsBeamSpell _beamSpell;
+	BossTwstsConsumeSpell _consumeSpell;
 	BossTwstsVoidCataclysmSpell _cataclysmSpell;
 	AudioStreamOggVorbis _phaseTwoMusic;
 
@@ -113,9 +113,9 @@ public partial class ThatWhichSwallowedTheStars : Character
 	{
 		None,
 		Windup, // initial cast animation plays, boss bar counts down
-		Hit1,   // parry window 1 — 1.5 s
-		Hit2,   // parry window 2 — 1.5 s
-		Hit3    // parry window 3 — 1.5 s
+		Hit1, // parry window 1 — 1.5 s
+		Hit2, // parry window 2 — 1.5 s
+		Hit3 // parry window 3 — 1.5 s
 	}
 
 	CataclysmPhase _cataclysmPhase;
@@ -141,14 +141,14 @@ public partial class ThatWhichSwallowedTheStars : Character
 		IsFriendly = false;
 
 		// Stagger first attacks — give the player a brief moment before the onslaught.
-		_meleeTimer     = MeleeAttackInterval;
-		_beamTimer      = BeamInterval;
-		_consumeTimer   = ConsumeInterval;
+		_meleeTimer = MeleeAttackInterval;
+		_beamTimer = BeamInterval;
+		_consumeTimer = ConsumeInterval;
 		_cataclysmTimer = CataclysmInterval;
 
-		_meleeSpell     = new BossTwstsMeleeAttackSpell  { DamageAmount  = MeleeDamage };
-		_beamSpell      = new BossTwstsBeamSpell         { DamageAmount  = BeamDamage };
-		_consumeSpell   = new BossTwstsConsumeSpell();
+		_meleeSpell = new BossTwstsMeleeAttackSpell { DamageAmount = MeleeDamage };
+		_beamSpell = new BossTwstsBeamSpell { DamageAmount = BeamDamage };
+		_consumeSpell = new BossTwstsConsumeSpell();
 		_cataclysmSpell = new BossTwstsVoidCataclysmSpell { DamageAmount = CataclysmDamage };
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
@@ -162,11 +162,12 @@ public partial class ThatWhichSwallowedTheStars : Character
 		_phaseTwoMusic.Loop = true;
 
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+		_sprite.Scale = new Vector2(1.5f, 1.5f);
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
 
-		_fightCamera     = GetViewport().GetCamera2D();
+		_fightCamera = GetViewport().GetCamera2D();
 		_worldMusicPlayer = GetParent()?.GetNodeOrNull<AudioStreamPlayer>("AudioStreamPlayer");
 	}
 
@@ -206,9 +207,9 @@ public partial class ThatWhichSwallowedTheStars : Character
 		}
 
 		// ── Regular attack timers ─────────────────────────────────────────────
-		_meleeTimer     -= (float)delta;
-		_beamTimer      -= (float)delta;
-		_consumeTimer   -= (float)delta;
+		_meleeTimer -= (float)delta;
+		_beamTimer -= (float)delta;
+		_consumeTimer -= (float)delta;
 		_cataclysmTimer -= (float)delta;
 
 		// Consume fires independently — it requires no animation and does not
@@ -265,7 +266,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 	{
 		var target = FindTank() ?? PickRandomPartyMember();
 		if (target == null) return;
-		_meleeTarget  = target;
+		_meleeTarget = target;
 		_meleePending = true;
 		_sprite.Play("cast"); // brief one-shot swipe animation
 	}
@@ -274,7 +275,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 	{
 		var target = PickRandomPartyMember();
 		if (target == null) return;
-		_beamTarget  = target;
+		_beamTarget = target;
 		_beamPending = true;
 		_sprite.Play("beam");
 	}
@@ -291,7 +292,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 	/// <summary>Kicks off the Void Cataclysm wind-up (phase: Windup).</summary>
 	void BeginCataclysm()
 	{
-		_cataclysmPhase      = CataclysmPhase.Windup;
+		_cataclysmPhase = CataclysmPhase.Windup;
 		_cataclysmPhaseTimer = CataclysmWindup;
 
 		// Cast bar + overlay for the initial wind-up.
@@ -345,7 +346,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 	/// </summary>
 	void StartCataclysmHit(CataclysmPhase phase)
 	{
-		_cataclysmPhase      = phase;
+		_cataclysmPhase = phase;
 		_cataclysmPhaseTimer = CataclysmHitWindow;
 
 		// Riser + overlay for each individual hit.
@@ -377,7 +378,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 			if (_beamTarget != null && _beamTarget.IsAlive)
 				SpellPipeline.Cast(_beamSpell, this, _beamTarget);
 
-			_beamTarget  = null;
+			_beamTarget = null;
 			_beamPending = false;
 		}
 
@@ -387,7 +388,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 			if (_meleeTarget != null && _meleeTarget.IsAlive)
 				SpellPipeline.Cast(_meleeSpell, this, _meleeTarget);
 
-			_meleeTarget  = null;
+			_meleeTarget = null;
 			_meleePending = false;
 		}
 
@@ -416,15 +417,15 @@ public partial class ThatWhichSwallowedTheStars : Character
 			return;
 
 		_phaseTransitionActive = true;
-		_phaseTransitionTimer  = PhaseTransitionDuration;
-		_cameraShakeTimer      = PhaseTransitionDuration;
-		_memoryGameTimer       = MemoryGameInitialDelay;
-		_beamPending           = false;
-		_beamTarget            = null;
-		_meleePending          = false;
-		_meleeTarget           = null;
-		_cataclysmPhase        = CataclysmPhase.None;
-		_cataclysmPhaseTimer   = 0f;
+		_phaseTransitionTimer = PhaseTransitionDuration;
+		_cameraShakeTimer = PhaseTransitionDuration;
+		_memoryGameTimer = MemoryGameInitialDelay;
+		_beamPending = false;
+		_beamTarget = null;
+		_meleePending = false;
+		_meleeTarget = null;
+		_cataclysmPhase = CataclysmPhase.None;
+		_cataclysmPhaseTimer = 0f;
 
 		if (CurrentShield > 0f)
 			RemoveShield(CurrentShield);
@@ -453,16 +454,16 @@ public partial class ThatWhichSwallowedTheStars : Character
 	void UpdatePhaseTransition(float delta)
 	{
 		_phaseTransitionTimer -= delta;
-		_cameraShakeTimer      = Mathf.Max(_cameraShakeTimer - delta, 0f);
+		_cameraShakeTimer = Mathf.Max(_cameraShakeTimer - delta, 0f);
 		UpdateCameraShake();
 
 		if (_phaseTransitionTimer > 0f)
 			return;
 
-		GetTree().Paused  = false;
+		GetTree().Paused = false;
 		_phaseTransitionActive = false;
-		_phaseTwoStarted  = true;
-		ProcessMode       = ProcessModeEnum.Inherit;
+		_phaseTwoStarted = true;
+		ProcessMode = ProcessModeEnum.Inherit;
 		if (_worldMusicPlayer != null)
 			_worldMusicPlayer.ProcessMode = ProcessModeEnum.Inherit;
 		SetCurrentHealthDirect(MaxHealth);
@@ -474,8 +475,8 @@ public partial class ThatWhichSwallowedTheStars : Character
 	{
 		_memoryGame = new ThatWhichSwallowedTheStarsMemoryGame
 		{
-			DamageAmount   = MemoryGameDamage,
-			BossName       = CharacterName,
+			DamageAmount = MemoryGameDamage,
+			BossName = CharacterName,
 			GlobalPosition = GlobalPosition
 		};
 		_memoryGame.Completed += OnMemoryGameCompleted;
@@ -529,9 +530,9 @@ public partial class ThatWhichSwallowedTheStars : Character
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");
 
-		AddAnimFromFiles(frames, "idle", "idle", 2, 4f,  true);
+		AddAnimFromFiles(frames, "idle", "idle", 2, 4f, true);
 		AddAnimFromFiles(frames, "beam", "beam", 3, 10f, false);
-		AddAnimFromFiles(frames, "cast", "cast", 3, 8f,  false);
+		AddAnimFromFiles(frames, "cast", "cast", 3, 8f, false);
 
 		// Single-frame "default" pose for the initial reveal.
 		var defaultAnim = "reveal";
@@ -541,7 +542,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 		frames.AddFrame(defaultAnim, GD.Load<Texture2D>(AssetBase + "default.png"));
 
 		_sprite.SpriteFrames = frames;
-		_sprite.Scale        = new Vector2(0.35f, 0.35f);
+		_sprite.Scale = new Vector2(0.35f, 0.35f);
 	}
 
 	static void AddAnimFromFiles(SpriteFrames frames, string animName,

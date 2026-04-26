@@ -114,6 +114,7 @@ public partial class BringerOfDeath : Character
 		AddChild(_riserPlayer);
 
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+		_sprite.Scale = new Vector2(1.5f, 1.5f);
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
