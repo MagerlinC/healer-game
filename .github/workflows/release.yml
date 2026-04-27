@@ -110,10 +110,12 @@ jobs:
       - name: Restore .NET dependencies
         run: dotnet restore
 
-      - name: Build C# solution (Release)
+      - name: Build C# solution (ExportRelease)
         run: |
+          # Godot 4 C# solutions use 'ExportRelease' (not the standard 'Release').
+          # Valid Godot configurations are: Debug, ExportDebug, ExportRelease.
           dotnet build \
-            --configuration Release \
+            --configuration ExportRelease \
             --no-restore
 
       # ── Export ──────────────────────────────────────────────────────────────
