@@ -70,6 +70,15 @@ public partial class AstralTwin : Character
 	float _convergenceTimer;
 	float _convergenceWindupTimer;
 
+	/// <summary>
+	/// True when this twin is the one responsible for managing the parry window
+	/// and dealing damage for the current Convergence cast. Because both twins
+	/// share a static <see cref="ParryWindowManager"/>, only the first twin to
+	/// call <see cref="BeginConvergence"/> in a given cycle opens the window;
+	/// the second twin just mirrors the animation.
+	/// </summary>
+	bool _ownsConvergenceWindow;
+
 	BossAstralStrikeSpell _strikeSpell;
 	BossAstralStarfallSpell _starfallSpell;
 	BossCelestialConvergenceSpell _novaSpell;
@@ -269,28 +278,44 @@ public partial class AstralTwin : Character
 	void BeginConvergence()
 	{
 		_convergenceWindupTimer = ConvergenceWindupDuration;
-		_riserPlayer.Play();
-		ParryWindowManager.OpenWindow();
-		EmitSignalCastWindupStarted(_novaSpell.Name, _novaSpell.Icon, ConvergenceWindupDuration);
+
+		// Only the first twin to enter the wind-up owns the parry window.
+		// The second twin (whose timer fires in the same frame or shortly after)
+		// simply plays the animation — it must not open a second window, which
+		// would reset _wasDeflected and cause a successful deflect to be ignored.
+		_ownsConvergenceWindow = !ParryWindowManager.IsOpen;
+		if (_ownsConvergenceWindow)
+		{
+			ParryWindowManager.OpenWindow();
+			EmitSignalCastWindupStarted(_novaSpell.Name, _novaSpell.Icon, ConvergenceWindupDuration);
+			_riserPlayer.Play();
+		}
+
 		_pendingAttack = PendingAttack.None;
 		_sprite.Play("casting");
 	}
 
 	void ExecuteConvergence()
 	{
-		_riserPlayer.Stop(); // silence the riser the moment the window closes
-		EmitSignalCastWindupEnded();
-
-		if (ParryWindowManager.ConsumeResult())
+		if (_ownsConvergenceWindow)
 		{
-			GD.Print($"[AstralTwin] Celestial Convergence from {CharacterName} was deflected!");
-			_sprite.Play("idle");
-			return;
-		}
+			_riserPlayer.Stop();
+			EmitSignalCastWindupEnded();
 
-		var anyTarget = PickRandomPartyMember();
-		if (anyTarget != null)
-			SpellPipeline.Cast(_novaSpell, this, anyTarget);
+			if (ParryWindowManager.ConsumeResult())
+			{
+				GD.Print($"[AstralTwin] Celestial Convergence was deflected!");
+				_ownsConvergenceWindow = false;
+				_sprite.Play("idle");
+				return;
+			}
+
+			var anyTarget = PickRandomPartyMember();
+			if (anyTarget != null)
+				SpellPipeline.Cast(_novaSpell, this, anyTarget);
+
+			_ownsConvergenceWindow = false;
+		}
 
 		_sprite.Play("idle");
 	}
@@ -349,12 +374,18 @@ public partial class AstralTwin : Character
 		_pendingTarget = null;
 
 		// If a Convergence wind-up was counting down, cancel it cleanly.
+		// Only consume the parry window if this twin opened it — the sibling's
+		// shield interrupt must not steal the other twin's window.
 		if (_convergenceWindupTimer > 0f)
 		{
 			_convergenceWindupTimer = 0f;
-			_riserPlayer.Stop();
-			ParryWindowManager.ConsumeResult(); // discard result — window cancelled by shield interrupt
-			EmitSignalCastWindupEnded();
+			if (_ownsConvergenceWindow)
+			{
+				_riserPlayer.Stop();
+				ParryWindowManager.ConsumeResult(); // discard — window cancelled by shield
+				EmitSignalCastWindupEnded();
+				_ownsConvergenceWindow = false;
+			}
 		}
 
 		_sprite.Play("shielded");
