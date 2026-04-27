@@ -10,10 +10,10 @@ namespace healerfantasy.Talents;
 /// </summary>
 public class CriticalAmplifierTalent : ICharacterModifier
 {
-    const float CritBonus = 0.20f; // +20 percentage points
+	const float CritBonus = 0.10f; // +10 percentage points
 
-    public void Modify(CharacterStats stats)
-    {
-        stats.CritChance += CritBonus;
-    }
+	public void Modify(CharacterStats stats)
+	{
+		stats.CritChance += CritBonus;
+	}
 }

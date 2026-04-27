@@ -207,7 +207,7 @@ public partial class EquipmentPane : Control
 		var hint = new Label();
 		hint.Text = "•Drag items to their slot to equip\n•Drag slots to inventory to unequip";
 		hint.AutowrapMode = TextServer.AutowrapMode.Word;
-		hint.HorizontalAlignment = HorizontalAlignment.Center;
+		hint.HorizontalAlignment = HorizontalAlignment.Left;
 		hint.AddThemeFontSizeOverride("font_size", 11);
 		hint.AddThemeColorOverride("font_color", HintColor);
 		vbox.AddChild(hint);

@@ -10,22 +10,27 @@ namespace healerfantasy.SpellResources;
 /// starlight detonates across the entire party. Deflectable.
 /// </summary>
 [GlobalClass]
-public partial class BossAstralNovaSpell : SpellResource
+public partial class BossCelestialConvergenceSpell : SpellResource
 {
 	public float DamageAmount = 80f;
 
-	public BossAstralNovaSpell()
+	public BossCelestialConvergenceSpell()
 	{
-		Name        = "Celestial Convergence";
-		Description = "The twins channel their power in unison, unleashing a blinding burst of starlight that engulfs the whole party — unless deflected.";
-		Tags        = SpellTags.Damage;
-		ManaCost    = 0f;
-		CastTime    = 0f;
-		Parryable   = true;
-		EffectType  = EffectType.Harmful;
+		Name = "Celestial Convergence";
+		Description =
+			$"The twins channel their power in unison, unleashing a blinding burst of starlight that engulfs the whole party, dealing {DamageAmount} void damage unless deflected.";
+		Tags = SpellTags.Damage;
+		School = SpellSchool.Void;
+		ManaCost = 0f;
+		CastTime = 0f;
+		Parryable = true;
+		EffectType = EffectType.Harmful;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	/// <summary>Targets the entire living party.</summary>
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)

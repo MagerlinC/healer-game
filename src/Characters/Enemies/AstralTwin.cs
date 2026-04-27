@@ -72,7 +72,7 @@ public partial class AstralTwin : Character
 
 	BossAstralStrikeSpell _strikeSpell;
 	BossAstralStarfallSpell _starfallSpell;
-	BossAstralNovaSpell _novaSpell;
+	BossCelestialConvergenceSpell _novaSpell;
 
 	AnimatedSprite2D _sprite;
 	AudioStreamPlayer _riserPlayer;
@@ -121,7 +121,7 @@ public partial class AstralTwin : Character
 
 		_strikeSpell = new BossAstralStrikeSpell { DamageAmount = StrikeDamage };
 		_starfallSpell = new BossAstralStarfallSpell { DamageAmount = StarfallDamage };
-		_novaSpell = new BossAstralNovaSpell { DamageAmount = ConvergenceDamage };
+		_novaSpell = new BossCelestialConvergenceSpell { DamageAmount = ConvergenceDamage };
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));

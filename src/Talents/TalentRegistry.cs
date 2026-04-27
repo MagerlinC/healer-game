@@ -252,7 +252,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Critical Amplifier",
-			Description = "+20% base critical strike chance on all spells.",
+			Description = "+10% base critical strike chance on all spells.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_11.png",
 			School = SpellSchool.Generic,
 			TalentRow = 0,

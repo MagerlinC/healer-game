@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
@@ -444,8 +445,9 @@ public partial class OverworldController : LoadoutController
 		statsRow.AddChild(MakeStatPill("Damage Taken", $"{enc.TotalDamageTaken:N0}", new Color(0.85f, 0.28f, 0.22f)));
 
 		// ── Per-ability tables ────────────────────────────────────────────────
-		BuildDetailSection(_detailModalContent, enc.Events, false);
-		BuildDetailSection(_detailModalContent, enc.Events, true);
+		BuildDetailSection(_detailModalContent, enc.Events, DetailSection.DamageDealt);
+		BuildDetailSection(_detailModalContent, enc.Events, DetailSection.DamageTaken);
+		BuildDetailSection(_detailModalContent, enc.Events, DetailSection.Healing);
 
 		_detailModalLayer.Visible = true;
 	}
@@ -477,6 +479,13 @@ public partial class OverworldController : LoadoutController
 		return vbox;
 	}
 
+	enum DetailSection
+	{
+		DamageTaken,
+		DamageDealt,
+		Healing
+	}
+
 	/// <summary>
 	/// Appends a section separator, header label, and ability-breakdown table to
 	/// <paramref name="parent"/>.
@@ -485,14 +494,18 @@ public partial class OverworldController : LoadoutController
 	/// Healing done: grouped by (ability, target), all healing events.
 	/// </summary>
 	static void BuildDetailSection(VBoxContainer parent,
-		List<CombatEventRecord> events, bool isHealing)
+		List<CombatEventRecord> events, DetailSection section)
 	{
-		var eventType = isHealing ? CombatEventType.Healing : CombatEventType.Damage;
-
-		var filtered = isHealing
-			? events.Where(e => e.Type == CombatEventType.Healing).ToList()
-			: events.Where(e => e.Type == CombatEventType.Damage
-			                    && PartyMemberNames.Contains(e.TargetName)).ToList();
+		var isHealing = section == DetailSection.Healing;
+		var filtered = section switch
+		{
+			DetailSection.DamageTaken => events.Where(e => PartyMemberNames.Contains(e.TargetName)).ToList(),
+			DetailSection.Healing => events.Where(e => e.Type == CombatEventType.Healing).ToList(),
+			DetailSection.DamageDealt => events
+				.Where(e => e.Type == CombatEventType.Damage && !PartyMemberNames.Contains(e.TargetName))
+				.ToList(),
+			_ => events
+		};
 
 		if (filtered.Count == 0) return;
 
@@ -519,7 +532,12 @@ public partial class OverworldController : LoadoutController
 		parent.AddChild(topSep);
 
 		var sectionHeader = new Label();
-		sectionHeader.Text = isHealing ? "HEALING DONE" : "DAMAGE TAKEN";
+		sectionHeader.Text = section switch
+		{
+			DetailSection.Healing => "HEALING DONE",
+			DetailSection.DamageDealt => "DAMAGE DEALT",
+			DetailSection.DamageTaken => "DAMAGE TAKEN"
+		};
 		sectionHeader.HorizontalAlignment = HorizontalAlignment.Center;
 		sectionHeader.AddThemeFontSizeOverride("font_size", 14);
 		sectionHeader.AddThemeColorOverride("font_color",
@@ -535,7 +553,7 @@ public partial class OverworldController : LoadoutController
 		var contextColHeader = isHealing ? "Target" : "Source";
 		var totalColHeader = isHealing ? "Total Healed" : "Total Dmg";
 
-		table.AddChild(MakeDetailRow("Ability", contextColHeader, "Hits", "★", totalColHeader,
+		table.AddChild(MakeDetailRow("Ability", contextColHeader, "Hits", "Crits", totalColHeader,
 			true, isHealing: isHealing));
 
 		AddDetailSeparator(table, new Color(0.42f, 0.38f, 0.33f, 0.55f));

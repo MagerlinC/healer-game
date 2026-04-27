@@ -14,7 +14,7 @@ public class CharacterStats
 	public float MaxMana { get; set; }
 
 	/// <summary>0.0 – 1.0. E.g. 0.2 = 20% crit chance.</summary>
-	public float CritChance { get; set; }
+	public float CritChance { get; set; } = 0.05f;
 
 	/// <summary>How much FinalValue is multiplied on a crit. Default 1.5×.</summary>
 	public float CritMultiplier { get; set; } = 1.5f;

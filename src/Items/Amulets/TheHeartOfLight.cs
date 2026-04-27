@@ -28,7 +28,7 @@ public class TheHeartOfLight : EquippableItem
 		Description = $"While any holy effect is active on the target, they take {(int)(DamageReductionAmount * 100)}% less damage.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Amulet;
-		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(5));
+		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(2));
 		SpellModifiers.Add(new DamageReductionModifier(DamageReductionAmount));
 	}
 
