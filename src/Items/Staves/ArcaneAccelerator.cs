@@ -28,7 +28,7 @@ public class ArcaneAccelerator : EquippableItem
 	{
 		public void Modify(CharacterStats stats)
 		{
-			stats.IncreasedCastSpeed += 0.15f;
+			stats.IncreasedHaste += 0.15f;
 			stats.IncreasedDamage += 0.10f;
 		}
 	}

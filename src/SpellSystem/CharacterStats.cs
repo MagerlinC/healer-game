@@ -25,7 +25,7 @@ public class CharacterStats
 	/// <summary>Modifier applied to all healing spells before modifier pipeline runs.</summary>
 	public float IncreasedHealing { get; set; } = 0.0f;
 
-	public float IncreasedCastSpeed { get; set; } = 1.0f;
+	public float IncreasedHaste { get; set; } = 0.0f;
 
 	public Dictionary<SpellSchool, float> SpellSchoolIncreasedDamage = new()
 	{

@@ -13,6 +13,6 @@ public class TemporalFlowTalent : ICharacterModifier
 
 	public void Modify(CharacterStats stats)
 	{
-		stats.IncreasedCastSpeed += CastSpeedBonus;
+		stats.IncreasedHaste += CastSpeedBonus;
 	}
 }

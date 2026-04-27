@@ -79,6 +79,14 @@ public abstract partial class CharacterEffect : RefCounted
 	/// </summary>
 	public bool IsHarmful { get; set; } = false;
 
+	/// <summary>
+	/// Haste multiplier applied to tick timing. A value of 1.2 means ticks fire
+	/// 20% more often (i.e. the effective interval is <c>baseInterval / HasteMultiplier</c>).
+	/// Set this to <c>1f + casterStats.IncreasedHaste</c> when applying the effect.
+	/// Default is 1.0 (no haste modification).
+	/// </summary>
+	public float HasteMultiplier { get; set; } = 1.0f;
+
 	// How often OnTick fires. 0 means no discrete ticks (continuous only).
 	readonly float _tickInterval;
 	float _tickTimer;
@@ -158,10 +166,11 @@ public abstract partial class CharacterEffect : RefCounted
 		if (_tickInterval <= 0f) return;
 
 		_tickTimer -= delta;
+		var effectiveInterval = _tickInterval / HasteMultiplier;
 		while (_tickTimer <= 0f)
 		{
 			OnTick(target);
-			_tickTimer += _tickInterval;
+			_tickTimer += effectiveInterval;
 
 			// Stop ticking if the effect expired during this batch
 			if (IsExpired) break;

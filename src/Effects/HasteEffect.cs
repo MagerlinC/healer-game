@@ -27,6 +27,6 @@ public partial class HasteEffect : CharacterEffect, ICharacterModifier
 
 	public void Modify(CharacterStats stats)
 	{
-		stats.IncreasedCastSpeed += CastSpeedBonus;
+		stats.IncreasedHaste += CastSpeedBonus;
 	}
 }

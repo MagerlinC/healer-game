@@ -110,7 +110,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 		None,
 		Hit1, // parry window 1 — 1.5 s
 		Hit2, // parry window 2 — 1.5 s
-		Hit3  // parry window 3 — 1.5 s
+		Hit3 // parry window 3 — 1.5 s
 	}
 
 	CataclysmPhase _cataclysmPhase;
@@ -138,7 +138,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 		// Stagger first attacks — give the player a brief moment before the onslaught.
 		_meleeTimer = MeleeAttackInterval;
 		_beamTimer = BeamInterval;
-		_consumeTimer = ConsumeInterval;
+		_consumeTimer = 12f; // offset Consume from the others so it doesn't always hit on the same rhythm
 		_cataclysmTimer = CataclysmInterval;
 
 		_meleeSpell = new BossTwstsMeleeAttackSpell { DamageAmount = MeleeDamage };
@@ -316,6 +316,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 				// Close Hit 3 overlay, resolve, done.
 				EmitSignalCastWindupEnded();
 				ResolveCataclysmHit(3);
+				_riserPlayer.Stop(); // cataclysm is over — silence any riser tail
 				_cataclysmPhase = CataclysmPhase.None;
 				_sprite.Play("idle");
 				break;
@@ -332,8 +333,12 @@ public partial class ThatWhichSwallowedTheStars : Character
 		_cataclysmPhase = phase;
 		_cataclysmPhaseTimer = CataclysmHitWindow;
 
-		// Riser + overlay for each individual hit.
-		_riserPlayer.Play();
+		// Only start the riser on the first hit — subsequent hits are back-to-back
+		// and calling Play() again would restart the stream from the beginning,
+		// causing it to keep playing well past the end of the last parry window.
+		if (phase == CataclysmPhase.Hit1)
+			_riserPlayer.Play();
+
 		EmitSignalCastWindupStarted(_cataclysmSpell.Name, _cataclysmSpell.Icon, CataclysmHitWindow);
 		ParryWindowManager.OpenWindow();
 		_sprite.Play("cast");

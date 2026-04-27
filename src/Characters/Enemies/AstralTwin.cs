@@ -278,6 +278,7 @@ public partial class AstralTwin : Character
 
 	void ExecuteConvergence()
 	{
+		_riserPlayer.Stop(); // silence the riser the moment the window closes
 		EmitSignalCastWindupEnded();
 
 		if (ParryWindowManager.ConsumeResult())
@@ -351,6 +352,8 @@ public partial class AstralTwin : Character
 		if (_convergenceWindupTimer > 0f)
 		{
 			_convergenceWindupTimer = 0f;
+			_riserPlayer.Stop();
+			ParryWindowManager.ConsumeResult(); // discard result — window cancelled by shield interrupt
 			EmitSignalCastWindupEnded();
 		}
 

@@ -53,7 +53,8 @@ public partial class WildGrowthSpell : SpellResource
 				SourceCharacterName = ctx.Caster.CharacterName,
 				AbilityName = Name,
 				Description = Description,
-				School = School
+				School = School,
+				HasteMultiplier = 1f + ctx.CasterStats.IncreasedHaste
 			});
 	}
 }

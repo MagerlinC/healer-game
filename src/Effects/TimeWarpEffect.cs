@@ -29,6 +29,6 @@ public partial class TimeWarpEffect : CharacterEffect, ICharacterModifier
 	/// </summary>
 	public void Modify(CharacterStats stats)
 	{
-		stats.IncreasedCastSpeed += CastSpeedBonus;
+		stats.IncreasedHaste += CastSpeedBonus;
 	}
 }

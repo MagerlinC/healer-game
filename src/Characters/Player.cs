@@ -46,7 +46,7 @@ public partial class Player : Character
 	/// <param name="spell">The spell being cast.</param>
 	/// <param name="adjustedCastTime">
 	/// The actual cast duration after applying the caster's
-	/// <see cref="CharacterStats.IncreasedCastSpeed"/>. Use this for
+	/// <see cref="CharacterStats.IncreasedHaste"/>. Use this for
 	/// UI timers rather than <see cref="SpellResources.SpellResource.CastTime"/>.
 	/// </param>
 	[Signal]
@@ -328,9 +328,8 @@ public partial class Player : Character
 				}
 				else
 				{
-					// Divide by the cast-speed multiplier so e.g. 2× Acceleration
-					// turns a 2 s cast into ~1.67 s.
-					var adjustedCastTime = spellToCast.CastTime / stats.IncreasedCastSpeed;
+					// Increase by cast speed
+					var adjustedCastTime = spellToCast.CastTime - spellToCast.CastTime * stats.IncreasedHaste;
 					EmitSignalCastStarted(spellToCast, adjustedCastTime);
 
 					_isCasting = true;
@@ -343,8 +342,9 @@ public partial class Player : Character
 					_sprite.Play("cast");
 				}
 
-				_globalCooldownTimer = GlobalCooldown;
-				EmitSignalGlobalCooldownStarted(GlobalCooldown);
+				var adjustedGcd = Mathf.Max(GlobalCooldown * (1f - stats.IncreasedHaste), 0.1f);
+				_globalCooldownTimer = adjustedGcd;
+				EmitSignalGlobalCooldownStarted(adjustedGcd);
 			}
 		}
 	}
