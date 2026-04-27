@@ -1,0 +1,175 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers on tags like v1.0.0, v1.2.3-beta, etc.
+
+# Required to create and upload GitHub Releases
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    env:
+      GODOT_VERSION: "4.6.2"
+      GODOT_RELEASE: "stable"
+      EXPORT_PRESET: "Windows Desktop"  # Must match the name in export_presets.cfg exactly
+      BUILD_DIR: "build/windows"
+      DOTNET_NOLOGO: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true  # Pull Git LFS assets (sprites, audio, etc.)
+
+      # ── .NET SDK ────────────────────────────────────────────────────────────
+      - name: Set up .NET SDK 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      # ── Cache NuGet packages ─────────────────────────────────────────────────
+      # Skips re-downloading packages on repeat runs when .csproj hasn't changed
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # ── Install Godot (Mono / headless) ──────────────────────────────────────
+      # Downloads the Mono build of Godot for Linux — this is what enables C# support.
+      # The zip contains both the binary and the required GodotSharp folder; we keep
+      # them together so the Mono runtime can locate its assemblies at export time.
+      - name: Download and install Godot ${{ env.GODOT_VERSION }} (Mono headless)
+        run: |
+          GODOT_FILENAME="Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_mono_linux_x86_64"
+          echo "Downloading Godot ${GODOT_VERSION} Mono headless..."
+
+          wget -q \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/${GODOT_FILENAME}.zip" \
+            -O godot.zip
+
+          unzip -q godot.zip
+
+          # Keep the full folder intact — GodotSharp must sit next to the binary
+          mv "${GODOT_FILENAME}" godot-bin
+          chmod +x "godot-bin/${GODOT_FILENAME}"
+
+          # Expose a 'godot' command on PATH via symlink
+          sudo ln -sf "$(pwd)/godot-bin/${GODOT_FILENAME}" /usr/local/bin/godot
+
+          echo "Godot version:"
+          godot --version
+
+      # ── Install export templates ─────────────────────────────────────────────
+      # Godot needs platform-specific export templates installed locally.
+      # The Mono template package also ships the C# runtime pieces needed for export.
+      - name: Download and install Godot export templates
+        run: |
+          TEMPLATES_FILENAME="Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_mono_export_templates.tpz"
+          echo "Downloading export templates..."
+
+          wget -q \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/${TEMPLATES_FILENAME}" \
+            -O templates.tpz
+
+          # Godot looks for templates at this exact versioned path
+          TEMPLATES_DIR="${HOME}/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}.mono"
+          mkdir -p "${TEMPLATES_DIR}"
+
+          # .tpz is a ZIP containing a 'templates/' subdirectory
+          unzip -q templates.tpz -d /tmp/godot-templates
+          mv /tmp/godot-templates/templates/* "${TEMPLATES_DIR}/"
+
+          echo "Templates installed to: ${TEMPLATES_DIR}"
+          ls "${TEMPLATES_DIR}" | head -20
+
+      # ── Build C# solution ────────────────────────────────────────────────────
+      # Restore and build ahead of the Godot export step so any compilation errors
+      # surface clearly before attempting the full export pipeline.
+      - name: Restore .NET dependencies
+        run: dotnet restore
+
+      - name: Build C# solution (Release)
+        run: |
+          dotnet build \
+            --configuration Release \
+            --no-restore
+
+      # ── Export ──────────────────────────────────────────────────────────────
+      - name: Create export output directory
+        run: mkdir -p "${{ env.BUILD_DIR }}"
+
+      # Runs Godot in fully headless mode (no display server needed in CI).
+      # --export-release uses the Release build configuration and the named preset
+      # from export_presets.cfg. Verbose output is captured to a log file so we
+      # can surface it if the export fails.
+      - name: Export project for Windows Desktop
+        run: |
+          echo "--- Godot export starting ---"
+          echo "Preset : ${{ env.EXPORT_PRESET }}"
+          echo "Output : $(pwd)/${{ env.BUILD_DIR }}/healer-fantasy.exe"
+
+          godot \
+            --headless \
+            --verbose \
+            --export-release "${{ env.EXPORT_PRESET }}" \
+            "$(pwd)/${{ env.BUILD_DIR }}/healer-fantasy.exe" \
+            2>&1 | tee godot-export.log
+
+          echo "--- Godot export finished ---"
+
+      # Confirm the expected executable was produced; print the log tail on failure.
+      - name: Verify export output
+        run: |
+          echo "Contents of ${{ env.BUILD_DIR }}:"
+          ls -lh "${{ env.BUILD_DIR }}/"
+
+          if [ ! -f "${{ env.BUILD_DIR }}/healer-fantasy.exe" ]; then
+            echo "::error::Export failed — healer-fantasy.exe was not produced."
+            echo "--- Last 60 lines of Godot export log ---"
+            tail -60 godot-export.log
+            exit 1
+          fi
+
+          echo "Export verified successfully."
+
+      # ── Package ─────────────────────────────────────────────────────────────
+      # Zips the entire build directory so the user gets a single download that
+      # includes the exe, the PCK (if not embedded), and any .NET runtime DLLs
+      # needed for a self-contained run.
+      - name: Create release zip
+        run: |
+          ZIP_NAME="healer-fantasy-${{ github.ref_name }}.zip"
+
+          cd "${{ env.BUILD_DIR }}"
+          zip -r "../../${ZIP_NAME}" .
+          cd ../..
+
+          # Store for use in the release step
+          echo "ZIP_NAME=${ZIP_NAME}" >> "${GITHUB_ENV}"
+
+          echo "Package created: ${ZIP_NAME}"
+          ls -lh "${ZIP_NAME}"
+
+      # ── Publish GitHub Release ───────────────────────────────────────────────
+      # Creates the release if it doesn't exist yet; updates it if it does.
+      # The zip is attached as a downloadable release asset.
+      - name: Create or update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "healer-fantasy-${{ github.ref_name }}"
+          draft: false
+          prerelease: false
+          files: ${{ env.ZIP_NAME }}
+          fail_on_unmatched_files: true
+          generate_release_notes: false
