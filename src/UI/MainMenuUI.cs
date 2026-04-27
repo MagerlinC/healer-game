@@ -405,15 +405,24 @@ public partial class MainMenuUI : Node2D
 			var actionName = $"spell_{i + 1}";
 			var events = InputMap.ActionGetEvents(actionName);
 			if (events.Count > 0 && events[0] is InputEventKey k)
-				cfg.SetValue(KeybindSection, actionName, (int)k.PhysicalKeycode);
+			{
+				// Prefer physical_keycode (layout-independent); fall back to keycode.
+				var keyToSave = k.PhysicalKeycode != Key.None ? k.PhysicalKeycode : k.Keycode;
+				if (keyToSave != Key.None)
+					cfg.SetValue(KeybindSection, actionName, (int)keyToSave);
+			}
 		}
 
-		var genericActions = new[] { "deflect", "dispel" };
+		var genericActions = new[] { "deflect", "dispel", "ultimate" };
 		foreach (var actionName in genericActions)
 		{
 			var events = InputMap.ActionGetEvents(actionName);
 			if (events.Count > 0 && events[0] is InputEventKey k)
-				cfg.SetValue(KeybindSection, actionName, (int)k.PhysicalKeycode);
+			{
+				var keyToSave = k.PhysicalKeycode != Key.None ? k.PhysicalKeycode : k.Keycode;
+				if (keyToSave != Key.None)
+					cfg.SetValue(KeybindSection, actionName, (int)keyToSave);
+			}
 		}
 
 		cfg.Save(KeybindSavePath);
@@ -431,6 +440,8 @@ public partial class MainMenuUI : Node2D
 			if (!cfg.HasSectionKey(KeybindSection, actionName)) continue;
 
 			var keycode = (Key)(int)cfg.GetValue(KeybindSection, actionName);
+			if (keycode == Key.None) continue; // guard against corrupted/legacy zero entries
+
 			InputMap.ActionEraseEvents(actionName);
 			var ev = new InputEventKey();
 			ev.PhysicalKeycode = keycode;
@@ -438,12 +449,14 @@ public partial class MainMenuUI : Node2D
 		}
 
 		// Generic spell keybinds
-		var genericActions = new[] { "deflect", "dispel" };
+		var genericActions = new[] { "deflect", "dispel", "ultimate" };
 		foreach (var actionName in genericActions)
 		{
 			if (!cfg.HasSectionKey(KeybindSection, actionName)) continue;
 
 			var keycode = (Key)(int)cfg.GetValue(KeybindSection, actionName);
+			if (keycode == Key.None) continue; // guard against corrupted/legacy zero entries
+
 			InputMap.ActionEraseEvents(actionName);
 			var ev = new InputEventKey();
 			ev.PhysicalKeycode = keycode;

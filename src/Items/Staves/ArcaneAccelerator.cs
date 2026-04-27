@@ -8,16 +8,17 @@ namespace healerfantasy.Items.Staves;
 /// Imbued with time-warping enchantments that compress the gap between thought
 /// and spell, while also amplifying offensive output.
 ///
-/// Stat bonuses: +15% cast speed, +10% damage multiplier.
+/// Stat bonuses: +15% haste, +10% damage multiplier.
 /// </summary>
 public class ArcaneAccelerator : EquippableItem
 {
+	static readonly float _hasteAmount = 0.10f;
 	public override string ItemId => "arcane_accelerator";
 
 	public ArcaneAccelerator()
 	{
 		Name = "Arcane Accelerator";
-		Description = "+15% cast speed.\n10% increased damage.";
+		Description = $"+{_hasteAmount * 100}% haste.\n10% increased damage.";
 		Rarity = ItemRarity.Epic;
 		Slot = EquipSlot.Staff;
 		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(4));
@@ -28,7 +29,7 @@ public class ArcaneAccelerator : EquippableItem
 	{
 		public void Modify(CharacterStats stats)
 		{
-			stats.IncreasedHaste += 0.15f;
+			stats.IncreasedHaste += _hasteAmount;
 			stats.IncreasedDamage += 0.10f;
 		}
 	}

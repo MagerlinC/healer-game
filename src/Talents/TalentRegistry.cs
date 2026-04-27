@@ -190,7 +190,7 @@ public static class TalentRegistry
 		{
 			Name = "Acceleration",
 			Description =
-				"Casting a chronomancy spell increases cast speed for 10%. Stacks up to 3 times.",
+				"Casting a chronomancy spell increases haste for 10%. Stacks up to 3 times.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_17.png",
 			School = SpellSchool.Chronomancy,
 			TalentRow = 0,
@@ -200,7 +200,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Temporal Flow",
-			Description = "Passively increases cast speed by 15%.",
+			Description = "Passively increases haste by 15%.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_12.png",
 			School = SpellSchool.Chronomancy,
 			TalentRow = 1,

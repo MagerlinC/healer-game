@@ -328,7 +328,7 @@ public partial class Player : Character
 				}
 				else
 				{
-					// Increase by cast speed
+					// Increase by haste
 					var adjustedCastTime = spellToCast.CastTime - spellToCast.CastTime * stats.IncreasedHaste;
 					EmitSignalCastStarted(spellToCast, adjustedCastTime);
 

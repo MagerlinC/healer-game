@@ -7,7 +7,7 @@ namespace healerfantasy.Talents.Chronomancy;
 
 /// <summary>
 /// After each spell cast, applies (or stacks) an <see cref="AccelerationEffect"/>
-/// on the caster, granting +10% cast speed per stack for a short duration.
+/// on the caster, granting +10% haste per stack for a short duration.
 /// </summary>
 public class AccelerationTalent : ISpellModifier
 {

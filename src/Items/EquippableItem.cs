@@ -4,8 +4,19 @@ using healerfantasy.SpellSystem;
 
 namespace healerfantasy.Items;
 
-public enum ItemRarity { Rare, Epic, Legendary }
-public enum EquipSlot { Staff }
+public enum ItemRarity
+{
+	Rare,
+	Epic,
+	Legendary
+}
+
+public enum EquipSlot
+{
+	Staff,
+	Ring,
+	Amulet
+}
 
 /// <summary>
 /// Abstract base for all equippable items.
@@ -28,30 +39,30 @@ public enum EquipSlot { Staff }
 /// </summary>
 public abstract class EquippableItem
 {
-    /// <summary>
-    /// Unique string identifier used for serialisation and run-history logging.
-    /// Must be stable across code changes (treat as a data key, not a display name).
-    /// </summary>
-    public abstract string ItemId { get; }
+	/// <summary>
+	/// Unique string identifier used for serialisation and run-history logging.
+	/// Must be stable across code changes (treat as a data key, not a display name).
+	/// </summary>
+	public abstract string ItemId { get; }
 
-    public string Name { get; protected init; } = string.Empty;
-    public string Description { get; protected init; } = string.Empty;
+	public string Name { get; protected init; } = string.Empty;
+	public string Description { get; protected init; } = string.Empty;
 
-    /// <summary>Icon loaded at construction time from <see cref="AssetConstants"/>.</summary>
-    public Texture2D? Icon { get; protected set; }
+	/// <summary>Icon loaded at construction time from <see cref="AssetConstants"/>.</summary>
+	public Texture2D? Icon { get; protected set; }
 
-    public ItemRarity Rarity { get; protected init; }
-    public EquipSlot Slot { get; protected init; }
+	public ItemRarity Rarity { get; protected init; }
+	public EquipSlot Slot { get; protected init; }
 
-    /// <summary>
-    /// Applied during <see cref="Character.GetCharacterStats"/> — same pipeline as Talent
-    /// character modifiers. Use for passive stat bonuses (MaxMana, CritChance, etc.).
-    /// </summary>
-    public List<ICharacterModifier> CharacterModifiers { get; } = new();
+	/// <summary>
+	/// Applied during <see cref="Character.GetCharacterStats"/> — same pipeline as Talent
+	/// character modifiers. Use for passive stat bonuses (MaxMana, CritChance, etc.).
+	/// </summary>
+	public List<ICharacterModifier> CharacterModifiers { get; } = new();
 
-    /// <summary>
-    /// Injected into <see cref="Character.GetSpellModifiers"/> — same pipeline as Talent
-    /// spell modifiers. Use only for Legendary items with gameplay-altering effects.
-    /// </summary>
-    public List<ISpellModifier> SpellModifiers { get; } = new();
+	/// <summary>
+	/// Injected into <see cref="Character.GetSpellModifiers"/> — same pipeline as Talent
+	/// spell modifiers. Use only for Legendary items with gameplay-altering effects.
+	/// </summary>
+	public List<ISpellModifier> SpellModifiers { get; } = new();
 }

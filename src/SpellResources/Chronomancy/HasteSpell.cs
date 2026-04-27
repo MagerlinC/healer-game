@@ -16,33 +16,33 @@ namespace healerfantasy.SpellResources.Chronomancy;
 [GlobalClass]
 public partial class HasteSpell : SpellResource
 {
-    [Export] public float CastSpeedBonus = 0.40f;
-    [Export] public float BuffDuration = 8f;
+	[Export] public float CastSpeedBonus = 0.40f;
+	[Export] public float BuffDuration = 8f;
 
-    public HasteSpell()
-    {
-        Name = "Haste";
-        Description =
-            $"Accelerate your own flow of time, increasing your cast speed by {(int)(CastSpeedBonus * 100)}% for {BuffDuration}s.";
-        ManaCost = 10f;
-        CastTime = 0.0f;
-        Cooldown = 15f;
-        School = SpellSchool.Chronomancy;
-        Tags = SpellTags.Duration;
-        RequiredSchoolPoints = 1;
-        EffectType = EffectType.Helpful;
-        Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "healer/healer2.png");
-    }
+	public HasteSpell()
+	{
+		Name = "Haste";
+		Description =
+			$"Accelerate your own flow of time, increasing your haste by {(int)(CastSpeedBonus * 100)}% for {BuffDuration}s.";
+		ManaCost = 10f;
+		CastTime = 0.0f;
+		Cooldown = 15f;
+		School = SpellSchool.Chronomancy;
+		Tags = SpellTags.Duration;
+		RequiredSchoolPoints = 1;
+		EffectType = EffectType.Helpful;
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "healer/healer2.png");
+	}
 
-    public override void Apply(SpellContext ctx)
-    {
-        ctx.Caster.ApplyEffect(new HasteEffect(BuffDuration, CastSpeedBonus)
-        {
-            Icon = ctx.Spell.Icon,
-            School = School,
-            SourceCharacterName = ctx.Caster.CharacterName,
-            AbilityName = Name,
-            Description = Description
-        });
-    }
+	public override void Apply(SpellContext ctx)
+	{
+		ctx.Caster.ApplyEffect(new HasteEffect(BuffDuration, CastSpeedBonus)
+		{
+			Icon = ctx.Spell.Icon,
+			School = School,
+			SourceCharacterName = ctx.Caster.CharacterName,
+			AbilityName = Name,
+			Description = Description
+		});
+	}
 }

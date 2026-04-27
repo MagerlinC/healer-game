@@ -19,7 +19,7 @@ public partial class TimeWarpSpell : SpellResource
 	{
 		Name = "Time Warp";
 		Description =
-			$"Accelerates time for the whole party, increasing cast speed by {(int)(CastSpeedBonus * 100)}% for {BuffDuration}s.";
+			$"Accelerates time for the whole party, increasing haste by {(int)(CastSpeedBonus * 100)}% for {BuffDuration}s.";
 		ManaCost = 15f;
 		CastTime = 0.0f;
 		Cooldown = 10f;

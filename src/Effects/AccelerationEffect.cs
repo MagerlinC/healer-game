@@ -3,7 +3,7 @@ using healerfantasy.SpellSystem;
 namespace healerfantasy.Effects;
 
 /// <summary>
-/// A stacking buff that increases the caster's cast speed by
+/// A stacking buff that increases the caster's haste by
 /// <see cref="CastSpeedPerStack"/> per stack (default 10 %).
 ///
 /// Stacks are added each time the buff is re-applied (up to

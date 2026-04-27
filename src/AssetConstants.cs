@@ -52,11 +52,22 @@ public static class AssetConstants
 	public static readonly string ArmoryInteractiblePath = "res://assets/interactibles/armory.png";
 
 	// ── Item assets ───────────────────────────────────────────────────────────
+	public static readonly string ItemsPath = "res://assets/items/";
 
 	/// <summary>Returns the res:// path for staff icon n (1–5).</summary>
 	public static string StaveIconPath(int n)
 	{
-		return $"res://assets/items/staves/{n}.png";
+		return $"{ItemsPath}staves/{n}.png";
+	}
+
+	public static string RingIconPath(int n)
+	{
+		return $"{ItemsPath}rings/{n}.png";
+	}
+
+	public static string AmuletIconPath(int n)
+	{
+		return $"{ItemsPath}amulets/{n}.png";
 	}
 
 	// ── Scene backgrounds ─────────────────────────────────────────────────────
