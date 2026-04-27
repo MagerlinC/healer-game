@@ -31,7 +31,12 @@ public static class RunHistoryStore
 		float TotalHealing,
 		float TotalDamageDealt,
 		float TotalDamageTaken,
-		List<CombatEventRecord> Events
+		List<CombatEventRecord> Events,
+		/// <summary>
+		/// The dungeon this encounter took place in.
+		/// Null on records saved before dungeon tracking was introduced.
+		/// </summary>
+		string? DungeonName = null
 	);
 
 
@@ -113,11 +118,11 @@ public static class RunHistoryStore
 			{
 				if (PartyNames.Contains(e.SourceName)) damageDealt += e.Amount;
 				else damageTaken += e.Amount;
-
 			}
 		}
 
-		_currentEncounters.Add(new BossEncounterRecord(bossName, healing, damageDealt, damageTaken, events));
+		var dungeonName = RunState.Instance?.CurrentDungeon.Name;
+		_currentEncounters.Add(new BossEncounterRecord(bossName, healing, damageDealt, damageTaken, events, dungeonName));
 	}
 
 	/// <summary>

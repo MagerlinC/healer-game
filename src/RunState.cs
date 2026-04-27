@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
@@ -37,6 +38,30 @@ public partial class RunState : Node
 	public List<TalentDefinition> SelectedTalentDefs { get; } = new();
 
 	public bool HasLoadout => SelectedSpells.Any(s => s != null);
+
+	// ── Run dungeon list ──────────────────────────────────────────────────────
+
+	/// <summary>
+	/// The ordered list of dungeons for this run, one randomly chosen per tier.
+	/// Populated at run start and on Reset(). Always contains exactly one dungeon
+	/// per tier (1, 2, 3) in ascending tier order.
+	/// </summary>
+	public List<DungeonDefinition> RunDungeons { get; private set; } = null!;
+
+	/// <summary>Picks one dungeon per tier at random and returns them in tier order.</summary>
+	static List<DungeonDefinition> BuildRunDungeons()
+	{
+		var rng = new Random();
+		return DungeonDefinition.All
+			.GroupBy(d => d.Tier)
+			.OrderBy(g => g.Key)
+			.Select(g =>
+			{
+				var options = g.ToList();
+				return options[rng.Next(options.Count)];
+			})
+			.ToList();
+	}
 
 	// ── Run progression ───────────────────────────────────────────────────────
 
@@ -83,10 +108,10 @@ public partial class RunState : Node
 
 	/// <summary>Definition of the dungeon currently being fought or about to be entered.</summary>
 	public DungeonDefinition CurrentDungeon =>
-		DungeonDefinition.All[System.Math.Min(CurrentDungeonIndex, DungeonDefinition.All.Length - 1)];
+		RunDungeons[Math.Min(CurrentDungeonIndex, RunDungeons.Count - 1)];
 
 	/// <summary>True when the dungeon we're in is the final one (no camp follows).</summary>
-	public bool IsLastDungeon => CurrentDungeonIndex >= DungeonDefinition.All.Length - 1;
+	public bool IsLastDungeon => CurrentDungeonIndex >= RunDungeons.Count - 1;
 
 	/// <summary>True when the boss we're about to fight is the last one in the current dungeon.</summary>
 	public bool IsLastBossInDungeon => CurrentBossIndexInDungeon >= CurrentDungeon.BossCount - 1;
@@ -104,7 +129,7 @@ public partial class RunState : Node
 	public MapNodeState GetDungeonMapState(int index)
 	{
 		if (index < CompletedDungeons) return MapNodeState.Completed;
-		if (index == CompletedDungeons && index < DungeonDefinition.All.Length)
+		if (index == CompletedDungeons && index < RunDungeons.Count)
 		{
 			// Available if either we have no pending camp, or we're currently sitting
 			// at the camp that bridges to this dungeon (CompletedCamps == index - 1).
@@ -153,6 +178,7 @@ public partial class RunState : Node
 	public override void _Ready()
 	{
 		Instance = this;
+		RunDungeons = BuildRunDungeons();
 		InitSpellsFromPreferences();
 		InitTalentsFromPreferences();
 	}
@@ -178,6 +204,7 @@ public partial class RunState : Node
 		CompletedCamps = 0;
 		CurrentBossIndexInDungeon = 0;
 		ItemStore.Clear();
+		RunDungeons = BuildRunDungeons();
 	}
 
 	// ── Private ───────────────────────────────────────────────────────────────

@@ -42,6 +42,13 @@ public static class AssetConstants
 		BackgroundBasePath + "ancient-keep/1.png"
 	};
 
+	public static readonly string[] CastleOfBloodArenaBackgroundPaths =
+	{
+		BackgroundBasePath + "castle-of-blood/1.png",
+		BackgroundBasePath + "castle-of-blood/1.png",
+		BackgroundBasePath + "castle-of-blood/1.png"
+	};
+
 
 	// ── Interactible assets ───────────────────────────────────────────────────
 

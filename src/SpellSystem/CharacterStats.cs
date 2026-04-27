@@ -44,6 +44,13 @@ public class CharacterStats
 	public float DamageTakenMultiplier { get; set; } = 1.0f;
 
 	/// <summary>
+	/// Multiplier applied to all incoming healing.
+	/// Values below 1.0 reduce healing received (debuffs such as Crimson Curse).
+	/// Default 1.0 (no modification). Clamped to a minimum of 0 in <see cref="Character.Heal"/>.
+	/// </summary>
+	public float HealingReceivedMultiplier { get; set; } = 1.0f;
+
+	/// <summary>
 	/// When true, the next non-instant spell cast by this character will be
 	/// fired immediately, bypassing the normal cast timer.
 	/// Set by talents such as <see cref="Talents.Chronomancy.TemporalMomentumTalent"/>.

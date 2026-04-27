@@ -17,6 +17,11 @@ public static class GameConstants
 	public const string ForsakenBoss2Name = "Mecha Golem";
 	public const string ForsakenBoss3Name = "Flying Skull";
 
+	// ── Boss names — Castle of Blood ─────────────────────────────────────────
+	public const string CastleBoss1Name = "Blood Knight";
+	public const string CastleBoss2Name = "The Countess";
+	public const string CastleBoss3Name = "The Blood Prince";
+
 	// ── Boss names — Sanctum of Stars ─────────────────────────────────────────
 	public const string SanctumBoss1Name = "The Nightborne";
 
@@ -42,6 +47,17 @@ public static class GameConstants
 		"res://levels/MechaGolem.tscn",
 		"res://levels/FlyingSkull.tscn"
 	};
+
+	/// <summary>Packed scene paths for the Castle of Blood bosses.</summary>
+	public static readonly string[] CastleOfBloodBossScenePaths =
+	{
+		"res://levels/BloodKnight.tscn",
+		"res://levels/TheCountess.tscn",
+		"res://levels/TheBloodPrince.tscn"
+	};
+
+	/// <summary>XP rewards for the Castle of Blood bosses.</summary>
+	public static readonly int[] CastleOfBloodXpRewards = { 220, 280, 350 };
 
 	/// <summary>Packed scene paths for the Sanctum of Stars bosses.</summary>
 	public static readonly string[] SanctumBossScenePaths =

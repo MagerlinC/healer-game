@@ -189,7 +189,7 @@ public partial class MapScreenController : Node2D
 
 		// Name
 		var nodeName = isDungeonNode
-			? DungeonDefinition.All[DungeonIdx[slotIndex]].Name
+			? RunState.Instance.RunDungeons[DungeonIdx[slotIndex]].Name
 			: "Rest Camp";
 		if (state == RunState.MapNodeState.Completed) nodeName = "✓  " + nodeName;
 
@@ -206,7 +206,7 @@ public partial class MapScreenController : Node2D
 		// Boss count sub-label for non-locked dungeons
 		if (isDungeonNode && state != RunState.MapNodeState.Locked)
 		{
-			var bossCount = DungeonDefinition.All[DungeonIdx[slotIndex]].BossCount;
+			var bossCount = RunState.Instance.RunDungeons[DungeonIdx[slotIndex]].BossCount;
 			var sub = new Label();
 			sub.Text = $"{bossCount} boss{(bossCount != 1 ? "es" : "")}";
 			sub.HorizontalAlignment = HorizontalAlignment.Center;
@@ -352,7 +352,7 @@ public partial class MapScreenController : Node2D
 
 		if (isDungeonNode)
 		{
-			var def = DungeonDefinition.All[DungeonIdx[slotIndex]];
+			var def = RunState.Instance.RunDungeons[DungeonIdx[slotIndex]];
 			name = def.Name;
 
 			switch (state)

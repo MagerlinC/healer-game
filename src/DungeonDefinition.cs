@@ -12,6 +12,12 @@ public class DungeonDefinition
 {
 	public string Name { get; init; } = "";
 
+	/// <summary>
+	/// Tier determines which slot in the run this dungeon occupies (1 = first, 2 = second, 3 = third).
+	/// One dungeon per tier is selected randomly when a run is started.
+	/// </summary>
+	public int Tier { get; init; }
+
 	/// <summary>Centre of this dungeon's node on the world map (viewport pixels, 1920×1080).</summary>
 	public Vector2 MapPosition { get; init; }
 
@@ -36,6 +42,7 @@ public class DungeonDefinition
 		new()
 		{
 			Name = "The Ancient Keep",
+			Tier = 1,
 			MapPosition = new Vector2(260f, 730f),
 			BossScenePaths = GameConstants.BossScenePaths,
 			ArenaBackgroundPaths = AssetConstants.AncientKeepArenaBackgroundPaths,
@@ -50,6 +57,7 @@ public class DungeonDefinition
 		new()
 		{
 			Name = "The Forsaken Citadel",
+			Tier = 2,
 			MapPosition = new Vector2(880f, 490f),
 			BossScenePaths = GameConstants.ForsakenCitadelBossScenePaths,
 			ArenaBackgroundPaths = AssetConstants.ForsakenCitadelArenaBackgroundPaths,
@@ -63,7 +71,23 @@ public class DungeonDefinition
 		},
 		new()
 		{
+			Name = "Castle of Blood",
+			Tier = 2,
+			MapPosition = new Vector2(880f, 490f),
+			BossScenePaths = GameConstants.CastleOfBloodBossScenePaths,
+			ArenaBackgroundPaths = AssetConstants.CastleOfBloodArenaBackgroundPaths,
+			XpRewards = GameConstants.CastleOfBloodXpRewards,
+			BossNames = new[]
+			{
+				GameConstants.CastleBoss1Name, // "Blood Knight"
+				GameConstants.CastleBoss2Name, // "The Countess"
+				GameConstants.CastleBoss3Name  // "The Blood Prince"
+			}
+		},
+		new()
+		{
 			Name = "The Sanctum of Stars",
+			Tier = 3,
 			MapPosition = new Vector2(1540f, 240f),
 			BossScenePaths = GameConstants.SanctumBossScenePaths,
 			ArenaBackgroundPaths = AssetConstants.SpaceArenaBackgroundPaths,

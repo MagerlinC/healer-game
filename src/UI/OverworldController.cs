@@ -238,91 +238,119 @@ public partial class OverworldController : LoadoutController
 			run.IsVictory ? new Color(0.40f, 0.85f, 0.35f) : new Color(0.85f, 0.28f, 0.22f));
 		header.AddChild(outcome);
 
-		// ── Per-boss encounter rows (clickable) ───────────────────────────────
-		foreach (var enc in run.BossEncounters)
+		// ── Per-boss encounter rows grouped by dungeon ───────────────────────
+		// Group encounters by DungeonName, preserving their original order.
+		// Encounters from old saves (DungeonName == null) are grouped together
+		// under a null key and rendered without a dungeon header.
+		var dungeonGroups = run.BossEncounters
+			.Select((enc, idx) => (enc, idx))
+			.GroupBy(x => x.enc.DungeonName)
+			.ToList();
+
+		// Re-order groups so null (legacy) encounters appear first, then named
+		// dungeons in the order of their first encounter.
+		var orderedGroups = dungeonGroups
+			.OrderBy(g => g.Min(x => x.idx))
+			.ToList();
+
+		foreach (var group in orderedGroups)
 		{
-			var encNormal = new StyleBoxFlat();
-			encNormal.BgColor = new Color(0f, 0f, 0f, 0f);
-			var encHover = new StyleBoxFlat();
-			encHover.BgColor = new Color(1f, 1f, 1f, 0.04f);
-			encHover.SetCornerRadiusAll(4);
-
-			var encPanel = new PanelContainer();
-			encPanel.AddThemeStyleboxOverride("panel", encNormal);
-			encPanel.MouseFilter = Control.MouseFilterEnum.Stop;
-			encPanel.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-			vbox.AddChild(encPanel);
-
-			var row = new HBoxContainer();
-			row.AddThemeConstantOverride("separation", 16);
-			// Prevent the inner HBox from stealing clicks from the panel
-			row.MouseFilter = Control.MouseFilterEnum.Ignore;
-			encPanel.AddChild(row);
-
-			var pad = new Control();
-			pad.CustomMinimumSize = new Vector2(24f, 0f);
-			pad.MouseFilter = Control.MouseFilterEnum.Ignore;
-			row.AddChild(pad);
-
-			var bossName = new Label();
-			bossName.Text = enc.BossName;
-			bossName.CustomMinimumSize = new Vector2(160f, 0f);
-			bossName.AddThemeFontSizeOverride("font_size", 13);
-			bossName.AddThemeColorOverride("font_color", new Color(0.88f, 0.84f, 0.78f));
-			bossName.MouseFilter = Control.MouseFilterEnum.Ignore;
-			row.AddChild(bossName);
-
-			var healLabel = new Label();
-			healLabel.Text = $"Healing: {enc.TotalHealing:N0}";
-			healLabel.AddThemeFontSizeOverride("font_size", 13);
-			healLabel.AddThemeColorOverride("font_color", new Color(0.40f, 0.85f, 0.55f));
-			healLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
-			row.AddChild(healLabel);
-
-			var dmgDealtLabel = new Label();
-			dmgDealtLabel.Text = $"Damage dealt: {enc.TotalDamageDealt:N0}";
-			dmgDealtLabel.AddThemeFontSizeOverride("font_size", 13);
-			dmgDealtLabel.AddThemeColorOverride("font_color", new Color(0.88f, 0.44f, 0.28f));
-			dmgDealtLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
-			row.AddChild(dmgDealtLabel);
-
-			var dmgTakenLabel = new Label();
-			dmgTakenLabel.Text = $"Damage taken: {enc.TotalDamageTaken:N0}";
-			dmgTakenLabel.AddThemeFontSizeOverride("font_size", 13);
-			dmgTakenLabel.AddThemeColorOverride("font_color", new Color(0.88f, 0.44f, 0.28f));
-			dmgTakenLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
-			row.AddChild(dmgTakenLabel);
-
-			// Right-aligned "Details ▸" hint
-			var spacer = new Control();
-			spacer.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-			spacer.MouseFilter = Control.MouseFilterEnum.Ignore;
-			row.AddChild(spacer);
-
-			var detailsHint = new Label();
-			detailsHint.Text = "Details ▸";
-			detailsHint.AddThemeFontSizeOverride("font_size", 12);
-			detailsHint.AddThemeColorOverride("font_color", new Color(0.50f, 0.46f, 0.38f));
-			detailsHint.MouseFilter = Control.MouseFilterEnum.Ignore;
-			row.AddChild(detailsHint);
-
-			// Hover and click wiring
-			var capturedEnc = enc;
-			encPanel.MouseEntered += () =>
+			// ── Dungeon subheader (only when a name is known) ─────────────────
+			if (group.Key != null)
 			{
-				encPanel.AddThemeStyleboxOverride("panel", encHover);
-				detailsHint.AddThemeColorOverride("font_color", TitleColor);
-			};
-			encPanel.MouseExited += () =>
+				var dungeonHeader = new Label();
+				dungeonHeader.Text = group.Key;
+				dungeonHeader.AddThemeFontSizeOverride("font_size", 12);
+				dungeonHeader.AddThemeColorOverride("font_color", new Color(0.65f, 0.55f, 0.35f));
+				dungeonHeader.MouseFilter = Control.MouseFilterEnum.Ignore;
+				vbox.AddChild(dungeonHeader);
+			}
+
+			foreach (var (enc, _) in group)
 			{
+				var encNormal = new StyleBoxFlat();
+				encNormal.BgColor = new Color(0f, 0f, 0f, 0f);
+				var encHover = new StyleBoxFlat();
+				encHover.BgColor = new Color(1f, 1f, 1f, 0.04f);
+				encHover.SetCornerRadiusAll(4);
+
+				var encPanel = new PanelContainer();
 				encPanel.AddThemeStyleboxOverride("panel", encNormal);
+				encPanel.MouseFilter = Control.MouseFilterEnum.Stop;
+				encPanel.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+				vbox.AddChild(encPanel);
+
+				var row = new HBoxContainer();
+				row.AddThemeConstantOverride("separation", 16);
+				// Prevent the inner HBox from stealing clicks from the panel
+				row.MouseFilter = Control.MouseFilterEnum.Ignore;
+				encPanel.AddChild(row);
+
+				var pad = new Control();
+				pad.CustomMinimumSize = new Vector2(24f, 0f);
+				pad.MouseFilter = Control.MouseFilterEnum.Ignore;
+				row.AddChild(pad);
+
+				var bossName = new Label();
+				bossName.Text = enc.BossName;
+				bossName.CustomMinimumSize = new Vector2(160f, 0f);
+				bossName.AddThemeFontSizeOverride("font_size", 13);
+				bossName.AddThemeColorOverride("font_color", new Color(0.88f, 0.84f, 0.78f));
+				bossName.MouseFilter = Control.MouseFilterEnum.Ignore;
+				row.AddChild(bossName);
+
+				var healLabel = new Label();
+				healLabel.Text = $"Healing: {enc.TotalHealing:N0}";
+				healLabel.AddThemeFontSizeOverride("font_size", 13);
+				healLabel.AddThemeColorOverride("font_color", new Color(0.40f, 0.85f, 0.55f));
+				healLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+				row.AddChild(healLabel);
+
+				var dmgDealtLabel = new Label();
+				dmgDealtLabel.Text = $"Damage dealt: {enc.TotalDamageDealt:N0}";
+				dmgDealtLabel.AddThemeFontSizeOverride("font_size", 13);
+				dmgDealtLabel.AddThemeColorOverride("font_color", new Color(0.88f, 0.44f, 0.28f));
+				dmgDealtLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+				row.AddChild(dmgDealtLabel);
+
+				var dmgTakenLabel = new Label();
+				dmgTakenLabel.Text = $"Damage taken: {enc.TotalDamageTaken:N0}";
+				dmgTakenLabel.AddThemeFontSizeOverride("font_size", 13);
+				dmgTakenLabel.AddThemeColorOverride("font_color", new Color(0.88f, 0.44f, 0.28f));
+				dmgTakenLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+				row.AddChild(dmgTakenLabel);
+
+				// Right-aligned "Details ▸" hint
+				var spacer = new Control();
+				spacer.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+				spacer.MouseFilter = Control.MouseFilterEnum.Ignore;
+				row.AddChild(spacer);
+
+				var detailsHint = new Label();
+				detailsHint.Text = "Details ▸";
+				detailsHint.AddThemeFontSizeOverride("font_size", 12);
 				detailsHint.AddThemeColorOverride("font_color", new Color(0.50f, 0.46f, 0.38f));
-			};
-			encPanel.GuiInput += (ev) =>
-			{
-				if (ev is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
-					ShowEncounterDetail(capturedEnc);
-			};
+				detailsHint.MouseFilter = Control.MouseFilterEnum.Ignore;
+				row.AddChild(detailsHint);
+
+				// Hover and click wiring
+				var capturedEnc = enc;
+				encPanel.MouseEntered += () =>
+				{
+					encPanel.AddThemeStyleboxOverride("panel", encHover);
+					detailsHint.AddThemeColorOverride("font_color", TitleColor);
+				};
+				encPanel.MouseExited += () =>
+				{
+					encPanel.AddThemeStyleboxOverride("panel", encNormal);
+					detailsHint.AddThemeColorOverride("font_color", new Color(0.50f, 0.46f, 0.38f));
+				};
+				encPanel.GuiInput += (ev) =>
+				{
+					if (ev is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
+						ShowEncounterDetail(capturedEnc);
+				};
+			}
 		}
 
 		return vbox;

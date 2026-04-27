@@ -179,10 +179,17 @@ public abstract partial class Character : CharacterBody2D
 			OnDeath();
 	}
 
-	/// <summary>Restore health, clamped at MaxHealth.</summary>
+	/// <summary>
+	/// Restore health, clamped at MaxHealth.
+	/// Applies any <see cref="CharacterStats.HealingReceivedMultiplier"/> from active
+	/// effects (e.g. Crimson Curse) before adding the amount.
+	/// </summary>
 	public void Heal(float amount)
 	{
 		if (!IsAlive) return;
+		var stats = GetCharacterStats();
+		amount *= Mathf.Max(0f, stats.HealingReceivedMultiplier);
+		if (amount <= 0f) return;
 		CurrentHealth = Mathf.Min(CurrentHealth + amount, MaxHealth);
 		EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
 	}

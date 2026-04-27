@@ -137,7 +137,7 @@ public partial class CampController : LoadoutController
 	static string BuildProgressText()
 	{
 		var d = RunState.Instance.CompletedDungeons;
-		var total = DungeonDefinition.All.Length;
+		var total = RunState.Instance.RunDungeons.Count;
 		return $"Rest  ·  {d} of {total} dungeons cleared";
 	}
 
