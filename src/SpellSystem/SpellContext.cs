@@ -42,6 +42,14 @@ public class SpellContext
     /// <summary>Character stats computed at the start of this cast.</summary>
     public CharacterStats CasterStats { get; set; }
 
+    /// <summary>
+    /// Bonus duration in seconds to add to any effect applied by this spell.
+    /// Set by <see cref="ISpellModifier"/>s (e.g. BandOfTheVoid) during
+    /// <see cref="ISpellModifier.OnCalculate"/>. DoT/HoT spell Apply methods
+    /// should read this and add it to their base duration.
+    /// </summary>
+    public float EffectDurationBonus { get; set; } = 0f;
+
     /// <summary>Convenience accessor — the primary (first) target, or null if the list is empty.</summary>
     public Character Target => Targets.Count > 0 ? Targets[0] : null;
 }

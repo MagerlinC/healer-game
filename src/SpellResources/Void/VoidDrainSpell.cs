@@ -29,7 +29,7 @@ public partial class VoidDrainSpell : SpellResource
 		CastTime = 0.0f;
 		Cooldown = 4f;
 		School = SpellSchool.Void;
-		Tags = SpellTags.Damage | SpellTags.Healing | SpellTags.Void;
+		Tags = SpellTags.Damage | SpellTags.Healing | SpellTags.Void | SpellTags.Duration;
 		RequiredSchoolPoints = 2;
 		EffectType = EffectType.Harmful;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/void-drain.png");
@@ -42,7 +42,7 @@ public partial class VoidDrainSpell : SpellResource
 
 	public override void Apply(SpellContext ctx)
 	{
-		ctx.Target.ApplyEffect(new VoidDrainEffect(DamagePerTick, Duration, HealFraction)
+		ctx.Target.ApplyEffect(new VoidDrainEffect(DamagePerTick, Duration + ctx.EffectDurationBonus, HealFraction)
 		{
 			AbilityName = Name,
 			Description = Description,

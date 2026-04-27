@@ -5,7 +5,7 @@ namespace healerfantasy.Talents;
 public class CriticalRechargeTalent : ISpellModifier
 {
 
-	const float ManaRestoredOnCrit = 20f;
+	const float ManaRestoredOnCrit = 10f;
 
 	public ModifierPriority Priority { get; } = ModifierPriority.BASE;
 	public void OnBeforeCast(SpellContext context)

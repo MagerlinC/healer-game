@@ -323,6 +323,12 @@ public abstract partial class Character : CharacterBody2D
 			if (eff is ICharacterModifier effMod)
 				effMod.Modify(stats);
 
+		// Apply conditional modifiers that need the character reference to
+		// inspect runtime state (e.g. HolyProtectionEffect checking active effects).
+		foreach (var eff in _effects.Values)
+			if (eff is IConditionalCharacterModifier condMod)
+				condMod.Modify(stats, this);
+
 		return stats;
 	}
 

@@ -263,7 +263,7 @@ public static class TalentRegistry
 		{
 			Name = "Critical Recharge",
 			Description =
-				"Critical hits restore 20 mana.",
+				"Critical hits restore 10 mana.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_21.png",
 			School = SpellSchool.Generic,
 			TalentRow = 0,
