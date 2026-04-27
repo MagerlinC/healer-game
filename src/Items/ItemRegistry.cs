@@ -39,9 +39,16 @@ public static class ItemRegistry
 		// Rings
 		(null, () => new RulersSignet()),
 		(null, () => new BandOfTheVoid()),
+		(null, () => new RingOfTheMendingFire()),
+		(null, () => new SeersBand()),
+		(null, () => new RingOfTriage()),
 
 		// Amulets
-		(null, () => new TheHeartOfLight())
+		(null, () => new TheHeartOfLight()),
+		(null, () => new NaturalistsClasp()),
+		(null, () => new ShadowboundChain()),
+		(null, () => new TheLifebindersCovenant()),
+		(null, () => new PendantOfTheVoidsEmbrace())
 
 	];
 
