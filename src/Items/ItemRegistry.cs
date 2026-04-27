@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using healerfantasy.Items.Amulets;
+using healerfantasy.Items.Rings;
 using healerfantasy.Items.Staves;
 
 namespace healerfantasy.Items;
@@ -26,12 +28,21 @@ public static class ItemRegistry
 	/// </summary>
 	static readonly List<(string? BossName, Func<EquippableItem> Factory)> LootTable =
 	[
+		// Staves
 		(GameConstants.Boss1Name, () => new CrystalStaff()),
 		(GameConstants.Boss2Name, () => new DeathweaveStaff()),
 		(GameConstants.Boss3Name, () => new SlimewardenSceptre()),
 		(GameConstants.SanctumBoss1Name, () => new VoidWeaver()),
 		(null, () => new ArcaneAccelerator()),
-		(null, () => new StaffOfEternalFlame())
+		(null, () => new StaffOfEternalFlame()),
+
+		// Rings
+		(null, () => new RulersSignet()),
+		(null, () => new BandOfTheVoid()),
+
+		// Amulets
+		(null, () => new TheHeartOfLight())
+
 	];
 
 	const float NothingWeight = 0.3f;

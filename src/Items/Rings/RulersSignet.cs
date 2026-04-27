@@ -21,7 +21,7 @@ public class RulersSignet : EquippableItem
 		Name = "Ruler's Signet";
 		Description = $"+{_hasteAmount * 100}% haste";
 		Rarity = ItemRarity.Rare;
-		Slot = EquipSlot.Ring;
+		Slot = EquipSlot.Ring1;
 		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(1));
 		CharacterModifiers.Add(new SpeedDamageModifier());
 	}

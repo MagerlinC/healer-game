@@ -14,7 +14,8 @@ public enum ItemRarity
 public enum EquipSlot
 {
 	Staff,
-	Ring,
+	Ring1,
+	Ring2,
 	Amulet
 }
 

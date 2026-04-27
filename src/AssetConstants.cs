@@ -51,6 +51,9 @@ public static class AssetConstants
 	public static readonly string MapInteractiblePath = "res://assets/interactibles/map.png";
 	public static readonly string ArmoryInteractiblePath = "res://assets/interactibles/armory.png";
 
+	// ── Equipment UI assets ───────────────────────────────────────────────────
+	public static readonly string EquipmentSlotFramePath = "res://assets/frames/equipment-slot.png";
+
 	// ── Item assets ───────────────────────────────────────────────────────────
 	public static readonly string ItemsPath = "res://assets/items/";
 

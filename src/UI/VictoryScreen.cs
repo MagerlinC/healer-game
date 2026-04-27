@@ -2,6 +2,7 @@ using Godot;
 using healerfantasy;
 using healerfantasy.CombatLog;
 using healerfantasy.Items;
+using healerfantasy.UI;
 
 /// <summary>
 /// Overlay shown when a boss dies.
@@ -245,10 +246,8 @@ public partial class VictoryScreen : CanvasLayer
 	/// <summary>
 	/// Populates (or clears) the item section of the victory screen.
 	///
-	/// Layout: a horizontal row with two bordered cards side-by-side.
-	///   Left  — the newly found item, with an "Equip" button underneath.
-	///   Right — the currently equipped item (if any), with a "→ moves to your
-	///           Armory" hint underneath. Absent when the slot is empty.
+	/// Shows an EquipmentPane with the new item highlighted in the inventory,
+	/// so the player can drag it directly into the correct equipment slot.
 	/// </summary>
 	void BuildItemSection(EquippableItem? item)
 	{
@@ -267,163 +266,17 @@ public partial class VictoryScreen : CanvasLayer
 		_itemSection.AddChild(sep);
 
 		var headerLabel = new Label();
-		headerLabel.Text = "✦  Item Found!";
+		headerLabel.Text = "✦  Item Found!  —  Drag it to its equipment slot to equip";
 		headerLabel.HorizontalAlignment = HorizontalAlignment.Center;
 		headerLabel.AddThemeFontSizeOverride("font_size", 14);
 		headerLabel.AddThemeColorOverride("font_color", new Color(0.80f, 0.72f, 0.50f));
 		_itemSection.AddChild(headerLabel);
 
-		// ── Two-card row ──────────────────────────────────────────────────────
-		var currentlyEquipped = ItemStore.GetEquipped(item.Slot);
-		var isEquipped = currentlyEquipped != null && currentlyEquipped == item;
-
-		var cardRow = new HBoxContainer();
-		cardRow.Alignment = BoxContainer.AlignmentMode.Center;
-		cardRow.AddThemeConstantOverride("separation", 16);
-		_itemSection.AddChild(cardRow);
-
-		// Left card — found item
-		cardRow.AddChild(BuildItemCard(
-			item,
-			null,
-			default,
-			isEquipped
-				? null
-				: MakeButton("Equip",
-					new Color(0.10f, 0.10f, 0.16f),
-					RarityColor(item.Rarity),
-					() =>
-					{
-						ItemStore.Equip(item);
-						foreach (var child in _itemSection.GetChildren()) child.QueueFree();
-						BuildItemSection(item);
-					}),
-			isEquipped
-		));
-
-		// Right card — currently equipped item (only when slot is occupied)
-		if (currentlyEquipped != null && !isEquipped)
-		{
-			cardRow.AddChild(BuildItemCard(
-				currentlyEquipped,
-				"→ moves to your Armory",
-				new Color(0.50f, 0.48f, 0.44f),
-				null,
-				false
-			));
-		}
-	}
-
-	/// <summary>
-	/// Builds a single bordered item card for use in the two-card comparison row.
-	/// </summary>
-	Control BuildItemCard(EquippableItem item, string? footerText, Color footerColor,
-		Button? button, bool confirmedEquip)
-	{
-		var cardStyle = new StyleBoxFlat();
-		cardStyle.BgColor = new Color(0.08f, 0.07f, 0.07f, 0.95f);
-		cardStyle.SetCornerRadiusAll(6);
-		cardStyle.SetBorderWidthAll(2);
-		cardStyle.BorderColor = confirmedEquip
-			? new Color(0.40f, 0.80f, 0.45f) // green when just equipped
-			: RarityColor(item.Rarity);
-		cardStyle.ContentMarginLeft = cardStyle.ContentMarginRight = 14f;
-		cardStyle.ContentMarginTop = cardStyle.ContentMarginBottom = 12f;
-
-		var card = new PanelContainer();
-		card.AddThemeStyleboxOverride("panel", cardStyle);
-		card.CustomMinimumSize = new Vector2(200f, 0f);
-		card.MouseFilter = Control.MouseFilterEnum.Ignore;
-
-		var col = new VBoxContainer();
-		col.AddThemeConstantOverride("separation", 6);
-		col.MouseFilter = Control.MouseFilterEnum.Ignore;
-		card.AddChild(col);
-
-		// Icon
-		if (item.Icon != null)
-		{
-			var iconRect = new TextureRect();
-			iconRect.Texture = item.Icon;
-			iconRect.CustomMinimumSize = new Vector2(48f, 48f);
-			iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
-			iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-			iconRect.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
-			iconRect.MouseFilter = Control.MouseFilterEnum.Ignore;
-			col.AddChild(iconRect);
-		}
-
-		// Rarity
-		var rarityLabel = new Label();
-		rarityLabel.Text = item.Rarity.ToString().ToUpper();
-		rarityLabel.HorizontalAlignment = HorizontalAlignment.Center;
-		rarityLabel.AddThemeFontSizeOverride("font_size", 10);
-		rarityLabel.AddThemeColorOverride("font_color", RarityColor(item.Rarity));
-		rarityLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
-		col.AddChild(rarityLabel);
-
-		// Name
-		var nameLabel = new Label();
-		nameLabel.Text = item.Name;
-		nameLabel.HorizontalAlignment = HorizontalAlignment.Center;
-		nameLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-		nameLabel.AddThemeFontSizeOverride("font_size", 15);
-		nameLabel.AddThemeColorOverride("font_color", RarityColor(item.Rarity));
-		nameLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
-		col.AddChild(nameLabel);
-
-		// Description / stats
-		var descLabel = new Label();
-		descLabel.Text = item.Description;
-		descLabel.HorizontalAlignment = HorizontalAlignment.Center;
-		descLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-		descLabel.AddThemeFontSizeOverride("font_size", 12);
-		descLabel.AddThemeColorOverride("font_color", new Color(0.80f, 0.76f, 0.68f));
-		descLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
-		col.AddChild(descLabel);
-
-		// Optional footer hint (e.g. "→ moves to your Armory")
-		if (footerText != null)
-		{
-			var footer = new Label();
-			footer.Text = footerText;
-			footer.HorizontalAlignment = HorizontalAlignment.Center;
-			footer.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-			footer.AddThemeFontSizeOverride("font_size", 11);
-			footer.AddThemeColorOverride("font_color", footerColor);
-			footer.MouseFilter = Control.MouseFilterEnum.Ignore;
-			col.AddChild(footer);
-		}
-
-		// Optional action button (Equip) or confirmed-equip label
-		if (confirmedEquip)
-		{
-			var doneLabel = new Label();
-			doneLabel.Text = "✓  Equipped";
-			doneLabel.HorizontalAlignment = HorizontalAlignment.Center;
-			doneLabel.AddThemeFontSizeOverride("font_size", 13);
-			doneLabel.AddThemeColorOverride("font_color", new Color(0.40f, 0.80f, 0.45f));
-			doneLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
-			col.AddChild(doneLabel);
-		}
-		else if (button != null)
-		{
-			button.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
-			col.AddChild(button);
-		}
-
-		return card;
-	}
-
-	static Color RarityColor(ItemRarity rarity)
-	{
-		return rarity switch
-		{
-			ItemRarity.Rare => new Color(0.35f, 0.55f, 1.00f), // blue
-			ItemRarity.Epic => new Color(0.70f, 0.30f, 0.90f), // purple
-			ItemRarity.Legendary => new Color(1.00f, 0.55f, 0.05f), // orange
-			_ => new Color(0.80f, 0.78f, 0.72f)
-		};
+		// EquipmentPane with the new item highlighted — player drag-and-drops to equip.
+		var pane = new EquipmentPane(item);
+		pane.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		pane.CustomMinimumSize   = new Vector2(520f, 190f);
+		_itemSection.AddChild(pane);
 	}
 
 	static string BuildXpLine(int xpGained, int levelsGained)

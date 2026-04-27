@@ -45,14 +45,20 @@ public static class ItemStore
 	}
 
 	/// <summary>
-	/// Equip <paramref name="item"/> into its <see cref="EquipSlot"/>.
-	/// Any item previously occupying that slot is moved back to inventory.
+	/// Equip <paramref name="item"/> into <paramref name="targetSlot"/>, or into
+	/// <c>item.Slot</c> when no override is given.
+	///
+	/// The override is used by the drag-and-drop system so that rings (which all
+	/// declare <c>Ring1</c> as their canonical slot) can be placed into either
+	/// <c>Ring1</c> or <c>Ring2</c> depending on which slot the player drops them on.
+	/// Any item previously occupying the target slot is moved back to inventory.
 	/// </summary>
-	public static void Equip(EquippableItem item)
+	public static void Equip(EquippableItem item, EquipSlot? targetSlot = null)
 	{
-		if (_equipped.TryGetValue(item.Slot, out var displaced))
+		var slot = targetSlot ?? item.Slot;
+		if (_equipped.TryGetValue(slot, out var displaced))
 			_inventory.Add(displaced);
-		_equipped[item.Slot] = item;
+		_equipped[slot] = item;
 		_inventory.Remove(item);
 	}
 

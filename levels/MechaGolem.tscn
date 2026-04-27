@@ -1,18 +1,18 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://ci6hwh0cfdww0"]
 
-[ext_resource type="Script" uid="uid://mecha_golem_script" path="res://src/Characters/Enemies/MechaGolem.cs" id="Script_mecha_golem"]
+[ext_resource type="Script" uid="uid://c8k7w8c2y518f" path="res://src/Characters/Enemies/MechaGolem.cs" id="Script_mecha_golem"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
-radius = 16.0
+radius = 14.0
 height = 28.0
 
-[node name="MechaGolem" type="CharacterBody2D"]
+[node name="MechaGolem" type="CharacterBody2D" unique_id=1926557057]
 script = ExtResource("Script_mecha_golem")
 CharacterName = "Mecha Golem"
 MaxMana = 200.0
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1435147411]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1487878879]
 position = Vector2(0, 8)
 shape = SubResource("CapsuleShape2D_1")
