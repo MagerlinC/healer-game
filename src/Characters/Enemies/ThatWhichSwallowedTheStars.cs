@@ -51,7 +51,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 {
 	public ThatWhichSwallowedTheStars()
 	{
-		MaxHealth = 5000f;
+		MaxHealth = 4000f;
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────

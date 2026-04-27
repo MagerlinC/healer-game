@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Godot;
 using healerfantasy.SpellResources.Generic;
 using healerfantasy.SpellSystem;
 
@@ -14,23 +15,28 @@ namespace healerfantasy.SpellResources;
 /// The parry check is resolved by <see cref="MechaGolem"/> before this
 /// spell is ever cast; if deflected, the cast is skipped entirely.
 /// </summary>
-[Godot.GlobalClass]
+[GlobalClass]
 public partial class BossSystemOverloadSpell : SpellResource
 {
 	public float DamageAmount = 70f;
 
 	public BossSystemOverloadSpell()
 	{
-		Name        = "System Overload";
-		Description = "The Mecha Golem overcharges its core and unleashes a catastrophic explosion — unless deflected.";
-		Tags        = SpellTags.Damage;
-		ManaCost    = 0f;
-		CastTime    = 0f;
-		Parryable   = true;
-		EffectType  = EffectType.Harmful;
+		Name = "System Overload";
+		Description =
+			$"The Mecha Golem overcharges its core and unleashes a catastrophic explosion dealing {DamageAmount} damage unless deflected.";
+		Tags = SpellTags.Damage;
+		ManaCost = 0f;
+		CastTime = 0f;
+		Parryable = true;
+		EffectType = EffectType.Harmful;
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/mecha-golem/system-overload.png");
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)
 	{

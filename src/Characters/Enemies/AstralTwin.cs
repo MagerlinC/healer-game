@@ -41,7 +41,7 @@ public partial class AstralTwin : Character
 {
 	public AstralTwin()
 	{
-		MaxHealth = 1200f;
+		MaxHealth = 1400f;
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────

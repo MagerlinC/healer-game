@@ -33,7 +33,7 @@ public partial class FlyingDemon : Character
 {
 	public FlyingDemon()
 	{
-		MaxHealth = 1200f;
+		MaxHealth = 1800f;
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────

@@ -124,9 +124,19 @@ public partial class VictoryScreen : CanvasLayer
 		vbox.AddChild(_itemSection);
 
 		_btnRow = new HBoxContainer();
-		_btnRow.Alignment = BoxContainer.AlignmentMode.Center;
+		// Anchor to bottom center
+		_btnRow.AnchorLeft = 0.5f;
+		_btnRow.AnchorRight = 0.5f;
+		_btnRow.AnchorTop = 1.0f;
+		_btnRow.AnchorBottom = 1.0f;
+
+		// Offset slightly upward from bottom
+		_btnRow.OffsetLeft = -100; // half width (adjust or let it size dynamically)
+		_btnRow.OffsetRight = 100;
+		_btnRow.OffsetBottom = -40; // distance from bottom
+		_btnRow.OffsetTop = -80;
 		_btnRow.AddThemeConstantOverride("separation", 20);
-		vbox.AddChild(_btnRow);
+		overlay.AddChild(_btnRow);
 	}
 
 	// ── public API ────────────────────────────────────────────────────────────
@@ -275,7 +285,7 @@ public partial class VictoryScreen : CanvasLayer
 		// EquipmentPane with the new item highlighted — player drag-and-drops to equip.
 		var pane = new EquipmentPane(item);
 		pane.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		pane.CustomMinimumSize   = new Vector2(520f, 190f);
+		pane.CustomMinimumSize = new Vector2(520f, 190f);
 		_itemSection.AddChild(pane);
 	}
 

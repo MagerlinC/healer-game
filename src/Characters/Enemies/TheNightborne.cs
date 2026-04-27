@@ -36,7 +36,7 @@ public partial class TheNightborne : Character
 {
 	public TheNightborne()
 	{
-		MaxHealth = 1800f;
+		MaxHealth = 2500f;
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────

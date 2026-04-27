@@ -36,23 +36,26 @@ public partial class MechaGolem : Character
 {
 	public MechaGolem()
 	{
-		MaxHealth = 1600f;
+		MaxHealth = 2000f;
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────
 
-	[Signal] public delegate void CastWindupStartedEventHandler(string spellName, Texture2D icon, float duration);
-	[Signal] public delegate void CastWindupEndedEventHandler();
+	[Signal]
+	public delegate void CastWindupStartedEventHandler(string spellName, Texture2D icon, float duration);
+
+	[Signal]
+	public delegate void CastWindupEndedEventHandler();
 
 	// ── tuneable exports ──────────────────────────────────────────────────────
 
-	[Export] public float MeleeInterval   = 2.5f;
+	[Export] public float MeleeInterval = 2.5f;
 	[Export] public float BarrageInterval = 5.0f;
-	[Export] public float PulseInterval   = 10.0f;
+	[Export] public float PulseInterval = 10.0f;
 	[Export] public float OverloadInterval = 16.0f;
-	[Export] public float OverloadWindup  = 3.5f;
+	[Export] public float OverloadWindup = 3.5f;
 
-	[Export] public float MeleeDamage   = 55f;
+	[Export] public float MeleeDamage = 55f;
 	[Export] public float BarrageDamage = 30f;
 	[Export] public float OverloadDamage = 70f;
 
@@ -64,17 +67,24 @@ public partial class MechaGolem : Character
 	float _overloadTimer;
 	float _overloadWindupTimer;
 
-	BossIronFistSpell      _ironFistSpell;
+	BossIronFistSpell _ironFistSpell;
 	BossRocketBarrageSpell _rocketBarrageSpell;
-	BossMagneticPulseSpell _magneticPulseSpell;
+	BossCrushedSpell _crushedSpell;
 	BossSystemOverloadSpell _systemOverloadSpell;
 
-	AnimatedSprite2D  _sprite;
+	AnimatedSprite2D _sprite;
 	AudioStreamPlayer _riserPlayer;
 
-	enum PendingAttack { None, Melee, RocketBarrage, MagneticPulse }
+	enum PendingAttack
+	{
+		None,
+		Melee,
+		RocketBarrage,
+		MagneticPulse
+	}
+
 	PendingAttack _pendingAttack;
-	Character     _pendingTarget;
+	Character _pendingTarget;
 
 	const string BasePath = "res://assets/enemies/mecha-golem/";
 
@@ -88,15 +98,15 @@ public partial class MechaGolem : Character
 		AddToGroup(GameConstants.BossGroupName);
 		IsFriendly = false;
 
-		_meleeTimer    = MeleeInterval;
-		_barrageTimer  = BarrageInterval;
-		_pulseTimer    = PulseInterval;
+		_meleeTimer = MeleeInterval;
+		_barrageTimer = BarrageInterval;
+		_pulseTimer = PulseInterval;
 		_overloadTimer = OverloadInterval;
 
-		_ironFistSpell       = new BossIronFistSpell       { DamageAmount  = MeleeDamage };
-		_rocketBarrageSpell  = new BossRocketBarrageSpell  { DamageAmount  = BarrageDamage };
-		_magneticPulseSpell  = new BossMagneticPulseSpell();
-		_systemOverloadSpell = new BossSystemOverloadSpell { DamageAmount  = OverloadDamage };
+		_ironFistSpell = new BossIronFistSpell { DamageAmount = MeleeDamage };
+		_rocketBarrageSpell = new BossRocketBarrageSpell { DamageAmount = BarrageDamage };
+		_crushedSpell = new BossCrushedSpell();
+		_systemOverloadSpell = new BossSystemOverloadSpell { DamageAmount = OverloadDamage };
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
@@ -126,9 +136,9 @@ public partial class MechaGolem : Character
 			return;
 		}
 
-		_meleeTimer    -= (float)delta;
-		_barrageTimer  -= (float)delta;
-		_pulseTimer    -= (float)delta;
+		_meleeTimer -= (float)delta;
+		_barrageTimer -= (float)delta;
+		_pulseTimer -= (float)delta;
 		_overloadTimer -= (float)delta;
 
 		if (_pendingAttack != PendingAttack.None) return;
@@ -222,10 +232,10 @@ public partial class MechaGolem : Character
 		{
 			SpellResource spell = _pendingAttack switch
 			{
-				PendingAttack.Melee         => _ironFistSpell,
+				PendingAttack.Melee => _ironFistSpell,
 				PendingAttack.RocketBarrage => _rocketBarrageSpell,
-				PendingAttack.MagneticPulse => _magneticPulseSpell,
-				_                           => null
+				PendingAttack.MagneticPulse => _crushedSpell,
+				_ => null
 			};
 
 			if (spell != null)
@@ -264,12 +274,12 @@ public partial class MechaGolem : Character
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");
 
-		AddAnimFromFiles(frames, "idle",   4,  8f, true);
+		AddAnimFromFiles(frames, "idle", 4, 8f, true);
 		AddAnimFromFiles(frames, "attack", 7, 12f, false);
-		AddAnimFromFiles(frames, "cast",   7, 10f, false);
-		AddAnimFromFiles(frames, "shield", 8,  8f, false);
-		AddAnimFromFiles(frames, "hurt",   8, 12f, false);
-		AddAnimFromFiles(frames, "death", 23,  8f, false);
+		AddAnimFromFiles(frames, "cast", 7, 10f, false);
+		AddAnimFromFiles(frames, "shield", 8, 8f, false);
+		AddAnimFromFiles(frames, "hurt", 8, 12f, false);
+		AddAnimFromFiles(frames, "death", 23, 8f, false);
 
 		_sprite.SpriteFrames = frames;
 	}
@@ -281,7 +291,7 @@ public partial class MechaGolem : Character
 		frames.SetAnimationSpeed(animName, fps);
 		for (var i = 1; i <= count; i++)
 		{
-			var path    = $"{BasePath}{animName}{i}.png";
+			var path = $"{BasePath}{animName}{i}.png";
 			var texture = GD.Load<Texture2D>(path);
 			frames.AddFrame(animName, texture);
 		}

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Godot;
 using healerfantasy.SpellResources.Generic;
 using healerfantasy.SpellSystem;
 
@@ -12,23 +13,27 @@ namespace healerfantasy.SpellResources;
 /// The parry check is resolved by <see cref="FlyingDemon"/> before this
 /// spell is ever cast; if deflected, the cast is skipped entirely.
 /// </summary>
-[Godot.GlobalClass]
+[GlobalClass]
 public partial class BossInfernalEruptionSpell : SpellResource
 {
 	public float DamageAmount = 60f;
 
 	public BossInfernalEruptionSpell()
 	{
-		Name        = "Infernal Eruption";
+		Name = "Infernal Eruption";
 		Description = "The Flying Demon exhales a torrent of fel flames that scorches the entire party — unless deflected.";
-		Tags        = SpellTags.Damage | SpellTags.Nature;
-		ManaCost    = 0f;
-		CastTime    = 0f;
-		Parryable   = true;
-		EffectType  = EffectType.Harmful;
+		Tags = SpellTags.Damage | SpellTags.Nature;
+		ManaCost = 0f;
+		CastTime = 0f;
+		Parryable = true;
+		EffectType = EffectType.Harmful;
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/flying-demon/infernal-eruption.png");
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)
 	{

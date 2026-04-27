@@ -32,7 +32,7 @@ public partial class FlyingSkull : Character
 {
 	public FlyingSkull()
 	{
-		MaxHealth = 1800f;
+		MaxHealth = 2500f;
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────
