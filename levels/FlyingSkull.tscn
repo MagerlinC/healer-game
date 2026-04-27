@@ -1,0 +1,18 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://flying_skull_script" path="res://src/Characters/Enemies/FlyingSkull.cs" id="Script_flying_skull"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
+radius = 14.0
+height = 22.0
+
+[node name="FlyingSkull" type="CharacterBody2D"]
+script = ExtResource("Script_flying_skull")
+CharacterName = "Flying Skull"
+MaxMana = 200.0
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 8)
+shape = SubResource("CapsuleShape2D_1")

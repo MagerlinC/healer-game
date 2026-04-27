@@ -51,14 +51,14 @@ public class DungeonDefinition
 		{
 			Name = "The Forsaken Citadel",
 			MapPosition = new Vector2(880f, 490f),
-			BossScenePaths = GameConstants.BossScenePaths,
+			BossScenePaths = GameConstants.ForsakenCitadelBossScenePaths,
 			ArenaBackgroundPaths = AssetConstants.ForsakenCitadelArenaBackgroundPaths,
 			XpRewards = GameConstants.BossXpRewards,
 			BossNames = new[]
 			{
-				GameConstants.Boss1Name,
-				GameConstants.Boss2Name,
-				GameConstants.Boss3Name
+				GameConstants.ForsakenBoss1Name, // "Flying Demon"
+				GameConstants.ForsakenBoss2Name, // "Mecha Golem"
+				GameConstants.ForsakenBoss3Name  // "Flying Skull"
 			}
 		},
 		new()

@@ -7,10 +7,15 @@ public static class GameConstants
 	public const string AssassinName = "Assassin";
 	public const string WizardName = "Wizard";
 
-	// ── Boss names — shared dungeons (Ancient Keep, Forsaken Citadel) ─────────
+	// ── Boss names — Ancient Keep ─────────────────────────────────────────────
 	public const string Boss1Name = "Crystal Knight";
 	public const string Boss2Name = "Bringer of Death";
 	public const string Boss3Name = "Demon Slime";
+
+	// ── Boss names — Forsaken Citadel ─────────────────────────────────────────
+	public const string ForsakenBoss1Name = "Flying Demon";
+	public const string ForsakenBoss2Name = "Mecha Golem";
+	public const string ForsakenBoss3Name = "Flying Skull";
 
 	// ── Boss names — Sanctum of Stars ─────────────────────────────────────────
 	public const string SanctumBoss1Name = "The Nightborne";
@@ -22,12 +27,20 @@ public static class GameConstants
 
 	public const string BossGroupName = "boss";
 
-	/// <summary>Packed scene paths for the shared-roster bosses (Ancient Keep &amp; Forsaken Citadel).</summary>
+	/// <summary>Packed scene paths for the Ancient Keep bosses.</summary>
 	public static readonly string[] BossScenePaths =
 	{
 		"res://levels/CrystalKnight.tscn",
 		"res://levels/BringerOfDeath.tscn",
 		"res://levels/DemonSlime.tscn"
+	};
+
+	/// <summary>Packed scene paths for the Forsaken Citadel bosses.</summary>
+	public static readonly string[] ForsakenCitadelBossScenePaths =
+	{
+		"res://levels/FlyingDemon.tscn",
+		"res://levels/MechaGolem.tscn",
+		"res://levels/FlyingSkull.tscn"
 	};
 
 	/// <summary>Packed scene paths for the Sanctum of Stars bosses.</summary>
