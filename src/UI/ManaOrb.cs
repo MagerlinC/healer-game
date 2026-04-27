@@ -1,7 +1,7 @@
 using Godot;
 using healerfantasy;
 
-public partial class ManaBar : Control
+public partial class ManaOrb : Control
 {
 	static readonly Color GlobeShadowColor = new(0.02f, 0.04f, 0.09f, 0.45f);
 	static readonly Color GlobeOuterColor = new(0.08f, 0.11f, 0.18f, 0.98f);

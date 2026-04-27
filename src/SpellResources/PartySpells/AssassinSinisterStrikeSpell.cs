@@ -15,7 +15,7 @@ public partial class AssassinSinisterStrikeSpell : SpellResource
     {
         Name        = "Sinister Strike";
         Description = "A quick, precise strike from the Assassin's blade.";
-        Tags        = SpellTags.Damage;
+        Tags        = SpellTags.Damage | SpellTags.Attack;
         ManaCost    = 0f;
         CastTime    = 0f;
         School      = SpellSchool.Generic;

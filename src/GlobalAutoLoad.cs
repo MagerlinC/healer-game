@@ -103,5 +103,6 @@ public partial class GlobalAutoLoad : Node
 		PartySlotMap.Clear();
 		PartySubscriptions.Clear();
 		PendingSubscriptions.Clear();
+		healerfantasy.Items.ItemEffectBus.Reset();
 	}
 }

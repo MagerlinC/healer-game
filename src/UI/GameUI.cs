@@ -64,12 +64,12 @@ public partial class GameUI : CanvasLayer
 		anchor.AddChild(castBar);
 
 		// ── Mana bar ──────────────────────────────────────────────────────────
-		var manaBar = new ManaBar();
+		var manaBar = new ManaOrb();
 		manaBar.CustomMinimumSize = new Vector2(140f, 140f);
-		manaBar.AnchorLeft = 0.1f;
-		manaBar.AnchorRight = 0.1f;
-		manaBar.AnchorTop = 0.9f;
-		manaBar.AnchorBottom = 0.9f;
+		manaBar.AnchorLeft = 0.2f;
+		manaBar.AnchorRight = 0.2f;
+		manaBar.AnchorTop = 0.8f;
+		manaBar.AnchorBottom = 0.8f;
 		manaBar.GrowHorizontal = Control.GrowDirection.Both;
 		manaBar.GrowVertical = Control.GrowDirection.Both;
 		manaBar.OffsetLeft = -70f;

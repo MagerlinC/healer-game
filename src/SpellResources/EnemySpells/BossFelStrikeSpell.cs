@@ -15,7 +15,7 @@ public partial class BossFelStrikeSpell : SpellResource
 	{
 		Name        = "Fel Strike";
 		Description = "A savage claw swipe laced with demonic energy, aimed at the party's frontline.";
-		Tags        = SpellTags.Damage;
+		Tags        = SpellTags.Damage | SpellTags.Attack;
 		ManaCost    = 0f;
 		CastTime    = 0f;
 	}

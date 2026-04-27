@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using healerfantasy.SpellSystem;
 
@@ -18,7 +19,7 @@ public class ArcaneAccelerator : EquippableItem
 	public ArcaneAccelerator()
 	{
 		Name = "Arcane Accelerator";
-		Description = $"+{_hasteAmount * 100}% haste.\n10% increased damage.";
+		Description = $"+{Math.Round(_hasteAmount * 100)}% haste.\n10% increased damage.";
 		Rarity = ItemRarity.Epic;
 		Slot = EquipSlot.Staff;
 		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(4));

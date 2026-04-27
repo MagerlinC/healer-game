@@ -354,6 +354,23 @@ public abstract partial class Character : CharacterBody2D
 				yield return mod;
 	}
 
+	/// <summary>
+	/// Returns <paramref name="baseInterval"/> scaled by this character's current
+	/// haste, using the same formula applied to cast times and the global cooldown:
+	/// <c>baseInterval * (1 − IncreasedHaste)</c>, floored at 0.2 s so no attack
+	/// can fire faster than 5 times per second regardless of haste stacking.
+	/// <para>
+	/// Call this every time an attack timer resets so that haste gained or lost
+	/// mid-fight (e.g. from <see cref="Effects.HasteEffect"/>) takes effect on
+	/// the very next swing rather than requiring a full interval to elapse.
+	/// </para>
+	/// </summary>
+	public float GetHasteAdjustedAttackInterval(float baseInterval)
+	{
+		var stats = GetCharacterStats();
+		return Mathf.Max(baseInterval * (1f - stats.IncreasedHaste), 0.2f);
+	}
+
 	// ── protected helpers ────────────────────────────────────────────────────
 
 	/// <summary>

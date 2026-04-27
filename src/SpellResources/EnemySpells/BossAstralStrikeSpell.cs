@@ -16,7 +16,7 @@ public partial class BossAstralStrikeSpell : SpellResource
 	{
 		Name        = "Astral Strike";
 		Description = "A razor-sharp strike of condensed starlight aimed at the frontline defender.";
-		Tags        = SpellTags.Damage;
+		Tags        = SpellTags.Damage | SpellTags.Attack;
 		ManaCost    = 0f;
 		CastTime    = 0f;
 		EffectType  = EffectType.Harmful;

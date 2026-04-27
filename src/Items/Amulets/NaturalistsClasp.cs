@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
@@ -19,7 +20,7 @@ public class NaturalistsClasp : EquippableItem
 	public NaturalistsClasp()
 	{
 		Name = "Naturalist's Clasp";
-		Description = $"+{_natureDamageBonus * 100}% Nature spell damage.";
+		Description = $"+{Math.Round(_natureDamageBonus * 100)}% Nature spell damage.";
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Amulet;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(1));

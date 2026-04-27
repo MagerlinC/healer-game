@@ -23,6 +23,7 @@ public partial class PartyFrame : CharacterFrame
 	readonly string _name;
 	readonly Color _barColor;
 	readonly float _maxHp;
+	readonly bool _showItemEffects;
 
 	protected override string FrameCharacterName => _name;
 
@@ -32,11 +33,17 @@ public partial class PartyFrame : CharacterFrame
 	ProgressBar _shieldBar = null!;
 	StyleBoxFlat _panelStyle = null!;
 
-	public PartyFrame(string name, Color barColor, float maxHp)
+	/// <param name="showItemEffects">
+	/// When <c>true</c>, an <see cref="ItemEffectBar"/> is added below the
+	/// health panel to display active item-proc indicators.  Enable only for
+	/// the healer frame so item effects are clearly player-owned.
+	/// </param>
+	public PartyFrame(string name, Color barColor, float maxHp, bool showItemEffects = false)
 	{
 		_name = name;
 		_barColor = barColor;
 		_maxHp = maxHp;
+		_showItemEffects = showItemEffects;
 	}
 
 	public override void _Ready()
@@ -99,6 +106,10 @@ public partial class PartyFrame : CharacterFrame
 		_panel.AddChild(_shieldBar);
 
 		AddChild(_panel);
+
+		// ── item-effect row (below the health panel, healer only) ─────────────
+		if (_showItemEffects)
+			AddChild(new ItemEffectBar());
 
 		// ── hover border highlight ────────────────────────────────────────────
 		_panel.MouseEntered += () => _panelStyle.BorderColor = BorderHovered;

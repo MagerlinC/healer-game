@@ -16,7 +16,7 @@ public partial class BossNightborneShadowStrikeSpell : SpellResource
 	{
 		Name        = "Shadow Strike";
 		Description = "The Nightborne lunges forward with a devastating shadow-infused blade, targeting the frontline defender.";
-		Tags        = SpellTags.Damage | SpellTags.Void;
+		Tags        = SpellTags.Damage | SpellTags.Void | SpellTags.Attack;
 		ManaCost    = 0f;
 		CastTime    = 0f;
 		EffectType  = EffectType.Harmful;

@@ -16,7 +16,7 @@ public partial class BossMeleeAttackSpell : SpellResource
     {
         Name        = "Crystal Slash";
         Description = "A crushing blow from the Crystal Knight's crystalline gauntlet.";
-        Tags        = SpellTags.Damage;
+        Tags        = SpellTags.Damage | SpellTags.Attack;
         ManaCost    = 0f;
         CastTime    = 0f;
     }

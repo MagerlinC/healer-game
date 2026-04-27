@@ -21,7 +21,7 @@ using healerfantasy.UI;
 /// </summary>
 public partial class CampController : LoadoutController
 {
-	CanvasLayer?   _armoryPanel;
+	CanvasLayer? _armoryPanel;
 	EquipmentPane? _equipmentPane;
 
 	protected override void SetupScene()
@@ -48,14 +48,14 @@ public partial class CampController : LoadoutController
 		// ── Interactibles ─────────────────────────────────────────────────────
 		// Map is on the left so it's prominent — the player came here to rest,
 		// spell/talent editing is in the middle/right, Armory on far right.
-		var mapItem = MakeInteractible(AssetConstants.MapInteractiblePath,
-			new Vector2(560f, FloorHeight), new Vector2(0.125f, 0.125f), 28f);
 		var spellTome = MakeInteractible(AssetConstants.SpellTomeInteractiblePath,
-			new Vector2(680f, FloorHeight - 12f), new Vector2(0.080f, 0.080f), 28f);
+			new Vector2(996f, FloorHeight - 12f), new Vector2(0.080f, 0.080f), 28f);
 		var talentBoard = MakeInteractible(AssetConstants.TalentBoardInteractiblePath,
-			new Vector2(890f, FloorHeight), new Vector2(0.090f, 0.090f), 50f);
+			new Vector2(796f, FloorHeight), new Vector2(0.090f, 0.090f), 50f);
 		var armory = MakeInteractible(AssetConstants.ArmoryInteractiblePath,
-			new Vector2(1120f, FloorHeight - 10f), new Vector2(0.125f, 0.125f), 36f);
+			new Vector2(696f, FloorHeight), new Vector2(0.125f, 0.125f), 36f);
+		var mapItem = MakeInteractible(AssetConstants.MapInteractiblePath,
+			new Vector2(525f, FloorHeight), new Vector2(0.125f, 0.125f), 28f);
 
 		AddChild(mapItem);
 		AddChild(spellTome);

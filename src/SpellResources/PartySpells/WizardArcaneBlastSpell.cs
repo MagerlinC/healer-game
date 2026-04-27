@@ -15,7 +15,7 @@ public partial class WizardArcaneBlastSpell : SpellResource
     {
         Name        = "Arcane Blast";
         Description = "A focused bolt of arcane energy hurled at the enemy.";
-        Tags        = SpellTags.Damage;
+        Tags        = SpellTags.Damage | SpellTags.Attack;
         ManaCost    = 0f;
         CastTime    = 0f;
         School      = SpellSchool.Void;

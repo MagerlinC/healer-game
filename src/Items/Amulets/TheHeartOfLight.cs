@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using healerfantasy.Effects;
 using healerfantasy.SpellResources;
@@ -25,7 +26,8 @@ public class TheHeartOfLight : EquippableItem
 	public TheHeartOfLight()
 	{
 		Name = "The Heart of Light";
-		Description = $"While any holy effect is active on the target, they take {(int)(DamageReductionAmount * 100)}% less damage.";
+		Description =
+			$"While any holy effect is active on the target, they take {Math.Round(DamageReductionAmount * 100)}% less damage.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Amulet;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(2));

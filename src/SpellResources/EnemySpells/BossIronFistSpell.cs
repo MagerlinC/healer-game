@@ -16,7 +16,7 @@ public partial class BossIronFistSpell : SpellResource
 	{
 		Name        = "Iron Fist";
 		Description = "A thunderous mechanical punch aimed at the party's frontline, dealing heavy physical damage.";
-		Tags        = SpellTags.Damage;
+		Tags        = SpellTags.Damage | SpellTags.Attack;
 		ManaCost    = 0f;
 		CastTime    = 0f;
 	}

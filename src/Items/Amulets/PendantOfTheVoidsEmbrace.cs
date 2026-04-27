@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
@@ -18,6 +19,10 @@ namespace healerfantasy.Items.Amulets;
 /// Implemented by persisting a boolean flag on the modifier instance between
 /// casts. OnAfterCast sets the flag when a Void damage spell lands;
 /// OnCalculate multiplies FinalValue and clears the flag on the next heal.
+///
+/// UI: when charged, fires <see cref="ItemEffectBus.Activate"/> so the healer's
+/// <see cref="ItemEffectBar"/> shows a gold indicator badge; fires
+/// <see cref="ItemEffectBus.Deactivate"/> when the bonus is consumed.
 /// </summary>
 public class PendantOfTheVoidsEmbrace : EquippableItem
 {
@@ -27,11 +32,16 @@ public class PendantOfTheVoidsEmbrace : EquippableItem
 	public PendantOfTheVoidsEmbrace()
 	{
 		Name = "Pendant of the Void's Embrace";
-		Description = $"After casting a Void damage spell, the next healing spell heals for {_healingBonus * 100}% more.";
+		Description = $"After casting a Void damage spell, the next healing spell heals for {Math.Round(_healingBonus * 100)}% more.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Amulet;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(5));
-		SpellModifiers.Add(new VoidSynergyModifier(_healingBonus));
+		SpellModifiers.Add(new VoidSynergyModifier(
+			_healingBonus,
+			Icon,
+			Name,
+			$"Next healing spell heals for {Math.Round(_healingBonus * 100)}% more."
+		));
 	}
 
 	/// <summary>
@@ -42,16 +52,28 @@ public class PendantOfTheVoidsEmbrace : EquippableItem
 	class VoidSynergyModifier : ISpellModifier
 	{
 		readonly float _bonus;
+		readonly Texture2D? _icon;
+		readonly string _displayName;
+		readonly string _indicatorDescription;
+
+		// Stable ID used to add/remove the indicator without name collisions.
+		const string EffectId = "pendant_of_the_voids_embrace_charged";
+
 		bool _pendingBonus = false;
 
-		public VoidSynergyModifier(float bonus)
+		public VoidSynergyModifier(float bonus, Texture2D? icon, string displayName, string indicatorDescription)
 		{
 			_bonus = bonus;
+			_icon = icon;
+			_displayName = displayName;
+			_indicatorDescription = indicatorDescription;
 		}
 
 		public ModifierPriority Priority => ModifierPriority.BASE;
 
-		public void OnBeforeCast(SpellContext context) { }
+		public void OnBeforeCast(SpellContext context)
+		{
+		}
 
 		public void OnCalculate(SpellContext context)
 		{
@@ -60,6 +82,7 @@ public class PendantOfTheVoidsEmbrace : EquippableItem
 			{
 				context.FinalValue *= 1f + _bonus;
 				_pendingBonus = false; // consumed — must cast another Void spell to re-charge
+				ItemEffectBus.Deactivate(EffectId);
 			}
 		}
 
@@ -67,7 +90,10 @@ public class PendantOfTheVoidsEmbrace : EquippableItem
 		{
 			// Charge the pendant whenever a Void damage spell lands.
 			if (context.Tags.HasFlag(SpellTags.Void) && context.Tags.HasFlag(SpellTags.Damage))
+			{
 				_pendingBonus = true;
+				ItemEffectBus.Activate(EffectId, _icon, _displayName, _indicatorDescription);
+			}
 		}
 	}
 }

@@ -16,5 +16,11 @@ public enum SpellTags
 	Nature = 1 << 4,
 	Critical = 1 << 5, // Set by the pipeline on a successful crit roll
 	Duration = 1 << 6,
-	GroupSpell = 1 << 7
+	GroupSpell = 1 << 7,
+	/// <summary>
+	/// Marks a basic auto-attack whose cooldown (attack interval) is scaled by
+	/// haste, rather than a cast-time spell. Used to distinguish melee/ranged
+	/// attacks from spells so the haste pipeline applies to the right value.
+	/// </summary>
+	Attack = 1 << 8
 }

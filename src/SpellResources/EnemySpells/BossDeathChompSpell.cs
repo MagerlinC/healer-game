@@ -16,7 +16,7 @@ public partial class BossDeathChompSpell : SpellResource
 	{
 		Name        = "Death Chomp";
 		Description = "The Flying Skull snaps its jaw shut on the party's frontline, dealing heavy void damage.";
-		Tags        = SpellTags.Damage | SpellTags.Void;
+		Tags        = SpellTags.Damage | SpellTags.Void | SpellTags.Attack;
 		ManaCost    = 0f;
 		CastTime    = 0f;
 	}

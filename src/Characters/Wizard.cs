@@ -42,7 +42,7 @@ public partial class Wizard : PartyMember
         _castTimer -= (float)delta;
         if (_castTimer <= 0f)
         {
-            _castTimer = CastInterval;
+            _castTimer = GetHasteAdjustedAttackInterval(CastInterval);
             CastArcaneBlast();
         }
     }

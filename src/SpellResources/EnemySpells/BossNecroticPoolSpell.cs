@@ -24,17 +24,20 @@ public partial class BossNecroticPoolSpell : SpellResource
 
 	public BossNecroticPoolSpell()
 	{
-		Name        = "Necrotic Pool";
-		Description = "Summons a swirling pool of void energy beneath the healer that pulses 20 damage per second "
-		              + "to anyone standing inside for 4 seconds. Move out to avoid the damage.";
-		Tags        = SpellTags.Damage | SpellTags.Void | SpellTags.Duration;
-		ManaCost    = 0f;
-		CastTime    = 0f;
-		Parryable   = false;
-		EffectType  = EffectType.Harmful;
+		Name = "Necrotic Pool";
+		Description =
+			$"Summons a swirling pool of void energy beneath the healer that pulses for {DamagePerPulse} void damage per second to anyone standing inside. Lasts 4 seconds.";
+		Tags = SpellTags.Damage | SpellTags.Void | SpellTags.Duration;
+		ManaCost = 0f;
+		CastTime = 0f;
+		Parryable = false;
+		EffectType = EffectType.Harmful;
 	}
 
-	public override float GetBaseValue() => DamagePerPulse;
+	public override float GetBaseValue()
+	{
+		return DamagePerPulse;
+	}
 
 	/// <summary>
 	/// Always resolves to the healer so the pool centres on their position.
@@ -57,7 +60,7 @@ public partial class BossNecroticPoolSpell : SpellResource
 		if (ctx.Targets.Count == 0) return;
 
 		var player = ctx.Targets[0];
-		var pool   = new NecroticPool { DamagePerPulse = ctx.FinalValue };
+		var pool = new NecroticPool { DamagePerPulse = ctx.FinalValue };
 		pool.GlobalPosition = player.GlobalPosition;
 
 		// Add as sibling of the boss so it lives in the arena scene layer.

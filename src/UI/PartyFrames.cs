@@ -45,7 +45,10 @@ public partial class PartyFrames : Control
 		for (var i = 0; i < MemberDefs.Length; i++)
 		{
 			var (name, barColor, maxHp) = MemberDefs[i];
-			_frames[i] = new PartyFrame(name, barColor, maxHp);
+			// Enable the item-effect bar only on the healer frame so that
+			// item procs are clearly shown as player-owned effects.
+			var showItemEffects = name == GameConstants.HealerName;
+			_frames[i] = new PartyFrame(name, barColor, maxHp, showItemEffects);
 			hbox.AddChild(_frames[i]);
 		}
 	}

@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using System;
+using Godot;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.Items.Rings;
@@ -19,7 +20,7 @@ public class RulersSignet : EquippableItem
 	public RulersSignet()
 	{
 		Name = "Ruler's Signet";
-		Description = $"+{_hasteAmount * 100}% haste";
+		Description = $"+{Math.Round(_hasteAmount * 100)}% haste";
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Ring1;
 		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(1));

@@ -42,7 +42,7 @@ public partial class Assassin : PartyMember
         _attackTimer -= (float)delta;
         if (_attackTimer <= 0f)
         {
-            _attackTimer = AttackInterval;
+            _attackTimer = GetHasteAdjustedAttackInterval(AttackInterval);
             PerformSinisterStrike();
         }
     }

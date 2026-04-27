@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
@@ -17,7 +18,7 @@ namespace healerfantasy.Items.Rings;
 /// </summary>
 public class RingOfTriage : EquippableItem
 {
-	static readonly float _hpThreshold = 0.30f;    // below 30% HP
+	static readonly float _hpThreshold = 0.30f; // below 30% HP
 	static readonly float _bonusMultiplier = 0.50f; // +50% healing
 
 	public override string ItemId => "ring_of_triage";
@@ -25,7 +26,8 @@ public class RingOfTriage : EquippableItem
 	public RingOfTriage()
 	{
 		Name = "Ring of Triage";
-		Description = $"Single-target heals on targets below {_hpThreshold * 100}% health deal {_bonusMultiplier * 100}% more.";
+		Description =
+			$"Single-target heals on targets below {Math.Round(_hpThreshold * 100)}% health deal {Math.Round(_bonusMultiplier * 100)}% more.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Ring1;
 		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(4));
@@ -45,7 +47,9 @@ public class RingOfTriage : EquippableItem
 
 		public ModifierPriority Priority => ModifierPriority.BASE;
 
-		public void OnBeforeCast(SpellContext context) { }
+		public void OnBeforeCast(SpellContext context)
+		{
+		}
 
 		public void OnCalculate(SpellContext context)
 		{
@@ -64,6 +68,8 @@ public class RingOfTriage : EquippableItem
 				context.FinalValue *= 1f + _bonus;
 		}
 
-		public void OnAfterCast(SpellContext context) { }
+		public void OnAfterCast(SpellContext context)
+		{
+		}
 	}
 }

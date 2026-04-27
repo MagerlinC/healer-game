@@ -15,7 +15,7 @@ public partial class TemplarShieldBashSpell : SpellResource
     {
         Name        = "Shield Bash";
         Description = "The Templar crashes their shield into the enemy with full force.";
-        Tags        = SpellTags.Damage;
+        Tags        = SpellTags.Damage | SpellTags.Attack;
         ManaCost    = 0f;
         CastTime    = 0f;
         School      = SpellSchool.Generic;

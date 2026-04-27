@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using healerfantasy.SpellSystem;
 
@@ -14,14 +15,15 @@ namespace healerfantasy.Items.Rings;
 public class SeersBand : EquippableItem
 {
 	static readonly float _critChanceBonus = 0.08f;
-	static readonly float _critMultiplierBonus = 0.30f; // default is 1.5×; this brings it to 1.8×
+	static readonly float _critMultiplierBonus = 0.15f; // default is 1.5×; this brings it to 1.8×
 
 	public override string ItemId => "seers_band";
 
 	public SeersBand()
 	{
 		Name = "Seer's Band";
-		Description = $"+{_critChanceBonus * 100}% crit chance. Critical strikes deal 1.8× damage.";
+		Description =
+			$"+{Math.Round(_critChanceBonus * 100)}% crit chance. +{Math.Round(_critMultiplierBonus * 100)}% Critical strike multiplier.";
 		Rarity = ItemRarity.Epic;
 		Slot = EquipSlot.Ring1;
 		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(3));
@@ -32,8 +34,8 @@ public class SeersBand : EquippableItem
 	{
 		public void Modify(CharacterStats stats)
 		{
-			stats.CritChance += 0.08f;
-			stats.CritMultiplier += 0.30f;
+			stats.CritChance += _critChanceBonus;
+			stats.CritMultiplier += _critMultiplierBonus;
 		}
 	}
 }

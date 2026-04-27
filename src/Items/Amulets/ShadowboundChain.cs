@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
@@ -22,7 +23,7 @@ public class ShadowboundChain : EquippableItem
 	public ShadowboundChain()
 	{
 		Name = "Shadowbound Chain";
-		Description = $"+{_voidDamageBonus * 100}% Void damage. +{_hasteBonus * 100}% haste.";
+		Description = $"+{Math.Round(_voidDamageBonus * 100)}% Void damage. +{Math.Round(_hasteBonus * 100)}% haste.";
 		Rarity = ItemRarity.Epic;
 		Slot = EquipSlot.Amulet;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(3));
