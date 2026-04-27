@@ -57,14 +57,26 @@ jobs:
             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/${GODOT_FILENAME}.zip" \
             -O godot.zip
 
+          echo "--- Zip top-level contents ---"
+          unzip -l godot.zip | head -30
+
           unzip -q godot.zip
 
           # Keep the full folder intact — GodotSharp must sit next to the binary
           mv "${GODOT_FILENAME}" godot-bin
-          chmod +x "godot-bin/${GODOT_FILENAME}"
+
+          echo "--- godot-bin contents ---"
+          ls -la godot-bin/
+
+          # Locate the binary dynamically — the filename inside the zip may differ
+          # from the folder name (e.g. may carry a .x86_64 suffix or similar).
+          # We pick the only regular file that isn't a shared library.
+          GODOT_BIN=$(find godot-bin -maxdepth 1 -type f ! -name "*.so" | sort | head -1)
+          echo "Detected binary: ${GODOT_BIN}"
+          chmod +x "${GODOT_BIN}"
 
           # Expose a 'godot' command on PATH via symlink
-          sudo ln -sf "$(pwd)/godot-bin/${GODOT_FILENAME}" /usr/local/bin/godot
+          sudo ln -sf "$(pwd)/${GODOT_BIN}" /usr/local/bin/godot
 
           echo "Godot version:"
           godot --version
