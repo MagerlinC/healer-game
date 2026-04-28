@@ -34,6 +34,7 @@ public partial class GameTooltip : CanvasLayer
 
 	// ── private state ─────────────────────────────────────────────────────────
 	PanelContainer _panel = null!;
+	VBoxContainer _textBox = null!;
 	Label _descLabel = null!;
 	Label _titleLabel = null!;
 	bool _isShowing;
@@ -54,26 +55,37 @@ public partial class GameTooltip : CanvasLayer
 		style.ContentMarginTop = style.ContentMarginBottom = 6f;
 
 		_panel = new PanelContainer();
+		_panel.CustomMinimumSize = new Vector2(200, 50);
 		_panel.AddThemeStyleboxOverride("panel", style);
 		_panel.MouseFilter = Control.MouseFilterEnum.Ignore;
 		_panel.Visible = false;
 		AddChild(_panel);
+
+		_textBox = new VBoxContainer();
+		_textBox.MouseFilter = Control.MouseFilterEnum.Ignore;
+		_textBox.AddThemeConstantOverride("separation", 4);
+		_panel.AddChild(_textBox);
 
 		_titleLabel = new Label();
 		_titleLabel.AutowrapMode = TextServer.AutowrapMode.Word;
 		_titleLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
 		_titleLabel.AddThemeFontSizeOverride("font_size", 16);
 		_titleLabel.AddThemeColorOverride("font_color", TooltipText);
+		_textBox.AddChild(_titleLabel);
+
+		// Divider line
+		var separator = new HSeparator();
+		separator.MouseFilter = Control.MouseFilterEnum.Ignore;
+		separator.AddThemeColorOverride("color", TooltipBorder);
+		_textBox.AddChild(separator);
 
 		_descLabel = new Label();
 		_descLabel.AutowrapMode = TextServer.AutowrapMode.Word;
 		_descLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
 		_descLabel.AddThemeFontSizeOverride("font_size", 12);
 		_descLabel.AddThemeColorOverride("font_color", TooltipText);
+		_textBox.AddChild(_descLabel);
 
-		_panel.CustomMinimumSize = new Vector2(200, 10);
-		_panel.AddChild(_titleLabel);
-		_panel.AddChild(_descLabel);
 	}
 
 	public override void _Process(double delta)

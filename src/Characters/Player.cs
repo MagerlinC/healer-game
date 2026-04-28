@@ -108,7 +108,6 @@ public partial class Player : Character
 	{
 		base._Ready();
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		_sprite.Scale = new Vector2(1.2f, 1.2f);
 		_sprite.Play("idle");
 		CharacterName = GameConstants.HealerName;
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastStarted));
