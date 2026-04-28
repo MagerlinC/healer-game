@@ -42,14 +42,15 @@ public static class ItemRegistry
 		(null, () => new RingOfTheMendingFire()),
 		(null, () => new SeersBand()),
 		(null, () => new RingOfTriage()),
+		(null, () => new PreciseRing()),
 
 		// Amulets
 		(null, () => new TheHeartOfLight()),
 		(null, () => new NaturalistsClasp()),
 		(null, () => new ShadowboundChain()),
 		(null, () => new TheLifebindersCovenant()),
-		(null, () => new PendantOfTheVoidsEmbrace())
-
+		(null, () => new PendantOfTheVoidsEmbrace()),
+		(null, () => new BulwarkOfOvergrowth())
 	];
 
 	const float NothingWeight = 0.3f;
