@@ -28,7 +28,7 @@ public partial class BossHealthBar : CharacterFrame
 	/// Horizontal inset shared by both the health panel and the effect-badge row,
 	/// so they always align regardless of viewport width.
 	/// </summary>
-	const int SideMargin = 32;
+	const int SideMargin = 48;
 
 	// When non-null this overrides RunState to show a specific boss (e.g. second twin).
 	readonly string? _bossNameOverride;
@@ -57,7 +57,7 @@ public partial class BossHealthBar : CharacterFrame
 	public BossHealthBar(string? bossNameOverride = null)
 	{
 		_bossNameOverride = bossNameOverride;
-		_effectIndicatorSize = 36;
+		_effectIndicatorSize = 40;
 	}
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 	public override void _Ready()
@@ -174,7 +174,7 @@ public partial class BossHealthBar : CharacterFrame
 	{
 		if (_healthTargetMarker == null) return;
 		fraction = Mathf.Clamp(fraction, 0f, 1f);
-		_healthTargetMarker.AnchorLeft  = fraction;
+		_healthTargetMarker.AnchorLeft = fraction;
 		_healthTargetMarker.AnchorRight = fraction;
 		_healthTargetMarker.Visible = true;
 	}
@@ -257,16 +257,16 @@ public partial class BossHealthBar : CharacterFrame
 		_healthTargetMarker = new ColorRect();
 		_healthTargetMarker.Color = new Color(1.00f, 0.85f, 0.10f, 0.95f); // bright gold
 		// Anchored at left=0 initially; repositioned when a channel starts.
-		_healthTargetMarker.AnchorTop    = 0f;
+		_healthTargetMarker.AnchorTop = 0f;
 		_healthTargetMarker.AnchorBottom = 1f;
-		_healthTargetMarker.AnchorLeft   = 0f;
-		_healthTargetMarker.AnchorRight  = 0f;
-		_healthTargetMarker.OffsetLeft   = -1f;
-		_healthTargetMarker.OffsetRight  =  1f;
-		_healthTargetMarker.OffsetTop    = 0f;
+		_healthTargetMarker.AnchorLeft = 0f;
+		_healthTargetMarker.AnchorRight = 0f;
+		_healthTargetMarker.OffsetLeft = -1f;
+		_healthTargetMarker.OffsetRight = 1f;
+		_healthTargetMarker.OffsetTop = 0f;
 		_healthTargetMarker.OffsetBottom = 0f;
-		_healthTargetMarker.MouseFilter  = MouseFilterEnum.Ignore;
-		_healthTargetMarker.Visible      = false;
+		_healthTargetMarker.MouseFilter = MouseFilterEnum.Ignore;
+		_healthTargetMarker.Visible = false;
 		overlay.AddChild(_healthTargetMarker);
 
 		// ── name label (left-aligned, over the bar) ───────────────────────────
