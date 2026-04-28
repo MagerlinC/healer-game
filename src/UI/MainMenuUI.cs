@@ -545,7 +545,7 @@ public partial class MainMenuUI : Node2D
 		var cfg = new ConfigFile();
 		if (cfg.Load(SettingsSavePath) != Error.Ok) return;
 		if (!cfg.HasSectionKey(DisplaySection, "width") ||
-		    !cfg.HasSectionKey(DisplaySection, "height")) return;
+			!cfg.HasSectionKey(DisplaySection, "height")) return;
 
 		var w = (int)cfg.GetValue(DisplaySection, "width");
 		var h = (int)cfg.GetValue(DisplaySection, "height");

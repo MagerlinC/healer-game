@@ -22,7 +22,7 @@ public partial class ManaOrb : Control
 	public override void _Ready()
 	{
 		MouseFilter = MouseFilterEnum.Ignore;
-		CustomMinimumSize = new Vector2(132f, 132f);
+		CustomMinimumSize = new Vector2(160f, 160f);
 
 		_valueLabel = new Label();
 		_valueLabel.HorizontalAlignment = HorizontalAlignment.Center;

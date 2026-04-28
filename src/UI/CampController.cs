@@ -27,16 +27,23 @@ public partial class CampController : LoadoutController
 	protected override void SetupScene()
 	{
 		// ── Camp background ───────────────────────────────────────────────────
+		// Scale the background to cover the full visible world area so it fills
+		// any aspect ratio (e.g. ultrawide) without black bars or distortion.
+		var camera = GetNode<Camera2D>("Camera2D");
+		var viewSize = GetViewport().GetVisibleRect().Size;
+		var worldW = viewSize.X / camera.Zoom.X;
+		var worldH = viewSize.Y / camera.Zoom.Y;
+
 		var bg = new Sprite2D();
 		bg.Texture = GD.Load<Texture2D>(AssetConstants.OverworldBackgroundPath);
 		bg.Centered = true;
-		bg.Position = new Vector2(1920f / 2f, 1080f / 2f);
-		bg.Scale = new Vector2(0.5f, 0.5f);
+		bg.Position = camera.Position;
+		var bgScale = Mathf.Max(worldW / bg.Texture.GetWidth(), worldH / bg.Texture.GetHeight());
+		bg.Scale = new Vector2(bgScale, bgScale);
 		AddChild(bg);
 
-		var bgHalfW = bg.Texture.GetWidth() * bg.Scale.X / 2f;
-		var bgLeft = bg.Position.X - bgHalfW;
-		var bgRight = bg.Position.X + bgHalfW;
+		var bgLeft  = camera.Position.X - worldW / 2f;
+		var bgRight = camera.Position.X + worldW / 2f;
 
 		// ── Armory overlay panel ──────────────────────────────────────────────
 		// Built before the interactibles so the panel reference is ready to wire.
