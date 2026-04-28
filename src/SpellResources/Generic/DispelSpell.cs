@@ -28,6 +28,11 @@ public partial class DispelSpell : SpellResource
 
 	public override void Apply(SpellContext ctx)
 	{
-		ctx.Target?.RemoveHarmfulEffects();
+		// RemoveHarmfulEffects returns true if at least one debuff was cleansed
+		// (or, for CountessClone, if a reflection was interacted with).
+		// Mark the cast ineffective when nothing happened so Player won't start
+		// the cooldown on an empty cast.
+		var removed = ctx.Target?.RemoveHarmfulEffects() ?? false;
+		ctx.WasEffective = removed;
 	}
 }

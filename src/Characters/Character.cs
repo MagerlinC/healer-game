@@ -250,10 +250,12 @@ public abstract partial class Character : CharacterBody2D
 	/// <summary>
 	/// Remove all active effects that are marked as harmful (i.e. debuffs).
 	/// Called by the Dispel spell.
+	/// Returns <c>true</c> if at least one effect was removed, <c>false</c> if
+	/// the target had nothing dispellable — used to gate the Dispel cooldown.
 	/// Virtual so that special targets (e.g. <see cref="CountessClone"/>) can
 	/// intercept the call and trigger mechanic-specific behaviour instead.
 	/// </summary>
-	public virtual void RemoveHarmfulEffects()
+	public virtual bool RemoveHarmfulEffects()
 	{
 		var toRemove = new List<string>();
 		foreach (var (id, effect) in _effects)
@@ -261,6 +263,7 @@ public abstract partial class Character : CharacterBody2D
 				toRemove.Add(id);
 		foreach (var id in toRemove)
 			RemoveEffect(id);
+		return toRemove.Count > 0;
 	}
 
 	/// <summary>Remove an active effect by id, if present.</summary>

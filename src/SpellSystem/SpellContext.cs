@@ -52,4 +52,14 @@ public class SpellContext
 
     /// <summary>Convenience accessor — the primary (first) target, or null if the list is empty.</summary>
     public Character Target => Targets.Count > 0 ? Targets[0] : null;
+
+    /// <summary>
+    /// Set to <c>false</c> by a spell's <see cref="SpellResource.Apply"/> implementation
+    /// when it considers itself to have had no actual effect on the world.
+    /// Read by <see cref="Player"/> to decide whether to start the cooldown —
+    /// used by Dispel so that casting it at a target with nothing to cleanse
+    /// does not consume the cooldown.
+    /// Defaults to <c>true</c> so all spells that don't opt in are unaffected.
+    /// </summary>
+    public bool WasEffective { get; set; } = true;
 }

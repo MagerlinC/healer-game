@@ -139,11 +139,14 @@ public partial class CountessClone : Character
 	/// Intercepts the Dispel spell (which calls <see cref="Character.RemoveHarmfulEffects"/>
 	/// on its target). Instead of cleaning debuffs, this notifies TheCountess that
 	/// this reflection was dispelled, resolving or progressing the mechanic.
+	/// Always returns <c>true</c> so the Dispel cooldown is triggered — interacting
+	/// with any clone (real or decoy) is a meaningful action.
 	/// </summary>
-	public override void RemoveHarmfulEffects()
+	public override bool RemoveHarmfulEffects()
 	{
-		if (!IsInstanceValid(_countess) || _countess.IsBeingRemoved) return;
+		if (!IsInstanceValid(_countess) || _countess.IsBeingRemoved) return false;
 		_countess.OnCloneInteracted(this);
+		return true;
 	}
 
 	void OnBodyEntered(Node body)

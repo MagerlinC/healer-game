@@ -26,8 +26,11 @@ public static class SpellPipeline
 	/// <summary>
 	/// Cast a spell from <paramref name="caster"/> at an explicit target.
 	/// The spell may resolve additional targets internally (e.g. group heals).
+	/// Returns the completed <see cref="SpellContext"/> so callers can inspect
+	/// <see cref="SpellContext.WasEffective"/> if needed (e.g. Dispel cooldown gating).
+	/// The return value may be safely ignored by callers that don't need it.
 	/// </summary>
-	public static void Cast(SpellResource spell, Character caster, Character explicitTarget)
+	public static SpellContext Cast(SpellResource spell, Character caster, Character explicitTarget)
 	{
 		// ── 1. Build context ────────────────────────────────────────────────
 		var ctx = new SpellContext
@@ -139,5 +142,7 @@ public static class SpellPipeline
 
 		// ── 11. Record in history ───────────────────────────────────────────
 		caster.SpellHistory.Record(spell.Name, ctx.Timestamp);
+
+		return ctx;
 	}
 }

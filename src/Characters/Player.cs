@@ -232,12 +232,14 @@ public partial class Player : Character
 	/// <summary>
 	/// Fire a generic (off-GCD) spell without cancelling any active cast.
 	/// Generic spells have no mana cost and do not trigger the GCD.
+	/// The cooldown is only started if the spell reports itself as effective
+	/// (e.g. Dispel does nothing when the target has no dispellable debuffs).
 	/// </summary>
 	void FireGenericSpell(SpellResource spell, Character target)
 	{
-		SpellPipeline.Cast(spell, this, target);
+		var ctx = SpellPipeline.Cast(spell, this, target);
 
-		if (spell.Cooldown > 0f)
+		if (spell.Cooldown > 0f && ctx.WasEffective)
 		{
 			_spellCooldowns[spell] = spell.Cooldown;
 			EmitSignalCooldownStarted(spell, spell.Cooldown);
