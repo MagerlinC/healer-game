@@ -20,14 +20,21 @@ public partial class EffectIndicator : PanelContainer
 	Label _countLabel;
 	bool _hovered;
 
+	StyleBoxFlat _style;
+	ColorRect _glowRect;
+	Tween _pulseTween;
+
 	// Helpful buff color
 	static readonly Color HelpfulBadgeBorder = new(0.25f, 0.70f, 0.35f, 0.90f);
 
 	// Harmful buff color
 	static readonly Color HarmfulBadgeBorder = new(0.70f, 0.25f, 0.35f, 0.90f);
 
+	// Bright orange color for dispellable harmful effects 
+	static readonly Color HarmfulDispellableBadgeBorder = new(0.90f, 0.40f, 0.10f, 0.95f);
+
 	// ── constructor ──────────────────────────────────────────────────────────
-	public EffectIndicator(CharacterEffect effect, int indicatorSize = 32)
+	public EffectIndicator(CharacterEffect effect, int indicatorSize = 34)
 	{
 		CharacterEffect = effect;
 		_displayName = FormatDisplayName(effect.EffectId);
@@ -36,16 +43,26 @@ public partial class EffectIndicator : PanelContainer
 		MouseFilter = MouseFilterEnum.Stop; // must be non-Ignore to receive mouse events
 
 		// ── badge style ──────────────────────────────────────────────────────
-		var style = new StyleBoxFlat();
-		style.BgColor = new Color(0.10f, 0.10f, 0.10f, 0.85f);
-		style.SetCornerRadiusAll(3);
-		style.SetBorderWidthAll(1);
-		style.BorderColor = effect.IsHarmful ? HarmfulBadgeBorder : HelpfulBadgeBorder;
-		style.ContentMarginLeft = 1f;
-		style.ContentMarginRight = 1f;
-		style.ContentMarginTop = 1f;
-		style.ContentMarginBottom = 1f;
-		AddThemeStyleboxOverride("panel", style);
+		_style = new StyleBoxFlat();
+		_style.BgColor = new Color(0.10f, 0.10f, 0.10f, 0.85f);
+		_style.SetCornerRadiusAll(3);
+		_style.SetBorderWidthAll(2);
+
+		var borderColor = effect.IsHarmful
+			? effect.IsDispellable ? HarmfulDispellableBadgeBorder : HarmfulBadgeBorder
+			: HelpfulBadgeBorder;
+
+		_style.BorderColor = borderColor;
+		// Glow dispellable effects
+		SetupGlow(borderColor, effect.IsHarmful && effect.IsDispellable);
+
+		_style.ContentMarginLeft = 1f;
+		_style.ContentMarginRight = 1f;
+		_style.ContentMarginTop = 1f;
+		_style.ContentMarginBottom = 1f;
+
+
+		AddThemeStyleboxOverride("panel", _style);
 
 		// Stacking layer for icon + countdown label
 		var inner = new Control();
@@ -128,5 +145,71 @@ public partial class EffectIndicator : PanelContainer
 	static string FormatDisplayName(string id)
 	{
 		return Regex.Replace(id, @"(?<=[a-z])(?=[A-Z])", " ");
+	}
+	void SetupGlow(Color color, bool shouldPulse)
+	{
+		// Create once
+		if (_glowRect == null)
+		{
+			_glowRect = new ColorRect();
+			AddChild(_glowRect);
+			MoveChild(_glowRect, 0); // ensure it's behind
+
+			_glowRect.MouseFilter = MouseFilterEnum.Ignore;
+		}
+
+		// Slightly bigger than the panel
+		_glowRect.AnchorLeft = 0;
+		_glowRect.AnchorTop = 0;
+		_glowRect.AnchorRight = 1;
+		_glowRect.AnchorBottom = 1;
+
+		_glowRect.OffsetLeft = -3;
+		_glowRect.OffsetTop = -3;
+		_glowRect.OffsetRight = 3;
+		_glowRect.OffsetBottom = 3;
+
+		// Soft glow color
+		_glowRect.Color = new Color(color.R, color.G, color.B, 0.25f);
+
+		if (shouldPulse)
+			StartPulse(color);
+		else
+			StopPulse();
+	}
+	void StartPulse(Color baseColor)
+	{
+		StopPulse();
+
+		var bright = baseColor.Lightened(0.5f);
+
+		_pulseTween = CreateTween().SetLoops();
+
+		// Border pulse
+		_pulseTween.TweenMethod(
+				Callable.From<float>(t => { _style.BorderColor = baseColor.Lerp(bright, t); }),
+				0f, 1f, 0.6f
+			).SetTrans(Tween.TransitionType.Sine)
+			.SetEase(Tween.EaseType.InOut);
+
+		_pulseTween.TweenMethod(
+			Callable.From<float>(t => { _style.BorderColor = baseColor.Lerp(bright, 1f - t); }),
+			0f, 1f, 0.6f
+		);
+
+		// Glow alpha pulse (subtle)
+		_pulseTween.Parallel().TweenProperty(
+			_glowRect, "modulate:a", 0.5f, 0.6f);
+
+		_pulseTween.Parallel().TweenProperty(
+			_glowRect, "modulate:a", 0.2f, 0.6f);
+	}
+	void StopPulse()
+	{
+		if (_pulseTween != null)
+		{
+			_pulseTween.Kill();
+			_pulseTween = null;
+		}
 	}
 }
