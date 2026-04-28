@@ -43,6 +43,7 @@ public partial class MainMenuUI : Node2D
 
 	const string SettingsSavePath = "user://settings.cfg";
 	const string DisplaySection = "display";
+	const string AudioSection   = "audio";
 
 	static readonly (string Label, int W, int H)[] Resolutions =
 	{
@@ -59,6 +60,7 @@ public partial class MainMenuUI : Node2D
 	string? _actionToRebind;
 	Label? _rebindPromptLabel;
 	OptionButton? _resolutionOptionBtn;
+	Label? _volumeValueLabel;
 	readonly Dictionary<string, Label> _keybindLabels = new();
 
 	// ── delete-save confirmation state ────────────────────────────────────────
@@ -72,6 +74,7 @@ public partial class MainMenuUI : Node2D
 		// Apply any previously saved keybinds and display settings before building the UI
 		LoadKeybinds();
 		LoadDisplaySettings();
+		LoadAudioSettings();
 
 		var canvas = new CanvasLayer();
 		AddChild(canvas);
@@ -304,6 +307,59 @@ public partial class MainMenuUI : Node2D
 		displaySep.AddThemeColorOverride("color", SepColor);
 		vbox.AddChild(displaySep);
 
+		// ── Audio section ─────────────────────────────────────────────────────
+		var audioHeader = new Label();
+		audioHeader.Text = "Audio";
+		audioHeader.HorizontalAlignment = HorizontalAlignment.Left;
+		audioHeader.AddThemeFontSizeOverride("font_size", 14);
+		audioHeader.AddThemeColorOverride("font_color", new Color(0.75f, 0.70f, 0.60f));
+		vbox.AddChild(audioHeader);
+
+		var volRow = new HBoxContainer();
+		volRow.AddThemeConstantOverride("separation", 12);
+
+		var volLabel = new Label();
+		volLabel.Text = "Volume";
+		volLabel.VerticalAlignment = VerticalAlignment.Center;
+		volLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		volLabel.AddThemeFontSizeOverride("font_size", 13);
+		volLabel.AddThemeColorOverride("font_color", new Color(0.80f, 0.76f, 0.70f));
+		volRow.AddChild(volLabel);
+
+		var currentLinear = Mathf.DbToLinear(AudioServer.GetBusVolumeDb(AudioServer.GetBusIndex("Master")));
+		var currentPct    = Mathf.RoundToInt(currentLinear * 100f);
+
+		_volumeValueLabel = new Label();
+		_volumeValueLabel.Text = $"{currentPct}%";
+		_volumeValueLabel.CustomMinimumSize = new Vector2(40, 0);
+		_volumeValueLabel.HorizontalAlignment = HorizontalAlignment.Right;
+		_volumeValueLabel.VerticalAlignment = VerticalAlignment.Center;
+		_volumeValueLabel.AddThemeFontSizeOverride("font_size", 13);
+		_volumeValueLabel.AddThemeColorOverride("font_color", TitleColor);
+
+		var volSlider = new HSlider();
+		volSlider.MinValue = 0;
+		volSlider.MaxValue = 100;
+		volSlider.Step = 1;
+		volSlider.Value = currentPct;
+		volSlider.CustomMinimumSize = new Vector2(160, 20);
+		volSlider.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
+		volSlider.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+		volSlider.ValueChanged += (val) =>
+		{
+			_volumeValueLabel.Text = $"{(int)val}%";
+			ApplyVolume((float)val / 100f);
+			SaveAudioSettings();
+		};
+
+		volRow.AddChild(volSlider);
+		volRow.AddChild(_volumeValueLabel);
+		vbox.AddChild(volRow);
+
+		var audioSep = new HSeparator();
+		audioSep.AddThemeColorOverride("color", SepColor);
+		vbox.AddChild(audioSep);
+
 		// Rebind prompt label (shared, shown when waiting for a key)
 		_rebindPromptLabel = new Label();
 		_rebindPromptLabel.Text = "Press any key to rebind...";
@@ -534,6 +590,7 @@ public partial class MainMenuUI : Node2D
 	static void SaveDisplaySettings()
 	{
 		var cfg = new ConfigFile();
+		cfg.Load(SettingsSavePath); // preserve existing keys (e.g. audio)
 		var size = DisplayServer.WindowGetSize();
 		cfg.SetValue(DisplaySection, "width", size.X);
 		cfg.SetValue(DisplaySection, "height", size.Y);
@@ -551,6 +608,33 @@ public partial class MainMenuUI : Node2D
 		var h = (int)cfg.GetValue(DisplaySection, "height");
 		if (w > 0 && h > 0)
 			ApplyResolution(new Vector2I(w, h));
+	}
+
+	// ── audio settings persistence ────────────────────────────────────────────
+
+	static void SaveAudioSettings()
+	{
+		var cfg = new ConfigFile();
+		cfg.Load(SettingsSavePath); // preserve existing keys (e.g. display)
+		var linear = Mathf.DbToLinear(AudioServer.GetBusVolumeDb(AudioServer.GetBusIndex("Master")));
+		cfg.SetValue(AudioSection, "master_volume", Mathf.Clamp(linear, 0f, 1f));
+		cfg.Save(SettingsSavePath);
+	}
+
+	static void LoadAudioSettings()
+	{
+		var cfg = new ConfigFile();
+		if (cfg.Load(SettingsSavePath) != Error.Ok) return;
+		if (!cfg.HasSectionKey(AudioSection, "master_volume")) return;
+
+		var linear = (float)cfg.GetValue(AudioSection, "master_volume");
+		ApplyVolume(Mathf.Clamp(linear, 0f, 1f));
+	}
+
+	static void ApplyVolume(float linear)
+	{
+		var db = linear > 0f ? Mathf.LinearToDb(linear) : -80f;
+		AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex("Master"), db);
 	}
 
 	static void ApplyResolution(Vector2I size)
