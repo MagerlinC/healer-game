@@ -47,6 +47,12 @@ public static class PlayerProgressStore
 		/// Increments by 1 on each level-up. Starts at 0 (level 1 has no points).
 		/// </summary>
 		public int TalentPoints { get; set; } = 0;
+
+		/// <summary>True once the player has dismissed the first-time tutorial popup.</summary>
+		public bool HasSeenTutorial { get; set; } = false;
+
+		/// <summary>True once the player has opened the Spellbook at least once.</summary>
+		public bool HasOpenedSpellbook { get; set; } = false;
 	}
 
 	// ── in-memory state ───────────────────────────────────────────────────────
@@ -71,7 +77,29 @@ public static class PlayerProgressStore
 	/// </summary>
 	public static float MaxHealthBonus => (_data.Level - 1) * MaxHealthBonusPerLevel;
 
+	/// <summary>True once the player has dismissed the first-time tutorial popup.</summary>
+	public static bool HasSeenTutorial => _data.HasSeenTutorial;
+
+	/// <summary>True once the player has opened the Spellbook at least once.</summary>
+	public static bool HasOpenedSpellbook => _data.HasOpenedSpellbook;
+
 	// ── public API ────────────────────────────────────────────────────────────
+
+	/// <summary>Marks the tutorial as seen and saves to disk (idempotent).</summary>
+	public static void MarkTutorialSeen()
+	{
+		if (_data.HasSeenTutorial) return;
+		_data.HasSeenTutorial = true;
+		SaveToDisk();
+	}
+
+	/// <summary>Marks the Spellbook as having been opened and saves to disk (idempotent).</summary>
+	public static void MarkSpellbookOpened()
+	{
+		if (_data.HasOpenedSpellbook) return;
+		_data.HasOpenedSpellbook = true;
+		SaveToDisk();
+	}
 
 	/// <summary>
 	/// Awards <paramref name="xp"/> experience, processing any resulting level-ups.

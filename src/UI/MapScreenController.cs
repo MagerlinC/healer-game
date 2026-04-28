@@ -247,6 +247,7 @@ public partial class MapScreenController : Node2D
 	Label _detailSub = null!;
 	Label _detailBody = null!;
 	Button _enterBtn = null!;
+	Label _spellbookWarningLabel = null!;
 	StyleBoxFlat _detailPanelStyle = null!;
 
 	Control BuildDetailPanel()
@@ -317,6 +318,18 @@ public partial class MapScreenController : Node2D
 		// Spacer to push button to the bottom
 		var fill = new Control { SizeFlagsVertical = Control.SizeFlags.ExpandFill };
 		vbox.AddChild(fill);
+
+		// Spellbook warning (shown when player hasn't opened the Spellbook yet)
+		_spellbookWarningLabel = new Label();
+		_spellbookWarningLabel.Text =
+			"Open your Spellbook in camp before entering a dungeon — click the tome to pick your spells!";
+		_spellbookWarningLabel.AutowrapMode = TextServer.AutowrapMode.Word;
+		_spellbookWarningLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		_spellbookWarningLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		_spellbookWarningLabel.AddThemeFontSizeOverride("font_size", 13);
+		_spellbookWarningLabel.AddThemeColorOverride("font_color", new Color(0.95f, 0.78f, 0.28f));
+		_spellbookWarningLabel.Visible = false;
+		vbox.AddChild(_spellbookWarningLabel);
 
 		// Enter button
 		var enterStyle = MakeBtnStyle(new Color(0.12f, 0.17f, 0.12f), new Color(0.30f, 0.65f, 0.28f));
@@ -402,17 +415,22 @@ public partial class MapScreenController : Node2D
 		_detailSub.AddThemeColorOverride("font_color", subColor);
 		_detailBody.Text = body;
 
-		// Show Enter button only for available dungeons
+		// Show Enter button only for available dungeons; gate on spellbook having been opened.
 		var canEnter = isDungeonNode && state == RunState.MapNodeState.Available;
+		var spellbookReady = PlayerProgressStore.HasOpenedSpellbook;
+
 		_enterBtn.Visible = canEnter;
+		_spellbookWarningLabel.Visible = canEnter && !spellbookReady;
+
 		if (canEnter)
 		{
 			_enterBtn.Text = $"Enter  {name}";
-			// Adjust border colour to match the dungeon's border
-			_detailPanelStyle.BorderColor = ColAvailable;
+			_enterBtn.Disabled = !spellbookReady;
+			_detailPanelStyle.BorderColor = spellbookReady ? ColAvailable : new Color(0.55f, 0.50f, 0.28f);
 		}
 		else
 		{
+			_enterBtn.Disabled = false;
 			_detailPanelStyle.BorderColor = subColor * new Color(0.7f, 0.7f, 0.7f, 1f);
 		}
 
