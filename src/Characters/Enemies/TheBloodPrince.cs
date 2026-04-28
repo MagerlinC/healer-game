@@ -39,9 +39,7 @@ using healerfantasy.SpellSystem;
 /// ════════════════════════════════════════════════════════════════════════════
 /// • <see cref="SlashInterval"/> — Regal Slash: melee on tank, 45 damage.
 /// • <see cref="BloodBoltInterval"/> — Blood Bolt: ranged hit on random target, 48 damage.
-/// • <see cref="MarkInterval"/> — Sanguine Mark: brands ONE party member.
-///   Deals 20 damage/sec for 12 seconds. If dispelled early, the Blood Prince
-///   heals proportionally to remaining duration (up to 300 HP max).
+/// • <see cref="SiphonInterval"/> — Sanguine Siphon: channeled spell leeching life from linked targets
 ///
 /// ════════════════════════════════════════════════════════════════════════════
 /// PHASE TRANSITION (at 50% HP)
@@ -55,7 +53,7 @@ using healerfantasy.SpellSystem;
 /// ════════════════════════════════════════════════════════════════════════════
 /// • Regal Slash: damage increased to 60.
 /// • Blood Bolt: same as Phase 1.
-/// • Sanguine Mark: now applied to TWO party members simultaneously.
+/// • Sanguine Siphon: now applied to FOUR party members simultaneously.
 /// • <see cref="VoidDrainInterval"/> — Void Drain: non-dispellable AoE DoT on
 ///   the entire party, 20 damage/sec for 10 seconds. Dramatically amplifies
 ///   the healing burden — and therefore the Blood Covenant siphon.
@@ -92,12 +90,37 @@ public partial class TheBloodPrince : Character
 	[Signal]
 	public delegate void CastWindupEndedEventHandler();
 
+	// ── Sanguine Siphon channel signals ───────────────────────────────────────
+
+	/// <summary>
+	/// Emitted when the Sanguine Siphon channel begins.
+	/// The boss cast bar listens to this to display a reverse (draining) channel bar.
+	/// </summary>
+	[Signal]
+	public delegate void SanguineChannelStartedEventHandler(float duration);
+
+	/// <summary>Emitted when the Sanguine Siphon channel ends (naturally or cancelled).</summary>
+	[Signal]
+	public delegate void SanguineChannelEndedEventHandler();
+
+	/// <summary>
+	/// Emitted at channel start with the health fraction (0 – 1) the boss must
+	/// be damaged to in order to break the channel early.
+	/// The boss health bar uses this to draw a golden break-threshold marker.
+	/// </summary>
+	[Signal]
+	public delegate void SanguineHealthTargetSetEventHandler(float targetFraction);
+
+	/// <summary>Emitted when the channel ends; removes the health-threshold marker from the UI.</summary>
+	[Signal]
+	public delegate void SanguineHealthTargetClearedEventHandler();
+
 	// ── tuneable exports ──────────────────────────────────────────────────────
 
 	// Phase 1 intervals
 	[Export] public float SlashInterval = 2.5f;
 	[Export] public float BloodBoltInterval = 5.0f;
-	[Export] public float MarkInterval = 10.0f;
+	[Export] public float SiphonInterval = 14.0f;
 
 	// Phase 2 additional intervals
 	[Export] public float VoidDrainInterval = 18.0f;
@@ -120,23 +143,42 @@ public partial class TheBloodPrince : Character
 
 	float _slashTimer;
 	float _bloodBoltTimer;
-	float _markTimer;
+	float _siphonTimer;
 	float _voidDrainTimer;
 
 	BossBloodPrinceSlashSpell _slashSpell;
 	BossBloodPrinceBloodBoltSpell _bloodBoltSpell;
-	BossBloodPrinceSanguineMarkSpell _markSpell;
+	BossBloodPrinceSanguineSiphonSpell _siphonSpell;
 	BossBloodPrinceVoidDrainSpell _voidDrainSpell;
 
 	AnimatedSprite2D _sprite;
 
 	bool _phaseTwoActive;
 
+	/// <summary>
+	/// Targets pre-selected when <see cref="CastSanguineSiphon"/> fires.
+	/// Stored here so the same targets are used when the animation ends
+	/// (avoids picking a new random set between cast-start and cast-resolve).
+	/// </summary>
+	List<Character> _siphonTargets = new();
+
+	/// <summary>
+	/// True while a Sanguine Siphon channel is active.
+	/// Prevents the siphon timer from triggering a new cast mid-channel.
+	/// </summary>
+	bool _isSiphonChanneling;
+
 	// Blood Covenant — previous health snapshot for each party member.
 	// Keyed by CharacterName for fast lookup each frame.
 	readonly Dictionary<string, float> _prevPartyHealth = new();
 
-	enum PendingAttack { None, Slash, BloodBolt, Mark }
+	enum PendingAttack
+	{
+		None,
+		Slash,
+		BloodBolt,
+		Siphon
+	}
 
 	PendingAttack _pendingAttack;
 	Character _pendingTarget;
@@ -156,20 +198,24 @@ public partial class TheBloodPrince : Character
 		// Stagger first attacks.
 		_slashTimer = SlashInterval;
 		_bloodBoltTimer = BloodBoltInterval;
-		_markTimer = MarkInterval;
+		_siphonTimer = 10f; // Start after 10s, then every SiphonInterval.
 		_voidDrainTimer = VoidDrainInterval;
 
 		_slashSpell = new BossBloodPrinceSlashSpell { DamageAmount = Phase1SlashDamage };
 		_bloodBoltSpell = new BossBloodPrinceBloodBoltSpell { DamageAmount = BloodBoltDamage };
-		_markSpell = new BossBloodPrinceSanguineMarkSpell { Boss = this };
+		_siphonSpell = new BossBloodPrinceSanguineSiphonSpell { Boss = this };
 		_voidDrainSpell = new BossBloodPrinceVoidDrainSpell { Boss = this };
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(BloodCovenantActivated));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(SanguineChannelStarted));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(SanguineChannelEnded));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(SanguineHealthTargetSet));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(SanguineHealthTargetCleared));
 
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		_sprite.Scale = new Vector2(1.5f, 1.5f);
+		_sprite.Scale = new Vector2(0.4f, 0.4f);
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
@@ -197,23 +243,23 @@ public partial class TheBloodPrince : Character
 		// ── Regular attack timers ─────────────────────────────────────────────
 		_slashTimer -= (float)delta;
 		_bloodBoltTimer -= (float)delta;
-		_markTimer -= (float)delta;
+		_siphonTimer -= (float)delta;
 
 		if (_phaseTwoActive)
 			_voidDrainTimer -= (float)delta;
 
 		if (_pendingAttack != PendingAttack.None) return;
 
-		// Priority: Void Drain > Mark > Blood Bolt > Slash.
+		// Priority: Void Drain > Siphon > Blood Bolt > Slash.
 		if (_phaseTwoActive && _voidDrainTimer <= 0f)
 		{
 			_voidDrainTimer = VoidDrainInterval;
 			CastVoidDrain();
 		}
-		else if (_markTimer <= 0f)
+		else if (_siphonTimer <= 0f && !_isSiphonChanneling)
 		{
-			_markTimer = MarkInterval;
-			CastSanguineMark();
+			_siphonTimer = SiphonInterval;
+			CastSanguineSiphon();
 		}
 		else if (_bloodBoltTimer <= 0f)
 		{
@@ -239,7 +285,7 @@ public partial class TheBloodPrince : Character
 		// Reset attack timers so Phase 2 opens with a quick flurry.
 		_slashTimer = 1.0f;
 		_bloodBoltTimer = 3.0f;
-		_markTimer = 5.0f;
+		_siphonTimer = 5.0f;
 		_voidDrainTimer = VoidDrainInterval;
 
 		// Initialise the health snapshot immediately so the first covenant
@@ -277,7 +323,7 @@ public partial class TheBloodPrince : Character
 				if (siphon > 0f && IsAlive)
 				{
 					Heal(siphon);
-					RaiseFloatingCombatText(siphon, true, (int)healerfantasy.SpellResources.SpellSchool.Void, false);
+					RaiseFloatingCombatText(siphon, true, (int)SpellSchool.Void, false);
 				}
 			}
 
@@ -320,18 +366,22 @@ public partial class TheBloodPrince : Character
 	}
 
 	/// <summary>
-	/// Applies Sanguine Mark. In Phase 1 one target is chosen; in Phase 2 two
-	/// distinct targets are marked simultaneously.
+	/// Casts SanguineSiphon. In Phase 1 two targets are chosen; in Phase 2 four.
+	/// Targets are locked in here so the same set is used when the animation ends.
+	/// Emits <see cref="CastWindupStarted"/> so the cast bar shows during the wind-up.
 	/// </summary>
-	void CastSanguineMark()
+	void CastSanguineSiphon()
 	{
-		var targets = PickMarkTargets();
-		if (targets.Count == 0) return;
+		_siphonTargets = PickSiphonTargets();
+		if (_siphonTargets.Count == 0) return;
 
-		// Use the first target as the animation pivot; the spell applies to all.
-		_pendingTarget = targets[0];
-		_pendingAttack = PendingAttack.Mark;
+		// Use the first target as the animation pivot; the spell resolves all targets.
+		_pendingTarget = _siphonTargets[0];
+		_pendingAttack = PendingAttack.Siphon;
 		_sprite.Play("cast");
+
+		// Show the pre-channel cast bar (1 s cast time).
+		EmitSignalCastWindupStarted("Sanguine Siphon", _siphonSpell.Icon, _siphonSpell.CastTime);
 	}
 
 	/// <summary>
@@ -361,15 +411,22 @@ public partial class TheBloodPrince : Character
 					SpellPipeline.Cast(_bloodBoltSpell, this, _pendingTarget);
 					break;
 
-				case PendingAttack.Mark:
-					// In Phase 2 mark two targets; Phase 1 marks only one.
-					var markTargets = _phaseTwoActive
-						? PickMarkTargets()
-						: new List<Character> { _pendingTarget };
+				case PendingAttack.Siphon:
+					// End the cast-windup bar; the channel bar will appear via
+					// OnSanguineSiphonChannelStarted once Apply runs.
+					EmitSignalCastWindupEnded();
 
-					foreach (var t in markTargets)
-						if (t.IsAlive)
-							SpellPipeline.Cast(_markSpell, this, t);
+					// Filter out targets that died during the cast wind-up.
+					_siphonTargets.RemoveAll(t => !IsInstanceValid(t) || !t.IsAlive);
+					if (_siphonTargets.Count > 0)
+					{
+						// Hand the pre-selected target list to the spell so ResolveTargets
+						// returns all of them in a single pipeline pass.
+						_siphonSpell.PendingTargets = _siphonTargets;
+						SpellPipeline.Cast(_siphonSpell, this, _siphonTargets[0]);
+					}
+
+					_siphonTargets = new List<Character>();
 					break;
 			}
 		}
@@ -379,6 +436,38 @@ public partial class TheBloodPrince : Character
 
 		if (IsAlive)
 			_sprite.Play("idle");
+	}
+
+	// ── Sanguine Siphon channel callbacks ────────────────────────────────────
+
+	/// <summary>
+	/// Called by <see cref="healerfantasy.SpellResources.BossBloodPrinceSanguineSiphonSpell"/>
+	/// immediately after the channel node has been added to the scene and the drain
+	/// debuff has recorded the boss's current health.
+	/// Emits UI signals so the cast bar switches to channel mode and the health bar
+	/// shows the break-threshold marker.
+	/// </summary>
+	public void OnSanguineSiphonChannelStarted(float channelDuration, float healthTargetFraction)
+	{
+		_isSiphonChanneling = true;
+		EmitSignalSanguineChannelStarted(channelDuration);
+		EmitSignalSanguineHealthTargetSet(healthTargetFraction);
+
+		GD.Print($"[BloodPrince] Sanguine Siphon channel started. " +
+		         $"Duration: {channelDuration:F1}s, break at {healthTargetFraction * 100f:F0}% HP.");
+	}
+
+	/// <summary>
+	/// Called by <see cref="SanguineSiphonChannelNode"/> when the channel ends
+	/// (naturally or cancelled). Clears the channeling guard and UI signals.
+	/// </summary>
+	public void OnSanguineSiphonChannelEnded()
+	{
+		_isSiphonChanneling = false;
+		EmitSignalSanguineChannelEnded();
+		EmitSignalSanguineHealthTargetCleared();
+
+		GD.Print("[BloodPrince] Sanguine Siphon channel ended.");
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
@@ -405,7 +494,7 @@ public partial class TheBloodPrince : Character
 	/// Picks mark targets: one in Phase 1, two distinct members in Phase 2.
 	/// Shuffles the living party list and takes the first N.
 	/// </summary>
-	List<Character> PickMarkTargets()
+	List<Character> PickSiphonTargets()
 	{
 		var alive = new List<Character>();
 		foreach (var node in GetTree().GetNodesInGroup("party"))
@@ -419,7 +508,7 @@ public partial class TheBloodPrince : Character
 			(alive[i], alive[j]) = (alive[j], alive[i]);
 		}
 
-		var count = _phaseTwoActive ? Mathf.Min(2, alive.Count) : 1;
+		var count = _phaseTwoActive ? Mathf.Min(4, alive.Count) : Mathf.Min(2, alive.Count);
 		return alive.GetRange(0, count);
 	}
 

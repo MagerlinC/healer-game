@@ -83,7 +83,12 @@ public partial class BloodKnight : Character
 
 	bool _enraged;
 
-	enum PendingAttack { None, Melee, Cleave }
+	enum PendingAttack
+	{
+		None,
+		Melee,
+		Cleave
+	}
 
 	PendingAttack _pendingAttack;
 	Character _pendingTarget;
@@ -117,7 +122,7 @@ public partial class BloodKnight : Character
 		AddChild(_riserPlayer);
 
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		_sprite.Scale = new Vector2(1.5f, 1.5f);
+		_sprite.Scale = new Vector2(0.8f, 0.8f);
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");

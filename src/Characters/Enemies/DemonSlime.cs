@@ -53,7 +53,7 @@ public partial class DemonSlime : Character
 	[Export] public float MeleeDamage = 40f;
 	[Export] public float AcidSpitDamage = 55f;
 	[Export] public float NovaDamage = 75f;
-	[Export] public float DetonationZoneDamage = 100f;
+	[Export] public float DetonationZoneDamage = 80f;
 
 	// ── internal state ────────────────────────────────────────────────────────
 	float _meleeTimer;

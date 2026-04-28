@@ -37,6 +37,9 @@ public partial class BossCastBar : CastBarBase
 	{
 		base._Ready();
 
+		// ── pre-channel cast bars (all bosses that emit CastWindupStarted) ─────
+		// GlobalAutoLoad wires this to every registered emitter of the same name,
+		// so CrystalKnight, TheBloodPrince, etc. all feed into the same bar.
 		GlobalAutoLoad.SubscribeToSignal(
 			nameof(CrystalKnight.CastWindupStarted),
 			Callable.From((string spellName, Texture2D icon, float duration) =>
@@ -44,6 +47,16 @@ public partial class BossCastBar : CastBarBase
 
 		GlobalAutoLoad.SubscribeToSignal(
 			nameof(CrystalKnight.CastWindupEnded),
+			Callable.From(StopCast));
+
+		// ── Blood Prince: Sanguine Siphon channel bar (reverse / draining mode) ─
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(TheBloodPrince.SanguineChannelStarted),
+			Callable.From((float duration) =>
+				StartChannel("Sanguine Siphon", null, duration)));
+
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(TheBloodPrince.SanguineChannelEnded),
 			Callable.From(StopCast));
 	}
 

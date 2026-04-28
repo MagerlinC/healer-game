@@ -87,7 +87,13 @@ public partial class TheCountess : Character
 
 	bool _bloodShieldUsed;
 
-	enum PendingAttack { None, Melee, BloodBolt, Curse }
+	enum PendingAttack
+	{
+		None,
+		Melee,
+		BloodBolt,
+		Curse
+	}
 
 	PendingAttack _pendingAttack;
 	Character _pendingTarget;
@@ -124,7 +130,7 @@ public partial class TheCountess : Character
 		AddChild(_riserPlayer);
 
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		_sprite.Scale = new Vector2(1.5f, 1.5f);
+		_sprite.Scale = new Vector2(0.8f, 0.8f);
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");

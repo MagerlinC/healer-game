@@ -148,6 +148,31 @@ public partial class RunState : Node
 		return MapNodeState.Locked;
 	}
 
+	// ── Dev test mode ─────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// True when the current fight was launched via the developer boss popup.
+	/// VictoryScreen checks this to redirect to Overworld instead of advancing
+	/// the normal run progression.
+	/// Cleared automatically by <see cref="Reset"/>.
+	/// </summary>
+	public bool IsDevTestFight { get; private set; } = false;
+
+	/// <summary>
+	/// Configure a one-off developer test fight against a specific boss.
+	/// Preserves the player's current spell/talent loadout but replaces run
+	/// progression so that <see cref="World"/> loads exactly the chosen boss.
+	/// </summary>
+	public void SetupDevTestFight(DungeonDefinition dungeon, int bossIndex)
+	{
+		CompletedDungeons         = 0;
+		CompletedCamps            = 0;
+		CurrentBossIndexInDungeon = bossIndex;
+		RunDungeons               = new List<DungeonDefinition> { dungeon };
+		ItemStore.Clear();
+		IsDevTestFight = true;
+	}
+
 	// ── State transitions ─────────────────────────────────────────────────────
 
 	/// <summary>
@@ -200,9 +225,10 @@ public partial class RunState : Node
 	/// <summary>Resets all run progression for a completely fresh run.</summary>
 	public void Reset()
 	{
-		CompletedDungeons = 0;
-		CompletedCamps = 0;
+		CompletedDungeons         = 0;
+		CompletedCamps            = 0;
 		CurrentBossIndexInDungeon = 0;
+		IsDevTestFight            = false;
 		ItemStore.Clear();
 		RunDungeons = BuildRunDungeons();
 	}

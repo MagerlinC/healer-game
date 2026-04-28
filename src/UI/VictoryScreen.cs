@@ -66,7 +66,12 @@ public partial class VictoryScreen : CanvasLayer
 				if (droppedItem != null)
 					ItemStore.AddToInventory(droppedItem);
 
-				if (!RunState.Instance.IsLastBossInDungeon)
+				if (RunState.Instance.IsDevTestFight)
+				{
+					// Developer test fight — always return to Overworld after kill.
+					ShowDevTestComplete(character.CharacterName, xpReward, levelsGained, droppedItem);
+				}
+				else if (!RunState.Instance.IsLastBossInDungeon)
 				{
 					// Mid-dungeon: more bosses to fight.
 					ShowArenaCleared(character.CharacterName, xpReward, levelsGained, droppedItem);
@@ -198,6 +203,41 @@ public partial class VictoryScreen : CanvasLayer
 
 		Visible = true;
 		GetTree().Paused = true;
+	}
+
+	// ── dev test complete ─────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Shown when a boss is killed during a developer test fight (launched via
+	/// the Ctrl+Alt+O popup). Skips normal run progression and returns straight
+	/// to the Overworld with a full RunState reset.
+	/// </summary>
+	public void ShowDevTestComplete(string defeatedBossName, int xpGained, int levelsGained,
+		EquippableItem? droppedItem = null)
+	{
+		if (Visible) return;
+		_audioPlayer.Play();
+		_titleLabel.Text = "TEST COMPLETE";
+		_subLabel.Text   = $"{defeatedBossName} defeated.\n[Dev mode — run state will be reset]";
+		_xpLabel.Text    = BuildXpLine(xpGained, levelsGained);
+		BuildItemSection(droppedItem);
+
+		ClearButtons();
+		_btnRow.AddChild(MakeButton("Back to Overworld  ▶",
+			new Color(0.10f, 0.14f, 0.18f),
+			new Color(0.28f, 0.60f, 0.80f),
+			OnDevTestCompletePressed));
+
+		Visible = true;
+		GetTree().Paused = true;
+	}
+
+	void OnDevTestCompletePressed()
+	{
+		GetTree().Paused = false;
+		GlobalAutoLoad.Reset();
+		RunState.Instance.Reset();
+		GetTree().ChangeSceneToFile("res://levels/Overworld.tscn");
 	}
 
 	// ── button callbacks ──────────────────────────────────────────────────────

@@ -43,6 +43,13 @@ public partial class BossHealthBar : CharacterFrame
 	Label _currentHealthLabel = null!;
 	ProgressBar _bar = null!;
 
+	/// <summary>
+	/// Thin vertical marker drawn on the health bar during Sanguine Siphon,
+	/// showing the health level the party needs to burst the boss to in order
+	/// to break the channel. Hidden when no channel is active.
+	/// </summary>
+	ColorRect _healthTargetMarker = null!;
+
 	/// <param name="bossNameOverride">
 	/// When provided, this bar tracks the named character instead of
 	/// <see cref="RunState.CurrentBossName"/>. Used for the secondary Astral Twin health bar.
@@ -82,6 +89,25 @@ public partial class BossHealthBar : CharacterFrame
 			}));
 
 		base._Ready(); // subscribe effect-badge signals
+
+		// ── Sanguine Siphon health-target marker ──────────────────────────────
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(TheBloodPrince.SanguineHealthTargetSet),
+			Callable.From((float targetFraction) =>
+			{
+				var expected = _bossNameOverride ?? (RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name);
+				if (expected == GameConstants.CastleBoss3Name)
+					ShowHealthTargetMarker(targetFraction);
+			}));
+
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(TheBloodPrince.SanguineHealthTargetCleared),
+			Callable.From(() =>
+			{
+				var expected = _bossNameOverride ?? (RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name);
+				if (expected == GameConstants.CastleBoss3Name)
+					HideHealthTargetMarker();
+			}));
 	}
 
 	/// <summary>
@@ -113,6 +139,29 @@ public partial class BossHealthBar : CharacterFrame
 		_nameLabel.Text = charName;
 		_currentHealthLabel.Text = $"{current:F0} / {max:F0}";
 		Visible = true;
+	}
+
+	// ── Sanguine Siphon health-target marker ─────────────────────────────────
+
+	/// <summary>
+	/// Positions the golden marker at <paramref name="fraction"/> (0 – 1) along
+	/// the health bar, where 0 is fully empty (left) and 1 is full (right).
+	/// Since lower health is to the left, a fraction of e.g. 0.40 means the bar
+	/// marker sits at the 40 % health mark.
+	/// </summary>
+	void ShowHealthTargetMarker(float fraction)
+	{
+		if (_healthTargetMarker == null) return;
+		fraction = Mathf.Clamp(fraction, 0f, 1f);
+		_healthTargetMarker.AnchorLeft  = fraction;
+		_healthTargetMarker.AnchorRight = fraction;
+		_healthTargetMarker.Visible = true;
+	}
+
+	void HideHealthTargetMarker()
+	{
+		if (_healthTargetMarker != null)
+			_healthTargetMarker.Visible = false;
 	}
 
 	void BuildHealthPanel()
@@ -182,6 +231,22 @@ public partial class BossHealthBar : CharacterFrame
 		_bar.AddThemeStyleboxOverride("fill", barFill);
 
 		overlay.AddChild(_bar);
+
+		// ── health-target marker (Sanguine Siphon channel break threshold) ────
+		_healthTargetMarker = new ColorRect();
+		_healthTargetMarker.Color = new Color(1.00f, 0.85f, 0.10f, 0.95f); // bright gold
+		// Anchored at left=0 initially; repositioned when a channel starts.
+		_healthTargetMarker.AnchorTop    = 0f;
+		_healthTargetMarker.AnchorBottom = 1f;
+		_healthTargetMarker.AnchorLeft   = 0f;
+		_healthTargetMarker.AnchorRight  = 0f;
+		_healthTargetMarker.OffsetLeft   = -1f;
+		_healthTargetMarker.OffsetRight  =  1f;
+		_healthTargetMarker.OffsetTop    = 0f;
+		_healthTargetMarker.OffsetBottom = 0f;
+		_healthTargetMarker.MouseFilter  = MouseFilterEnum.Ignore;
+		_healthTargetMarker.Visible      = false;
+		overlay.AddChild(_healthTargetMarker);
 
 		// ── name label (left-aligned, over the bar) ───────────────────────────
 		_nameLabel = new Label();

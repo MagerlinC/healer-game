@@ -20,7 +20,7 @@ public partial class BossCountessBloodShieldSpell : SpellResource
 	{
 		Name = "Blood Shield";
 		Description = "The Countess encases herself in a barrier of coagulated blood, absorbing incoming damage.";
-		Tags = SpellTags.Helpful;
+		Tags = SpellTags.Healing;
 		ManaCost = 0f;
 		CastTime = 0f;
 		EffectType = EffectType.Helpful;

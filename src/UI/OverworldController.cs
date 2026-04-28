@@ -101,6 +101,10 @@ public partial class OverworldController : LoadoutController
 		};
 		mapItem.MouseEntered += () => _hintLabel!.Text = "World Map  •  Plan your journey";
 		mapItem.MouseExited += () => _hintLabel!.Text = DefaultHint;
+
+		// ── Dev boss popup (Ctrl+Alt+O) — only available in debug builds ────────
+		if (OS.IsDebugBuild())
+			AddChild(new DevBossPopup());
 	}
 
 	void OnOpenMap()

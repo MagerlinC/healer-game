@@ -21,7 +21,7 @@ public partial class DetonationZone : Node2D
 	public static readonly Vector2 ZoneSize = new(80f, 80f);
 
 	/// <summary>Seconds between zone placement and detonation.</summary>
-	public const float FuseDuration = 3.0f;
+	public const float FuseDuration = 2.5f;
 
 	// ── instance data ──────────────────────────────────────────────────────────
 
@@ -107,7 +107,8 @@ public partial class DetonationZone : Node2D
 				Amount = DamageAmount,
 				Type = CombatEventType.Damage,
 				IsCrit = false,
-				Description = "A volatile zone left by the Demon Slime that explodes after a short delay, dealing heavy damage to anyone caught in the blast."
+				Description =
+					"A volatile zone left by the Demon Slime that explodes after a short delay, dealing heavy damage to anyone caught in the blast."
 			});
 		}
 

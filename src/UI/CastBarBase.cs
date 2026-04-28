@@ -31,6 +31,11 @@ public abstract partial class CastBarBase : PanelContainer
 	float _duration;
 	float _remaining;
 	bool  _isCasting;
+	/// <summary>
+	/// When true the bar drains from 1 → 0 (channel / reverse mode) instead of
+	/// filling from 0 → 1 (normal cast). Set by <see cref="StartChannel"/>.
+	/// </summary>
+	bool _isChannel;
 
 	// ── subclass hooks ────────────────────────────────────────────────────────
 
@@ -54,10 +59,12 @@ public abstract partial class CastBarBase : PanelContainer
 
 		_remaining -= (float)delta;
 
-		_bar.Value      = Mathf.Clamp(1f - _remaining / _duration, 0f, 1f);
+		// In channel mode the bar drains 1 → 0; in cast mode it fills 0 → 1.
+		var progress = Mathf.Clamp(1f - _remaining / _duration, 0f, 1f);
+		_bar.Value      = _isChannel ? 1f - progress : progress;
 		_timeLabel.Text = $"{Mathf.Max(0f, _remaining):F1}s";
 
-		OnCastVisualUpdate(Mathf.Clamp(1f - _remaining / _duration, 0f, 1f));
+		OnCastVisualUpdate(progress);
 
 		if (_remaining <= 0f)
 			StopCast();
@@ -107,9 +114,32 @@ public abstract partial class CastBarBase : PanelContainer
 		Visible = true;
 	}
 
+	/// <summary>
+	/// Begin displaying the bar in <em>channel</em> (reverse) mode.
+	/// The bar starts full and drains to empty over <paramref name="duration"/> seconds,
+	/// mirroring the WoW-style channel bar that counts down to zero.
+	/// </summary>
+	public void StartChannel(string spellName, Texture2D icon, float duration)
+	{
+		if (duration <= 0f) return;
+
+		_isChannel = true;
+		_duration  = duration;
+		_remaining = duration;
+		_isCasting = true;
+
+		_iconRect.Texture = icon;
+		_nameLabel.Text   = spellName;
+		_timeLabel.Text   = $"{_remaining:F1}s";
+		_bar.Value        = 1f; // starts full, drains to 0
+
+		Visible = true;
+	}
+
 	public void StopCast()
 	{
 		_isCasting = false;
+		_isChannel = false;
 		Visible    = false;
 	}
 
