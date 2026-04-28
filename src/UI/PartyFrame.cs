@@ -18,6 +18,8 @@ public partial class PartyFrame : CharacterFrame
 	// ── constants ─────────────────────────────────────────────────────────────
 	static readonly Color BorderDefault = new(0.32f, 0.26f, 0.26f);
 	static readonly Color BorderHovered = new(0.90f, 0.80f, 0.20f);
+	static readonly Color FrameTextColor = new(0.90f, 0.87f, 0.83f);
+
 
 	// ── per-member config ─────────────────────────────────────────────────────
 	readonly string _name;
@@ -30,6 +32,7 @@ public partial class PartyFrame : CharacterFrame
 	// ── node refs ─────────────────────────────────────────────────────────────
 	PanelContainer _panel = null!;
 	ProgressBar _healthBar = null!;
+	Label _currentHealthLabel = null!;
 	ProgressBar _shieldBar = null!;
 	StyleBoxFlat _panelStyle = null!;
 
@@ -76,22 +79,40 @@ public partial class PartyFrame : CharacterFrame
 		_healthBar.ShowPercentage = false;
 		_healthBar.MaxValue = _maxHp;
 		_healthBar.Value = _maxHp;
-		_healthBar.MouseFilter = MouseFilterEnum.Ignore;
 		_healthBar.AddThemeStyleboxOverride("background", new StyleBoxFlat { BgColor = new Color(0.16f, 0.13f, 0.13f) });
 		_healthBar.AddThemeStyleboxOverride("fill", new StyleBoxFlat { BgColor = _barColor });
 		_panel.AddChild(_healthBar);
 
+		var textBox = new VBoxContainer();
+		textBox.MouseFilter = MouseFilterEnum.Ignore;
+		_panel.AddChild(textBox);
+
+		var centeringContainer = new CenterContainer();
+		centeringContainer.SizeFlagsVertical = SizeFlags.ExpandFill;
+		centeringContainer.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		textBox.AddChild(centeringContainer);
+
+		var innerVBox = new VBoxContainer();
+		innerVBox.AddThemeConstantOverride("separation", 1);
+		centeringContainer.AddChild(innerVBox);
+
+
 		// ── name label ────────────────────────────────────────────────────────
-		var label = new Label();
-		label.Text = _name;
-		label.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		label.SizeFlagsVertical = SizeFlags.ExpandFill;
-		label.HorizontalAlignment = HorizontalAlignment.Center;
-		label.VerticalAlignment = VerticalAlignment.Center;
-		label.AddThemeFontSizeOverride("font_size", 14);
-		label.AddThemeColorOverride("font_color", new Color(0.90f, 0.87f, 0.83f));
-		label.MouseFilter = MouseFilterEnum.Ignore;
-		_panel.AddChild(label);
+		var nameLabel = GenerateTextLabel(14);
+		nameLabel.Text = _name;
+		nameLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		nameLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		nameLabel.VerticalAlignment = VerticalAlignment.Center;
+		nameLabel.MouseFilter = MouseFilterEnum.Ignore;
+		innerVBox.AddChild(nameLabel);
+
+		// HP label
+		_currentHealthLabel = GenerateTextLabel(10);
+		_currentHealthLabel.Text = $"{_maxHp:F0}/{_maxHp:F0}";
+		_currentHealthLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		_currentHealthLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		_currentHealthLabel.VerticalAlignment = VerticalAlignment.Center;
+		innerVBox.AddChild(_currentHealthLabel);
 
 		// ── shield overlay ────────────────────────────────────────────────────
 		_shieldBar = new ProgressBar();
@@ -150,11 +171,26 @@ public partial class PartyFrame : CharacterFrame
 	{
 		_healthBar.MaxValue = max;
 		_healthBar.Value = current;
+		_currentHealthLabel.Text = $"{current:F0}/{max:F0}";
 	}
 
 	void SetShield(float shield, float maxHp)
 	{
 		_shieldBar.MaxValue = maxHp;
 		_shieldBar.Value = shield;
+	}
+
+	Label GenerateTextLabel(int fontSize)
+	{
+		var label = new Label();
+		label.AddThemeColorOverride("font_color", FrameTextColor);
+		label.MouseFilter = MouseFilterEnum.Ignore;
+		label.AddThemeColorOverride("font_outline_color", Colors.Black);
+		label.AddThemeFontSizeOverride("font_size", fontSize);
+		label.AddThemeConstantOverride("outline_size", 2);
+		label.AddThemeColorOverride("font_shadow_color", Colors.Black);
+		label.AddThemeConstantOverride("shadow_offset_x", 1);
+		label.AddThemeConstantOverride("shadow_offset_y", 1);
+		return label;
 	}
 }

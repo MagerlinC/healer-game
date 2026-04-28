@@ -15,7 +15,8 @@ public partial class BossCrystalDecaySpell : SpellResource
 	public BossCrystalDecaySpell()
 	{
 		Name = "Crystal Decay";
-		Description = "Afflicts the target with crystalline corruption, causing them to lose 10 health per second until cleansed.";
+		Description =
+			"Afflicts the target with crystalline corruption, causing them to take 20 void damage per second until dispelled.";
 		Tags = SpellTags.Damage | SpellTags.Void | SpellTags.Duration;
 		ManaCost = 0f;
 		CastTime = 0f;
