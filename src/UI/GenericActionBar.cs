@@ -128,7 +128,7 @@ public partial class GenericActionBar : HBoxContainer
 
 		// Tooltip.
 		var tooltipText = GameTooltip.FormatSpellTooltip(spell);
-		panel.MouseEntered += () => GameTooltip.Show(tooltipText);
+		panel.MouseEntered += () => GameTooltip.Show(tooltipText.title, tooltipText.desc);
 		panel.MouseExited += () => GameTooltip.Hide();
 
 		return (panel, border, overlay);

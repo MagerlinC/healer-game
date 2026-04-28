@@ -20,219 +20,219 @@ using healerfantasy.Talents;
 /// </summary>
 public partial class TalentSlot : PanelContainer
 {
-    // ── constants ────────────────────────────────────────────────────────────
-    // talent-frames.png: 680×544 → 10 cols × 8 rows → 68×68 per frame.
-    const int   FrameW = 68, FrameH = 68;
-    const float SlotW  = 130f, SlotH = 170f;
-    const float IconAreaSize = 100f;
+	// ── constants ────────────────────────────────────────────────────────────
+	// talent-frames.png: 680×544 → 10 cols × 8 rows → 68×68 per frame.
+	const int FrameW = 68, FrameH = 68;
+	const float SlotW = 130f, SlotH = 170f;
+	const float IconAreaSize = 100f;
 
-    static readonly Color BorderIdle     = new(0.28f, 0.22f, 0.16f);
-    static readonly Color BorderHover    = new(0.70f, 0.58f, 0.30f);
-    static readonly Color BorderSelected = new(0.98f, 0.82f, 0.15f); // bright gold
-    static readonly Color BorderLocked   = new(0.16f, 0.13f, 0.11f); // near-black
+	static readonly Color BorderIdle = new(0.28f, 0.22f, 0.16f);
+	static readonly Color BorderHover = new(0.70f, 0.58f, 0.30f);
+	static readonly Color BorderSelected = new(0.98f, 0.82f, 0.15f); // bright gold
+	static readonly Color BorderLocked = new(0.16f, 0.13f, 0.11f); // near-black
 
-    static readonly Color FrameTintIdle     = new(0.55f, 0.50f, 0.45f, 1f);
-    static readonly Color FrameTintSelected = new(1.00f, 0.90f, 0.55f, 1f);
-    static readonly Color FrameTintLocked   = new(0.30f, 0.27f, 0.24f, 1f);
+	static readonly Color FrameTintIdle = new(0.55f, 0.50f, 0.45f, 1f);
+	static readonly Color FrameTintSelected = new(1.00f, 0.90f, 0.55f, 1f);
+	static readonly Color FrameTintLocked = new(0.30f, 0.27f, 0.24f, 1f);
 
-    static readonly Color DimIdle     = new(0f, 0f, 0f, 0.52f);
-    static readonly Color DimSelected = new(0f, 0f, 0f, 0f);
-    static readonly Color DimLocked   = new(0f, 0f, 0f, 0.78f);
+	static readonly Color DimIdle = new(0f, 0f, 0f, 0.52f);
+	static readonly Color DimSelected = new(0f, 0f, 0f, 0f);
+	static readonly Color DimLocked = new(0f, 0f, 0f, 0.78f);
 
-    // ── public surface ───────────────────────────────────────────────────────
-    public TalentDefinition Definition { get; }
-    public bool             IsSelected { get; private set; }
-    public bool             IsLocked   { get; private set; }
+	// ── public surface ───────────────────────────────────────────────────────
+	public TalentDefinition Definition { get; }
+	public bool IsSelected { get; private set; }
+	public bool IsLocked { get; private set; }
 
-    /// <summary>Raised whenever the user clicks an unlocked slot and its state changes.</summary>
-    public event Action<TalentSlot> Toggled;
+	/// <summary>Raised whenever the user clicks an unlocked slot and its state changes.</summary>
+	public event Action<TalentSlot> Toggled;
 
-    // ── private refs updated at runtime ──────────────────────────────────────
-    StyleBoxFlat _outerStyle;
-    TextureRect  _frameOverlay;
-    ColorRect    _dimOverlay;
+	// ── private refs updated at runtime ──────────────────────────────────────
+	StyleBoxFlat _outerStyle;
+	TextureRect _frameOverlay;
+	ColorRect _dimOverlay;
 
-    // Shared greyscale shader — applied to the icon when the slot is idle.
-    static ShaderMaterial _greyMat;
-    static ShaderMaterial GreyMat => _greyMat ??= MakeGreyMaterial();
+	// Shared greyscale shader — applied to the icon when the slot is idle.
+	static ShaderMaterial _greyMat;
+	static ShaderMaterial GreyMat => _greyMat ??= MakeGreyMaterial();
 
-    // ── constructor ──────────────────────────────────────────────────────────
-    public TalentSlot(TalentDefinition def, bool selected = false)
-    {
-        Definition = def;
-        IsSelected = selected;
-    }
+	// ── constructor ──────────────────────────────────────────────────────────
+	public TalentSlot(TalentDefinition def, bool selected = false)
+	{
+		Definition = def;
+		IsSelected = selected;
+	}
 
-    // ── lifecycle ────────────────────────────────────────────────────────────
-    public override void _Ready()
-    {
-        CustomMinimumSize = new Vector2(SlotW, SlotH);
-        MouseDefaultCursorShape = CursorShape.PointingHand;
+	// ── lifecycle ────────────────────────────────────────────────────────────
+	public override void _Ready()
+	{
+		CustomMinimumSize = new Vector2(SlotW, SlotH);
+		MouseDefaultCursorShape = CursorShape.PointingHand;
 
-        // ── outer card style ────────────────────────────────────────────────
-        _outerStyle = new StyleBoxFlat();
-        _outerStyle.BgColor = new Color(0.09f, 0.07f, 0.07f, 0.97f);
-        _outerStyle.SetCornerRadiusAll(6);
-        _outerStyle.SetBorderWidthAll(2);
-        _outerStyle.BorderColor = BorderIdle;
-        _outerStyle.ContentMarginLeft   = 8f;
-        _outerStyle.ContentMarginRight  = 8f;
-        _outerStyle.ContentMarginTop    = 8f;
-        _outerStyle.ContentMarginBottom = 8f;
-        AddThemeStyleboxOverride("panel", _outerStyle);
+		// ── outer card style ────────────────────────────────────────────────
+		_outerStyle = new StyleBoxFlat();
+		_outerStyle.BgColor = new Color(0.09f, 0.07f, 0.07f, 0.97f);
+		_outerStyle.SetCornerRadiusAll(6);
+		_outerStyle.SetBorderWidthAll(2);
+		_outerStyle.BorderColor = BorderIdle;
+		_outerStyle.ContentMarginLeft = 8f;
+		_outerStyle.ContentMarginRight = 8f;
+		_outerStyle.ContentMarginTop = 8f;
+		_outerStyle.ContentMarginBottom = 8f;
+		AddThemeStyleboxOverride("panel", _outerStyle);
 
-        // ── content layout ──────────────────────────────────────────────────
-        var vbox = new VBoxContainer();
-        vbox.AddThemeConstantOverride("separation", 6);
-        vbox.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        AddChild(vbox);
+		// ── content layout ──────────────────────────────────────────────────
+		var vbox = new VBoxContainer();
+		vbox.AddThemeConstantOverride("separation", 6);
+		vbox.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		AddChild(vbox);
 
-        // ── icon stacking area ──────────────────────────────────────────────
-        var iconArea = new Control();
-        iconArea.CustomMinimumSize = new Vector2(IconAreaSize, IconAreaSize);
-        iconArea.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        vbox.AddChild(iconArea);
+		// ── icon stacking area ──────────────────────────────────────────────
+		var iconArea = new Control();
+		iconArea.CustomMinimumSize = new Vector2(IconAreaSize, IconAreaSize);
+		iconArea.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		vbox.AddChild(iconArea);
 
-        // Layer 1 — monk icon
-        var iconTex = GD.Load<Texture2D>(Definition.IconPath);
-        var iconRect = new TextureRect();
-        iconRect.Texture     = iconTex;
-        iconRect.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
-        iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-        iconRect.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        iconArea.AddChild(iconRect);
+		// Layer 1 — monk icon
+		var iconTex = GD.Load<Texture2D>(Definition.IconPath);
+		var iconRect = new TextureRect();
+		iconRect.Texture = iconTex;
+		iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+		iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+		iconRect.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+		iconArea.AddChild(iconRect);
 
-        // Layer 2 — talent frame sprite (transparent centre, ornate border)
-        var atlas = new AtlasTexture();
-        atlas.Atlas  = GD.Load<Texture2D>("res://assets/frames/talent-frames.png");
-        atlas.Region = new Rect2(0, 0, FrameW, FrameH);
+		// Layer 2 — talent frame sprite (transparent centre, ornate border)
+		var atlas = new AtlasTexture();
+		atlas.Atlas = GD.Load<Texture2D>("res://assets/frames/talent-frames.png");
+		atlas.Region = new Rect2(0, 0, FrameW, FrameH);
 
-        _frameOverlay = new TextureRect();
-        _frameOverlay.Texture     = atlas;
-        _frameOverlay.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
-        _frameOverlay.StretchMode = TextureRect.StretchModeEnum.Scale;
-        _frameOverlay.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        _frameOverlay.MouseFilter = MouseFilterEnum.Ignore;
-        iconArea.AddChild(_frameOverlay);
+		_frameOverlay = new TextureRect();
+		_frameOverlay.Texture = atlas;
+		_frameOverlay.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+		_frameOverlay.StretchMode = TextureRect.StretchModeEnum.Scale;
+		_frameOverlay.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+		_frameOverlay.MouseFilter = MouseFilterEnum.Ignore;
+		iconArea.AddChild(_frameOverlay);
 
-        // Layer 3 — dim overlay (darkens icon when unselected / locked)
-        _dimOverlay = new ColorRect();
-        _dimOverlay.Color       = DimIdle;
-        _dimOverlay.MouseFilter = MouseFilterEnum.Ignore;
-        _dimOverlay.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        iconArea.AddChild(_dimOverlay);
+		// Layer 3 — dim overlay (darkens icon when unselected / locked)
+		_dimOverlay = new ColorRect();
+		_dimOverlay.Color = DimIdle;
+		_dimOverlay.MouseFilter = MouseFilterEnum.Ignore;
+		_dimOverlay.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+		iconArea.AddChild(_dimOverlay);
 
-        // ── name label ──────────────────────────────────────────────────────
-        var nameLabel = new Label();
-        nameLabel.Text                = Definition.Name;
-        nameLabel.HorizontalAlignment = HorizontalAlignment.Center;
-        nameLabel.AutowrapMode        = TextServer.AutowrapMode.WordSmart;
-        nameLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        nameLabel.AddThemeFontSizeOverride("font_size", 12);
-        nameLabel.AddThemeColorOverride("font_color", new Color(0.92f, 0.88f, 0.82f));
-        vbox.AddChild(nameLabel);
+		// ── name label ──────────────────────────────────────────────────────
+		var nameLabel = new Label();
+		nameLabel.Text = Definition.Name;
+		nameLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		nameLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+		nameLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		nameLabel.AddThemeFontSizeOverride("font_size", 12);
+		nameLabel.AddThemeColorOverride("font_color", new Color(0.92f, 0.88f, 0.82f));
+		vbox.AddChild(nameLabel);
 
-        // ── description label ────────────────────────────────────────────────
-        var descLabel = new Label();
-        descLabel.Text                = Definition.Description;
-        descLabel.HorizontalAlignment = HorizontalAlignment.Center;
-        descLabel.AutowrapMode        = TextServer.AutowrapMode.WordSmart;
-        descLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        descLabel.AddThemeFontSizeOverride("font_size", 10);
-        descLabel.AddThemeColorOverride("font_color", new Color(0.60f, 0.56f, 0.50f));
-        vbox.AddChild(descLabel);
+		// ── description label ────────────────────────────────────────────────
+		var descLabel = new Label();
+		descLabel.Text = Definition.Description;
+		descLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		descLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+		descLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		descLabel.AddThemeFontSizeOverride("font_size", 10);
+		descLabel.AddThemeColorOverride("font_color", new Color(0.60f, 0.56f, 0.50f));
+		vbox.AddChild(descLabel);
 
-        // ── apply initial visual state ──────────────────────────────────────
-        ApplyVisuals();
+		// ── apply initial visual state ──────────────────────────────────────
+		ApplyVisuals();
 
-        // ── input events ────────────────────────────────────────────────────
-        MouseEntered += () =>
-        {
-            if (!IsLocked)
-                _outerStyle.BorderColor = IsSelected ? BorderSelected : BorderHover;
+		// ── input events ────────────────────────────────────────────────────
+		MouseEntered += () =>
+		{
+			if (!IsLocked)
+				_outerStyle.BorderColor = IsSelected ? BorderSelected : BorderHover;
 
-            var tip = IsLocked
-                ? $"{Definition.Name}\n{Definition.Description}\n(Locked — select a talent in the row above first)"
-                : $"{Definition.Name}\n{Definition.Description}";
-            GameTooltip.Show(tip);
-        };
-        MouseExited += () =>
-        {
-            if (!IsLocked)
-                _outerStyle.BorderColor = IsSelected ? BorderSelected : BorderIdle;
-            GameTooltip.Hide();
-        };
-        GuiInput += OnGuiInput;
-    }
+			var tip = IsLocked
+				? $"{Definition.Description}\n(Locked — select a talent in the row above first)"
+				: Definition.Description;
+			GameTooltip.Show(Definition.Name, tip);
+		};
+		MouseExited += () =>
+		{
+			if (!IsLocked)
+				_outerStyle.BorderColor = IsSelected ? BorderSelected : BorderIdle;
+			GameTooltip.Hide();
+		};
+		GuiInput += OnGuiInput;
+	}
 
-    // ── public API ───────────────────────────────────────────────────────────
+	// ── public API ───────────────────────────────────────────────────────────
 
-    public void SetSelected(bool selected)
-    {
-        IsSelected = selected;
-        ApplyVisuals();
-    }
+	public void SetSelected(bool selected)
+	{
+		IsSelected = selected;
+		ApplyVisuals();
+	}
 
-    /// <summary>
-    /// Lock or unlock this slot. Locked slots are visually dimmed, cannot be
-    /// clicked, and show the default arrow cursor. Locking a selected slot
-    /// does NOT automatically deselect it — call <see cref="SetSelected"/>
-    /// first if needed (as <see cref="TalentSelector"/> does in ValidateTree).
-    /// </summary>
-    public void SetLocked(bool locked)
-    {
-        IsLocked = locked;
-        MouseDefaultCursorShape = locked ? CursorShape.Arrow : CursorShape.PointingHand;
-        ApplyVisuals();
-    }
+	/// <summary>
+	/// Lock or unlock this slot. Locked slots are visually dimmed, cannot be
+	/// clicked, and show the default arrow cursor. Locking a selected slot
+	/// does NOT automatically deselect it — call <see cref="SetSelected"/>
+	/// first if needed (as <see cref="TalentSelector"/> does in ValidateTree).
+	/// </summary>
+	public void SetLocked(bool locked)
+	{
+		IsLocked = locked;
+		MouseDefaultCursorShape = locked ? CursorShape.Arrow : CursorShape.PointingHand;
+		ApplyVisuals();
+	}
 
-    // ── private ──────────────────────────────────────────────────────────────
-    void OnGuiInput(InputEvent @event)
-    {
-        if (IsLocked) return; // locked slots ignore all input
+	// ── private ──────────────────────────────────────────────────────────────
+	void OnGuiInput(InputEvent @event)
+	{
+		if (IsLocked) return; // locked slots ignore all input
 
-        if (@event is InputEventMouseButton mb
-            && mb.ButtonIndex == MouseButton.Left
-            && mb.Pressed)
-        {
-            SetSelected(!IsSelected);
-            Toggled?.Invoke(this);
-            AcceptEvent();
-        }
-    }
+		if (@event is InputEventMouseButton mb
+		    && mb.ButtonIndex == MouseButton.Left
+		    && mb.Pressed)
+		{
+			SetSelected(!IsSelected);
+			Toggled?.Invoke(this);
+			AcceptEvent();
+		}
+	}
 
-    void ApplyVisuals()
-    {
-        if (_outerStyle   == null) return; // called before _Ready — skip
-        if (_frameOverlay == null) return;
-        if (_dimOverlay   == null) return;
+	void ApplyVisuals()
+	{
+		if (_outerStyle == null) return; // called before _Ready — skip
+		if (_frameOverlay == null) return;
+		if (_dimOverlay == null) return;
 
-        if (IsLocked)
-        {
-            _outerStyle.BorderColor = BorderLocked;
-            _frameOverlay.Modulate  = FrameTintLocked;
-            _dimOverlay.Color       = DimLocked;
-            return;
-        }
+		if (IsLocked)
+		{
+			_outerStyle.BorderColor = BorderLocked;
+			_frameOverlay.Modulate = FrameTintLocked;
+			_dimOverlay.Color = DimLocked;
+			return;
+		}
 
-        _outerStyle.BorderColor = IsSelected ? BorderSelected : BorderIdle;
-        _frameOverlay.Modulate  = IsSelected ? FrameTintSelected : FrameTintIdle;
-        _dimOverlay.Color       = IsSelected ? DimSelected : DimIdle;
-    }
+		_outerStyle.BorderColor = IsSelected ? BorderSelected : BorderIdle;
+		_frameOverlay.Modulate = IsSelected ? FrameTintSelected : FrameTintIdle;
+		_dimOverlay.Color = IsSelected ? DimSelected : DimIdle;
+	}
 
-    static ShaderMaterial MakeGreyMaterial()
-    {
-        var shader = new Shader();
-        shader.Code = """
-            shader_type canvas_item;
-            void fragment() {
-                vec4 col  = texture(TEXTURE, UV);
-                float grey = dot(col.rgb, vec3(0.299, 0.587, 0.114));
-                COLOR = vec4(vec3(grey * 0.6), col.a);
-            }
-            """;
-        var mat = new ShaderMaterial();
-        mat.Shader = shader;
-        return mat;
-    }
+	static ShaderMaterial MakeGreyMaterial()
+	{
+		var shader = new Shader();
+		shader.Code = """
+		              shader_type canvas_item;
+		              void fragment() {
+		                  vec4 col  = texture(TEXTURE, UV);
+		                  float grey = dot(col.rgb, vec3(0.299, 0.587, 0.114));
+		                  COLOR = vec4(vec3(grey * 0.6), col.a);
+		              }
+		              """;
+		var mat = new ShaderMaterial();
+		mat.Shader = shader;
+		return mat;
+	}
 }

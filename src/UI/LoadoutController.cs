@@ -22,23 +22,23 @@ namespace healerfantasy;
 public abstract partial class LoadoutController : Node2D
 {
 	// ── shared colours ────────────────────────────────────────────────────────
-	protected static readonly Color PanelBg     = new(0.07f, 0.06f, 0.06f, 0.97f);
+	protected static readonly Color PanelBg = new(0.07f, 0.06f, 0.06f, 0.97f);
 	protected static readonly Color PanelBorder = new(0.65f, 0.52f, 0.28f);
-	protected static readonly Color TitleColor  = new(0.95f, 0.84f, 0.50f);
-	protected static readonly Color HintColor   = new(0.45f, 0.42f, 0.38f);
-	protected static readonly Color SepColor    = new(0.50f, 0.40f, 0.22f, 0.55f);
-	protected static readonly Color ArrowColor  = new(0.45f, 0.40f, 0.35f, 0.75f);
+	protected static readonly Color TitleColor = new(0.95f, 0.84f, 0.50f);
+	protected static readonly Color HintColor = new(0.45f, 0.42f, 0.38f);
+	protected static readonly Color SepColor = new(0.50f, 0.40f, 0.22f, 0.55f);
+	protected static readonly Color ArrowColor = new(0.45f, 0.40f, 0.35f, 0.75f);
 
 	// ── spell-card colours ────────────────────────────────────────────────────
-	static readonly Color CardBorderIdle     = new(0.28f, 0.22f, 0.16f);
-	static readonly Color CardBorderHover    = new(0.70f, 0.58f, 0.30f);
+	static readonly Color CardBorderIdle = new(0.28f, 0.22f, 0.16f);
+	static readonly Color CardBorderHover = new(0.70f, 0.58f, 0.30f);
 	static readonly Color CardBorderEquipped = new(0.98f, 0.82f, 0.15f);
-	static readonly Color SlotBorderEmpty    = new(0.22f, 0.18f, 0.14f);
-	static readonly Color SlotBorderFilled   = new(0.60f, 0.48f, 0.22f);
+	static readonly Color SlotBorderEmpty = new(0.22f, 0.18f, 0.14f);
+	static readonly Color SlotBorderFilled = new(0.60f, 0.48f, 0.22f);
 
 	// ── layout constants ──────────────────────────────────────────────────────
-	const float CardW    = 92f;
-	const float CardH    = 116f;
+	const float CardW = 92f;
+	const float CardH = 116f;
 	const float CardIconSz = 64f;
 	protected const float FloorHeight = 780f;
 	protected const string DefaultHint = "Walk up to an object and click it to interact";
@@ -46,19 +46,19 @@ public abstract partial class LoadoutController : Node2D
 	// ── school definitions ────────────────────────────────────────────────────
 	protected static readonly (SpellSchool? School, string Name)[] SpellSchoolTabs =
 	{
-		(null,               "All"),
-		(SpellSchool.Holy,        "Holy"),
-		(SpellSchool.Nature,      "Nature"),
-		(SpellSchool.Void,        "Void"),
+		(null, "All"),
+		(SpellSchool.Holy, "Holy"),
+		(SpellSchool.Nature, "Nature"),
+		(SpellSchool.Void, "Void"),
 		(SpellSchool.Chronomancy, "Chronomancy")
 	};
 
 	protected static readonly (SpellSchool School, string Name, Color Accent)[] TalentSchoolOrder =
 	{
-		(SpellSchool.Generic,     "General",    new Color(0.70f, 0.65f, 0.60f)),
-		(SpellSchool.Holy,        "Holy",        new Color(0.95f, 0.85f, 0.40f)),
-		(SpellSchool.Nature,      "Nature",      new Color(0.40f, 0.80f, 0.35f)),
-		(SpellSchool.Void,        "Void",        new Color(0.65f, 0.35f, 0.85f)),
+		(SpellSchool.Generic, "General", new Color(0.70f, 0.65f, 0.60f)),
+		(SpellSchool.Holy, "Holy", new Color(0.95f, 0.85f, 0.40f)),
+		(SpellSchool.Nature, "Nature", new Color(0.40f, 0.80f, 0.35f)),
+		(SpellSchool.Void, "Void", new Color(0.65f, 0.35f, 0.85f)),
 		(SpellSchool.Chronomancy, "Chronomancy", new Color(0.35f, 0.75f, 0.90f))
 	};
 
@@ -111,9 +111,9 @@ public abstract partial class LoadoutController : Node2D
 		// Scale the root Node2D uniformly so the 1920×1080 world fits the
 		// viewport, then offset it to centre the content (letterbox / pillarbox).
 		// CanvasLayer children ignore this transform and stay full-screen.
-		var vp   = GetViewport().GetVisibleRect().Size;
-		float s  = Mathf.Min(vp.X / RefW, vp.Y / RefH);
-		Scale    = new Vector2(s, s);
+		var vp = GetViewport().GetVisibleRect().Size;
+		var s = Mathf.Min(vp.X / RefW, vp.Y / RefH);
+		Scale = new Vector2(s, s);
 		Position = new Vector2((vp.X - RefW * s) / 2f, (vp.Y - RefH * s) / 2f);
 
 		System.Array.Copy(RunState.Instance.SelectedSpells, _loadout, Player.MaxSpellSlots);
@@ -172,16 +172,16 @@ public abstract partial class LoadoutController : Node2D
 		style.BorderColor = PanelBorder;
 		style.SetCornerRadiusAll(4);
 		style.ContentMarginLeft = style.ContentMarginRight = 10f;
-		style.ContentMarginTop  = style.ContentMarginBottom = 5f;
+		style.ContentMarginTop = style.ContentMarginBottom = 5f;
 
 		var panel = new PanelContainer();
 		panel.AddThemeStyleboxOverride("panel", style);
 		panel.SetAnchorsPreset(Control.LayoutPreset.BottomRight);
 		panel.GrowHorizontal = Control.GrowDirection.Begin;
-		panel.GrowVertical   = Control.GrowDirection.Begin;
-		panel.OffsetRight  = -12f;
+		panel.GrowVertical = Control.GrowDirection.Begin;
+		panel.OffsetRight = -12f;
 		panel.OffsetBottom = -12f;
-		panel.MouseFilter  = Control.MouseFilterEnum.Ignore;
+		panel.MouseFilter = Control.MouseFilterEnum.Ignore;
 
 		_hintLabel = new Label();
 		_hintLabel.Text = DefaultHint;
@@ -200,16 +200,16 @@ public abstract partial class LoadoutController : Node2D
 		hbox.SetAnchorsPreset(Control.LayoutPreset.TopRight);
 		hbox.GrowHorizontal = Control.GrowDirection.Begin;
 		hbox.OffsetRight = -10f;
-		hbox.OffsetTop   = 10f;
+		hbox.OffsetTop = 10f;
 		hbox.AddThemeConstantOverride("separation", 14);
 
 		var menuBtn = new Button();
 		menuBtn.Text = "← Main Menu";
 		menuBtn.Flat = true;
-		menuBtn.CustomMinimumSize       = new Vector2(140f, 44f);
+		menuBtn.CustomMinimumSize = new Vector2(140f, 44f);
 		menuBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
 		menuBtn.AddThemeFontSizeOverride("font_size", 14);
-		menuBtn.AddThemeColorOverride("font_color",       new Color(0.72f, 0.68f, 0.62f));
+		menuBtn.AddThemeColorOverride("font_color", new Color(0.72f, 0.68f, 0.62f));
 		menuBtn.AddThemeColorOverride("font_hover_color", TitleColor);
 		menuBtn.Pressed += OnMainMenuPressed;
 		hbox.AddChild(menuBtn);
@@ -220,8 +220,8 @@ public abstract partial class LoadoutController : Node2D
 	protected virtual void OnMainMenuPressed()
 	{
 		// Finalize any in-progress run as a defeat before leaving.
-		bool runInProgress = RunState.Instance.CompletedDungeons > 0
-		                     || RunState.Instance.CurrentBossIndexInDungeon > 0;
+		var runInProgress = RunState.Instance.CompletedDungeons > 0
+		                    || RunState.Instance.CurrentBossIndexInDungeon > 0;
 		if (runInProgress)
 			RunHistoryStore.FinalizeRun(false);
 
@@ -236,7 +236,7 @@ public abstract partial class LoadoutController : Node2D
 		var indicator = new PlayerLevelIndicator();
 		indicator.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
 		indicator.OffsetLeft = 20f;
-		indicator.OffsetTop  = 10f;
+		indicator.OffsetTop = 10f;
 		indicator.AddThemeFontSizeOverride("font_size", 18);
 		indicator.AddThemeColorOverride("font_color", new Color(0.70f, 0.65f, 0.60f));
 		indicator.MouseFilter = Control.MouseFilterEnum.Ignore;
@@ -252,15 +252,15 @@ public abstract partial class LoadoutController : Node2D
 
 		var dimmer = new ColorRect();
 		dimmer.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		dimmer.Color       = new Color(0f, 0f, 0f, 0.72f);
+		dimmer.Color = new Color(0f, 0f, 0f, 0.72f);
 		dimmer.MouseFilter = Control.MouseFilterEnum.Stop;
 		layer.AddChild(dimmer);
 
 		var margin = new MarginContainer();
 		margin.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		margin.AddThemeConstantOverride("margin_left",   80);
-		margin.AddThemeConstantOverride("margin_right",  80);
-		margin.AddThemeConstantOverride("margin_top",    50);
+		margin.AddThemeConstantOverride("margin_left", 80);
+		margin.AddThemeConstantOverride("margin_right", 80);
+		margin.AddThemeConstantOverride("margin_top", 50);
 		margin.AddThemeConstantOverride("margin_bottom", 50);
 		margin.MouseFilter = Control.MouseFilterEnum.Ignore;
 		layer.AddChild(margin);
@@ -270,13 +270,13 @@ public abstract partial class LoadoutController : Node2D
 		panelStyle.SetCornerRadiusAll(8);
 		panelStyle.SetBorderWidthAll(2);
 		panelStyle.BorderColor = PanelBorder;
-		panelStyle.ContentMarginLeft  = panelStyle.ContentMarginRight  = 20f;
-		panelStyle.ContentMarginTop   = panelStyle.ContentMarginBottom = 16f;
+		panelStyle.ContentMarginLeft = panelStyle.ContentMarginRight = 20f;
+		panelStyle.ContentMarginTop = panelStyle.ContentMarginBottom = 16f;
 
 		var panel = new PanelContainer();
 		panel.AddThemeStyleboxOverride("panel", panelStyle);
 		panel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		panel.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
+		panel.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 		margin.AddChild(panel);
 
 		var vbox = new VBoxContainer();
@@ -299,7 +299,7 @@ public abstract partial class LoadoutController : Node2D
 		closeBtn.Flat = true;
 		closeBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
 		closeBtn.AddThemeFontSizeOverride("font_size", 14);
-		closeBtn.AddThemeColorOverride("font_color",       new Color(0.72f, 0.68f, 0.62f));
+		closeBtn.AddThemeColorOverride("font_color", new Color(0.72f, 0.68f, 0.62f));
 		closeBtn.AddThemeColorOverride("font_hover_color", new Color(0.90f, 0.35f, 0.28f));
 		closeBtn.Pressed += CloseAllPanels;
 		titleBar.AddChild(closeBtn);
@@ -325,14 +325,14 @@ public abstract partial class LoadoutController : Node2D
 		Vector2 scale, float collisionRadius)
 	{
 		var area = new Area2D();
-		area.Position      = position;
+		area.Position = position;
 		area.InputPickable = true;
-		area.Monitoring    = false;
-		area.Monitorable   = false;
+		area.Monitoring = false;
+		area.Monitorable = false;
 
 		var sprite = new Sprite2D();
 		sprite.Texture = GD.Load<Texture2D>(texturePath);
-		sprite.Scale   = scale;
+		sprite.Scale = scale;
 		area.AddChild(sprite);
 
 		var collision = new CollisionShape2D();
@@ -342,10 +342,12 @@ public abstract partial class LoadoutController : Node2D
 		return area;
 	}
 
-	protected static bool IsLeftClick(InputEvent ev) =>
-		ev is InputEventMouseButton mb &&
-		mb.ButtonIndex == MouseButton.Left &&
-		mb.Pressed;
+	protected static bool IsLeftClick(InputEvent ev)
+	{
+		return ev is InputEventMouseButton mb &&
+		       mb.ButtonIndex == MouseButton.Left &&
+		       mb.Pressed;
+	}
 
 	// ══════════════════════════════════════════════════════════════════════════
 	// SPELLBOOK PANE
@@ -354,24 +356,25 @@ public abstract partial class LoadoutController : Node2D
 	Control BuildSpellbookPane()
 	{
 		var margin = new MarginContainer();
-		margin.AddThemeConstantOverride("margin_left",   16);
-		margin.AddThemeConstantOverride("margin_right",  16);
-		margin.AddThemeConstantOverride("margin_top",     8);
-		margin.AddThemeConstantOverride("margin_bottom",  8);
+		margin.AddThemeConstantOverride("margin_left", 16);
+		margin.AddThemeConstantOverride("margin_right", 16);
+		margin.AddThemeConstantOverride("margin_top", 8);
+		margin.AddThemeConstantOverride("margin_bottom", 8);
 
 		var vbox = new VBoxContainer();
 		vbox.AddThemeConstantOverride("separation", 12);
 		margin.AddChild(vbox);
 
 		var libTabs = new TabContainer();
-		libTabs.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
-		libTabs.CustomMinimumSize   = new Vector2(0, 280f);
+		libTabs.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		libTabs.CustomMinimumSize = new Vector2(0, 280f);
 		foreach (var (school, name) in SpellSchoolTabs)
 		{
 			var pane = BuildSpellLibraryPane(school);
 			pane.Name = name;
 			libTabs.AddChild(pane);
 		}
+
 		vbox.AddChild(libTabs);
 
 		AddHSep(vbox);
@@ -393,9 +396,9 @@ public abstract partial class LoadoutController : Node2D
 		scroll.SizeFlagsHorizontal = scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 
 		var margin = new MarginContainer();
-		margin.AddThemeConstantOverride("margin_left",   14);
-		margin.AddThemeConstantOverride("margin_right",  14);
-		margin.AddThemeConstantOverride("margin_top",    14);
+		margin.AddThemeConstantOverride("margin_left", 14);
+		margin.AddThemeConstantOverride("margin_right", 14);
+		margin.AddThemeConstantOverride("margin_top", 14);
 		margin.AddThemeConstantOverride("margin_bottom", 14);
 		margin.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		scroll.AddChild(margin);
@@ -424,13 +427,14 @@ public abstract partial class LoadoutController : Node2D
 		{
 			foreach (var spell in spells) flow.AddChild(BuildSpellCard(spell));
 		}
+
 		return scroll;
 	}
 
 	PanelContainer BuildSpellCard(SpellResource spell)
 	{
 		var panel = new PanelContainer();
-		panel.CustomMinimumSize       = new Vector2(CardW, CardH);
+		panel.CustomMinimumSize = new Vector2(CardW, CardH);
 		panel.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
 
 		var border = new StyleBoxFlat();
@@ -438,8 +442,8 @@ public abstract partial class LoadoutController : Node2D
 		border.SetCornerRadiusAll(5);
 		border.SetBorderWidthAll(2);
 		border.BorderColor = IsEquipped(spell) ? CardBorderEquipped : CardBorderIdle;
-		border.ContentMarginLeft  = border.ContentMarginRight  = 6f;
-		border.ContentMarginTop   = border.ContentMarginBottom = 6f;
+		border.ContentMarginLeft = border.ContentMarginRight = 6f;
+		border.ContentMarginTop = border.ContentMarginBottom = 6f;
 		panel.AddThemeStyleboxOverride("panel", border);
 
 		_libraryCards[spell.Name ?? spell.GetType().Name] = (panel, border);
@@ -450,12 +454,12 @@ public abstract partial class LoadoutController : Node2D
 		panel.AddChild(vbox);
 
 		var iconRect = new TextureRect();
-		iconRect.Texture          = spell.Icon;
+		iconRect.Texture = spell.Icon;
 		iconRect.CustomMinimumSize = new Vector2(CardIconSz, CardIconSz);
-		iconRect.ExpandMode       = TextureRect.ExpandModeEnum.IgnoreSize;
-		iconRect.StretchMode      = TextureRect.StretchModeEnum.KeepAspectCentered;
+		iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+		iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 		iconRect.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		iconRect.MouseFilter      = Control.MouseFilterEnum.Ignore;
+		iconRect.MouseFilter = Control.MouseFilterEnum.Ignore;
 		vbox.AddChild(iconRect);
 
 		var schoolLabel = new Label();
@@ -470,7 +474,7 @@ public abstract partial class LoadoutController : Node2D
 		var nameLabel = new Label();
 		nameLabel.Text = spell.Name ?? "";
 		nameLabel.HorizontalAlignment = HorizontalAlignment.Center;
-		nameLabel.AutowrapMode        = TextServer.AutowrapMode.WordSmart;
+		nameLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 		nameLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		nameLabel.AddThemeFontSizeOverride("font_size", 10);
 		nameLabel.AddThemeColorOverride("font_color", new Color(0.88f, 0.84f, 0.78f));
@@ -479,7 +483,7 @@ public abstract partial class LoadoutController : Node2D
 
 		// Lock overlay
 		var lockOverlay = new ColorRect();
-		lockOverlay.Color       = new Color(0f, 0f, 0f, 0.62f);
+		lockOverlay.Color = new Color(0f, 0f, 0f, 0.62f);
 		lockOverlay.MouseFilter = Control.MouseFilterEnum.Ignore;
 		lockOverlay.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 		panel.AddChild(lockOverlay);
@@ -487,7 +491,7 @@ public abstract partial class LoadoutController : Node2D
 		var lockLabel = new Label();
 		lockLabel.Text = "🔒";
 		lockLabel.HorizontalAlignment = HorizontalAlignment.Center;
-		lockLabel.VerticalAlignment   = VerticalAlignment.Center;
+		lockLabel.VerticalAlignment = VerticalAlignment.Center;
 		lockLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
 		lockLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 		lockLabel.AddThemeFontSizeOverride("font_size", 22);
@@ -499,17 +503,28 @@ public abstract partial class LoadoutController : Node2D
 			overlayList = new List<(ColorRect Overlay, Label Icon)>();
 			_spellLockOverlays[spellKey] = overlayList;
 		}
+
 		overlayList.Add((lockOverlay, lockLabel));
 
 		var locked = IsSpellLocked(spell);
 		lockOverlay.Visible = locked;
-		lockLabel.Visible   = locked;
+		lockLabel.Visible = locked;
 
 		panel.MouseEntered += () =>
 		{
-			if (IsSpellLocked(spell)) { GameTooltip.Show(GetLockedSpellTooltip(spell)); return; }
+			if (IsSpellLocked(spell))
+			{
+				var tooltip = GetLockedSpellTooltip(spell);
+
+				GameTooltip.Show(tooltip.title, tooltip.desc);
+				return;
+			}
+
 			if (!IsEquipped(spell)) border.BorderColor = CardBorderHover;
-			GameTooltip.Show(GameTooltip.FormatSpellTooltip(spell));
+			{
+				var tooltip = GameTooltip.FormatSpellTooltip(spell);
+				GameTooltip.Show(tooltip.title, tooltip.desc);
+			}
 		};
 		panel.MouseExited += () =>
 		{
@@ -536,10 +551,13 @@ public abstract partial class LoadoutController : Node2D
 		return invested < spell.RequiredSchoolPoints;
 	}
 
-	string GetLockedSpellTooltip(SpellResource spell) =>
-		$"{spell.Name}\n{spell.Description}\nRequires {spell.RequiredSchoolPoints} {spell.School} talent point" +
-		$"{(spell.RequiredSchoolPoints > 1 ? "s" : "")} invested.\n" +
-		$"({_talentSlots.Count(s => s.IsSelected && s.Definition.School == spell.School)} / {spell.RequiredSchoolPoints} selected)";
+	(string title, string desc) GetLockedSpellTooltip(SpellResource spell)
+	{
+		return (spell.Name,
+			$"{spell.Description}\nRequires {spell.RequiredSchoolPoints} {spell.School} talent point" +
+			$"{(spell.RequiredSchoolPoints > 1 ? "s" : "")} invested.\n" +
+			$"({_talentSlots.Count(s => s.IsSelected && s.Definition.School == spell.School)} / {spell.RequiredSchoolPoints} selected)");
+	}
 
 	void RefreshSpellLockVisuals()
 	{
@@ -549,15 +567,28 @@ public abstract partial class LoadoutController : Node2D
 			var key = spell.Name ?? spell.GetType().Name;
 			if (!_spellLockOverlays.TryGetValue(key, out var overlayList)) continue;
 			var locked = IsSpellLocked(spell);
-			foreach (var nodes in overlayList) { nodes.Overlay.Visible = locked; nodes.Icon.Visible = locked; }
+			foreach (var nodes in overlayList)
+			{
+				nodes.Overlay.Visible = locked;
+				nodes.Icon.Visible = locked;
+			}
 
 			if (locked && IsEquipped(spell))
 			{
 				var slot = System.Array.FindIndex(_loadout, s => s?.Name == spell.Name);
-				if (slot >= 0) { _loadout[slot] = null; loadoutChanged = true; }
+				if (slot >= 0)
+				{
+					_loadout[slot] = null;
+					loadoutChanged = true;
+				}
 			}
 		}
-		if (loadoutChanged) { RefreshSpellVisuals(); RunState.Instance.SetSpells(_loadout); }
+
+		if (loadoutChanged)
+		{
+			RefreshSpellVisuals();
+			RunState.Instance.SetSpells(_loadout);
+		}
 	}
 
 	Control BuildLoadoutRow()
@@ -588,7 +619,11 @@ public abstract partial class LoadoutController : Node2D
 			slotPanel.MouseEntered += () =>
 			{
 				var s = _loadout[idx];
-				if (s != null) GameTooltip.Show(GameTooltip.FormatSpellTooltip(s));
+				if (s != null)
+				{
+					var tooltip = GameTooltip.FormatSpellTooltip(s);
+					GameTooltip.Show(tooltip.title, tooltip.desc);
+				}
 			};
 			slotPanel.MouseExited += () => GameTooltip.Hide();
 			slotPanel.GuiInput += (ev) =>
@@ -613,7 +648,7 @@ public abstract partial class LoadoutController : Node2D
 	(PanelContainer, StyleBoxFlat, TextureRect) BuildLoadoutSlot(int index)
 	{
 		var panel = new PanelContainer();
-		panel.CustomMinimumSize       = new Vector2(52f, 52f);
+		panel.CustomMinimumSize = new Vector2(52f, 52f);
 		panel.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
 
 		var border = new StyleBoxFlat();
@@ -621,35 +656,35 @@ public abstract partial class LoadoutController : Node2D
 		border.SetCornerRadiusAll(4);
 		border.SetBorderWidthAll(2);
 		border.BorderColor = SlotBorderEmpty;
-		border.ContentMarginLeft  = border.ContentMarginRight  = 3f;
-		border.ContentMarginTop   = border.ContentMarginBottom = 3f;
+		border.ContentMarginLeft = border.ContentMarginRight = 3f;
+		border.ContentMarginTop = border.ContentMarginBottom = 3f;
 		panel.AddThemeStyleboxOverride("panel", border);
 
 		var inner = new Control();
-		inner.MouseFilter        = Control.MouseFilterEnum.Ignore;
+		inner.MouseFilter = Control.MouseFilterEnum.Ignore;
 		inner.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		inner.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
+		inner.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 		panel.AddChild(inner);
 
 		var iconRect = new TextureRect();
-		iconRect.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
+		iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 		iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 		iconRect.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 		iconRect.MouseFilter = Control.MouseFilterEnum.Ignore;
-		iconRect.Visible     = false;
+		iconRect.Visible = false;
 		inner.AddChild(iconRect);
 
 		var keyLabel = new Label();
 		keyLabel.Text = GetKeybindLabel($"spell_{index + 1}");
 		keyLabel.AddThemeFontSizeOverride("font_size", 11);
-		keyLabel.AddThemeColorOverride("font_color",        new Color(1f, 1f, 0.85f));
+		keyLabel.AddThemeColorOverride("font_color", new Color(1f, 1f, 0.85f));
 		keyLabel.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.9f));
 		keyLabel.AddThemeConstantOverride("shadow_offset_x", 1);
 		keyLabel.AddThemeConstantOverride("shadow_offset_y", 1);
 		keyLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.BottomRight);
 		keyLabel.GrowHorizontal = Control.GrowDirection.Begin;
-		keyLabel.GrowVertical   = Control.GrowDirection.Begin;
-		keyLabel.MouseFilter    = Control.MouseFilterEnum.Ignore;
+		keyLabel.GrowVertical = Control.GrowDirection.Begin;
+		keyLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
 		inner.AddChild(keyLabel);
 
 		return (panel, border, iconRect);
@@ -666,6 +701,7 @@ public abstract partial class LoadoutController : Node2D
 			var empty = System.Array.FindIndex(_loadout, s => s == null);
 			if (empty >= 0) _loadout[empty] = spell;
 		}
+
 		RefreshSpellVisuals();
 		RunState.Instance.SetSpells(_loadout);
 		LoadoutPreferences.SaveSpells(_loadout);
@@ -679,8 +715,10 @@ public abstract partial class LoadoutController : Node2D
 		LoadoutPreferences.SaveSpells(_loadout);
 	}
 
-	bool IsEquipped(SpellResource spell) =>
-		System.Array.FindIndex(_loadout, s => s?.Name == spell.Name) >= 0;
+	bool IsEquipped(SpellResource spell)
+	{
+		return System.Array.FindIndex(_loadout, s => s?.Name == spell.Name) >= 0;
+	}
 
 	void RefreshSpellVisuals()
 	{
@@ -689,13 +727,14 @@ public abstract partial class LoadoutController : Node2D
 			var equipped = _loadout.Any(s => s?.Name == name);
 			border.BorderColor = equipped ? CardBorderEquipped : CardBorderIdle;
 		}
+
 		if (_loadoutSlots == null) return;
 		for (var i = 0; i < Player.MaxSpellSlots; i++)
 		{
 			var spell = _loadout[i];
 			var (_, border, iconRect) = _loadoutSlots[i];
-			iconRect.Texture  = spell?.Icon;
-			iconRect.Visible  = spell != null;
+			iconRect.Texture = spell?.Icon;
+			iconRect.Visible = spell != null;
 			border.BorderColor = spell != null ? SlotBorderFilled : SlotBorderEmpty;
 		}
 	}
@@ -707,10 +746,10 @@ public abstract partial class LoadoutController : Node2D
 	Control BuildTalentPane()
 	{
 		var margin = new MarginContainer();
-		margin.AddThemeConstantOverride("margin_left",   16);
-		margin.AddThemeConstantOverride("margin_right",  16);
-		margin.AddThemeConstantOverride("margin_top",     8);
-		margin.AddThemeConstantOverride("margin_bottom",  8);
+		margin.AddThemeConstantOverride("margin_left", 16);
+		margin.AddThemeConstantOverride("margin_right", 16);
+		margin.AddThemeConstantOverride("margin_top", 8);
+		margin.AddThemeConstantOverride("margin_bottom", 8);
 
 		var vbox = new VBoxContainer();
 		vbox.AddThemeConstantOverride("separation", 10);
@@ -740,9 +779,11 @@ public abstract partial class LoadoutController : Node2D
 				vsep.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 				hbox.AddChild(vsep);
 			}
+
 			var (school, name, accent) = TalentSchoolOrder[i];
 			hbox.AddChild(BuildTalentSchoolColumn(school, name, accent));
 		}
+
 		vbox.AddChild(scroll);
 
 		var hint = new Label();
@@ -758,9 +799,9 @@ public abstract partial class LoadoutController : Node2D
 	void UpdateTalentPointsLabel()
 	{
 		if (_talentPointsLabel == null) return;
-		var total    = PlayerProgressStore.TalentPoints;
+		var total = PlayerProgressStore.TalentPoints;
 		var selected = _talentSlots.Count(s => s.IsSelected);
-		var free     = total - selected;
+		var free = total - selected;
 
 		if (total == 0)
 		{
@@ -779,9 +820,9 @@ public abstract partial class LoadoutController : Node2D
 	{
 		var margin = new MarginContainer();
 		margin.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-		margin.AddThemeConstantOverride("margin_left",   20);
-		margin.AddThemeConstantOverride("margin_right",  20);
-		margin.AddThemeConstantOverride("margin_top",    16);
+		margin.AddThemeConstantOverride("margin_left", 20);
+		margin.AddThemeConstantOverride("margin_right", 20);
+		margin.AddThemeConstantOverride("margin_top", 16);
 		margin.AddThemeConstantOverride("margin_bottom", 16);
 
 		var col = new VBoxContainer();
@@ -821,11 +862,11 @@ public abstract partial class LoadoutController : Node2D
 
 		for (var i = 0; i < rowGroups.Count; i++)
 		{
-			var rowGroup  = rowGroups[i];
-			var rowIndex  = rowGroup.Key;
+			var rowGroup = rowGroups[i];
+			var rowIndex = rowGroup.Key;
 
 			var rowBox = new HBoxContainer();
-			rowBox.Alignment          = BoxContainer.AlignmentMode.Center;
+			rowBox.Alignment = BoxContainer.AlignmentMode.Center;
 			rowBox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 			rowBox.AddThemeConstantOverride("separation", 12);
 
@@ -843,6 +884,7 @@ public abstract partial class LoadoutController : Node2D
 
 				rowBox.AddChild(slot);
 			}
+
 			col.AddChild(rowBox);
 
 			if (i < rowGroups.Count - 1)
@@ -856,6 +898,7 @@ public abstract partial class LoadoutController : Node2D
 				col.AddChild(arrow);
 			}
 		}
+
 		return margin;
 	}
 
@@ -873,6 +916,7 @@ public abstract partial class LoadoutController : Node2D
 				return;
 			}
 		}
+
 		ValidateTalentTree(slot.Definition.School);
 		CommitTalentsToRunState();
 		UpdateTalentPointsLabel();
@@ -904,7 +948,7 @@ public abstract partial class LoadoutController : Node2D
 
 	protected void SyncTalentSlotsFromRunState()
 	{
-		var active = new System.Collections.Generic.HashSet<string>(
+		var active = new HashSet<string>(
 			RunState.Instance.SelectedTalentDefs.Select(d => d.Name));
 		foreach (var slot in _talentSlots)
 			slot.SetSelected(active.Contains(slot.Definition.Name));
@@ -941,12 +985,15 @@ public abstract partial class LoadoutController : Node2D
 		return actionName.StartsWith("spell_") ? actionName["spell_".Length..] : actionName;
 	}
 
-	protected static Color SpellSchoolColor(SpellSchool school) => school switch
+	protected static Color SpellSchoolColor(SpellSchool school)
 	{
-		SpellSchool.Holy        => new Color(0.95f, 0.85f, 0.40f),
-		SpellSchool.Nature      => new Color(0.40f, 0.80f, 0.35f),
-		SpellSchool.Void        => new Color(0.65f, 0.35f, 0.85f),
-		SpellSchool.Chronomancy => new Color(0.35f, 0.75f, 0.90f),
-		_                       => new Color(0.70f, 0.65f, 0.60f)
-	};
+		return school switch
+		{
+			SpellSchool.Holy => new Color(0.95f, 0.85f, 0.40f),
+			SpellSchool.Nature => new Color(0.40f, 0.80f, 0.35f),
+			SpellSchool.Void => new Color(0.65f, 0.35f, 0.85f),
+			SpellSchool.Chronomancy => new Color(0.35f, 0.75f, 0.90f),
+			_ => new Color(0.70f, 0.65f, 0.60f)
+		};
+	}
 }

@@ -183,6 +183,11 @@ public partial class GameUI : CanvasLayer
 	/// <summary>Returns the Character whose party frame or boss health bar the cursor is over, or null.</summary>
 	public Character? GetHoveredCharacter()
 	{
+		// World-space Court of Reflections clones take priority over all UI frames.
+		// During the mechanic the health bar is hidden, so this is the only targeting path.
+		var courtTarget = healerfantasy.CourtOfReflectionsRegistry.HoveredTarget;
+		if (courtTarget != null && courtTarget.IsAlive) return courtTarget;
+
 		// Secondary bar hover — prefer secondary boss if alive, else fall back to primary.
 		if (_secondaryBossHealthBar?.IsHovered() == true)
 			return AliveOrFallback(_secondaryBossCharacter, _primaryBossCharacter);

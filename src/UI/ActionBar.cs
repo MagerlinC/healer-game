@@ -264,7 +264,7 @@ public partial class ActionBar : HBoxContainer
 		if (spell != null)
 		{
 			var tooltipText = GameTooltip.FormatSpellTooltip(spell);
-			panel.MouseEntered += () => GameTooltip.Show(tooltipText);
+			panel.MouseEntered += () => GameTooltip.Show(tooltipText.title, tooltipText.desc);
 			panel.MouseExited += () => GameTooltip.Hide();
 		}
 

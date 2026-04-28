@@ -34,7 +34,8 @@ public partial class GameTooltip : CanvasLayer
 
 	// ── private state ─────────────────────────────────────────────────────────
 	PanelContainer _panel = null!;
-	Label _label = null!;
+	Label _descLabel = null!;
+	Label _titleLabel = null!;
 	bool _isShowing;
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
@@ -58,12 +59,21 @@ public partial class GameTooltip : CanvasLayer
 		_panel.Visible = false;
 		AddChild(_panel);
 
-		_label = new Label();
-		_label.AutowrapMode = TextServer.AutowrapMode.Off;
-		_label.MouseFilter = Control.MouseFilterEnum.Ignore;
-		_label.AddThemeFontSizeOverride("font_size", 12);
-		_label.AddThemeColorOverride("font_color", TooltipText);
-		_panel.AddChild(_label);
+		_titleLabel = new Label();
+		_titleLabel.AutowrapMode = TextServer.AutowrapMode.Word;
+		_titleLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+		_titleLabel.AddThemeFontSizeOverride("font_size", 16);
+		_titleLabel.AddThemeColorOverride("font_color", TooltipText);
+
+		_descLabel = new Label();
+		_descLabel.AutowrapMode = TextServer.AutowrapMode.Word;
+		_descLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+		_descLabel.AddThemeFontSizeOverride("font_size", 12);
+		_descLabel.AddThemeColorOverride("font_color", TooltipText);
+
+		_panel.CustomMinimumSize = new Vector2(200, 10);
+		_panel.AddChild(_titleLabel);
+		_panel.AddChild(_descLabel);
 	}
 
 	public override void _Process(double delta)
@@ -75,13 +85,14 @@ public partial class GameTooltip : CanvasLayer
 	// ── public API ────────────────────────────────────────────────────────────
 
 	/// <summary>
-	/// Show the tooltip with <paramref name="text"/> following the cursor.
+	/// Show the tooltip with <paramref name="desc"/> following the cursor.
 	/// Safe to call every frame while hovered — text and position update in place.
 	/// </summary>
-	public static void Show(string text)
+	public static void Show(string title, string desc)
 	{
 		if (Instance is null) return;
-		Instance._label.Text = text;
+		Instance._titleLabel.Text = title;
+		Instance._descLabel.Text = desc;
 		Instance._panel.ResetSize(); // force recompute from label's current minimum size
 		Instance._panel.Visible = true;
 		Instance._isShowing = true;
@@ -100,14 +111,14 @@ public partial class GameTooltip : CanvasLayer
 	/// Formats a consistent multi-line tooltip for a spell card, used by both
 	/// the ActionBar and the SpellbookSelector.
 	/// </summary>
-	public static string FormatSpellTooltip(SpellResource spell)
+	public static (string title, string desc) FormatSpellTooltip(SpellResource spell)
 	{
 		var castInfo = spell.CastTime <= 0f
 			? "Instant"
 			: $"{spell.CastTime:F1}s";
 
-		return
-			$"{spell.Name}\n{spell.Description}\nMana: {(int)spell.ManaCost}\nCast time: {castInfo}\nCooldown: {(spell.Cooldown > 0f ? $"{spell.Cooldown:F1}s" : "None")}";
+		return (spell.Name,
+			$"{spell.Description}\nMana: {(int)spell.ManaCost}\nCast time: {castInfo}\nCooldown: {(spell.Cooldown > 0f ? $"{spell.Cooldown:F1}s" : "None")}");
 	}
 
 	// ── private ───────────────────────────────────────────────────────────────

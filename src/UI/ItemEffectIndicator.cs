@@ -17,79 +17,73 @@ using Godot;
 /// </summary>
 public partial class ItemEffectIndicator : PanelContainer
 {
-    // ── public ────────────────────────────────────────────────────────────────
-    public string EffectId { get; }
+	// ── public ────────────────────────────────────────────────────────────────
+	public string EffectId { get; }
 
-    // ── private ───────────────────────────────────────────────────────────────
-    readonly string _displayName;
-    readonly string _description;
-    bool _hovered;
+	// ── private ───────────────────────────────────────────────────────────────
+	readonly string _displayName;
+	readonly string _description;
+	bool _hovered;
 
-    // Gold/legendary colour — matches the rarity tier of items that show procs.
-    static readonly Color ItemEffectBorder = new(0.85f, 0.65f, 0.10f, 0.95f);
+	// Gold/legendary colour — matches the rarity tier of items that show procs.
+	static readonly Color ItemEffectBorder = new(0.85f, 0.65f, 0.10f, 0.95f);
 
-    // ── constructor ───────────────────────────────────────────────────────────
-    public ItemEffectIndicator(string effectId, Texture2D? icon, string displayName, string description, int size = 32)
-    {
-        EffectId = effectId;
-        _displayName = displayName;
-        _description = description;
+	// ── constructor ───────────────────────────────────────────────────────────
+	public ItemEffectIndicator(string effectId, Texture2D? icon, string displayName, string description, int size = 32)
+	{
+		EffectId = effectId;
+		_displayName = displayName;
+		_description = description;
 
-        CustomMinimumSize = new Vector2(size, size);
-        MouseFilter = MouseFilterEnum.Stop; // must be non-Ignore to receive mouse events
+		CustomMinimumSize = new Vector2(size, size);
+		MouseFilter = MouseFilterEnum.Stop; // must be non-Ignore to receive mouse events
 
-        // ── badge style ──────────────────────────────────────────────────────
-        var style = new StyleBoxFlat();
-        style.BgColor = new Color(0.10f, 0.10f, 0.10f, 0.85f);
-        style.SetCornerRadiusAll(3);
-        style.SetBorderWidthAll(2); // slightly thicker than spell-effect badges
-        style.BorderColor = ItemEffectBorder;
-        style.ContentMarginLeft = 1f;
-        style.ContentMarginRight = 1f;
-        style.ContentMarginTop = 1f;
-        style.ContentMarginBottom = 1f;
-        AddThemeStyleboxOverride("panel", style);
+		// ── badge style ──────────────────────────────────────────────────────
+		var style = new StyleBoxFlat();
+		style.BgColor = new Color(0.10f, 0.10f, 0.10f, 0.85f);
+		style.SetCornerRadiusAll(3);
+		style.SetBorderWidthAll(2); // slightly thicker than spell-effect badges
+		style.BorderColor = ItemEffectBorder;
+		style.ContentMarginLeft = 1f;
+		style.ContentMarginRight = 1f;
+		style.ContentMarginTop = 1f;
+		style.ContentMarginBottom = 1f;
+		AddThemeStyleboxOverride("panel", style);
 
-        // Stacking layer for icon (no countdown label needed)
-        var inner = new Control();
-        inner.MouseFilter = MouseFilterEnum.Ignore;
-        AddChild(inner);
+		// Stacking layer for icon (no countdown label needed)
+		var inner = new Control();
+		inner.MouseFilter = MouseFilterEnum.Ignore;
+		AddChild(inner);
 
-        if (icon != null)
-        {
-            var iconRect = new TextureRect();
-            iconRect.Texture = icon;
-            iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
-            iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-            iconRect.MouseFilter = MouseFilterEnum.Ignore;
-            iconRect.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-            inner.AddChild(iconRect);
-        }
+		if (icon != null)
+		{
+			var iconRect = new TextureRect();
+			iconRect.Texture = icon;
+			iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+			iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+			iconRect.MouseFilter = MouseFilterEnum.Ignore;
+			iconRect.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+			inner.AddChild(iconRect);
+		}
 
-        // ── tooltip wiring ───────────────────────────────────────────────────
-        MouseEntered += () =>
-        {
-            _hovered = true;
-            GameTooltip.Show(TooltipText());
-        };
-        MouseExited += () =>
-        {
-            _hovered = false;
-            GameTooltip.Hide();
-        };
-    }
+		// ── tooltip wiring ───────────────────────────────────────────────────
+		MouseEntered += () =>
+		{
+			_hovered = true;
+			GameTooltip.Show(_description, _displayName);
+		};
+		MouseExited += () =>
+		{
+			_hovered = false;
+			GameTooltip.Hide();
+		};
+	}
 
-    // ── lifecycle ─────────────────────────────────────────────────────────────
-    public override void _Process(double delta)
-    {
-        if (_hovered)
-            GameTooltip.Show(TooltipText());
-    }
+	// ── lifecycle ─────────────────────────────────────────────────────────────
+	public override void _Process(double delta)
+	{
+		if (_hovered)
+			GameTooltip.Show(_description, _displayName);
+	}
 
-    // ── private ───────────────────────────────────────────────────────────────
-    string TooltipText()
-    {
-        var body = string.IsNullOrEmpty(_description) ? "" : $"\n{_description}";
-        return $"{_displayName}{body}";
-    }
 }

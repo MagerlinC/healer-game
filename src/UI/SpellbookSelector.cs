@@ -362,7 +362,8 @@ public partial class SpellbookSelector : CanvasLayer
 
 		// Header note
 		var note = new Label();
-		note.Text = "These spells are always available and cannot be removed.\nActivate them from the generic action bar (right of the main bar).";
+		note.Text =
+			"These spells are always available and cannot be removed.\nActivate them from the generic action bar (right of the main bar).";
 		note.HorizontalAlignment = HorizontalAlignment.Center;
 		note.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		note.AutowrapMode = TextServer.AutowrapMode.WordSmart;
@@ -441,8 +442,8 @@ public partial class SpellbookSelector : CanvasLayer
 
 		// Tooltip (hover only — no click handler)
 		var tooltipText = GameTooltip.FormatSpellTooltip(spell);
-		panel.MouseEntered += () => GameTooltip.Show(tooltipText);
-		panel.MouseExited  += () => GameTooltip.Hide();
+		panel.MouseEntered += () => GameTooltip.Show(tooltipText.title, tooltipText.desc);
+		panel.MouseExited += () => GameTooltip.Hide();
 
 		return panel;
 	}
@@ -507,7 +508,7 @@ public partial class SpellbookSelector : CanvasLayer
 		{
 			if (!IsEquipped(spell))
 				border.BorderColor = CardBorderHover;
-			GameTooltip.Show(tooltipText);
+			GameTooltip.Show(tooltipText.title, tooltipText.desc);
 		};
 		panel.MouseExited += () =>
 		{
@@ -558,7 +559,11 @@ public partial class SpellbookSelector : CanvasLayer
 			slotPanel.MouseEntered += () =>
 			{
 				var s = _loadout[slotIndex];
-				if (s != null) GameTooltip.Show(GameTooltip.FormatSpellTooltip(s));
+				if (s != null)
+				{
+					var tooltip = GameTooltip.FormatSpellTooltip(s);
+					GameTooltip.Show(tooltip.title, tooltip.desc);
+				}
 			};
 			slotPanel.MouseExited += () => GameTooltip.Hide();
 			slotPanel.GuiInput += (@event) =>

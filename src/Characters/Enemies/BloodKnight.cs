@@ -122,7 +122,7 @@ public partial class BloodKnight : Character
 		AddChild(_riserPlayer);
 
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		_sprite.Scale = new Vector2(0.8f, 0.8f);
+		_sprite.Scale = new Vector2(0.4f, 0.4f);
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");

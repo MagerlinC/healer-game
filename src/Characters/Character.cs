@@ -250,8 +250,10 @@ public abstract partial class Character : CharacterBody2D
 	/// <summary>
 	/// Remove all active effects that are marked as harmful (i.e. debuffs).
 	/// Called by the Dispel spell.
+	/// Virtual so that special targets (e.g. <see cref="CountessClone"/>) can
+	/// intercept the call and trigger mechanic-specific behaviour instead.
 	/// </summary>
-	public void RemoveHarmfulEffects()
+	public virtual void RemoveHarmfulEffects()
 	{
 		var toRemove = new List<string>();
 		foreach (var (id, effect) in _effects)

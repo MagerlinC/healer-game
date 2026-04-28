@@ -90,6 +90,27 @@ public partial class BossHealthBar : CharacterFrame
 
 		base._Ready(); // subscribe effect-badge signals
 
+		// ── Court of Reflections — hide/show this bar during the mechanic ───────
+		// The bar is hidden while the Countess is invisible and her clones are
+		// displayed in world space.  It reappears when the real boss is identified.
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(TheCountess.CourtOfReflectionsStarted),
+			Callable.From(() =>
+			{
+				var expected = _bossNameOverride ?? (RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name);
+				if (expected == GameConstants.CastleBoss2Name)
+					Visible = false;
+			}));
+
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(TheCountess.CourtOfReflectionsEnded),
+			Callable.From(() =>
+			{
+				var expected = _bossNameOverride ?? (RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name);
+				if (expected == GameConstants.CastleBoss2Name)
+					Visible = true;
+			}));
+
 		// ── Sanguine Siphon health-target marker ──────────────────────────────
 		GlobalAutoLoad.SubscribeToSignal(
 			nameof(TheBloodPrince.SanguineHealthTargetSet),

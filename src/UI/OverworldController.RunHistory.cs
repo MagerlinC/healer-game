@@ -539,7 +539,7 @@ public partial class OverworldController
 		if (!isHeader && !isTotal && !string.IsNullOrEmpty(abilityDescription))
 		{
 			abilityCell.MouseFilter = Control.MouseFilterEnum.Stop;
-			abilityCell.MouseEntered += () => GameTooltip.Show($"{ability}\n{abilityDescription}");
+			abilityCell.MouseEntered += () => GameTooltip.Show(ability, abilityDescription);
 			abilityCell.MouseExited += () => GameTooltip.Hide();
 		}
 

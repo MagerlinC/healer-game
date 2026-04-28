@@ -83,7 +83,8 @@ public partial class EffectIndicator : PanelContainer
 		MouseEntered += () =>
 		{
 			_hovered = true;
-			GameTooltip.Show(TooltipText());
+			var tooltip = TooltipText();
+			GameTooltip.Show(tooltip.title, tooltip.desc);
 		};
 		MouseExited += () =>
 		{
@@ -99,7 +100,10 @@ public partial class EffectIndicator : PanelContainer
 
 		// Refresh the live countdown in the tooltip while the mouse is over the badge.
 		if (_hovered)
-			GameTooltip.Show(TooltipText());
+		{
+			var tooltip = TooltipText();
+			GameTooltip.Show(tooltip.title, tooltip.desc);
+		}
 	}
 
 	// ── private helpers ──────────────────────────────────────────────────────
@@ -108,13 +112,13 @@ public partial class EffectIndicator : PanelContainer
 		_countLabel.Text = Mathf.CeilToInt(CharacterEffect.Remaining).ToString();
 	}
 
-	string TooltipText()
+	(string title, string desc) TooltipText()
 	{
 		var description = CharacterEffect.Description;
 		var body = string.IsNullOrEmpty(description)
 			? ""
 			: $"{description}\n";
-		return $"{_displayName}\n{Mathf.CeilToInt(CharacterEffect.Remaining)}s remaining\n{body}";
+		return (_displayName, $"{Mathf.CeilToInt(CharacterEffect.Remaining)}s remaining\n{body}");
 	}
 
 	/// <summary>

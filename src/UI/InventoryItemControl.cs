@@ -81,8 +81,8 @@ public partial class InventoryItemControl : Control
 		}
 
 		MouseEntered += () =>
-			GameTooltip.Show(
-				$"{_item.Name}\n{_item.Rarity}  •  {EquipSlotControl.SlotDisplayName(_item.Slot)}\n\n{_item.Description}");
+			GameTooltip.Show(_item.Name,
+				$"{_item.Rarity}  •  {EquipSlotControl.SlotDisplayName(_item.Slot)}\n\n{_item.Description}");
 		MouseExited += () => GameTooltip.Hide();
 	}
 
