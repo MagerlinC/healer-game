@@ -97,7 +97,7 @@ public partial class TheBloodPrince : Character
 	/// The boss cast bar listens to this to display a reverse (draining) channel bar.
 	/// </summary>
 	[Signal]
-	public delegate void SanguineChannelStartedEventHandler(float duration);
+	public delegate void SanguineChannelStartedEventHandler(BossBloodPrinceSanguineSiphonSpell spell);
 
 	/// <summary>Emitted when the Sanguine Siphon channel ends (naturally or cancelled).</summary>
 	[Signal]
@@ -447,14 +447,14 @@ public partial class TheBloodPrince : Character
 	/// Emits UI signals so the cast bar switches to channel mode and the health bar
 	/// shows the break-threshold marker.
 	/// </summary>
-	public void OnSanguineSiphonChannelStarted(float channelDuration, float healthTargetFraction)
+	public void OnSanguineSiphonChannelStarted(BossBloodPrinceSanguineSiphonSpell spell, float healthTargetFraction)
 	{
 		_isSiphonChanneling = true;
-		EmitSignalSanguineChannelStarted(channelDuration);
+		EmitSignalSanguineChannelStarted(spell);
 		EmitSignalSanguineHealthTargetSet(healthTargetFraction);
 
 		GD.Print($"[BloodPrince] Sanguine Siphon channel started. " +
-		         $"Duration: {channelDuration:F1}s, break at {healthTargetFraction * 100f:F0}% HP.");
+		         $"Duration: {spell.ChannelDuration:F1}s, break at {healthTargetFraction * 100f:F0}% HP.");
 	}
 
 	/// <summary>

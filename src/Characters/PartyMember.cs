@@ -31,6 +31,16 @@ public partial class PartyMember : Character
 	}
 
 	/// <summary>
+	/// Clears the shared boss target. Call alongside <see cref="GlobalAutoLoad.Reset"/>
+	/// on any scene transition so party members don't hold a stale reference to a
+	/// freed boss node from the previous fight.
+	/// </summary>
+	public static void ResetTarget()
+	{
+		LastKnownBossTarget = null;
+	}
+
+	/// <summary>
 	/// Returns the boss the party should focus — the player's last-attacked target
 	/// if that target is still alive, otherwise the first alive boss found.
 	/// </summary>

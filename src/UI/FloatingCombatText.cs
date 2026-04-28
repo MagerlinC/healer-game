@@ -54,8 +54,11 @@ public partial class FloatingCombatText : Label
 			.SetDelay(0.6f);
 
 		// Self-destruct once the animation completes.
-		var timer = GetTree().CreateTimer(1.5f);
-		timer.Timeout += QueueFree;
+		// Use tween.Finished rather than GetTree().CreateTimer so the callback is
+		// automatically cancelled if the node is freed mid-animation (e.g. on a
+		// scene change). SceneTreeTimers are not bound to any node and would fire
+		// on a disposed FCT node 1–1.5 s into the next scene, crashing the game.
+		tween.Finished += QueueFree;
 	}
 
 	// ── colour palette ───────────────────────────────────────────────────────

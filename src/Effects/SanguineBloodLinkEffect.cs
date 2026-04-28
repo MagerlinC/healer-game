@@ -17,42 +17,43 @@ namespace healerfantasy.Effects;
 /// </summary>
 public partial class SanguineBloodLinkEffect : CharacterEffect
 {
-    /// <summary>Health drained from this target per second.</summary>
-    public float LifeLeechPerTick { get; init; } = 20f;
+	/// <summary>Health drained from this target per second.</summary>
+	public float LifeLeechPerTick { get; init; } = 20f;
 
-    /// <summary>The Blood Prince — receives the leeched health on each tick.</summary>
-    public Character Boss { get; init; }
+	/// <summary>The Blood Prince — receives the leeched health on each tick.</summary>
+	public Character Boss { get; init; }
 
-    public SanguineBloodLinkEffect(float duration) : base(duration, 1f)
-    {
-        EffectId = "SanguineBloodLink";
-        School = SpellSchool.Void;
-        IsDispellable = false;
-        IsHarmful = true;
-    }
+	public SanguineBloodLinkEffect(float duration) : base(duration, 1f)
+	{
+		EffectId = "SanguineBloodLink";
+		Icon = Icon;
+		School = SpellSchool.Void;
+		IsDispellable = false;
+		IsHarmful = true;
+	}
 
-    protected override void OnTick(Character target)
-    {
-        if (!target.IsAlive) return;
+	protected override void OnTick(Character target)
+	{
+		if (!target.IsAlive) return;
 
-        target.TakeDamage(LifeLeechPerTick);
-        target.RaiseFloatingCombatText(LifeLeechPerTick, false, (int)School, false);
+		target.TakeDamage(LifeLeechPerTick);
+		target.RaiseFloatingCombatText(LifeLeechPerTick, false, (int)School, false);
 
-        CombatLog.CombatLog.Record(new CombatEventRecord
-        {
-            Timestamp = Time.GetTicksMsec() / 1000.0,
-            SourceName = SourceCharacterName ?? "The Blood Prince",
-            TargetName = target.CharacterName,
-            AbilityName = AbilityName ?? "Sanguine Siphon",
-            Amount = LifeLeechPerTick,
-            Description = Description,
-            Type = CombatEventType.Damage,
-            IsCrit = false
-        });
+		CombatLog.CombatLog.Record(new CombatEventRecord
+		{
+			Timestamp = Time.GetTicksMsec() / 1000.0,
+			SourceName = SourceCharacterName ?? "The Blood Prince",
+			TargetName = target.CharacterName,
+			AbilityName = AbilityName ?? "Sanguine Siphon",
+			Amount = LifeLeechPerTick,
+			Description = Description,
+			Type = CombatEventType.Damage,
+			IsCrit = false
+		});
 
-        if (Boss == null || !GodotObject.IsInstanceValid(Boss) || !Boss.IsAlive) return;
+		if (Boss == null || !IsInstanceValid(Boss) || !Boss.IsAlive) return;
 
-        Boss.Heal(LifeLeechPerTick);
-        Boss.RaiseFloatingCombatText(LifeLeechPerTick, true, (int)School, false);
-    }
+		Boss.Heal(LifeLeechPerTick);
+		Boss.RaiseFloatingCombatText(LifeLeechPerTick, true, (int)School, false);
+	}
 }

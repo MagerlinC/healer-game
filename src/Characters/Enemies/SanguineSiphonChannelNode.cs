@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using healerfantasy;
 using healerfantasy.Effects;
 
 /// <summary>
@@ -29,185 +30,188 @@ using healerfantasy.Effects;
 /// </summary>
 public partial class SanguineSiphonChannelNode : Node2D
 {
-    const string BloodLinkTexturePath = "res://assets/enemies/the-blood-prince/blood-link.png";
+	const string BloodLinkTexturePath = "res://assets/enemies/the-blood-prince/blood-link.png";
 
-    // ── config ────────────────────────────────────────────────────────────────
-    readonly Character _boss;
-    readonly List<Character> _targets;
-    readonly float _channelDuration;
-    readonly float _lifeLeechPerTick;
+	// ── config ────────────────────────────────────────────────────────────────
+	readonly Character _boss;
+	readonly List<Character> _targets;
+	readonly float _channelDuration;
+	readonly float _lifeLeechPerTick;
 
-    // ── runtime ───────────────────────────────────────────────────────────────
-    float _remaining;
-    bool _cancelled;
-    SanguineDrainDebuff _drainDebuff;
-    readonly List<Line2D> _links = new();
+	// ── runtime ───────────────────────────────────────────────────────────────
+	float _remaining;
+	bool _cancelled;
+	SanguineDrainDebuff _drainDebuff;
+	readonly List<Line2D> _links = new();
 
-    // ── callback ──────────────────────────────────────────────────────────────
-    /// <summary>
-    /// Invoked when the channel finishes (naturally or cancelled early).
-    /// Wired by the spell's Apply to call TheBloodPrince.OnSanguineSiphonChannelEnded.
-    /// </summary>
-    public Action OnChannelFinished { get; set; }
+	// ── callback ──────────────────────────────────────────────────────────────
+	/// <summary>
+	/// Invoked when the channel finishes (naturally or cancelled early).
+	/// Wired by the spell's Apply to call TheBloodPrince.OnSanguineSiphonChannelEnded.
+	/// </summary>
+	public Action OnChannelFinished { get; set; }
 
-    // ── ctor ──────────────────────────────────────────────────────────────────
-    public SanguineSiphonChannelNode(
-        Character boss,
-        List<Character> targets,
-        float channelDuration,
-        float lifeLeechPerTick)
-    {
-        _boss = boss;
-        _targets = targets;
-        _channelDuration = channelDuration;
-        _lifeLeechPerTick = lifeLeechPerTick;
-        _remaining = channelDuration;
-    }
+	// ── ctor ──────────────────────────────────────────────────────────────────
+	public SanguineSiphonChannelNode(
+		Character boss,
+		List<Character> targets,
+		float channelDuration,
+		float lifeLeechPerTick)
+	{
+		_boss = boss;
+		_targets = targets;
+		_channelDuration = channelDuration;
+		_lifeLeechPerTick = lifeLeechPerTick;
+		_remaining = channelDuration;
+	}
 
-    // ── lifecycle ─────────────────────────────────────────────────────────────
-    public override void _Ready()
-    {
-        var linkTexture = GD.Load<Texture2D>(BloodLinkTexturePath);
+	// ── lifecycle ─────────────────────────────────────────────────────────────
+	public override void _Ready()
+	{
+		var linkTexture = GD.Load<Texture2D>(BloodLinkTexturePath);
 
-        // Create a blood-link Line2D for every target.
-        foreach (var target in _targets)
-        {
-            var line = new Line2D();
-            line.Width = 6f;
-            line.DefaultColor = new Color(0.75f, 0.05f, 0.05f, 0.85f);
+		// Render the links above all characters so they're never obscured.
+		ZIndex = 10;
 
-            if (linkTexture != null)
-            {
-                line.Texture = linkTexture;
-                line.TextureMode = Line2D.LineTextureMode.Tile;
-                line.TextureRepeat = CanvasItem.TextureRepeatEnum.Enabled;
-            }
+		// Create a blood-link Line2D for every target.
+		foreach (var target in _targets)
+		{
+			var line = new Line2D();
+			line.Width = 60f;
+			line.DefaultColor = new Color(0.75f, 0.05f, 0.05f, 0.85f);
 
-            // Points are in world space because this node sits at the World root
-            // with an identity transform (Position = (0,0), no rotation/scale).
-            line.AddPoint(_boss.GlobalPosition);
-            line.AddPoint(target.GlobalPosition);
-            AddChild(line);
-            _links.Add(line);
-        }
+			if (linkTexture != null)
+			{
+				line.Texture = linkTexture;
+				line.TextureMode = Line2D.LineTextureMode.Tile;
+				line.TextureRepeat = TextureRepeatEnum.Enabled;
+			}
 
-        // Apply the drain debuff to the boss — records its current health and
-        // sets the 10% break threshold.  Must happen BEFORE we read HealthTarget
-        // back in the spell's Apply (which queries the debuff after AddChild).
-        _drainDebuff = new SanguineDrainDebuff(_channelDuration)
-        {
-            AbilityName = "Sanguine Siphon",
-            Description = "Sanguine Siphon is active. Deal enough damage to break the channel.",
-            SourceCharacterName = _boss.CharacterName,
-            OnHealthTargetReached = () => EndChannel(triggeredByDrainDebuff: true)
-        };
-        _boss.ApplyEffect(_drainDebuff);
+			// Line2D points are in the parent node's LOCAL space.
+			// ToLocal() converts global world positions into that space correctly
+			// regardless of any transforms on this node or its ancestors.
+			line.AddPoint(ToLocal(_boss.GlobalPosition));
+			line.AddPoint(ToLocal(target.GlobalPosition));
+			AddChild(line);
+			_links.Add(line);
+		}
 
-        // Apply the blood-link leech debuff to each target.
-        foreach (var target in _targets)
-        {
-            if (!GodotObject.IsInstanceValid(target) || !target.IsAlive) continue;
+		// Apply the drain debuff to the boss — records its current health and
+		// sets the 10% break threshold.  Must happen BEFORE we read HealthTarget
+		// back in the spell's Apply (which queries the debuff after AddChild).
+		_drainDebuff = new SanguineDrainDebuff(_channelDuration)
+		{
+			AbilityName = "Sanguine Siphon",
+			Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/the-blood-prince/sanguine-siphon.png"),
+			Description = "Sanguine Siphon is active. Deal enough damage to break the channel.",
+			SourceCharacterName = _boss.CharacterName,
+			OnHealthTargetReached = () => EndChannel(true)
+		};
+		_boss.ApplyEffect(_drainDebuff);
 
-            target.ApplyEffect(new SanguineBloodLinkEffect(_channelDuration)
-            {
-                LifeLeechPerTick = _lifeLeechPerTick,
-                Boss = _boss,
-                AbilityName = "Sanguine Siphon",
-                Description = $"Linked by blood magic — {_lifeLeechPerTick:F0} health drained per second.",
-                SourceCharacterName = _boss.CharacterName,
-                Icon = null
-            });
-        }
+		// Apply the blood-link leech debuff to each target.
+		foreach (var target in _targets)
+		{
+			if (!IsInstanceValid(target) || !target.IsAlive) continue;
 
-        GD.Print($"[SanguineSiphon] Channel started. Targets: {_targets.Count}, " +
-                 $"duration: {_channelDuration:F1}s, leech/tick: {_lifeLeechPerTick:F0}.");
-    }
+			target.ApplyEffect(new SanguineBloodLinkEffect(_channelDuration)
+			{
+				LifeLeechPerTick = _lifeLeechPerTick,
+				Boss = _boss,
+				AbilityName = "Sanguine Siphon",
+				Description = $"Linked by blood magic — {_lifeLeechPerTick:F0} health drained per second.",
+				SourceCharacterName = _boss.CharacterName,
+				Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/the-blood-prince/sanguine-siphon.png")
+			});
+		}
 
-    public override void _Process(double delta)
-    {
-        if (_cancelled) return;
+		GD.Print($"[SanguineSiphon] Channel started. Targets: {_targets.Count}, " +
+		         $"duration: {_channelDuration:F1}s, leech/tick: {_lifeLeechPerTick:F0}.");
+	}
 
-        // End the channel if the boss died.
-        if (!GodotObject.IsInstanceValid(_boss) || !_boss.IsAlive)
-        {
-            EndChannel(triggeredByDrainDebuff: false);
-            return;
-        }
+	public override void _Process(double delta)
+	{
+		if (_cancelled) return;
 
-        _remaining -= (float)delta;
+		// End the channel if the boss died.
+		if (!IsInstanceValid(_boss) || !_boss.IsAlive)
+		{
+			EndChannel(false);
+			return;
+		}
 
-        // Update line endpoints every frame — characters can move.
-        for (var i = 0; i < _targets.Count; i++)
-        {
-            if (i >= _links.Count) break;
-            var target = _targets[i];
-            var line = _links[i];
+		_remaining -= (float)delta;
 
-            if (!GodotObject.IsInstanceValid(target) || !target.IsAlive)
-            {
-                line.Visible = false;
-                continue;
-            }
+		// Update line endpoints every frame — characters can move.
+		for (var i = 0; i < _targets.Count; i++)
+		{
+			if (i >= _links.Count) break;
+			var target = _targets[i];
+			var line = _links[i];
 
-            line.Visible = true;
-            // Both characters live in the same world space as this node (identity
-            // transform), so GlobalPosition == local position for our points.
-            line.SetPointPosition(0, _boss.GlobalPosition);
-            line.SetPointPosition(1, target.GlobalPosition);
-        }
+			if (!IsInstanceValid(target) || !target.IsAlive)
+			{
+				line.Visible = false;
+				continue;
+			}
 
-        if (_remaining <= 0f)
-            EndChannel(triggeredByDrainDebuff: false);
-    }
+			line.Visible = true;
+			line.SetPointPosition(0, ToLocal(_boss.GlobalPosition));
+			line.SetPointPosition(1, ToLocal(target.GlobalPosition));
+		}
 
-    // ── public helpers ────────────────────────────────────────────────────────
+		if (_remaining <= 0f)
+			EndChannel(false);
+	}
 
-    /// <summary>
-    /// Returns the drain-target health as a fraction of the boss's MaxHealth
-    /// (0 – 1). Safe to call immediately after AddChild (after _Ready runs).
-    /// </summary>
-    public float GetHealthTargetFraction()
-    {
-        if (_drainDebuff == null || _boss == null || _boss.MaxHealth <= 0f) return 0f;
-        return Mathf.Clamp(_drainDebuff.HealthTarget / _boss.MaxHealth, 0f, 1f);
-    }
+	// ── public helpers ────────────────────────────────────────────────────────
 
-    // ── private ───────────────────────────────────────────────────────────────
+	/// <summary>
+	/// Returns the drain-target health as a fraction of the boss's MaxHealth
+	/// (0 – 1). Safe to call immediately after AddChild (after _Ready runs).
+	/// </summary>
+	public float GetHealthTargetFraction()
+	{
+		if (_drainDebuff == null || _boss == null || _boss.MaxHealth <= 0f) return 0f;
+		return Mathf.Clamp(_drainDebuff.HealthTarget / _boss.MaxHealth, 0f, 1f);
+	}
 
-    /// <summary>
-    /// Tears down the channel: removes visuals, removes debuffs, notifies the boss.
-    /// Safe to call multiple times — subsequent calls are no-ops.
-    /// </summary>
-    /// <param name="triggeredByDrainDebuff">
-    /// When <c>true</c> the drain debuff already expired itself; skip the manual
-    /// RemoveEffect call to avoid a double-expiry / recursive loop.
-    /// </param>
-    void EndChannel(bool triggeredByDrainDebuff)
-    {
-        if (_cancelled) return;
-        _cancelled = true;
+	// ── private ───────────────────────────────────────────────────────────────
 
-        GD.Print($"[SanguineSiphon] Channel ended (triggered by drain debuff: {triggeredByDrainDebuff}).");
+	/// <summary>
+	/// Tears down the channel: removes visuals, removes debuffs, notifies the boss.
+	/// Safe to call multiple times — subsequent calls are no-ops.
+	/// </summary>
+	/// <param name="triggeredByDrainDebuff">
+	/// When <c>true</c> the drain debuff already expired itself; skip the manual
+	/// RemoveEffect call to avoid a double-expiry / recursive loop.
+	/// </param>
+	void EndChannel(bool triggeredByDrainDebuff)
+	{
+		if (_cancelled) return;
+		_cancelled = true;
 
-        // Remove blood-link debuffs from all targets.
-        foreach (var target in _targets)
-            if (GodotObject.IsInstanceValid(target))
-                target.RemoveEffect("SanguineBloodLink");
+		GD.Print($"[SanguineSiphon] Channel ended (triggered by drain debuff: {triggeredByDrainDebuff}).");
 
-        // Remove the drain debuff from the boss — but only when the debuff did NOT
-        // trigger this call (if it did, it is already being removed by TickEffects).
-        if (!triggeredByDrainDebuff && GodotObject.IsInstanceValid(_boss))
-            _boss.RemoveEffect("SanguineDrain");
+		// Remove blood-link debuffs from all targets.
+		foreach (var target in _targets)
+			if (IsInstanceValid(target))
+				target.RemoveEffect("SanguineBloodLink");
 
-        // Free all Line2D visuals.
-        foreach (var line in _links)
-            if (GodotObject.IsInstanceValid(line))
-                line.QueueFree();
-        _links.Clear();
+		// Remove the drain debuff from the boss — but only when the debuff did NOT
+		// trigger this call (if it did, it is already being removed by TickEffects).
+		if (!triggeredByDrainDebuff && IsInstanceValid(_boss))
+			_boss.RemoveEffect("SanguineDrain");
 
-        // Notify the boss so it can update the cast bar and health marker.
-        OnChannelFinished?.Invoke();
+		// Free all Line2D visuals.
+		foreach (var line in _links)
+			if (IsInstanceValid(line))
+				line.QueueFree();
+		_links.Clear();
 
-        QueueFree();
-    }
+		// Notify the boss so it can update the cast bar and health marker.
+		OnChannelFinished?.Invoke();
+
+		QueueFree();
+	}
 }

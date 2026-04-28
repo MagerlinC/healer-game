@@ -52,4 +52,15 @@ public static class ParryWindowManager
 		_wasDeflected = false;
 		return result;
 	}
+
+	/// <summary>
+	/// Resets all parry state. Call alongside <see cref="GlobalAutoLoad.Reset"/>
+	/// on scene transitions so a fight that ended mid-windup doesn't leave
+	/// <see cref="IsOpen"/> set for the next fight.
+	/// </summary>
+	public static void Reset()
+	{
+		IsOpen        = false;
+		_wasDeflected = false;
+	}
 }
