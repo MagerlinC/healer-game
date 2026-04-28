@@ -32,7 +32,7 @@ public partial class FlyingSkull : Character
 {
 	public FlyingSkull()
 	{
-		MaxHealth = 2500f;
+		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.ForsakenCitadelTier][2];
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────

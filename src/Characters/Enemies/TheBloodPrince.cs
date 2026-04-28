@@ -72,7 +72,7 @@ public partial class TheBloodPrince : Character
 {
 	public TheBloodPrince()
 	{
-		MaxHealth = 3000f;
+		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.CastleOfBloodTier][2];
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────

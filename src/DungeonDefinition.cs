@@ -42,7 +42,7 @@ public class DungeonDefinition
 		new()
 		{
 			Name = "The Ancient Keep",
-			Tier = 1,
+			Tier = GameConstants.AncientKeepTier,
 			MapPosition = new Vector2(260f, 730f),
 			BossScenePaths = GameConstants.BossScenePaths,
 			ArenaBackgroundPaths = AssetConstants.AncientKeepArenaBackgroundPaths,
@@ -57,7 +57,7 @@ public class DungeonDefinition
 		new()
 		{
 			Name = "The Forsaken Citadel",
-			Tier = 2,
+			Tier = GameConstants.ForsakenCitadelTier,
 			MapPosition = new Vector2(880f, 490f),
 			BossScenePaths = GameConstants.ForsakenCitadelBossScenePaths,
 			ArenaBackgroundPaths = AssetConstants.ForsakenCitadelArenaBackgroundPaths,
@@ -66,13 +66,13 @@ public class DungeonDefinition
 			{
 				GameConstants.ForsakenBoss1Name, // "Flying Demon"
 				GameConstants.ForsakenBoss2Name, // "Mecha Golem"
-				GameConstants.ForsakenBoss3Name  // "Flying Skull"
+				GameConstants.ForsakenBoss3Name // "Flying Skull"
 			}
 		},
 		new()
 		{
 			Name = "Castle of Blood",
-			Tier = 2,
+			Tier = GameConstants.CastleOfBloodTier,
 			MapPosition = new Vector2(880f, 490f),
 			BossScenePaths = GameConstants.CastleOfBloodBossScenePaths,
 			ArenaBackgroundPaths = AssetConstants.CastleOfBloodArenaBackgroundPaths,
@@ -81,13 +81,13 @@ public class DungeonDefinition
 			{
 				GameConstants.CastleBoss1Name, // "Blood Knight"
 				GameConstants.CastleBoss2Name, // "The Countess"
-				GameConstants.CastleBoss3Name  // "The Blood Prince"
+				GameConstants.CastleBoss3Name // "The Blood Prince"
 			}
 		},
 		new()
 		{
 			Name = "The Sanctum of Stars",
-			Tier = 3,
+			Tier = GameConstants.SanctumOfStarsTier,
 			MapPosition = new Vector2(1540f, 240f),
 			BossScenePaths = GameConstants.SanctumBossScenePaths,
 			ArenaBackgroundPaths = AssetConstants.SpaceArenaBackgroundPaths,

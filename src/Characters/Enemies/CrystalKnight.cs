@@ -32,7 +32,7 @@ public partial class CrystalKnight : Character
 {
 	public CrystalKnight()
 	{
-		MaxHealth = 1000f;
+		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.AncientKeepTier][0];
 	}
 	// ── signals ───────────────────────────────────────────────────────────────
 

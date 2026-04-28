@@ -41,7 +41,8 @@ public partial class AstralTwin : Character
 {
 	public AstralTwin()
 	{
-		MaxHealth = 1400f;
+		// Each twin has half the health pool
+		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.SanctumOfStarsTier][1] / 2;
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────

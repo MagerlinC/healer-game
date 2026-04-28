@@ -34,7 +34,7 @@ public partial class BringerOfDeath : Character
 {
 	public BringerOfDeath()
 	{
-		MaxHealth = 1400f;
+		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.AncientKeepTier][1];
 	}
 	// ── signals ───────────────────────────────────────────────────────────────
 

@@ -33,7 +33,7 @@ public partial class DemonSlime : Character
 
 	public DemonSlime()
 	{
-		MaxHealth = 1600f;
+		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.AncientKeepTier][2];
 	}
 
 	[Signal]

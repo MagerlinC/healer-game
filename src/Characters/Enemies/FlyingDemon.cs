@@ -33,7 +33,7 @@ public partial class FlyingDemon : Character
 {
 	public FlyingDemon()
 	{
-		MaxHealth = 1800f;
+		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.ForsakenCitadelTier][0];
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────

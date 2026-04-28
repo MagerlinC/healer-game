@@ -1,4 +1,6 @@
-﻿namespace healerfantasy;
+﻿using System.Collections.Generic;
+
+namespace healerfantasy;
 
 public static class GameConstants
 {
@@ -8,21 +10,25 @@ public static class GameConstants
 	public const string WizardName = "Wizard";
 
 	// ── Boss names — Ancient Keep ─────────────────────────────────────────────
+	public const int AncientKeepTier = 1;
 	public const string Boss1Name = "Crystal Knight";
 	public const string Boss2Name = "Bringer of Death";
 	public const string Boss3Name = "Demon Slime";
 
 	// ── Boss names — Forsaken Citadel ─────────────────────────────────────────
+	public const int ForsakenCitadelTier = 2;
 	public const string ForsakenBoss1Name = "Flying Demon";
 	public const string ForsakenBoss2Name = "Mecha Golem";
 	public const string ForsakenBoss3Name = "Flying Skull";
 
 	// ── Boss names — Castle of Blood ─────────────────────────────────────────
+	public const int CastleOfBloodTier = 2;
 	public const string CastleBoss1Name = "Blood Knight";
 	public const string CastleBoss2Name = "The Countess";
 	public const string CastleBoss3Name = "The Blood Prince";
 
 	// ── Boss names — Sanctum of Stars ─────────────────────────────────────────
+	public const int SanctumOfStarsTier = 3;
 	public const string SanctumBoss1Name = "The Nightborne";
 
 	/// <summary>Primary (Dawn) twin — matches the CharacterName used on that node.</summary>
@@ -31,6 +37,13 @@ public static class GameConstants
 	public const string SanctumBoss3Name = "That Which Swallowed the Stars";
 
 	public const string BossGroupName = "boss";
+
+	public static Dictionary<int, List<int>> BossHealthBaseValuesByDungeonTier = new()
+	{
+		{ 1, new List<int> { 1000, 1200, 1600 } },
+		{ 2, new List<int> { 1800, 2100, 2500 } },
+		{ 3, new List<int> { 2800, 3000, 4000 } }
+	};
 
 	/// <summary>Packed scene paths for the Ancient Keep bosses.</summary>
 	public static readonly string[] BossScenePaths =

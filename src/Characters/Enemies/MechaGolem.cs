@@ -36,7 +36,7 @@ public partial class MechaGolem : Character
 {
 	public MechaGolem()
 	{
-		MaxHealth = 2000f;
+		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.ForsakenCitadelTier][1];
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────

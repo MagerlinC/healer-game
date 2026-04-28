@@ -39,7 +39,7 @@ public partial class BloodKnight : Character
 {
 	public BloodKnight()
 	{
-		MaxHealth = 1500f;
+		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.CastleOfBloodTier][0];
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────

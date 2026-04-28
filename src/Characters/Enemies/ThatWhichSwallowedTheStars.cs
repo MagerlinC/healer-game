@@ -51,7 +51,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 {
 	public ThatWhichSwallowedTheStars()
 	{
-		MaxHealth = 4000f;
+		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.SanctumOfStarsTier][2];
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────

@@ -42,7 +42,7 @@ public partial class TheCountess : Character
 {
 	public TheCountess()
 	{
-		MaxHealth = 2200f;
+		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.CastleOfBloodTier][1];
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────

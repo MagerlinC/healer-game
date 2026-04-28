@@ -36,7 +36,7 @@ public partial class TheNightborne : Character
 {
 	public TheNightborne()
 	{
-		MaxHealth = 2500f;
+		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.SanctumOfStarsTier][0];
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────
