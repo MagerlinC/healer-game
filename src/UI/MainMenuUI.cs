@@ -32,30 +32,46 @@ public partial class MainMenuUI : Node2D
 	static readonly Color BtnHoverBdr = new(0.85f, 0.70f, 0.35f);
 
 	static readonly Color DangerBtnNormalBg = new(0.22f, 0.07f, 0.07f);
-	static readonly Color DangerBtnHoverBg  = new(0.35f, 0.10f, 0.10f);
-	static readonly Color DangerBtnBorder   = new(0.70f, 0.25f, 0.25f);
+	static readonly Color DangerBtnHoverBg = new(0.35f, 0.10f, 0.10f);
+	static readonly Color DangerBtnBorder = new(0.70f, 0.25f, 0.25f);
 	static readonly Color DangerBtnHoverBdr = new(0.95f, 0.35f, 0.35f);
-	static readonly Color DangerTextColor   = new(0.95f, 0.55f, 0.55f);
-	static readonly Color WarningTextColor  = new(0.90f, 0.78f, 0.30f);
+	static readonly Color DangerTextColor = new(0.95f, 0.55f, 0.55f);
+	static readonly Color WarningTextColor = new(0.90f, 0.78f, 0.30f);
 
 	const string KeybindSavePath = "user://keybinds.cfg";
 	const string KeybindSection = "spell_hotkeys";
 
+	const string SettingsSavePath = "user://settings.cfg";
+	const string DisplaySection = "display";
+
+	static readonly (string Label, int W, int H)[] Resolutions =
+	{
+		("1280 × 720", 1280, 720),
+		("1366 × 768", 1366, 768),
+		("1600 × 900", 1600, 900),
+		("1920 × 1080", 1920, 1080),
+		("2560 × 1440", 2560, 1440),
+		("3440 × 1440 (21:9)", 3440, 1440),
+		("3840 × 2160", 3840, 2160)
+	};
+
 	// ── rebind state ──────────────────────────────────────────────────────────
 	string? _actionToRebind;
 	Label? _rebindPromptLabel;
+	OptionButton? _resolutionOptionBtn;
 	readonly Dictionary<string, Label> _keybindLabels = new();
 
 	// ── delete-save confirmation state ────────────────────────────────────────
 	Control? _deleteConfirmRow;
-	Button?  _deleteInitialBtn;
+	Button? _deleteInitialBtn;
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
 	public override void _Ready()
 	{
-		// Apply any previously saved keybinds before building the UI
+		// Apply any previously saved keybinds and display settings before building the UI
 		LoadKeybinds();
+		LoadDisplaySettings();
 
 		var canvas = new CanvasLayer();
 		AddChild(canvas);
@@ -238,6 +254,55 @@ public partial class MainMenuUI : Node2D
 		var sep = new HSeparator();
 		sep.AddThemeColorOverride("color", SepColor);
 		vbox.AddChild(sep);
+
+		// ── Display section ───────────────────────────────────────────────────
+		var displayHeader = new Label();
+		displayHeader.Text = "Display";
+		displayHeader.HorizontalAlignment = HorizontalAlignment.Left;
+		displayHeader.AddThemeFontSizeOverride("font_size", 14);
+		displayHeader.AddThemeColorOverride("font_color", new Color(0.75f, 0.70f, 0.60f));
+		vbox.AddChild(displayHeader);
+
+		var resRow = new HBoxContainer();
+		resRow.AddThemeConstantOverride("separation", 12);
+
+		var resLabel = new Label();
+		resLabel.Text = "Resolution";
+		resLabel.VerticalAlignment = VerticalAlignment.Center;
+		resLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		resLabel.AddThemeFontSizeOverride("font_size", 13);
+		resLabel.AddThemeColorOverride("font_color", new Color(0.80f, 0.76f, 0.70f));
+		resRow.AddChild(resLabel);
+
+		_resolutionOptionBtn = new OptionButton();
+		_resolutionOptionBtn.CustomMinimumSize = new Vector2(160, 32);
+		_resolutionOptionBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+		_resolutionOptionBtn.AddThemeFontSizeOverride("font_size", 13);
+
+		var currentSize = DisplayServer.WindowGetSize();
+		var savedIndex = 3; // default to 1920×1080
+		for (var i = 0; i < Resolutions.Length; i++)
+		{
+			var (label, w, h) = Resolutions[i];
+			_resolutionOptionBtn.AddItem(label, i);
+			if (w == currentSize.X && h == currentSize.Y)
+				savedIndex = i;
+		}
+
+		_resolutionOptionBtn.Selected = savedIndex;
+
+		_resolutionOptionBtn.ItemSelected += (index) =>
+		{
+			var (_, w, h) = Resolutions[index];
+			ApplyResolution(new Vector2I(w, h));
+			SaveDisplaySettings();
+		};
+		resRow.AddChild(_resolutionOptionBtn);
+		vbox.AddChild(resRow);
+
+		var displaySep = new HSeparator();
+		displaySep.AddThemeColorOverride("color", SepColor);
+		vbox.AddChild(displaySep);
 
 		// Rebind prompt label (shared, shown when waiting for a key)
 		_rebindPromptLabel = new Label();
@@ -464,6 +529,41 @@ public partial class MainMenuUI : Node2D
 		}
 	}
 
+	// ── display settings persistence ─────────────────────────────────────────
+
+	static void SaveDisplaySettings()
+	{
+		var cfg = new ConfigFile();
+		var size = DisplayServer.WindowGetSize();
+		cfg.SetValue(DisplaySection, "width", size.X);
+		cfg.SetValue(DisplaySection, "height", size.Y);
+		cfg.Save(SettingsSavePath);
+	}
+
+	static void LoadDisplaySettings()
+	{
+		var cfg = new ConfigFile();
+		if (cfg.Load(SettingsSavePath) != Error.Ok) return;
+		if (!cfg.HasSectionKey(DisplaySection, "width") ||
+		    !cfg.HasSectionKey(DisplaySection, "height")) return;
+
+		var w = (int)cfg.GetValue(DisplaySection, "width");
+		var h = (int)cfg.GetValue(DisplaySection, "height");
+		if (w > 0 && h > 0)
+			ApplyResolution(new Vector2I(w, h));
+	}
+
+	static void ApplyResolution(Vector2I size)
+	{
+		DisplayServer.WindowSetSize(size);
+
+		// Re-centre the window on the screen so it doesn't drift off-screen
+		var screenSize = DisplayServer.ScreenGetSize();
+		var centred = (screenSize - size) / 2;
+		if (centred.X >= 0 && centred.Y >= 0)
+			DisplayServer.WindowSetPosition(centred);
+	}
+
 	// ── helpers ───────────────────────────────────────────────────────────────
 
 	/// <summary>
@@ -512,11 +612,11 @@ public partial class MainMenuUI : Node2D
 		btn.AddThemeColorOverride("font_hover_color", new Color(1f, 0.75f, 0.75f));
 
 		var normal = MakeBtnStyle(DangerBtnNormalBg, DangerBtnBorder);
-		var hover  = MakeBtnStyle(DangerBtnHoverBg,  DangerBtnHoverBdr);
-		btn.AddThemeStyleboxOverride("normal",  normal);
-		btn.AddThemeStyleboxOverride("hover",   hover);
+		var hover = MakeBtnStyle(DangerBtnHoverBg, DangerBtnHoverBdr);
+		btn.AddThemeStyleboxOverride("normal", normal);
+		btn.AddThemeStyleboxOverride("hover", hover);
 		btn.AddThemeStyleboxOverride("pressed", normal);
-		btn.AddThemeStyleboxOverride("focus",   normal);
+		btn.AddThemeStyleboxOverride("focus", normal);
 
 		btn.Pressed += onPressed;
 		return btn;
@@ -528,7 +628,8 @@ public partial class MainMenuUI : Node2D
 		container.AddThemeConstantOverride("separation", 8);
 
 		var warningLabel = new Label();
-		warningLabel.Text = "This will permanently delete all progress, run history,\nand saved loadout preferences. This cannot be undone.";
+		warningLabel.Text =
+			"This will permanently delete all progress, run history,\nand saved loadout preferences. This cannot be undone.";
 		warningLabel.HorizontalAlignment = HorizontalAlignment.Center;
 		warningLabel.AddThemeFontSizeOverride("font_size", 12);
 		warningLabel.AddThemeColorOverride("font_color", WarningTextColor);
