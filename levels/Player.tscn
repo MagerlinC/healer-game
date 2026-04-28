@@ -61,5 +61,3 @@ speed_scale = 0.5
 position = Vector2(0, 4)
 shape = SubResource("CapsuleShape2D_player")
 
-[node name="Camera2D" type="Camera2D" parent="." unique_id=952433771]
-zoom = Vector2(3, 3)

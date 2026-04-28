@@ -37,7 +37,6 @@ public partial class PartyFrames : Control
 		hbox.MouseFilter = MouseFilterEnum.Pass;
 		hbox.AddThemeConstantOverride("separation", 6);
 		hbox.SetAnchorsPreset(LayoutPreset.Center);
-		hbox.Position += new Vector2(0, 250); // push down from centre
 		hbox.GrowHorizontal = GrowDirection.Both;
 		hbox.GrowVertical = GrowDirection.Both;
 		AddChild(hbox);

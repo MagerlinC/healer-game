@@ -53,14 +53,18 @@ public partial class GameUI : CanvasLayer
 		var anchor = _anchor;
 
 		// ── Cast bar ──────────────────────────────────────────────────────────
+		// Anchored at (50%, 87%) — horizontally centred, just below the party
+		// frames and above the action bar.  GrowDirection.Both lets the bar
+		// expand to its natural content height from that point with no hardcoded
+		// pixel offsets for the vertical axis.
 		var castBar = new CastBar();
 		castBar.CustomMinimumSize = new Vector2(280f, 0f);
-		castBar.SetAnchorsPreset(Control.LayoutPreset.Center);
+		castBar.AnchorLeft = castBar.AnchorRight = 0.5f;
+		castBar.AnchorTop = castBar.AnchorBottom = 0.82f;
 		castBar.GrowHorizontal = Control.GrowDirection.Both;
+		castBar.GrowVertical = Control.GrowDirection.Both;
 		castBar.OffsetLeft = -140f;
 		castBar.OffsetRight = 140f;
-		castBar.OffsetTop = 300f;
-		castBar.OffsetBottom = 60f;
 		anchor.AddChild(castBar);
 
 		// ── Mana bar ──────────────────────────────────────────────────────────
@@ -100,12 +104,16 @@ public partial class GameUI : CanvasLayer
 		anchor.AddChild(bossCastBar);
 
 		// ── Party frames ──────────────────────────────────────────────────────
+		// Single-point anchor at (50%, 80%) — fully relative so it scales with
+		// any resolution.  GrowDirection.Both lets the HBox inside expand from
+		// that centre point without needing any hardcoded pixel offsets.
 		_partyFrames = new PartyFrames();
-		_partyFrames.AnchorTop = 0.6f;
-		_partyFrames.AnchorBottom = 0.4f;
 		_partyFrames.AnchorLeft = 0.5f;
 		_partyFrames.AnchorRight = 0.5f;
+		_partyFrames.AnchorTop = 0.75f;
+		_partyFrames.AnchorBottom = 0.75f;
 		_partyFrames.GrowHorizontal = Control.GrowDirection.Both;
+		_partyFrames.GrowVertical = Control.GrowDirection.Both;
 		anchor.AddChild(_partyFrames);
 
 		// ── Combat meters ─────────────────────────────────────────────────────
@@ -185,7 +193,7 @@ public partial class GameUI : CanvasLayer
 	{
 		// World-space Court of Reflections clones take priority over all UI frames.
 		// During the mechanic the health bar is hidden, so this is the only targeting path.
-		var courtTarget = healerfantasy.CourtOfReflectionsRegistry.HoveredTarget;
+		var courtTarget = CourtOfReflectionsRegistry.HoveredTarget;
 		if (courtTarget != null && courtTarget.IsAlive) return courtTarget;
 
 		// Secondary bar hover — prefer secondary boss if alive, else fall back to primary.

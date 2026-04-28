@@ -62,7 +62,7 @@ public partial class World : Node2D
 
 		// Position the boss (or its container) in the arena.
 		if (bossRoot is Node2D bossNode2D)
-			bossNode2D.Position = new Vector2(123f, 120f);
+			bossNode2D.Position = new Vector2(-57f, -20f);
 
 		AddChild(bossRoot);
 
@@ -132,5 +132,38 @@ public partial class World : Node2D
 		// ── Pause menu (Escape key) ────────────────────────────────────────────
 		var pauseMenu = new healerfantasy.UI.PauseMenu();
 		AddChild(pauseMenu);
+
+		// ── Arena bounds ──────────────────────────────────────────────────────
+		// Four invisible StaticBody2D walls at the edges of the camera view.
+		// MoveAndSlide() on the Player will collide with them naturally — no
+		// coordinate clamping needed in Player code.
+		// Half-extents are derived from the viewport size and camera zoom so
+		// the walls are always exactly at the visible edge regardless of resolution.
+		AddArenaBounds();
+	}
+
+	void AddArenaBounds()
+	{
+		var camera = GetNode<Camera2D>("Camera2D");
+		var view   = GetViewport().GetVisibleRect().Size;
+		var hw     = view.X / (2f * camera.Zoom.X); // half-width in world units
+		var hh     = view.Y / (2f * camera.Zoom.Y); // half-height in world units
+
+		// (from, to) pairs for left / right / top / bottom edges
+		(Vector2 A, Vector2 B)[] edges =
+		{
+			(new Vector2(-hw, -hh), new Vector2(-hw,  hh)), // left
+			(new Vector2( hw, -hh), new Vector2( hw,  hh)), // right
+			(new Vector2(-hw, -hh), new Vector2( hw, -hh)), // top
+			(new Vector2(-hw,  hh), new Vector2( hw,  hh)), // bottom
+		};
+
+		foreach (var (a, b) in edges)
+		{
+			var wall  = new StaticBody2D();
+			var shape = new CollisionShape2D { Shape = new SegmentShape2D { A = a, B = b } };
+			wall.AddChild(shape);
+			AddChild(wall);
+		}
 	}
 }
