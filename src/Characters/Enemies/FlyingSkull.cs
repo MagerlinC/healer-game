@@ -21,6 +21,11 @@ using healerfantasy.SpellSystem;
 ///   telegraphed AoE that unleashes a devastating void wail across all party
 ///   members for 65 damage unless the player deflects in time;
 ///   uses the "cast" animation.
+/// • Every <see cref="WavesInterval"/> seconds — Necrotic Waves: after a
+///   1-second cast wind-up, sends <see cref="WaveCount"/> sweeping void-energy
+///   waves across the screen one at a time. Each wave has a small gap the party
+///   must stand in to avoid <see cref="WavesDamage"/> void damage per wave;
+///   uses the "cast" animation.
 ///
 /// Animations use individual PNG frames from:
 ///   res://assets/enemies/flying-skull/{anim}{n}.png
@@ -45,16 +50,31 @@ public partial class FlyingSkull : Character
 
 	// ── tuneable exports ──────────────────────────────────────────────────────
 
-	[Export] public float MeleeInterval = 2.0f;
+	[Export] public float MeleeInterval = 2.5f;
 	[Export] public float ScreechInterval = 5.0f;
 	[Export] public float PoolInterval = 11.0f;
 	[Export] public float WailInterval = 16.0f;
 	[Export] public float WailWindup = 3.5f;
+	[Export] public float WavesInterval = 22.0f;
 
-	[Export] public float MeleeDamage = 50f;
+	[Export] public float MeleeDamage = 40f;
 	[Export] public float ScreechDamage = 38f;
 	[Export] public float PoolPulse = 20f;
 	[Export] public float WailDamage = 65f;
+
+	// ── Necrotic Waves tunables ────────────────────────────────────────────────
+
+	/// <summary>Number of waves fired per cast.</summary>
+	[Export] public int WaveCount = 4;
+
+	/// <summary>Delay in seconds between each successive wave.</summary>
+	[Export] public float WaveDelay = 1.4f;
+
+	/// <summary>Void damage dealt to any party member caught outside the gap.</summary>
+	[Export] public float WavesDamage = 32f;
+
+	/// <summary>Wind-up cast time before the first wave fires.</summary>
+	[Export] public float WavesCastTime = 1.0f;
 
 	// ── internal state ────────────────────────────────────────────────────────
 
@@ -63,11 +83,30 @@ public partial class FlyingSkull : Character
 	float _poolTimer;
 	float _wailTimer;
 	float _wailWindupTimer;
+	float _wavesTimer;
 
 	BossDeathChompSpell _deathChompSpell;
 	BossVoidScreechSpell _voidScreechSpell;
 	BossNecroticPoolSpell _necroticPoolSpell;
 	BossBansheeWailSpell _bansheeWailSpell;
+	BossNecroticWavesSpell _necroticWavesSpell;
+
+	// ── Necrotic Waves sequence state ──────────────────────────────────────────
+
+	/// <summary>True while the Necrotic Waves cast or wave sequence is active.</summary>
+	bool _wavesActive;
+
+	/// <summary>Counts down the initial cast wind-up before the first wave fires.</summary>
+	float _wavesCastTimer;
+
+	/// <summary>Counts down the delay between successive waves.</summary>
+	float _wavesFireTimer;
+
+	/// <summary>How many waves have been spawned so far in the current cast.</summary>
+	int _wavesFired;
+
+	/// <summary>Alternates wave direction each cast (horizontal / vertical).</summary>
+	bool _nextWaveIsHorizontal = true;
 
 	AnimatedSprite2D _sprite;
 	AudioStreamPlayer _riserPlayer;
@@ -77,7 +116,8 @@ public partial class FlyingSkull : Character
 		None,
 		Melee,
 		VoidScreech,
-		NecroticPool
+		NecroticPool,
+		NecroticWaves
 	}
 
 	PendingAttack _pendingAttack;
@@ -99,11 +139,13 @@ public partial class FlyingSkull : Character
 		_screechTimer = ScreechInterval;
 		_poolTimer = PoolInterval;
 		_wailTimer = WailInterval;
+		_wavesTimer = WavesInterval;
 
 		_deathChompSpell = new BossDeathChompSpell { DamageAmount = MeleeDamage };
 		_voidScreechSpell = new BossVoidScreechSpell { DamageAmount = ScreechDamage };
 		_necroticPoolSpell = new BossNecroticPoolSpell { DamagePerPulse = PoolPulse };
 		_bansheeWailSpell = new BossBansheeWailSpell { DamageAmount = WailDamage };
+		_necroticWavesSpell = new BossNecroticWavesSpell();
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
@@ -132,10 +174,15 @@ public partial class FlyingSkull : Character
 			return;
 		}
 
+		// ── Necrotic Waves sequence (runs concurrently with normal attacks) ──────
+		if (_wavesActive)
+			UpdateWavesSequence((float)delta);
+
 		_meleeTimer -= (float)delta;
 		_screechTimer -= (float)delta;
 		_poolTimer -= (float)delta;
 		_wailTimer -= (float)delta;
+		_wavesTimer -= (float)delta;
 
 		if (_pendingAttack != PendingAttack.None) return;
 
@@ -158,6 +205,11 @@ public partial class FlyingSkull : Character
 		{
 			_wailTimer = WailInterval;
 			BeginWail();
+		}
+		else if (_wavesTimer <= 0f && !_wavesActive)
+		{
+			_wavesTimer = WavesInterval;
+			BeginNecroticWaves();
 		}
 	}
 
@@ -236,6 +288,115 @@ public partial class FlyingSkull : Character
 		_pendingTarget = null;
 		_pendingAttack = PendingAttack.None;
 		_sprite.Play("idle");
+	}
+
+	// ── Necrotic Waves ────────────────────────────────────────────────────────
+
+	void BeginNecroticWaves()
+	{
+		_wavesActive = true;
+		_wavesCastTimer = WavesCastTime;
+		_wavesFireTimer = 0f;
+		_wavesFired = 0;
+
+		// Show a cast-bar for the wind-up phase.
+		EmitSignalCastWindupStarted(_necroticWavesSpell.Name, _necroticWavesSpell.Icon, WavesCastTime);
+
+		_sprite.Play("cast");
+	}
+
+	/// <summary>
+	/// Drives the Necrotic Waves sequence each frame while <see cref="_wavesActive"/>.
+	/// Phase 1: wait for the cast wind-up to expire.
+	/// Phase 2: fire waves at <see cref="WaveDelay"/> intervals until all <see cref="WaveCount"/> are out.
+	/// </summary>
+	void UpdateWavesSequence(float delta)
+	{
+		if (_wavesCastTimer > 0f)
+		{
+			_wavesCastTimer -= delta;
+			if (_wavesCastTimer <= 0f)
+			{
+				// Cast time finished — signal the UI and fire the first wave immediately.
+				EmitSignalCastWindupEnded();
+				_wavesFireTimer = 0f;
+			}
+
+			return;
+		}
+
+		_wavesFireTimer -= delta;
+		if (_wavesFireTimer > 0f) return;
+
+		if (_wavesFired < WaveCount)
+		{
+			SpawnNextWave();
+			_wavesFired++;
+			_wavesFireTimer = WaveDelay;
+		}
+
+		if (_wavesFired >= WaveCount)
+		{
+			// All waves fired — end the sequence.
+			_wavesActive = false;
+			_wavesFired = 0;
+			if (_sprite.Animation == "cast")
+				_sprite.Play("idle");
+		}
+	}
+
+	/// <summary>
+	/// Spawns a single <see cref="NecroticWave"/> node as a sibling of this boss,
+	/// alternating between horizontal (left↔right) and vertical (top↔bottom) sweeps,
+	/// and randomising which edge the wave enters from each time.
+	/// </summary>
+	void SpawnNextWave()
+	{
+		// Convert the screen rect to world-space so gap positions are placed
+		// correctly within the visible arena (mirrors the fix in NecroticWave._Ready).
+		var screenRect    = GetViewportRect();
+		var toWorld       = GetCanvasTransform().AffineInverse();
+		var wTL           = toWorld * screenRect.Position;
+		var wBR           = toWorld * screenRect.End;
+		float worldLeft   = Mathf.Min(wTL.X, wBR.X);
+		float worldRight  = Mathf.Max(wTL.X, wBR.X);
+		float worldTop    = Mathf.Min(wTL.Y, wBR.Y);
+		float worldBottom = Mathf.Max(wTL.Y, wBR.Y);
+		float worldWidth  = worldRight  - worldLeft;
+		float worldHeight = worldBottom - worldTop;
+
+		var wave = new NecroticWave { DamageAmount = WavesDamage };
+
+		if (_nextWaveIsHorizontal)
+		{
+			// Horizontal wave: sweeps left→right or right→left; gap is a Y position.
+			var   ltr    = GD.Randi() % 2 == 0;
+			float margin = NecroticWave.WaveThickness * 2f;
+			float gapY   = worldTop + margin + (float)(GD.Randf() * (worldHeight - margin * 2f));
+
+			wave.Direction = ltr ? NecroticWave.WaveDirection.LeftToRight : NecroticWave.WaveDirection.RightToLeft;
+			wave.GapCenter = gapY;
+		}
+		else
+		{
+			// Vertical wave: sweeps top→bottom or bottom→top; gap is an X position.
+			var   ttb    = GD.Randi() % 2 == 0;
+			float margin = NecroticWave.WaveThickness * 2f;
+			float gapX   = worldLeft + margin + (float)(GD.Randf() * (worldWidth - margin * 2f));
+
+			wave.Direction = ttb ? NecroticWave.WaveDirection.TopToBottom : NecroticWave.WaveDirection.BottomToTop;
+			wave.GapCenter = gapX;
+		}
+
+		_nextWaveIsHorizontal = !_nextWaveIsHorizontal;
+
+		// Render above characters and boss sprites so the wave is never hidden.
+		wave.ZIndex = 1;
+
+		// Position at world origin — _Draw uses world-space coordinates derived
+		// from the canvas transform, so local and world space must match (no offset).
+		wave.GlobalPosition = Vector2.Zero;
+		GetParent().AddChild(wave);
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
