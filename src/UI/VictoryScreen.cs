@@ -56,7 +56,7 @@ public partial class VictoryScreen : CanvasLayer
 				// Award XP.
 				var dungeon = RunState.Instance.CurrentDungeon;
 				var bossIndex = RunState.Instance.CurrentBossIndexInDungeon;
-				var xpReward = bossIndex < dungeon.XpRewards.Length
+				var xpReward = bossIndex < dungeon.XpRewards.Count
 					? dungeon.XpRewards[bossIndex]
 					: 100;
 				var levelsGained = PlayerProgressStore.AddXp(xpReward);
@@ -218,8 +218,8 @@ public partial class VictoryScreen : CanvasLayer
 		if (Visible) return;
 		_audioPlayer.Play();
 		_titleLabel.Text = "TEST COMPLETE";
-		_subLabel.Text   = $"{defeatedBossName} defeated.\n[Dev mode — run state will be reset]";
-		_xpLabel.Text    = BuildXpLine(xpGained, levelsGained);
+		_subLabel.Text = $"{defeatedBossName} defeated.\n[Dev mode — run state will be reset]";
+		_xpLabel.Text = BuildXpLine(xpGained, levelsGained);
 		BuildItemSection(droppedItem);
 
 		ClearButtons();

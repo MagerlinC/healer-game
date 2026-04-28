@@ -45,6 +45,13 @@ public static class GameConstants
 		{ 3, new List<int> { 2800, 3000, 4000 } }
 	};
 
+	public static Dictionary<int, List<int>> XpRewardsByDungeonTier = new()
+	{
+		{ 1, new List<int> { 200, 250, 300 } },
+		{ 2, new List<int> { 350, 400, 450 } },
+		{ 3, new List<int> { 500, 600, 1000 } }
+	};
+
 	/// <summary>Packed scene paths for the Ancient Keep bosses.</summary>
 	public static readonly string[] BossScenePaths =
 	{
@@ -69,8 +76,6 @@ public static class GameConstants
 		"res://levels/TheBloodPrince.tscn"
 	};
 
-	/// <summary>XP rewards for the Castle of Blood bosses.</summary>
-	public static readonly int[] CastleOfBloodXpRewards = { 220, 280, 350 };
 
 	/// <summary>Packed scene paths for the Sanctum of Stars bosses.</summary>
 	public static readonly string[] SanctumBossScenePaths =
@@ -80,14 +85,5 @@ public static class GameConstants
 		"res://levels/ThatWhichSwallowedTheStars.tscn"
 	};
 
-	// ── XP rewards ────────────────────────────────────────────────────────────
 
-	/// <summary>
-	/// XP awarded for defeating each boss, indexed by encounter (0–2).
-	/// Crystal Knight awards more XP to encourage repeated practice runs.
-	/// </summary>
-	public static readonly int[] BossXpRewards = { 200, 100, 150 };
-
-	/// <summary>XP rewards for the harder Sanctum of Stars bosses.</summary>
-	public static readonly int[] SanctumBossXpRewards = { 250, 300, 400 };
 }
