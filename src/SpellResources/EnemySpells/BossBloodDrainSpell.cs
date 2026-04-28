@@ -24,15 +24,20 @@ public partial class BossBloodDrainSpell : SpellResource
 	public BossBloodDrainSpell()
 	{
 		Name = "Blood Drain";
-		Description = "The Blood Knight drains the life-force from a victim, healing himself for the damage dealt. Deflect to interrupt.";
+		Description =
+			"The Blood Knight drains the life-force from a victim, healing himself for the damage dealt. Deflect to interrupt.";
 		Tags = SpellTags.Damage | SpellTags.Duration;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Parryable = true;
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/blood-knight/spells/blood-drain.png");
 		EffectType = EffectType.Harmful;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	public override void Apply(SpellContext ctx)
 	{
