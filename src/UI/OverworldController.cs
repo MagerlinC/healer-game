@@ -58,7 +58,7 @@ public partial class OverworldController : LoadoutController
 		_interactibles.Add(mapItem);
 
 		// ── Run History panel (see OverworldController.RunHistory.cs) ─────────
-		_historyPanel = BuildOverlayPanel("Run History", BuildRunHistoryPane());
+		(_historyPanel, _) = BuildOverlayPanel("Run History", BuildRunHistoryPane());
 		_panels.Add(_historyPanel);
 		AddChild(_historyPanel);
 

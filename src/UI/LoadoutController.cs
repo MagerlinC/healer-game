@@ -71,7 +71,7 @@ public abstract partial class LoadoutController : Node2D
 	readonly List<TalentSlot> _talentSlots = new();
 	readonly Dictionary<SpellSchool, Dictionary<int, List<TalentSlot>>> _talentsBySchoolRow = new();
 
-	Label? _talentPointsLabel;
+	Label? _talentTitleLabel;
 	protected PlayerLevelIndicator? _characterProgressLabel;
 
 	protected OverworldPlayer? _player;
@@ -121,8 +121,8 @@ public abstract partial class LoadoutController : Node2D
 
 		// Build shared spell + talent panels first so SetupScene can wire interactible
 		// click handlers that reference _spellPanel / _talentPanel.
-		_spellPanel = BuildOverlayPanel("Spellbook", BuildSpellbookPane());
-		_talentPanel = BuildOverlayPanel("Talents", BuildTalentPane());
+		(_spellPanel, _) = BuildOverlayPanel("Spellbook", BuildSpellbookPane());
+		(_talentPanel, _talentTitleLabel) = BuildOverlayPanel("Talents", BuildTalentPane());
 		_panels.Add(_spellPanel);
 		_panels.Add(_talentPanel);
 		AddChild(_spellPanel);
@@ -245,7 +245,7 @@ public abstract partial class LoadoutController : Node2D
 
 	// ── overlay panel builder ─────────────────────────────────────────────────
 
-	protected CanvasLayer BuildOverlayPanel(string title, Control content)
+	protected (CanvasLayer Panel, Label TitleLabel) BuildOverlayPanel(string title, Control content)
 	{
 		var layer = new CanvasLayer { Layer = 10 };
 		layer.Visible = false;
@@ -316,7 +316,7 @@ public abstract partial class LoadoutController : Node2D
 			if (ev is InputEventKey kb && kb.Keycode == Key.Escape && kb.Pressed)
 				CloseAllPanels();
 		};
-		return layer;
+		return (layer, titleLabel);
 	}
 
 	// ── interactible factory ──────────────────────────────────────────────────
@@ -755,13 +755,6 @@ public abstract partial class LoadoutController : Node2D
 		vbox.AddThemeConstantOverride("separation", 10);
 		margin.AddChild(vbox);
 
-		_talentPointsLabel = new Label();
-		_talentPointsLabel.HorizontalAlignment = HorizontalAlignment.Center;
-		_talentPointsLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		_talentPointsLabel.AddThemeFontSizeOverride("font_size", 14);
-		UpdateTalentPointsLabel();
-		vbox.AddChild(_talentPointsLabel);
-
 		var scroll = new ScrollContainer();
 		scroll.SizeFlagsHorizontal = scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 
@@ -798,22 +791,10 @@ public abstract partial class LoadoutController : Node2D
 
 	void UpdateTalentPointsLabel()
 	{
-		if (_talentPointsLabel == null) return;
+		if (_talentTitleLabel == null) return;
 		var total = PlayerProgressStore.TalentPoints;
 		var selected = _talentSlots.Count(s => s.IsSelected);
-		var free = total - selected;
-
-		if (total == 0)
-		{
-			_talentPointsLabel.Text = "No talent points yet — defeat a boss to level up and earn your first point!";
-			_talentPointsLabel.AddThemeColorOverride("font_color", HintColor);
-		}
-		else
-		{
-			_talentPointsLabel.Text = $"Talent Points: {free} available  ({selected} / {total} spent)";
-			_talentPointsLabel.AddThemeColorOverride("font_color",
-				free > 0 ? new Color(0.55f, 0.85f, 0.95f) : new Color(0.70f, 0.65f, 0.55f));
-		}
+		_talentTitleLabel.Text = $"Talents ({selected}/{total} allocated)";
 	}
 
 	Control BuildTalentSchoolColumn(SpellSchool school, string colName, Color accent)

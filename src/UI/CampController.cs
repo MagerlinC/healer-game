@@ -41,7 +41,7 @@ public partial class CampController : LoadoutController
 		// ── Armory overlay panel ──────────────────────────────────────────────
 		// Built before the interactibles so the panel reference is ready to wire.
 		_equipmentPane = new EquipmentPane();
-		_armoryPanel = BuildOverlayPanel("Armory", _equipmentPane);
+		(_armoryPanel, _) = BuildOverlayPanel("Armory", _equipmentPane);
 		_panels.Add(_armoryPanel);
 		AddChild(_armoryPanel);
 
