@@ -18,18 +18,19 @@ namespace healerfantasy.Effects;
 public partial class SanguineBloodLinkEffect : CharacterEffect
 {
 	/// <summary>Health drained from this target per second.</summary>
-	public float LifeLeechPerTick { get; init; } = 20f;
+	float LifeLeechPerTick { get; init; } = 0f;
 
 	/// <summary>The Blood Prince — receives the leeched health on each tick.</summary>
 	public Character Boss { get; init; }
 
-	public SanguineBloodLinkEffect(float duration) : base(duration, 1f)
+	public SanguineBloodLinkEffect(float duration, float leechPerTick) : base(duration, 1f)
 	{
 		EffectId = "SanguineBloodLink";
 		Icon = Icon;
 		School = SpellSchool.Void;
 		IsDispellable = false;
 		IsHarmful = true;
+		LifeLeechPerTick = leechPerTick;
 	}
 
 	protected override void OnTick(Character target)

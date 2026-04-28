@@ -114,12 +114,12 @@ public partial class SanguineSiphonChannelNode : Node2D
 		{
 			if (!IsInstanceValid(target) || !target.IsAlive) continue;
 
-			target.ApplyEffect(new SanguineBloodLinkEffect(_channelDuration)
+			target.ApplyEffect(new SanguineBloodLinkEffect(_channelDuration, _lifeLeechPerTick)
 			{
-				LifeLeechPerTick = _lifeLeechPerTick,
 				Boss = _boss,
 				AbilityName = "Sanguine Siphon",
-				Description = $"Linked by blood magic — {_lifeLeechPerTick:F0} health drained per second.",
+				Description =
+					$"Linked by blood magic — {_lifeLeechPerTick:F0} health drained per second until the link is broken by breaking the boss out of channeling.",
 				SourceCharacterName = _boss.CharacterName,
 				Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/the-blood-prince/sanguine-siphon.png")
 			});

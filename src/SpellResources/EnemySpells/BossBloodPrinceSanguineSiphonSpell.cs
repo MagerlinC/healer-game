@@ -41,7 +41,7 @@ public partial class BossBloodPrinceSanguineSiphonSpell : SpellResource
 	// ── tunables ──────────────────────────────────────────────────────────────
 
 	/// <summary>Health drained from each linked target (and given to the boss) per second.</summary>
-	public float LifeLeechedPerTick = 20f;
+	public float LifeLeechedPerTick = 15f;
 
 	/// <summary>How long the channel lasts before ending naturally.</summary>
 	public float ChannelDuration = 8f;
