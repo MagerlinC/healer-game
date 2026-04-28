@@ -18,11 +18,7 @@ namespace healerfantasy.Effects;
 /// </summary>
 public partial class CourtOfReflectionsEffect : CharacterEffect
 {
-	/// <summary>
-	/// Effectively infinite duration — TheCountess removes the effect manually via
-	/// <see cref="Character.RemoveEffect"/> when the mechanic is resolved.
-	/// </summary>
-	const float EffectDuration = 9999f;
+	static readonly float EffectDuration = GameConstants.InfiniteDuration;
 
 	const float TickInterval = 2f;
 
@@ -41,7 +37,7 @@ public partial class CourtOfReflectionsEffect : CharacterEffect
 		AbilityName = "Court of Reflections";
 		Description = "A shifting hex binds you in its web. The longer it lingers, the deeper it burns.";
 		School = SpellSchool.Void;
-
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/the-countess/court-of-reflections.png");
 		// Not dispellable — only resolving the mechanic removes this.
 		IsDispellable = false;
 		IsHarmful = true;

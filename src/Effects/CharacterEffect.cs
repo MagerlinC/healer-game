@@ -157,7 +157,10 @@ public abstract partial class CharacterEffect : RefCounted
 	// ── internal update loop — driven by Character._Process ──────────────────
 	public void Update(Character target, float delta)
 	{
-		Remaining -= delta;
+		if (Remaining != GameConstants.InfiniteDuration)
+		{
+			Remaining -= delta;
+		}
 
 		// Allow subclasses to cut the duration short (e.g. shield fully consumed).
 		if (!IsExpired && ShouldExpireEarly(target))

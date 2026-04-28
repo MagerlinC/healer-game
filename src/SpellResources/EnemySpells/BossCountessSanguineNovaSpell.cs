@@ -29,10 +29,14 @@ public partial class BossCountessSanguineNovaSpell : SpellResource
 		ManaCost = 0f;
 		CastTime = 0f;
 		Parryable = true;
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/the-countess/sanguine-nova.png");
 		EffectType = EffectType.Harmful;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	/// <summary>Hits every alive party member.</summary>
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)

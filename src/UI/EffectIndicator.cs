@@ -61,7 +61,6 @@ public partial class EffectIndicator : PanelContainer
 		_style.ContentMarginTop = 1f;
 		_style.ContentMarginBottom = 1f;
 
-
 		AddThemeStyleboxOverride("panel", _style);
 
 		// Stacking layer for icon + countdown label
@@ -126,16 +125,25 @@ public partial class EffectIndicator : PanelContainer
 	// ── private helpers ──────────────────────────────────────────────────────
 	void UpdateCountLabel()
 	{
+		if (CharacterEffect.Remaining == GameConstants.InfiniteDuration)
+		{
+			_countLabel.Text = "";
+			return;
+		}
+
 		_countLabel.Text = Mathf.CeilToInt(CharacterEffect.Remaining).ToString();
 	}
 
 	(string title, string desc) TooltipText()
 	{
 		var description = CharacterEffect.Description;
+		var durationText = CharacterEffect.Remaining == GameConstants.InfiniteDuration
+			? ""
+			: $"{Mathf.CeilToInt(CharacterEffect.Remaining)}s remaining";
 		var body = string.IsNullOrEmpty(description)
 			? ""
-			: $"{description}\n";
-		return (_displayName, $"{Mathf.CeilToInt(CharacterEffect.Remaining)}s remaining\n{body}");
+			: $"\n{description}";
+		return (_displayName, $"{durationText}{body}");
 	}
 
 	/// <summary>

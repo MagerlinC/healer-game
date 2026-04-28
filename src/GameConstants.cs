@@ -52,6 +52,8 @@ public static class GameConstants
 		{ 3, new List<int> { 500, 600, 1000 } }
 	};
 
+	public static float InfiniteDuration = 999999f;
+
 	/// <summary>Packed scene paths for the Ancient Keep bosses.</summary>
 	public static readonly string[] BossScenePaths =
 	{
@@ -84,6 +86,5 @@ public static class GameConstants
 		"res://levels/AstralTwins.tscn",
 		"res://levels/ThatWhichSwallowedTheStars.tscn"
 	};
-
 
 }
