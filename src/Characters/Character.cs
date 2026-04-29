@@ -452,10 +452,10 @@ public abstract partial class Character : CharacterBody2D
 	void OnDeath()
 	{
 		IsBeingRemoved = true;
-		EmitSignalDied(this);
 		foreach (var effect in _effects.Values)
 			effect.OnExpired(this);
 		_effects.Clear();
+		EmitSignalDied(this);
 	}
 
 	public override void _ExitTree()

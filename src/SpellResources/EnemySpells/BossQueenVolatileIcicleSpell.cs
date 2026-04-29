@@ -37,7 +37,7 @@ public partial class BossQueenVolatileIcicleSpell : SpellResource
 		              "to anyone standing within it.";
 		Tags = SpellTags.Damage;
 		ManaCost = 0f;
-		CastTime = 1.0f;
+		CastTime = 1.5f;
 		EffectType = EffectType.Harmful;
 	}
 

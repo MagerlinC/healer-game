@@ -179,17 +179,22 @@ public partial class ThatWhichSwallowedTheStars : Character
 
 		if (!IsAlive) return;
 
-		if (_memoryGame != null && IsInstanceValid(_memoryGame))
-			return;
-
-		if (_phaseTwoStarted)
+		if (_phaseTwoStarted && (_memoryGame == null || !IsInstanceValid(_memoryGame)))
 		{
 			_memoryGameTimer -= (float)delta;
 			if (_memoryGameTimer <= 0f)
 			{
-				_memoryGameTimer = MemoryGameInterval;
-				BeginMemoryGame();
-				return;
+				if (_cataclysmPhase != CataclysmPhase.None)
+				{
+					// Cataclysm is mid-cast — defer briefly and try again shortly after it ends.
+					_memoryGameTimer = CataclysmHitWindow + 1.0f;
+				}
+				else
+				{
+					_memoryGameTimer = MemoryGameInterval;
+					BeginMemoryGame();
+					return;
+				}
 			}
 		}
 
@@ -334,10 +339,10 @@ public partial class ThatWhichSwallowedTheStars : Character
 		_cataclysmPhase = phase;
 		_cataclysmPhaseTimer = CataclysmHitWindow;
 
-		// Only start the riser on the first hit — subsequent hits are back-to-back
-		// and calling Play() again would restart the stream from the beginning,
-		// causing it to keep playing well past the end of the last parry window.
-		if (phase == CataclysmPhase.Hit1)
+		// Always (re)start the riser at Hit1; for subsequent hits only restart it if the
+		// previous play already finished — this way a long riser flows continuously
+		// across all three windows, and a short one gets a fresh play on each hit.
+		if (phase == CataclysmPhase.Hit1 || !_riserPlayer.Playing)
 			_riserPlayer.Play();
 
 		EmitSignalCastWindupStarted(_cataclysmSpell.Name, _cataclysmSpell.Icon, CataclysmHitWindow);

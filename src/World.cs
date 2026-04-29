@@ -140,6 +140,48 @@ public partial class World : Node2D
 		// Half-extents are derived from the viewport size and camera zoom so
 		// the walls are always exactly at the visible edge regardless of resolution.
 		AddArenaBounds();
+
+		// For the Frozen Peak the background has a prominent circular arena.
+		// A physics ring keeps the player inside the visible circle — tune
+		// GameConstants.FrozenPeakArenaRadius if the ring looks too large or small.
+		if (dungeon.Tier == GameConstants.FrozenPeakTier)
+			AddCircularArenaBound(Vector2.Zero, GameConstants.FrozenPeakArenaFractionX, GameConstants.FrozenPeakArenaFractionY, GameConstants.FrozenPeakArenaCenterOffsetY);
+	}
+
+	/// <summary>
+	/// Adds an elliptical physics boundary centred on <paramref name="center"/> plus
+	/// an optional vertical shift (<paramref name="centerOffsetFractionY"/>).
+	/// <paramref name="fractionX"/> and <paramref name="fractionY"/> are fractions of
+	/// the viewport's world-space half-width and half-height respectively (the same
+	/// values <see cref="AddArenaBounds"/> uses), so the boundary scales correctly
+	/// across resolutions and camera zooms. <paramref name="centerOffsetFractionY"/>
+	/// is a fraction of the total viewport height (positive = downward).
+	/// The ellipse is approximated by <paramref name="segments"/> short
+	/// <see cref="SegmentShape2D"/> walls; <c>MoveAndSlide()</c> handles collision.
+	/// </summary>
+	void AddCircularArenaBound(Vector2 center, float fractionX, float fractionY,
+	                           float centerOffsetFractionY = 0f, int segments = 48)
+	{
+		var camera  = GetNode<Camera2D>("Camera2D");
+		var view    = GetViewport().GetVisibleRect().Size;
+		var radiusX = view.X / (2f * camera.Zoom.X) * fractionX;
+		var radiusY = view.Y / (2f * camera.Zoom.Y) * fractionY;
+
+		// Shift the centre down by a fraction of the total viewport height.
+		var actualCenter = center + new Vector2(0f, view.Y / camera.Zoom.Y * centerOffsetFractionY);
+
+		for (var i = 0; i < segments; i++)
+		{
+			var angleA = Mathf.Tau * i       / segments;
+			var angleB = Mathf.Tau * (i + 1) / segments;
+			var a = actualCenter + new Vector2(Mathf.Cos(angleA) * radiusX, Mathf.Sin(angleA) * radiusY);
+			var b = actualCenter + new Vector2(Mathf.Cos(angleB) * radiusX, Mathf.Sin(angleB) * radiusY);
+
+			var wall  = new StaticBody2D();
+			var shape = new CollisionShape2D { Shape = new SegmentShape2D { A = a, B = b } };
+			wall.AddChild(shape);
+			AddChild(wall);
+		}
 	}
 
 	void AddArenaBounds()

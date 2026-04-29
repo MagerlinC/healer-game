@@ -42,6 +42,7 @@ public static class GameConstants
 
 	public const string FrozenPeakBossName = "Queen of the Frozen Wastes";
 
+
 	public const string BossGroupName = "boss";
 
 	public static Dictionary<int, List<int>> BossHealthBaseValuesByDungeonTier = new()
@@ -94,6 +95,28 @@ public static class GameConstants
 		"res://levels/AstralTwins.tscn",
 		"res://levels/ThatWhichSwallowedTheStars.tscn"
 	};
+
+
+	/// <summary>
+	/// Elliptical arena boundary for the Frozen Peak, expressed as fractions of
+	/// the viewport's world-space half-width (X) and half-height (Y).
+	/// This mirrors how <c>AddArenaBounds</c> computes wall positions, so the
+	/// boundary scales correctly at any resolution or camera zoom.
+	///
+	/// 1.0 = exactly the screen edge. Make X larger than Y for the 2-D perspective
+	/// foreshortening (arena looks wider than it is tall). Tune in-game with
+	/// Debug → Visible Collision Shapes enabled.
+	/// </summary>
+	public const float FrozenPeakArenaFractionX = 0.72f; // horizontal semi-axis 
+
+	public const float FrozenPeakArenaFractionY = 0.60f; // vertical semi-axis 
+
+	/// <summary>
+	/// How far to shift the ellipse centre downward, as a fraction of the
+	/// viewport's total world-space height (0 = screen centre, 1 = bottom edge).
+	/// 0.20 moves the ring down by 20 % of the screen height.
+	/// </summary>
+	public const float FrozenPeakArenaCenterOffsetY = 0.14f;
 
 	/// <summary>Packed scene path for the Frozen Peak — a single final boss encounter.</summary>
 	public static readonly string[] FrozenPeakBossScenePaths =

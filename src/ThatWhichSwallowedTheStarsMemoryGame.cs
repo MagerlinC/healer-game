@@ -41,8 +41,6 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 	const float RecallDelayDuration = 2.0f;
 	const float ReplayDuration = 1.0f;
 	const float ReplayGapDuration = 1.00f;
-	const float ArenaPadding = 64f;
-
 	enum State
 	{
 		Preview,
@@ -130,31 +128,21 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 
 	Rect2 BuildArenaRect()
 	{
-		var min = new Vector2(float.MaxValue, float.MaxValue);
-		var max = new Vector2(float.MinValue, float.MinValue);
-
-		void Include(Vector2 point)
+		var camera = GetViewport().GetCamera2D();
+		if (camera != null)
 		{
-			min.X = Mathf.Min(min.X, point.X);
-			min.Y = Mathf.Min(min.Y, point.Y);
-			max.X = Mathf.Max(max.X, point.X);
-			max.Y = Mathf.Max(max.Y, point.Y);
+			var screenCenter = camera.GetScreenCenterPosition();
+			var viewportSize = GetViewportRect().Size;
+			var worldSize = viewportSize / camera.Zoom;
+			return new Rect2(screenCenter - worldSize / 2f, worldSize);
 		}
 
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character character && character.IsAlive)
-				Include(character.GlobalPosition);
-
-		if (GetParent() is Node2D parent)
-			Include(parent.GlobalPosition);
-
-		if (min.X == float.MaxValue || max.X == float.MinValue)
-			return new Rect2(GlobalPosition - new Vector2(100f, 100f), new Vector2(200f, 200f));
-
-		var center = (min + max) / 2f;
-		var span = max - min;
-		var side = Mathf.Max(span.X, span.Y) + ArenaPadding * 2f;
-		return new Rect2(center - new Vector2(side / 2f, side / 2f), new Vector2(side, side));
+		// Fallback: derive from canvas transform
+		var transform = GetCanvasTransform().AffineInverse();
+		var vpRect = GetViewportRect();
+		var topLeft = transform * vpRect.Position;
+		var bottomRight = transform * vpRect.End;
+		return new Rect2(topLeft, bottomRight - topLeft);
 	}
 
 	void BuildTiles()
