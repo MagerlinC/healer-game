@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b8orcwyl5o884"
-path="res://.godot/imported/icicle.png-325b972a67771a218dc85304ed042e00.ctex"
+uid="uid://cnf8leatm6sev"
+path="res://.godot/imported/burst.png-17579e9cd4d10cd46dc7ebb518eaa3c3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/enemies/queen-of-the-frozen-wastes/icicle.png"
-dest_files=["res://.godot/imported/icicle.png-325b972a67771a218dc85304ed042e00.ctex"]
+source_file="res://assets/enemies/queen-of-the-frozen-wastes/burst.png"
+dest_files=["res://.godot/imported/burst.png-17579e9cd4d10cd46dc7ebb518eaa3c3.ctex"]
 
 [params]
 

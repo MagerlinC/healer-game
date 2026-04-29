@@ -26,6 +26,11 @@ using healerfantasy.SpellSystem;
 /// Intended design: kite the icicle to the arena edge to detonate it safely.
 /// Over time the arena fills with zones, compressing the safe space.
 ///
+/// ── Burst of Winter ──────────────────────────────────────────────────────
+/// 1.5-second cast. On resolution a nova visual expands from the Queen and
+/// every living party member takes moderate frost damage and is knocked
+/// outward to the edges of the arena.
+///
 /// ── Ice Block ────────────────────────────────────────────────────────────
 /// Instant cast. Puts the Queen into her Ice Block state:
 ///   • Sprite changes to the ice-block.png static frame.
@@ -73,12 +78,14 @@ public partial class QueenOfTheFrozenWastes : Character
 
 	// ── tuneable exports ──────────────────────────────────────────────────────
 
-	[Export] public float SnowstormInterval = 20f;
+	[Export] public float SnowstormInterval = 18f;
 	[Export] public float IcicleInterval = 12f;
-	[Export] public float IceBlockInterval = 40f;
+	[Export] public float BurstOfWinterInterval = 26f;
+	[Export] public float IceBlockInterval = 32f;
 
 	[Export] public float SnowstormDamagePerTick = 20f;
 	[Export] public float IcicleDamagePerTick = 15f;
+	[Export] public float BurstOfWinterDamage = 50f;
 	[Export] public float IceBlockShieldAmount = 500f;
 	[Export] public float AbsoluteZeroDuration = 8f;
 
@@ -86,6 +93,7 @@ public partial class QueenOfTheFrozenWastes : Character
 
 	float _snowstormTimer;
 	float _icicleTimer;
+	float _burstOfWinterTimer;
 	float _iceBlockTimer;
 
 	bool _isSnowstormChanneling;
@@ -94,6 +102,7 @@ public partial class QueenOfTheFrozenWastes : Character
 
 	BossQueenSnowstormSpell _snowstormSpell;
 	BossQueenVolatileIcicleSpell _icicleSpell;
+	BossQueenBurstOfWinterSpell _burstOfWinterSpell;
 	BossQueenIceBlockSpell _iceBlockSpell;
 	BossQueenAbsoluteZeroSpell _absoluteZeroSpell;
 
@@ -103,7 +112,8 @@ public partial class QueenOfTheFrozenWastes : Character
 	{
 		None,
 		Snowstorm,
-		Icicle
+		Icicle,
+		BurstOfWinter
 	}
 
 	PendingCast _pendingCast;
@@ -121,12 +131,14 @@ public partial class QueenOfTheFrozenWastes : Character
 		IsFriendly = false;
 
 		// Stagger first casts so the fight has a brief breathing window.
-		_snowstormTimer = 15f;
-		_icicleTimer = 8f;
-		_iceBlockTimer = 35f;
+		_snowstormTimer = 12f;
+		_icicleTimer = 4f;
+		_burstOfWinterTimer = 24f;
+		_iceBlockTimer = 32f;
 
 		_snowstormSpell = new BossQueenSnowstormSpell { Boss = this, DamagePerTick = SnowstormDamagePerTick };
 		_icicleSpell = new BossQueenVolatileIcicleSpell { Boss = this, ZoneDamagePerTick = IcicleDamagePerTick };
+		_burstOfWinterSpell = new BossQueenBurstOfWinterSpell { Boss = this, Damage = BurstOfWinterDamage };
 		_iceBlockSpell = new BossQueenIceBlockSpell { Boss = this, IceBlockShield = IceBlockShieldAmount };
 		_absoluteZeroSpell = new BossQueenAbsoluteZeroSpell { DamageAmount = 1000f, CastDuration = AbsoluteZeroDuration };
 
@@ -167,11 +179,12 @@ public partial class QueenOfTheFrozenWastes : Character
 		// ── Attack timers ─────────────────────────────────────────────────────
 		_snowstormTimer -= (float)delta;
 		_icicleTimer -= (float)delta;
+		_burstOfWinterTimer -= (float)delta;
 		_iceBlockTimer -= (float)delta;
 
 		if (_pendingCast != PendingCast.None) return; // wait for animation
 
-		// Priority: Ice Block > Snowstorm > Volatile Icicle.
+		// Priority: Ice Block > Snowstorm > Burst of Winter > Volatile Icicle.
 		if (_iceBlockTimer <= 0f && !_isSnowstormChanneling)
 		{
 			_iceBlockTimer = IceBlockInterval;
@@ -181,6 +194,11 @@ public partial class QueenOfTheFrozenWastes : Character
 		{
 			_snowstormTimer = SnowstormInterval;
 			BeginSnowstormCast();
+		}
+		else if (_burstOfWinterTimer <= 0f && !_isSnowstormChanneling)
+		{
+			_burstOfWinterTimer = BurstOfWinterInterval;
+			BeginBurstOfWinterCast();
 		}
 		else if (_icicleTimer <= 0f && !_isSnowstormChanneling)
 		{
@@ -200,6 +218,17 @@ public partial class QueenOfTheFrozenWastes : Character
 		_pendingCast = PendingCast.Snowstorm;
 		_sprite.Play("cast");
 		EmitSignalCastWindupStarted("Snowstorm", _snowstormSpell.Icon, _snowstormSpell.CastTime);
+	}
+
+	/// <summary>
+	/// Begin the 1.5-second Burst of Winter cast wind-up (plays cast animation
+	/// and shows the cast bar). The nova is spawned in OnAnimationFinished.
+	/// </summary>
+	void BeginBurstOfWinterCast()
+	{
+		_pendingCast = PendingCast.BurstOfWinter;
+		_sprite.Play("cast");
+		EmitSignalCastWindupStarted("Burst of Winter", _burstOfWinterSpell.Icon, _burstOfWinterSpell.CastTime);
 	}
 
 	/// <summary>
@@ -330,6 +359,13 @@ public partial class QueenOfTheFrozenWastes : Character
 				var icicleTarget = PickRandomPartyMember();
 				if (icicleTarget != null)
 					SpellPipeline.Cast(_icicleSpell, this, icicleTarget);
+				break;
+
+			case PendingCast.BurstOfWinter:
+				EmitSignalCastWindupEnded();
+				var burstTarget = PickRandomPartyMember();
+				if (burstTarget != null)
+					SpellPipeline.Cast(_burstOfWinterSpell, this, burstTarget);
 				break;
 		}
 

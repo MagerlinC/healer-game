@@ -22,6 +22,7 @@ position = Vector2(93, -67)
 
 [node name="Wizard" parent="." unique_id=2015225033 instance=ExtResource("Scene_wizard")]
 position = Vector2(128, 3)
+MaxHealth = 80.0
 
 [node name="Healer" parent="." unique_id=1338505269 instance=ExtResource("Scene_player")]
 position = Vector2(35, 36)

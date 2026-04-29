@@ -455,8 +455,16 @@ public abstract partial class Character : CharacterBody2D
 		foreach (var effect in _effects.Values)
 			effect.OnExpired(this);
 		_effects.Clear();
+		ApplyDeathVisuals();
 		EmitSignalDied(this);
 	}
+
+	/// <summary>
+	/// Override in subclasses to apply death visuals (stop animation,
+	/// greyscale, lie-down rotation) when the character reaches 0 health.
+	/// Called immediately before the <see cref="Died"/> signal is emitted.
+	/// </summary>
+	protected virtual void ApplyDeathVisuals() { }
 
 	public override void _ExitTree()
 	{

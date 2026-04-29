@@ -25,6 +25,9 @@ public partial class VolatileIcicleProjectile : Node2D
 	const string IcicleTexturePath =
 		"res://assets/enemies/queen-of-the-frozen-wastes/icicle.png";
 
+	/// <summary>Tumble speed in radians per second. ~0.8 rad/s ≈ one full spin every 8 s.</summary>
+	const float TumbleSpeed = 0.8f;
+
 	// ── config ────────────────────────────────────────────────────────────────
 	readonly float _speed;
 	readonly float _zoneDamagePerTick;
@@ -49,7 +52,7 @@ public partial class VolatileIcicleProjectile : Node2D
 		if (texture != null)
 		{
 			sprite.Texture = texture;
-			sprite.Scale = new Vector2(0.1f, 0.1f);
+			sprite.Scale = new Vector2(0.4f, 0.4f);
 		}
 		else
 		{
@@ -63,6 +66,9 @@ public partial class VolatileIcicleProjectile : Node2D
 	public override void _Process(double delta)
 	{
 		if (_exploded) return;
+
+		// ── tumble ───────────────────────────────────────────────────────────
+		Rotation += TumbleSpeed * (float)delta;
 
 		// ── move toward the healer ────────────────────────────────────────────
 		var healer = FindHealer();

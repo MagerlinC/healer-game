@@ -56,6 +56,9 @@ public partial class Templar : PartyMember
 		base._Process(delta);
 		if (!IsAlive) return;
 
+		// Pause all movement while a knockback stun is active.
+		if (IsKnockedBack) return;
+
 		var boss = FindPreferredBoss();
 
 		// ── Movement phase ───────────────────────────────────────────────────
@@ -96,5 +99,24 @@ public partial class Templar : PartyMember
 		if (boss == null) return;
 		_sprite.Play("attack");
 		SpellPipeline.Cast(_shieldBash, this, boss);
+	}
+
+	protected override void ApplyDeathVisuals()
+	{
+		_sprite.Stop();
+		_sprite.Rotation = Mathf.Pi / 2f;
+
+		var shader = new Shader();
+		shader.Code = """
+			shader_type canvas_item;
+			void fragment() {
+				vec4 col = texture(TEXTURE, UV);
+				float grey = dot(col.rgb, vec3(0.299, 0.587, 0.114));
+				COLOR = vec4(grey, grey, grey, col.a);
+			}
+			""";
+		var mat = new ShaderMaterial();
+		mat.Shader = shader;
+		_sprite.Material = mat;
 	}
 }

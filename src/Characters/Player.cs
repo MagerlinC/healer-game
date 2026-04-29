@@ -396,6 +396,33 @@ public partial class Player : Character
 		_castTimer = 0f;
 	}
 
+	protected override void ApplyDeathVisuals()
+	{
+		// Cancel any in-progress cast immediately.
+		_isCasting = false;
+		_castingAudioPlayer?.Stop();
+
+		// Stop the animation where it is.
+		_sprite.Stop();
+
+		// Rotate 90° clockwise so the character appears to fall/lie on the ground.
+		_sprite.Rotation = Mathf.Pi / 2f;
+
+		// Apply a greyscale shader to indicate death.
+		var shader = new Shader();
+		shader.Code = """
+			shader_type canvas_item;
+			void fragment() {
+				vec4 col = texture(TEXTURE, UV);
+				float grey = dot(col.rgb, vec3(0.299, 0.587, 0.114));
+				COLOR = vec4(grey, grey, grey, col.a);
+			}
+			""";
+		var mat = new ShaderMaterial();
+		mat.Shader = shader;
+		_sprite.Material = mat;
+	}
+
 	public override void _PhysicsProcess(double delta)
 	{
 		if (!IsAlive) return;
