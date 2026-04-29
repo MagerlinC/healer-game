@@ -69,6 +69,7 @@ public partial class Templar : PartyMember
 				var direction = (boss.GlobalPosition - GlobalPosition).Normalized();
 				Velocity = direction * MoveSpeed;
 				MoveAndSlide();
+				ClampToArenaBoundary();
 				return; // Not in range yet — skip attack logic
 			}
 			else
@@ -76,6 +77,7 @@ public partial class Templar : PartyMember
 				// In range — make sure we've fully stopped.
 				Velocity = Vector2.Zero;
 				MoveAndSlide();
+				ClampToArenaBoundary();
 			}
 		}
 

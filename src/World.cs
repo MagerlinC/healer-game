@@ -145,7 +145,23 @@ public partial class World : Node2D
 		// A physics ring keeps the player inside the visible circle — tune
 		// GameConstants.FrozenPeakArenaRadius if the ring looks too large or small.
 		if (dungeon.Tier == GameConstants.FrozenPeakTier)
+		{
 			AddCircularArenaBound(Vector2.Zero, GameConstants.FrozenPeakArenaFractionX, GameConstants.FrozenPeakArenaFractionY, GameConstants.FrozenPeakArenaCenterOffsetY);
+
+			// Also constrain NPC party members via PartyMember.ClampToArenaBoundary().
+			// Compute the same world-space radii that AddCircularArenaBound uses so
+			// both the physics wall and the positional clamp agree on the boundary.
+			var boundsCamera  = GetNode<Camera2D>("Camera2D");
+			var boundsView    = GetViewport().GetVisibleRect().Size;
+			var boundRx       = boundsView.X / (2f * boundsCamera.Zoom.X) * GameConstants.FrozenPeakArenaFractionX;
+			var boundRy       = boundsView.Y / (2f * boundsCamera.Zoom.Y) * GameConstants.FrozenPeakArenaFractionY;
+			var boundCenterY  = boundsView.Y / boundsCamera.Zoom.Y * GameConstants.FrozenPeakArenaCenterOffsetY;
+			PartyMember.ArenaBoundary = (new Vector2(0f, boundCenterY), boundRx, boundRy);
+		}
+		else
+		{
+			PartyMember.ArenaBoundary = null;
+		}
 	}
 
 	/// <summary>

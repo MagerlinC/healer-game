@@ -15,6 +15,44 @@ public partial class PartyMember : Character
 {
 	// ── Shared targeting state ────────────────────────────────────────────────
 
+	// ── Arena boundary ────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Optional elliptical arena boundary set by <c>World</c> at fight start.
+	/// When non-null, <see cref="ClampToArenaBoundary"/> will push any party
+	/// member that has strayed outside the ellipse back to its nearest edge.
+	/// Set to null between fights to disable the constraint.
+	/// </summary>
+	public static (Vector2 Center, float RadiusX, float RadiusY)? ArenaBoundary { get; set; }
+
+	/// <summary>
+	/// If <see cref="ArenaBoundary"/> is active, clamps <see cref="Node2D.GlobalPosition"/>
+	/// to lie within the ellipse. Call this after every <c>MoveAndSlide()</c>.
+	/// Uses the same ellipse-containment formula as <c>IcicleExplosionZone</c>:
+	/// (dx/rx)² + (dy/ry)² ≤ 1.
+	/// </summary>
+	protected void ClampToArenaBoundary()
+	{
+		if (ArenaBoundary is not { } bounds) return;
+
+		var delta = GlobalPosition - bounds.Center;
+		var ex    = delta.X / bounds.RadiusX;
+		var ey    = delta.Y / bounds.RadiusY;
+
+		// Already inside — nothing to do.
+		if (ex * ex + ey * ey <= 1f) return;
+
+		// Project back onto the ellipse surface along the same normalised direction.
+		// Dividing (ex, ey) by their length gives a unit vector in ellipse space;
+		// multiplying by the radii converts it back to world space.
+		var len = Mathf.Sqrt(ex * ex + ey * ey);
+		GlobalPosition = bounds.Center + new Vector2(
+			(ex / len) * bounds.RadiusX,
+			(ey / len) * bounds.RadiusY);
+	}
+
+	// ── Shared targeting state ────────────────────────────────────────────────
+
 	/// <summary>
 	/// The boss the player most recently attacked directly.
 	/// Party members prefer this target via <see cref="FindPreferredBoss"/>.
