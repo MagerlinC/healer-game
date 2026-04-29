@@ -7,16 +7,21 @@ using healerfantasy.UI;
 /// <summary>
 /// Overlay shown when a boss dies.
 ///
-/// Three possible outcomes after each kill:
+/// Four possible outcomes after each kill:
 ///
 ///   1. Non-final boss in current dungeon → "ARENA CLEARED!"
 ///      Continue button: advance boss index and reload World.tscn.
 ///
 ///   2. Final boss of a non-final dungeon → "DUNGEON CLEARED!"
 ///      Continue button: mark dungeon as completed and load Camp.tscn.
+///      (Applies after dungeons 0, 1, and 2; leads to camps 0, 1, and 2
+///      respectively before the next dungeon becomes available.)
 ///
-///   3. Final boss of the final dungeon → "VICTORY!"
+///   3. Final boss of the final dungeon (The Frozen Peak, dungeon 3) → "VICTORY!"
 ///      Play Again / Main Menu buttons: finalize the run.
+///
+///   4. Dev test fight → "TEST COMPLETE"
+///      Returns to Overworld without affecting run progression.
 ///
 /// XP is awarded on every kill. Level-up notifications are displayed.
 ///
@@ -191,7 +196,7 @@ public partial class VictoryScreen : CanvasLayer
 		if (Visible) return;
 		_audioPlayer.Play();
 		_titleLabel.Text = "VICTORY!";
-		_subLabel.Text = "All dungeons have been conquered. The realm is saved!";
+		_subLabel.Text = "The Queen of the Frozen Wastes has fallen.\nAll dungeons conquered — the realm is saved!";
 		_xpLabel.Text = BuildXpLine(xpGained, levelsGained);
 		BuildItemSection(droppedItem);
 

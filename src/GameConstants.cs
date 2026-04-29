@@ -36,20 +36,28 @@ public static class GameConstants
 
 	public const string SanctumBoss3Name = "That Which Swallowed the Stars";
 
+	// ── Boss names — The Frozen Peak ──────────────────────────────────────────
+	/// <summary>Tier 4 — a single-boss final dungeon accessible after clearing all Tier 3 dungeons.</summary>
+	public const int FrozenPeakTier = 4;
+
+	public const string FrozenPeakBossName = "Queen of the Frozen Wastes";
+
 	public const string BossGroupName = "boss";
 
 	public static Dictionary<int, List<int>> BossHealthBaseValuesByDungeonTier = new()
 	{
 		{ 1, new List<int> { 1000, 1200, 1600 } },
 		{ 2, new List<int> { 1800, 2100, 2500 } },
-		{ 3, new List<int> { 2800, 3000, 4000 } }
+		{ 3, new List<int> { 2800, 3000, 4000 } },
+		{ 4, new List<int> { 5000 } }
 	};
 
 	public static Dictionary<int, List<int>> XpRewardsByDungeonTier = new()
 	{
 		{ 1, new List<int> { 200, 250, 300 } },
 		{ 2, new List<int> { 350, 400, 450 } },
-		{ 3, new List<int> { 500, 600, 1000 } }
+		{ 3, new List<int> { 500, 600, 1000 } },
+		{ 4, new List<int> { 2000 } }
 	};
 
 	public static float InfiniteDuration = 999999f;
@@ -85,6 +93,12 @@ public static class GameConstants
 		"res://levels/TheNightborne.tscn",
 		"res://levels/AstralTwins.tscn",
 		"res://levels/ThatWhichSwallowedTheStars.tscn"
+	};
+
+	/// <summary>Packed scene path for the Frozen Peak — a single final boss encounter.</summary>
+	public static readonly string[] FrozenPeakBossScenePaths =
+	{
+		"res://levels/QueenOfTheFrozenWastes.tscn"
 	};
 
 }

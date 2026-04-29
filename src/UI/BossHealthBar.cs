@@ -50,6 +50,20 @@ public partial class BossHealthBar : CharacterFrame
 	/// </summary>
 	ColorRect _healthTargetMarker = null!;
 
+	/// <summary>
+	/// Blue overlay that shows the boss's current shield as an additional
+	/// segment on top of the health bar. Visible whenever CurrentShield > 0.
+	/// Anchors are repositioned when health or shield changes so the overlay
+	/// always starts at the right edge of the current health fill.
+	/// </summary>
+	ColorRect _shieldBar = null!;
+
+	// Tracked values so the shield bar can be repositioned whenever either
+	// health or shield changes (both affect its anchor position).
+	float _trackedHealth;
+	float _trackedMaxHealth;
+	float _trackedShield;
+
 	/// <param name="bossNameOverride">
 	/// When provided, this bar tracks the named character instead of
 	/// <see cref="RunState.CurrentBossName"/>. Used for the secondary Astral Twin health bar.
@@ -86,6 +100,16 @@ public partial class BossHealthBar : CharacterFrame
 				var expected = _bossNameOverride ?? (RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name);
 				if (charName == expected)
 					UpdateProgress(charName, current, max);
+			}));
+
+		// ── subscribe shield updates ──────────────────────────────────────────
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(Character.ShieldChanged),
+			Callable.From((string charName, float shield, float maxHealth) =>
+			{
+				var expected = _bossNameOverride ?? (RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name);
+				if (charName == expected)
+					UpdateShieldBar(shield, maxHealth);
 			}));
 
 		base._Ready(); // subscribe effect-badge signals
@@ -156,10 +180,45 @@ public partial class BossHealthBar : CharacterFrame
 
 	void UpdateProgress(string charName, float current, float max)
 	{
+		_trackedHealth = current;
+		_trackedMaxHealth = max;
 		_bar.Value = Mathf.Clamp(current / max, 0f, 1f);
 		_nameLabel.Text = charName;
 		_currentHealthLabel.Text = $"{current:F0} / {max:F0}";
 		Visible = true;
+		RefreshShieldBar(); // reposition shield overlay when health changes
+	}
+
+	// ── shield bar ────────────────────────────────────────────────────────────
+
+	void UpdateShieldBar(float shield, float maxHealth)
+	{
+		_trackedShield = shield;
+		if (maxHealth > 0f) _trackedMaxHealth = maxHealth;
+		RefreshShieldBar();
+	}
+
+	/// <summary>
+	/// Repositions <see cref="_shieldBar"/> so it sits immediately to the
+	/// right of the current health fill, extending by the shield fraction.
+	/// </summary>
+	void RefreshShieldBar()
+	{
+		if (_shieldBar == null) return;
+
+		if (_trackedShield <= 0f || _trackedMaxHealth <= 0f)
+		{
+			_shieldBar.Visible = false;
+			return;
+		}
+
+		var healthFrac = Mathf.Clamp(_trackedHealth / _trackedMaxHealth, 0f, 1f);
+		var shieldFrac = Mathf.Clamp(_trackedShield / _trackedMaxHealth, 0f, 1f);
+		var rightEdge  = Mathf.Min(1f, healthFrac + shieldFrac);
+
+		_shieldBar.AnchorLeft  = healthFrac;
+		_shieldBar.AnchorRight = rightEdge;
+		_shieldBar.Visible     = rightEdge > healthFrac;
 	}
 
 	// ── Sanguine Siphon health-target marker ─────────────────────────────────
@@ -268,6 +327,24 @@ public partial class BossHealthBar : CharacterFrame
 		_healthTargetMarker.MouseFilter = MouseFilterEnum.Ignore;
 		_healthTargetMarker.Visible = false;
 		overlay.AddChild(_healthTargetMarker);
+
+		// ── shield overlay (Ice Block / absorb shields) ───────────────────────
+		// Icy blue bar that sits to the right of the health fill, representing
+		// the boss's current absorb shield. Repositioned whenever health or
+		// shield changes via RefreshShieldBar().
+		_shieldBar = new ColorRect();
+		_shieldBar.Color = new Color(0.40f, 0.72f, 1.0f, 0.80f); // icy blue
+		_shieldBar.AnchorTop    = 0f;
+		_shieldBar.AnchorBottom = 1f;
+		_shieldBar.AnchorLeft   = 0f;
+		_shieldBar.AnchorRight  = 0f;
+		_shieldBar.OffsetTop    = 0f;
+		_shieldBar.OffsetBottom = 0f;
+		_shieldBar.OffsetLeft   = 0f;
+		_shieldBar.OffsetRight  = 0f;
+		_shieldBar.MouseFilter  = MouseFilterEnum.Ignore;
+		_shieldBar.Visible      = false;
+		overlay.AddChild(_shieldBar);
 
 		// ── name label (left-aligned, over the bar) ───────────────────────────
 		_nameLabel = new Label();

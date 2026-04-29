@@ -14,7 +14,8 @@ namespace healerfantasy;
 /// Autoload singleton that persists run-level state across scenes.
 ///
 /// Tracks spell/talent loadout AND the overall run progression through the
-/// dungeon → camp → dungeon → camp → dungeon sequence.
+/// dungeon → camp → dungeon → camp → dungeon → camp → dungeon sequence.
+/// (4 dungeons, 3 camps — the final dungeon is always The Frozen Peak.)
 ///
 /// Key properties used by World.cs:
 ///   <see cref="CurrentDungeon"/>    — which dungeon we're currently fighting
@@ -44,7 +45,8 @@ public partial class RunState : Node
 	/// <summary>
 	/// The ordered list of dungeons for this run, one randomly chosen per tier.
 	/// Populated at run start and on Reset(). Always contains exactly one dungeon
-	/// per tier (1, 2, 3) in ascending tier order.
+	/// per tier (1, 2, 3, 4) in ascending tier order. Tier 4 has only one dungeon
+	/// (The Frozen Peak), so it is always the final destination.
 	/// </summary>
 	public List<DungeonDefinition> RunDungeons { get; private set; } = null!;
 
@@ -65,10 +67,10 @@ public partial class RunState : Node
 
 	// ── Run progression ───────────────────────────────────────────────────────
 
-	/// <summary>How many dungeons have been fully cleared this run (0–3).</summary>
+	/// <summary>How many dungeons have been fully cleared this run (0–4).</summary>
 	public int CompletedDungeons { get; private set; } = 0;
 
-	/// <summary>How many rest camps have been departed this run (0–2).</summary>
+	/// <summary>How many rest camps have been departed this run (0–3).</summary>
 	public int CompletedCamps { get; private set; } = 0;
 
 	/// <summary>Which boss within the current dungeon is up next (0-based).</summary>

@@ -60,6 +60,16 @@ public partial class BossCastBar : CastBarBase
 		GlobalAutoLoad.SubscribeToSignal(
 			nameof(TheBloodPrince.SanguineChannelEnded),
 			Callable.From(StopCast));
+
+		// ── Queen of the Frozen Wastes: Snowstorm channel bar ────────────────
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(QueenOfTheFrozenWastes.SnowstormChannelStarted),
+			Callable.From((BossQueenSnowstormSpell spell) =>
+				StartChannel(spell.Name, spell.Icon, spell.ChannelDuration)));
+
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(QueenOfTheFrozenWastes.SnowstormChannelEnded),
+			Callable.From(StopCast));
 	}
 
 	// ── visual update hook ────────────────────────────────────────────────────

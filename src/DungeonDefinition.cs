@@ -99,16 +99,19 @@ public class DungeonDefinition
 				GameConstants.SanctumBoss2Name, // "Astral Twin (Dawn)"  — primary twin for health bar
 				GameConstants.SanctumBoss3Name // "That Which Swallowed the Stars"
 			}
+		},
+		new()
+		{
+			Name = "The Frozen Peak",
+			Tier = GameConstants.FrozenPeakTier,
+			MapPosition = new Vector2(960f, 120f), // centre-top of the world map — the final destination
+			BossScenePaths = GameConstants.FrozenPeakBossScenePaths,
+			ArenaBackgroundPaths = AssetConstants.FrozenPeakArenaBackgroundPaths,
+			XpRewards = GameConstants.XpRewardsByDungeonTier[GameConstants.FrozenPeakTier],
+			BossNames = new[]
+			{
+				GameConstants.FrozenPeakBossName // "Queen of the Frozen Wastes"
+			}
 		}
-	];
-
-	/// <summary>
-	/// Map positions for the two rest camps between dungeons.
-	/// Camp[0] sits between dungeon 0 and 1; Camp[1] between dungeon 1 and 2.
-	/// </summary>
-	public static readonly Vector2[] CampMapPositions =
-	[
-		new(575f, 610f),
-		new(1215f, 370f)
 	];
 }

@@ -6,8 +6,11 @@ using healerfantasy;
 /// <summary>
 /// The World Map screen shown between locations.
 ///
-/// Renders a SW→NE sequence of five nodes:
-///   Dungeon 0 → Camp 0 → Dungeon 1 → Camp 1 → Dungeon 2
+/// Renders a sequence of seven nodes:
+///   Dungeon 0 → Camp 0 → Dungeon 1 → Camp 1 → Dungeon 2 → Camp 2 → Dungeon 3
+///
+/// Dungeons 0–2 are randomly chosen from tiers 1–3 at run start.
+/// Dungeon 3 is always The Frozen Peak (tier 4) — the final boss encounter.
 ///
 /// Clicking any node opens a detail panel on the right showing the location's
 /// name, description, and (for the currently Available dungeon) an Enter button
@@ -19,20 +22,22 @@ using healerfantasy;
 public partial class MapScreenController : Node2D
 {
 	// Map node positions in viewport space (1920×1080).
-	// Arranged NW→SE following the map terrain path:
-	//   Dungeon 0 (mountains) → Camp 0 → Dungeon 1 (centre) → Camp 1 → Dungeon 2 (lower-right)
+	// The path winds across the map and ascends toward the frozen peak in the upper-right.
+	// Adjust these to match the actual world-map background art as needed.
 	static readonly Vector2[] NodeCentres =
 	{
-		new(235f, 310f), // Dungeon 0 — upper-left, mountain peaks
-		new(430f, 543f), // Camp 0    — left-centre
-		new(700f, 700f), // Dungeon 1 — centre
+		new(235f,  310f), // Dungeon 0 — upper-left, mountain peaks
+		new(430f,  543f), // Camp 0    — left-centre
+		new(700f,  700f), // Dungeon 1 — centre
 		new(1215f, 780f), // Camp 1    — right-centre
-		new(1490f, 964f) // Dungeon 2 — lower-right
+		new(1490f, 964f), // Dungeon 2 — lower-right
+		new(1640f, 790f), // Camp 2    — far-right, beginning to ascend
+		new(1800f, 540f), // Dungeon 3 — The Frozen Peak, upper-far-right
 	};
 
-	static readonly bool[] IsDungeon = { true, false, true, false, true };
-	static readonly int[] DungeonIdx = { 0, -1, 1, -1, 2 };
-	static readonly int[] CampIdx = { -1, 0, -1, 1, -1 };
+	static readonly bool[] IsDungeon = { true, false, true, false, true, false, true };
+	static readonly int[]  DungeonIdx = { 0, -1, 1, -1, 2, -1, 3 };
+	static readonly int[]  CampIdx    = { -1, 0, -1, 1, -1, 2, -1 };
 
 	static readonly Vector2 DungeonNodeSize = new(160f, 90f);
 	static readonly Vector2 CampNodeSize = new(120f, 72f);

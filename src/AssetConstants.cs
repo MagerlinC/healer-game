@@ -49,6 +49,12 @@ public static class AssetConstants
 		BackgroundBasePath + "castle-of-blood/1.png"
 	};
 
+	/// <summary>Single background for the Frozen Peak — the final boss arena.</summary>
+	public static readonly string[] FrozenPeakArenaBackgroundPaths =
+	{
+		BackgroundBasePath + "the-frozen-peak/background.png"
+	};
+
 
 	// ── Interactible assets ───────────────────────────────────────────────────
 
