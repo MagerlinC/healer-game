@@ -6,7 +6,9 @@ using healerfantasy;
 ///
 /// The projectile floats slowly toward the healer (the player character).
 /// Every frame it checks whether it is within <see cref="CollisionRadius"/>
-/// pixels of any living party member — if so it explodes:
+/// pixels of the healer — if so it explodes. NPC party members do not
+/// trigger the icicle, so only the player can detonate it by running into it
+/// (or avoiding it to steer the blast to the arena edge).
 ///
 ///   1. It removes itself from the scene.
 ///   2. It spawns an <see cref="IcicleExplosionZone"/> at its current position,
@@ -47,13 +49,14 @@ public partial class VolatileIcicleProjectile : Node2D
 		if (texture != null)
 		{
 			sprite.Texture = texture;
-			sprite.Scale   = new Vector2(0.6f, 0.6f);
+			sprite.Scale = new Vector2(0.1f, 0.1f);
 		}
 		else
 		{
 			// Fallback: small blue circle drawn via a ColorRect substitute.
 			GD.PrintErr("[VolatileIcicle] Could not load icicle texture — projectile will be invisible.");
 		}
+
 		AddChild(sprite);
 	}
 
@@ -69,15 +72,12 @@ public partial class VolatileIcicleProjectile : Node2D
 			GlobalPosition += direction * _speed * (float)delta;
 		}
 
-		// ── collision check with any party member ─────────────────────────────
-		foreach (var node in GetTree().GetNodesInGroup("party"))
+		// ── collision check — only the healer (player) triggers the icicle ─────
+		// NPC party members pass through it; the player must actively kite it.
+		if (healer != null && healer.IsAlive &&
+		    GlobalPosition.DistanceTo(healer.GlobalPosition) <= CollisionRadius)
 		{
-			if (node is not Character target || !target.IsAlive) continue;
-			if (GlobalPosition.DistanceTo(target.GlobalPosition) <= CollisionRadius)
-			{
-				Explode();
-				return;
-			}
+			Explode();
 		}
 	}
 

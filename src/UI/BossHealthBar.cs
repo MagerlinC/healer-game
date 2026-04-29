@@ -212,13 +212,14 @@ public partial class BossHealthBar : CharacterFrame
 			return;
 		}
 
-		var healthFrac = Mathf.Clamp(_trackedHealth / _trackedMaxHealth, 0f, 1f);
+		// The shield occupies the RIGHT edge of the health bar, sized proportional
+		// to the remaining shield. This means it always has room to render (even at
+		// full health) and naturally shrinks left-to-right as the shield is absorbed.
 		var shieldFrac = Mathf.Clamp(_trackedShield / _trackedMaxHealth, 0f, 1f);
-		var rightEdge  = Mathf.Min(1f, healthFrac + shieldFrac);
 
-		_shieldBar.AnchorLeft  = healthFrac;
-		_shieldBar.AnchorRight = rightEdge;
-		_shieldBar.Visible     = rightEdge > healthFrac;
+		_shieldBar.AnchorLeft  = Mathf.Max(0f, 1f - shieldFrac);
+		_shieldBar.AnchorRight = 1f;
+		_shieldBar.Visible     = shieldFrac > 0f;
 	}
 
 	// ── Sanguine Siphon health-target marker ─────────────────────────────────

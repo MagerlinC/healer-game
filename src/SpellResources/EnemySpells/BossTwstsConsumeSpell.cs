@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using healerfantasy.Effects;
 using healerfantasy.SpellSystem;
@@ -19,7 +20,8 @@ namespace healerfantasy.SpellResources;
 [GlobalClass]
 public partial class BossTwstsConsumeSpell : SpellResource
 {
-	public BossTwstsConsumeSpell()
+	int _targetCount;
+	public BossTwstsConsumeSpell(int targetCount)
 	{
 		Name = "Consume";
 		Description =
@@ -32,16 +34,22 @@ public partial class BossTwstsConsumeSpell : SpellResource
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets +
 		                          "enemy/that-which-swallowed-the-stars/consume.png");
 		EffectType = EffectType.Harmful;
+		_targetCount = targetCount;
 	}
 
-	/// <summary>Targets every living party member.</summary>
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)
 	{
-		var targets = new List<Character>();
-		foreach (var node in caster.GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive)
-				targets.Add(c);
-		return targets;
+		var possibleTargets = caster.GetTree().GetNodesInGroup("party")
+			.Cast<Character>()
+			.Where(t => t.IsAlive)
+			.ToList();
+
+		var rng = new RandomNumberGenerator();
+		rng.Randomize();
+
+		possibleTargets = possibleTargets.OrderBy(_ => rng.Randf()).ToList();
+
+		return possibleTargets.Take(_targetCount).ToList();
 	}
 
 	public override void Apply(SpellContext ctx)

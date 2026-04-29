@@ -34,7 +34,7 @@ public partial class BossTwstsConsumeEffect : CharacterEffect
 	public float MaxDamagePerTick { get; init; } = 22f;
 
 	/// <summary>Maximum boss heal when the DoT is dispelled immediately after application.</summary>
-	public float BossHealOnDispel { get; init; } = 500f;
+	public float BossHealOnDispel { get; init; } = 400f;
 
 	/// <summary>
 	/// Reference to the boss — used to apply the dispel-triggered heal.

@@ -2,7 +2,15 @@
 
 [ext_resource type="Script" uid="uid://diy0henm3jlak" path="res://src/Characters/Enemies/QueenOfTheFrozenWastes.cs" id="1_7yi1v"]
 
-[node name="QueenOfTheFrozenWastes" type="Node2D" unique_id=1800620667]
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_7yi1v"]
+radius = 14.0
+height = 28.0
+
+[node name="QueenOfTheFrozenWastes" type="CharacterBody2D" unique_id=624630912]
 script = ExtResource("1_7yi1v")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2072416250]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1707854780]
+position = Vector2(0, 8)
+shape = SubResource("CapsuleShape2D_7yi1v")

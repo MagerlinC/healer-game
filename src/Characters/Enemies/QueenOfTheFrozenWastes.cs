@@ -73,14 +73,14 @@ public partial class QueenOfTheFrozenWastes : Character
 
 	// ── tuneable exports ──────────────────────────────────────────────────────
 
-	[Export] public float SnowstormInterval    = 20f;
-	[Export] public float IcicleInterval       = 12f;
-	[Export] public float IceBlockInterval     = 40f;
+	[Export] public float SnowstormInterval = 20f;
+	[Export] public float IcicleInterval = 12f;
+	[Export] public float IceBlockInterval = 40f;
 
 	[Export] public float SnowstormDamagePerTick = 20f;
-	[Export] public float IcicleDamagePerTick    = 15f;
-	[Export] public float IceBlockShieldAmount   = 1000f;
-	[Export] public float AbsoluteZeroDuration   = 8f;
+	[Export] public float IcicleDamagePerTick = 15f;
+	[Export] public float IceBlockShieldAmount = 500f;
+	[Export] public float AbsoluteZeroDuration = 8f;
 
 	// ── internal state ────────────────────────────────────────────────────────
 
@@ -92,14 +92,20 @@ public partial class QueenOfTheFrozenWastes : Character
 	bool _isInIceBlock;
 	float _absoluteZeroTimer;
 
-	BossQueenSnowstormSpell    _snowstormSpell;
+	BossQueenSnowstormSpell _snowstormSpell;
 	BossQueenVolatileIcicleSpell _icicleSpell;
-	BossQueenIceBlockSpell     _iceBlockSpell;
+	BossQueenIceBlockSpell _iceBlockSpell;
 	BossQueenAbsoluteZeroSpell _absoluteZeroSpell;
 
 	AnimatedSprite2D _sprite;
 
-	enum PendingCast { None, Snowstorm, Icicle }
+	enum PendingCast
+	{
+		None,
+		Snowstorm,
+		Icicle
+	}
+
 	PendingCast _pendingCast;
 
 	const string AssetBase = "res://assets/enemies/queen-of-the-frozen-wastes/";
@@ -116,12 +122,12 @@ public partial class QueenOfTheFrozenWastes : Character
 
 		// Stagger first casts so the fight has a brief breathing window.
 		_snowstormTimer = 15f;
-		_icicleTimer    = 8f;
-		_iceBlockTimer  = 35f;
+		_icicleTimer = 8f;
+		_iceBlockTimer = 35f;
 
-		_snowstormSpell    = new BossQueenSnowstormSpell    { Boss = this, DamagePerTick = SnowstormDamagePerTick };
-		_icicleSpell       = new BossQueenVolatileIcicleSpell { Boss = this, ZoneDamagePerTick = IcicleDamagePerTick };
-		_iceBlockSpell     = new BossQueenIceBlockSpell     { Boss = this, IceBlockShield = IceBlockShieldAmount };
+		_snowstormSpell = new BossQueenSnowstormSpell { Boss = this, DamagePerTick = SnowstormDamagePerTick };
+		_icicleSpell = new BossQueenVolatileIcicleSpell { Boss = this, ZoneDamagePerTick = IcicleDamagePerTick };
+		_iceBlockSpell = new BossQueenIceBlockSpell { Boss = this, IceBlockShield = IceBlockShieldAmount };
 		_absoluteZeroSpell = new BossQueenAbsoluteZeroSpell { DamageAmount = 1000f, CastDuration = AbsoluteZeroDuration };
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
@@ -147,21 +153,21 @@ public partial class QueenOfTheFrozenWastes : Character
 			// Shield broken by damage → cancel Ice Block.
 			if (CurrentShield <= 0f)
 			{
-				EndIceBlock(absoluteZeroCompleted: false);
+				EndIceBlock(false);
 				return;
 			}
 
 			_absoluteZeroTimer -= (float)delta;
 			if (_absoluteZeroTimer <= 0f)
-				EndIceBlock(absoluteZeroCompleted: true);
+				EndIceBlock(true);
 
 			return; // no other abilities while encased
 		}
 
 		// ── Attack timers ─────────────────────────────────────────────────────
 		_snowstormTimer -= (float)delta;
-		_icicleTimer    -= (float)delta;
-		_iceBlockTimer  -= (float)delta;
+		_icicleTimer -= (float)delta;
+		_iceBlockTimer -= (float)delta;
 
 		if (_pendingCast != PendingCast.None) return; // wait for animation
 
@@ -229,7 +235,7 @@ public partial class QueenOfTheFrozenWastes : Character
 	/// </summary>
 	public void StartIceBlock(float shieldAmount)
 	{
-		_isInIceBlock      = true;
+		_isInIceBlock = true;
 		_absoluteZeroTimer = AbsoluteZeroDuration;
 
 		AddShield(shieldAmount);
@@ -329,9 +335,10 @@ public partial class QueenOfTheFrozenWastes : Character
 
 		_pendingCast = PendingCast.None;
 
-		// Return to idle unless we just entered Ice Block (which plays its own anim).
+		// Return to idle — but keep "cast" looping during Snowstorm channel, and
+		// preserve the Ice Block animation when the queen is shielded.
 		if (IsAlive && !_isInIceBlock)
-			_sprite.Play("idle");
+			_sprite.Play(_isSnowstormChanneling ? "cast" : "idle");
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
@@ -353,9 +360,9 @@ public partial class QueenOfTheFrozenWastes : Character
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");
 
-		AddAnimFromFiles(frames, "idle",      "idle",     3, 4f,  looping: true);
-		AddAnimFromFiles(frames, "attack",    "attack",   3, 10f, looping: false);
-		AddAnimFromFiles(frames, "cast",      "cast",     3, 6f,  looping: false);
+		AddAnimFromFiles(frames, "idle", "idle", 3, 4f, true);
+		AddAnimFromFiles(frames, "attack", "attack", 3, 10f, false);
+		AddAnimFromFiles(frames, "cast", "cast", 3, 6f, false);
 
 		// Ice Block — single static frame; looping so it holds indefinitely.
 		frames.AddAnimation("ice_block");

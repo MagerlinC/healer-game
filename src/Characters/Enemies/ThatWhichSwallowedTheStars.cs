@@ -51,7 +51,8 @@ public partial class ThatWhichSwallowedTheStars : Character
 {
 	public ThatWhichSwallowedTheStars()
 	{
-		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.SanctumOfStarsTier][2];
+		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.SanctumOfStarsTier][2] -
+		            1000f; // lower health to account for phase 2 transition mechanic
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────
@@ -71,7 +72,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 	[Export] public float CataclysmHitWindow = 1.5f; // parry window duration per hit
 
 	[Export] public float MeleeDamage = 30f;
-	[Export] public float BeamDamage = 50f;
+	[Export] public float BeamDamage = 40f;
 	[Export] public float CataclysmDamage = 65f; // per hit
 	[Export] public float PhaseTransitionDuration = 6.0f;
 	[Export] public float MemoryGameInitialDelay = 6.0f;
@@ -143,7 +144,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 
 		_meleeSpell = new BossTwstsMeleeAttackSpell { DamageAmount = MeleeDamage };
 		_beamSpell = new BossTwstsBeamSpell { DamageAmount = BeamDamage };
-		_consumeSpell = new BossTwstsConsumeSpell();
+		_consumeSpell = new BossTwstsConsumeSpell(2);
 		_cataclysmSpell = new BossTwstsVoidCataclysmSpell { DamageAmount = CataclysmDamage };
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
@@ -403,6 +404,9 @@ public partial class ThatWhichSwallowedTheStars : Character
 	{
 		if (_phaseTransitionActive || _phaseTwoStarted)
 			return;
+
+		// Up target count to 4 for phase 2
+		_consumeSpell = new BossTwstsConsumeSpell(4);
 
 		_phaseTransitionActive = true;
 		_phaseTransitionTimer = PhaseTransitionDuration;
