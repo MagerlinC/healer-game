@@ -7,13 +7,13 @@ namespace healerfantasy.Items.Amulets;
 
 public class BulwarkOfOvergrowth : EquippableItem
 {
-	static readonly float _shieldConversion = 0.50f;
+	static readonly float ShieldConversion = 0.50f;
 	public override string ItemId => "naturalists_clasp";
 
 	public BulwarkOfOvergrowth()
 	{
 		Name = "Bulwark of Overgrowth";
-		Description = $"{_shieldConversion:F0}% of overhealing is turned into shield.";
+		Description = $"{ShieldConversion:F0}% of overhealing is turned into shield.";
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Amulet;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(2));
@@ -30,7 +30,6 @@ public class BulwarkOfOvergrowth : EquippableItem
 		}
 		public void OnCalculate(SpellContext context)
 		{
-			throw new NotImplementedException();
 		}
 		public void OnAfterCast(SpellContext context)
 		{
@@ -38,7 +37,7 @@ public class BulwarkOfOvergrowth : EquippableItem
 			{
 				var successfulHealAmount = context.Target.CurrentHealth - _startHealth;
 				var overhealAmount = context.FinalValue - successfulHealAmount;
-				context.Target.AddShield(overhealAmount * _shieldConversion);
+				context.Target.AddShield(overhealAmount * ShieldConversion);
 			}
 		}
 	}
