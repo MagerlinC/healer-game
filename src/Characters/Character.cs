@@ -195,6 +195,28 @@ public abstract partial class Character : CharacterBody2D
 	}
 
 	/// <summary>
+	/// Permanently adjust this character's <see cref="MaxHealth"/> by
+	/// <paramref name="delta"/> (positive to increase, negative to decrease)
+	/// and keep <see cref="CurrentHealth"/> in sync.
+	/// <para>
+	/// When increasing: current health rises by the same amount so the bar
+	/// stays proportionally full (matching the convention used by
+	/// WoW-style max-health buffs such as Rallying Cry).
+	/// When decreasing: current health is clamped to the new max so it
+	/// can never exceed it.
+	/// </para>
+	/// Emits <see cref="HealthChanged"/> so the UI updates immediately.
+	/// </summary>
+	public void ModifyMaxHealth(float delta)
+	{
+		MaxHealth += delta;
+		CurrentHealth = delta > 0f
+			? Mathf.Min(CurrentHealth + delta, MaxHealth)
+			: Mathf.Min(CurrentHealth, MaxHealth);
+		EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
+	}
+
+	/// <summary>
 	/// Force the character's current health to a specific value without running
 	/// the normal damage / death pipeline. Intended for encounter scripts that
 	/// need bespoke phase-transition behaviour.
