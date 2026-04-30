@@ -18,10 +18,10 @@ public partial class PartyFrames : Control
 	// ── per-member config ─────────────────────────────────────────────────────
 	static readonly (string Name, Color BarColor, float MaxHp)[] MemberDefs =
 	{
-		("Templar", new Color(0.88f, 0.30f, 0.50f), 150f), // rose-red
-		(GameConstants.HealerName, new Color(0.35f, 0.78f, 0.22f), 80f), // poison-green
-		("Assassin", new Color(0.85f, 0.78f, 0.15f), 100f), // golden-yellow
-		("Wizard", new Color(0.20f, 0.50f, 0.95f), 70f) // sapphire-blue
+		(GameConstants.TemplarName, new Color(0.88f, 0.30f, 0.50f), 150f), // rose-red
+		(GameConstants.HealerName, new Color(0.35f, 0.78f, 0.22f), 100f), // poison-green
+		(GameConstants.AssassinName, new Color(0.85f, 0.78f, 0.15f), 80f), // golden-yellow
+		(GameConstants.WizardName, new Color(0.20f, 0.50f, 0.95f), 80f) // sapphire-blue
 	};
 
 	// ── node refs ─────────────────────────────────────────────────────────────

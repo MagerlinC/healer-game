@@ -21,8 +21,8 @@ public partial class FloatingCombatText : Label
 		var label = new FloatingCombatText();
 
 		var rounded = Mathf.RoundToInt(amount);
-		label.Text = isHealing ? $"+{rounded}" : $"{rounded}";
-		label.AddThemeFontSizeOverride("font_size", isCrit ? 24 : 16);
+		label.Text = (isHealing ? $"+{rounded}" : $"{rounded}") + (isCrit ? "!" : "");
+		label.AddThemeFontSizeOverride("font_size", isCrit ? 32 : 16);
 		label.AddThemeColorOverride("font_color", SchoolColor(school));
 		label.HorizontalAlignment = HorizontalAlignment.Center;
 		label.VerticalAlignment = VerticalAlignment.Center;
