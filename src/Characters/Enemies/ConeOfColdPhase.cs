@@ -26,44 +26,51 @@ using healerfantasy.SpellResources;
 public partial class ConeOfColdPhase : Node2D
 {
 	// ── constants ─────────────────────────────────────────────────────────────
-	const string AssetBase      = "res://assets/enemies/queen-of-the-frozen-wastes/";
-	const float  FlyDuration    = 0.6f;
-	const float  PullDuration   = 0.5f;
-	const float  EncasePause    = 0.3f;  // brief pause after ice appears before cast starts
-	const float  CastDuration   = 1.5f;
-	const float  ConeLinger     = 0.5f;  // how long the cone visual stays visible
-	const float  ReturnDuration = 0.6f;
-	const float  ConeDamage     = 120f;
-	const float  EncaseStunDur  = 12f;   // well beyond the total phase duration
-	const float  NpcXSpacing    = 14f;   // horizontal gap between encased members
-	const float  NpcYDepth      = 14f;   // how far the outer members step back behind the centre
+	const string AssetBase = "res://assets/enemies/queen-of-the-frozen-wastes/";
+	const float FlyDuration = 0.6f;
+	const float PullDuration = 0.5f;
+	const float EncasePause = 0.3f; // brief pause after ice appears before cast starts
+	const float CastDuration = 1.5f;
+	const float ConeLinger = 0.5f; // how long the cone visual stays visible
+	const float ReturnDuration = 0.6f;
+	const float ConeDamage = 120f;
+	const float EncaseStunDur = 12f; // well beyond the total phase duration
+	const float NpcXSpacing = 14f; // horizontal gap between encased members
+	const float NpcYDepth = 14f; // how far the outer members step back behind the centre
 
 	// ── safe zone enum ────────────────────────────────────────────────────────
-	public enum SafeZone { Left, Middle, Right }
+	public enum SafeZone
+	{
+		Left,
+		Middle,
+		Right
+	}
 
 	// ── callbacks — set by the queen before calling Start ────────────────────
 	/// <summary>Called when the Cone of Cold cast bar should appear.</summary>
-	public Action<string, Texture2D, float> ShowCastBar    { get; set; }
+	public Action<string, Texture2D, float> ShowCastBar { get; set; }
+
 	/// <summary>Called to hide the cast bar after the cone fires.</summary>
-	public Action                           HideCastBar    { get; set; }
+	public Action HideCastBar { get; set; }
+
 	/// <summary>Called when the entire phase has finished and this node is about to free itself.</summary>
-	public Action                           OnPhaseComplete { get; set; }
+	public Action OnPhaseComplete { get; set; }
 
 	// ── runtime state ─────────────────────────────────────────────────────────
-	Character              _boss;
-	SafeZone               _safeZone;
-	Vector2                _bossSavedPosition;
-	readonly List<PartyMember> _encased  = new();
-	readonly List<Node2D>      _overlays = new();
+	Character _boss;
+	SafeZone _safeZone;
+	Vector2 _bossSavedPosition;
+	readonly List<PartyMember> _encased = new();
+	readonly List<Node2D> _overlays = new();
 
 	// ── public API ────────────────────────────────────────────────────────────
 
 	/// <summary>Begin the phase. The boss must already be set as invulnerable by the caller.</summary>
 	public void Start(Character boss)
 	{
-		_boss              = boss;
+		_boss = boss;
 		_bossSavedPosition = boss.GlobalPosition;
-		_safeZone          = (SafeZone)(int)(GD.Randi() % 3u);
+		_safeZone = (SafeZone)(int)(GD.Randi() % 3u);
 
 		GD.Print($"[ConeOfCold] Phase started — safe zone: {_safeZone}");
 		StepFlyUp();
@@ -77,7 +84,7 @@ public partial class ConeOfColdPhase : Node2D
 	{
 		var tween = CreateTween();
 		tween.TweenProperty(_boss, "global_position", HoverPosition(), FlyDuration)
-		     .SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Sine);
+			.SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Sine);
 		tween.TweenCallback(Callable.From(StepPullParty));
 	}
 
@@ -102,20 +109,20 @@ public partial class ConeOfColdPhase : Node2D
 		var anchor = SlotPosition();
 		for (var i = 0; i < _encased.Count; i++)
 		{
-			var pm     = _encased[i];
+			var pm = _encased[i];
 			// Wedge / arrowhead formation: the member closest to centre (i == middle)
 			// sits at the anchor (nearest the boss / cone tip); outer members step
 			// back in Y and out in X, so the group tapers toward the narrow point.
 			var centre = (_encased.Count - 1) / 2f;
-			var xOff   = (i - centre) * NpcXSpacing;
-			var yOff   = Mathf.Abs(i - centre) * NpcYDepth;
-			var dest   = anchor + new Vector2(xOff, yOff);
+			var xOff = (i - centre) * NpcXSpacing;
+			var yOff = Mathf.Abs(i - centre) * NpcYDepth;
+			var dest = anchor + new Vector2(xOff, yOff);
 
 			pm.StunInPlace(EncaseStunDur);
 
 			var tween = CreateTween();
 			tween.TweenProperty(pm, "global_position", dest, PullDuration)
-			     .SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Sine);
+				.SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Sine);
 		}
 
 		GetTree().CreateTimer(PullDuration).Timeout += StepEncase;
@@ -125,13 +132,19 @@ public partial class ConeOfColdPhase : Node2D
 	Vector2 SlotPosition()
 	{
 		float cx = 0f, cy = 0f, rx = 200f, ry = 150f;
-		if (PartyMember.ArenaBoundary is { } b) { cx = b.Center.X; cy = b.Center.Y; rx = b.RadiusX; ry = b.RadiusY; }
+		if (PartyMember.ArenaBoundary is { } b)
+		{
+			cx = b.Center.X;
+			cy = b.Center.Y;
+			rx = b.RadiusX;
+			ry = b.RadiusY;
+		}
 
 		var xOffset = _safeZone switch
 		{
-			SafeZone.Left  => -rx * 0.5f,
-			SafeZone.Right =>  rx * 0.5f,
-			_              =>  0f
+			SafeZone.Left => -rx * 0.5f,
+			SafeZone.Right => rx * 0.5f,
+			_ => 0f
 		};
 		return new Vector2(cx + xOffset, cy - ry * 0.70f);
 	}
@@ -149,8 +162,9 @@ public partial class ConeOfColdPhase : Node2D
 			if (iceTex != null)
 			{
 				overlay.Texture = iceTex;
-				overlay.Scale   = new Vector2(0.25f, 0.25f);
+				overlay.Scale = new Vector2(0.25f, 0.25f);
 			}
+
 			overlay.GlobalPosition = pm.GlobalPosition;
 			GetParent().AddChild(overlay);
 			_overlays.Add(overlay);
@@ -165,7 +179,8 @@ public partial class ConeOfColdPhase : Node2D
 
 	void StepCast()
 	{
-		ShowCastBar?.Invoke("Cone of Cold", null, CastDuration);
+		// ShowCastBar?.Invoke("Cone of Cold",
+			GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/queen-of-the-frozen-wastes/absolute-zero.png"), CastDuration);
 		GetTree().CreateTimer(CastDuration).Timeout += StepFire;
 	}
 
@@ -188,17 +203,17 @@ public partial class ConeOfColdPhase : Node2D
 		// at world origin means DrawPolygon coordinates are world-space.
 		var draw = new ConeDrawNode
 		{
-			SafeZone       = _safeZone,
-			BossTip        = _boss.GlobalPosition,
-			ZIndex         = 15,
-			GlobalPosition = Vector2.Zero,
+			SafeZone = _safeZone,
+			BossTip = _boss.GlobalPosition,
+			ZIndex = 15,
+			GlobalPosition = Vector2.Zero
 		};
 		GetParent().AddChild(draw);
 
 		// Hold visible briefly, then fade to zero over ConeLinger seconds.
 		var tween = draw.CreateTween();
 		tween.TweenProperty(draw, "modulate", new Color(1f, 1f, 1f, 0f), ConeLinger)
-		     .SetEase(Tween.EaseType.In);
+			.SetEase(Tween.EaseType.In);
 		draw.GetTree().CreateTimer(ConeLinger).Timeout += draw.QueueFree;
 	}
 
@@ -209,7 +224,10 @@ public partial class ConeOfColdPhase : Node2D
 		foreach (var node in _boss.GetTree().GetNodesInGroup("party"))
 			if (node is Character c && c.IsAlive &&
 			    c.CharacterName == GameConstants.HealerName)
-				{ healer = c; break; }
+			{
+				healer = c;
+				break;
+			}
 
 		if (healer == null) return;
 		if (IsInSafeZone(healer.GlobalPosition))
@@ -223,13 +241,13 @@ public partial class ConeOfColdPhase : Node2D
 
 		CombatLog.Record(new CombatEventRecord
 		{
-			Timestamp   = Time.GetTicksMsec() / 1000.0,
-			SourceName  = GameConstants.FrozenPeakBossName,
-			TargetName  = healer.CharacterName,
+			Timestamp = Time.GetTicksMsec() / 1000.0,
+			SourceName = GameConstants.FrozenPeakBossName,
+			TargetName = healer.CharacterName,
 			AbilityName = "Cone of Cold",
-			Amount      = ConeDamage,
-			Type        = CombatEventType.Damage,
-			IsCrit      = false,
+			Amount = ConeDamage,
+			Type = CombatEventType.Damage,
+			IsCrit = false,
 			Description = "Caught in the Queen's Cone of Cold."
 		});
 	}
@@ -241,8 +259,8 @@ public partial class ConeOfColdPhase : Node2D
 	/// </summary>
 	bool IsInSafeZone(Vector2 worldPos)
 	{
-		var cx   = PartyMember.ArenaBoundary?.Center.X ?? 0f;
-		var rx   = PartyMember.ArenaBoundary is { } b ? b.RadiusX : 300f;
+		var cx = PartyMember.ArenaBoundary?.Center.X ?? 0f;
+		var rx = PartyMember.ArenaBoundary is { } b ? b.RadiusX : 300f;
 		// The arena spans [-rx, rx] around cx; each third is rx*2/3 wide.
 		// The boundary between left and middle is at cx - rx/3,
 		// and between middle and right is at cx + rx/3.
@@ -251,10 +269,10 @@ public partial class ConeOfColdPhase : Node2D
 
 		return _safeZone switch
 		{
-			SafeZone.Left   => relX < -edge,
+			SafeZone.Left => relX < -edge,
 			SafeZone.Middle => relX >= -edge && relX <= edge,
-			SafeZone.Right  => relX > edge,
-			_               => false
+			SafeZone.Right => relX > edge,
+			_ => false
 		};
 	}
 
@@ -272,7 +290,7 @@ public partial class ConeOfColdPhase : Node2D
 
 		var tween = CreateTween();
 		tween.TweenProperty(_boss, "global_position", _bossSavedPosition, ReturnDuration)
-		     .SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Sine);
+			.SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Sine);
 		tween.TweenCallback(Callable.From(StepComplete));
 	}
 
@@ -335,39 +353,44 @@ public partial class ConeDrawNode : Node2D
 		// Collect arena dimensions (fallback values keep editor previews sane).
 		float cx = 0f, cy = 0f, rx = 200f, ry = 150f;
 		if (PartyMember.ArenaBoundary is { } b)
-			{ cx = b.Center.X; cy = b.Center.Y; rx = b.RadiusX; ry = b.RadiusY; }
+		{
+			cx = b.Center.X;
+			cy = b.Center.Y;
+			rx = b.RadiusX;
+			ry = b.RadiusY;
+		}
 
 		var tip = BossTip;
 
 		// Horizontal boundaries that divide the arena into equal thirds.
-		float xLeft = cx - rx - OuterOvershoot;   // outer corners spread past arena edge
-		float xRight = cx + rx + OuterOvershoot;
-		float xLB   = cx - rx * SafeZoneHalfWidth;   // left-to-middle boundary
-		float xRB   = cx + rx * SafeZoneHalfWidth;   // middle-to-right boundary
+		var xLeft = cx - rx - OuterOvershoot; // outer corners spread past arena edge
+		var xRight = cx + rx + OuterOvershoot;
+		var xLB = cx - rx * SafeZoneHalfWidth; // left-to-middle boundary
+		var xRB = cx + rx * SafeZoneHalfWidth; // middle-to-right boundary
 		// Base of every pizza slice — past the arena bottom so the fill is solid.
-		float yBase  = cy + ry * BaseExtentFraction;
+		var yBase = cy + ry * BaseExtentFraction;
 
 		// White with slight transparency lets the texture show its natural colours.
 		// The outline is kept as a bright ice-blue edge.
-		var tint    = new Color(1f, 1f, 1f, 0.85f);
+		var tint = new Color(1f, 1f, 1f, 0.85f);
 		var outline = new Color(0.55f, 0.85f, 1.00f, 0.90f);
 
 		switch (SafeZone)
 		{
 			case ConeOfColdPhase.SafeZone.Left:
 				// Danger covers middle + right third.
-				DrawSlice(tip, xLB,    yBase, xRight, yBase, tint, outline);
+				DrawSlice(tip, xLB, yBase, xRight, yBase, tint, outline);
 				break;
 
 			case ConeOfColdPhase.SafeZone.Middle:
 				// Danger covers left third and right third (two separate slices).
-				DrawSlice(tip, xLeft,  yBase, xLB,   yBase, tint, outline);
-				DrawSlice(tip, xRB,    yBase, xRight, yBase, tint, outline);
+				DrawSlice(tip, xLeft, yBase, xLB, yBase, tint, outline);
+				DrawSlice(tip, xRB, yBase, xRight, yBase, tint, outline);
 				break;
 
 			case ConeOfColdPhase.SafeZone.Right:
 				// Danger covers left + middle third.
-				DrawSlice(tip, xLeft,  yBase, xRB,   yBase, tint, outline);
+				DrawSlice(tip, xLeft, yBase, xRB, yBase, tint, outline);
 				break;
 		}
 	}
@@ -379,11 +402,11 @@ public partial class ConeDrawNode : Node2D
 	/// is narrow at the top and wide at the bottom.
 	/// </summary>
 	void DrawSlice(Vector2 tip,
-	              float x0, float y0,
-	              float x1, float y1,
-	              Color tint, Color outline)
+		float x0, float y0,
+		float x1, float y1,
+		Color tint, Color outline)
 	{
-		var pts = new Vector2[] { tip, new Vector2(x0, y0), new Vector2(x1, y1) };
+		var pts = new Vector2[] { tip, new(x0, y0), new(x1, y1) };
 
 		// UV layout:
 		//   tip          → (0.5, 0)  — top-centre of the cone texture
@@ -391,13 +414,16 @@ public partial class ConeDrawNode : Node2D
 		//   bottom-right → (1,   1)  — bottom-right corner of the texture
 		var uvs = new Vector2[]
 		{
-			new Vector2(0.5f, 0f),
-			new Vector2(0f,   1f),
-			new Vector2(1f,   1f),
+			new(0.5f, 0f),
+			new(0f, 1f),
+			new(1f, 1f)
 		};
 
 		DrawPolygon(pts, new Color[] { tint }, uvs, _tex);
-		DrawPolyline(new Vector2[] { tip, new Vector2(x0, y0),
-		                             new Vector2(x1, y1), tip }, outline, 2.5f);
+		DrawPolyline(new Vector2[]
+		{
+			tip, new(x0, y0),
+			new(x1, y1), tip
+		}, outline, 2.5f);
 	}
 }

@@ -114,7 +114,6 @@ public partial class CrystalKnight : Character
 		_crushSpell = new BossStructuralCrushSpell { DamageAmount = CrushDamage };
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
-
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
 
 		// Audio player for the Structural Crush riser telegraph.

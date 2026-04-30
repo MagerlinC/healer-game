@@ -32,6 +32,7 @@ public partial class BossQueenAbsoluteZeroSpell : SpellResource
 		              $"Break the Queen's Ice Block shield before the cast completes to prevent it.";
 		Tags = SpellTags.Damage;
 		ManaCost = 0f;
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/queen-of-the-frozen-wastes/absolute-zero.png");
 		CastTime = 0f; // resolved manually, not through the pipeline cast time
 		EffectType = EffectType.Harmful;
 	}
@@ -54,13 +55,13 @@ public partial class BossQueenAbsoluteZeroSpell : SpellResource
 
 			CombatLog.CombatLog.Record(new CombatEventRecord
 			{
-				Timestamp   = Time.GetTicksMsec() / 1000.0,
-				SourceName  = boss.CharacterName,
-				TargetName  = target.CharacterName,
+				Timestamp = Time.GetTicksMsec() / 1000.0,
+				SourceName = boss.CharacterName,
+				TargetName = target.CharacterName,
 				AbilityName = Name,
-				Amount      = DamageAmount,
-				Type        = CombatEventType.Damage,
-				IsCrit      = false,
+				Amount = DamageAmount,
+				Type = CombatEventType.Damage,
+				IsCrit = false,
 				Description = "The Queen's Absolute Zero resolves — a killing frost that obliterates all warmth."
 			});
 		}
@@ -69,8 +70,12 @@ public partial class BossQueenAbsoluteZeroSpell : SpellResource
 	}
 
 	/// <summary>Not used — this spell bypasses the normal pipeline Apply.</summary>
-	public override void Apply(SpellContext ctx) { }
+	public override void Apply(SpellContext ctx)
+	{
+	}
 
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)
-		=> new();
+	{
+		return new List<Character>();
+	}
 }
