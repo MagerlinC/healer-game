@@ -103,8 +103,16 @@ public partial class DeflectOverlay : Node
 		// signals. ParryWindowManager.OpenWindow() is only called for genuinely
 		// parryable casts, so non-parryable spells (e.g. Volatile Icicle) never
 		// trigger the overlay. This also removes the CrystalKnight-specific coupling.
-		ParryWindowManager.WindupStarted += (_, __, duration) => BeginOverlay(duration);
+		// Named methods (not lambdas) are used so _ExitTree can unsubscribe and
+		// prevent callbacks firing on a disposed node after scene reload.
+		ParryWindowManager.WindupStarted += OnWindupStarted;
 		ParryWindowManager.WindupEnded   += EndOverlay;
+	}
+
+	public override void _ExitTree()
+	{
+		ParryWindowManager.WindupStarted -= OnWindupStarted;
+		ParryWindowManager.WindupEnded   -= EndOverlay;
 	}
 
 	public override void _Process(double delta)
@@ -124,6 +132,9 @@ public partial class DeflectOverlay : Node
 	}
 
 	// ── private ───────────────────────────────────────────────────────────────
+
+	// Named handler so it can be unsubscribed from the static event in _ExitTree.
+	void OnWindupStarted(string _, Texture2D __, float duration) => BeginOverlay(duration);
 
 	void BeginOverlay(float duration)
 	{
@@ -150,7 +161,7 @@ public partial class DeflectOverlay : Node
 
 		var bossWorldPos = Vector2.Zero;
 		var bossNodes = GetTree().GetNodesInGroup(GameConstants.BossGroupName);
-		if (bossNodes.Count > 0 && bossNodes[0] is Node2D bossNode)
+		if (bossNodes.Count > 0 && bossNodes[0] is Node2D bossNode && GodotObject.IsInstanceValid(bossNode))
 			bossWorldPos = bossNode.GlobalPosition;
 
 		// CanvasTransform maps world coords → viewport pixels.

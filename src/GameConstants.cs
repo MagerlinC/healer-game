@@ -50,7 +50,7 @@ public static class GameConstants
 		{ 1, new List<int> { 1000, 1200, 1600 } },
 		{ 2, new List<int> { 1800, 2100, 2500 } },
 		{ 3, new List<int> { 2800, 3000, 4000 } },
-		{ 4, new List<int> { 5000 } }
+		{ 4, new List<int> { 6000 } }
 	};
 
 	public static Dictionary<int, List<int>> XpRewardsByDungeonTier = new()

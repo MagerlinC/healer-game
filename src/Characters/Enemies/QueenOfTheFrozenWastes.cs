@@ -3,55 +3,6 @@ using healerfantasy;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
-/// <summary>
-/// Queen of the Frozen Wastes — the single boss of The Frozen Peak (Tier 4)
-/// and the final encounter of the entire run.
-///
-/// ════════════════════════════════════════════════════════════════════════════
-/// SPELLS
-/// ════════════════════════════════════════════════════════════════════════════
-///
-/// ── Snowstorm ────────────────────────────────────────────────────────────
-/// 1-second cast (shown on BossCastBar) followed by an 8-second channel.
-/// Every second of the channel every living party member takes
-/// <see cref="SnowstormDamagePerTick"/> frost damage.
-/// A SnowstormChannelNode drives the channel; the boss cast bar shows a
-/// reverse (draining) channel bar for the full 8 seconds.
-///
-/// ── Volatile Icicle ──────────────────────────────────────────────────────
-/// 1-second cast. Spawns a VolatileIcicleProjectile at the Queen's position
-/// that floats slowly toward the healer. On contact with any party member it
-/// explodes and leaves a permanent IcicleExplosionZone — a blue circular
-/// frost hazard dealing 15 damage/sec to anyone inside.
-/// Intended design: kite the icicle to the arena edge to detonate it safely.
-/// Over time the arena fills with zones, compressing the safe space.
-///
-/// ── Burst of Winter ──────────────────────────────────────────────────────
-/// 1.5-second cast. On resolution a nova visual expands from the Queen and
-/// every living party member takes moderate frost damage and is knocked
-/// outward to the edges of the arena.
-///
-/// ── Ice Block ────────────────────────────────────────────────────────────
-/// Instant cast. Puts the Queen into her Ice Block state:
-///   • Sprite changes to the ice-block.png static frame.
-///   • She gains a <see cref="IceBlockShieldAmount"/> absorb shield.
-///   • An 8-second Absolute Zero cast begins (shown on BossCastBar).
-///   • While encased the Queen cannot use any other abilities.
-///   • If the shield is destroyed the Ice Block shatters: Absolute Zero is
-///     cancelled and the Queen returns to normal attacks.
-///   • If the 8-second cast completes (shield intact), Absolute Zero fires:
-///     1 000 damage to every living party member.
-///
-/// ════════════════════════════════════════════════════════════════════════════
-/// ANIMATIONS
-/// ════════════════════════════════════════════════════════════════════════════
-/// Loaded from res://assets/enemies/queen-of-the-frozen-wastes/.
-///
-///   "idle"      — idle1–idle3       (looping, 4 fps)
-///   "attack"    — attack1–attack3   (one-shot → idle, 10 fps)  [used for cast wind-up]
-///   "cast"      — cast1–cast3       (one-shot → idle, 6 fps)   [used for icicle / snowstorm]
-///   "ice_block" — ice-block.png     (single frame, loops — static while encased)
-/// </summary>
 public partial class QueenOfTheFrozenWastes : Character
 {
 	public QueenOfTheFrozenWastes()
@@ -215,6 +166,7 @@ public partial class QueenOfTheFrozenWastes : Character
 				TriggerConeOfColdPhase();
 				return;
 			}
+
 			if (!_phase2Triggered && CurrentHealth <= MaxHealth * 0.33f)
 			{
 				_phase2Triggered = true;
@@ -470,12 +422,12 @@ public partial class QueenOfTheFrozenWastes : Character
 		GD.Print("[QueenOfTheFrozenWastes] Triggering Cone of Cold phase.");
 
 		_isInvulnerable = true;
-		_isMidPhase     = true;
+		_isMidPhase = true;
 
 		// Cancel any in-progress cast wind-up so the cast bar is cleared cleanly.
 		if (_pendingCast != PendingCast.None)
 		{
-			_pendingCast     = PendingCast.None;
+			_pendingCast = PendingCast.None;
 			_castWindupTimer = 0f;
 			EmitSignalCastWindupEnded();
 		}
@@ -495,8 +447,8 @@ public partial class QueenOfTheFrozenWastes : Character
 		}
 
 		var phase = new ConeOfColdPhase();
-		phase.ShowCastBar    = (name, icon, dur) => EmitSignalCastWindupStarted(name, icon, dur);
-		phase.HideCastBar    = () => EmitSignalCastWindupEnded();
+		phase.ShowCastBar = (name, icon, dur) => EmitSignalCastWindupStarted(name, icon, dur);
+		phase.HideCastBar = () => EmitSignalCastWindupEnded();
 		phase.OnPhaseComplete = OnConeOfColdPhaseComplete;
 
 		// Add as sibling so the phase node can access the full scene tree.
@@ -513,14 +465,14 @@ public partial class QueenOfTheFrozenWastes : Character
 		GD.Print("[QueenOfTheFrozenWastes] Cone of Cold phase complete — resuming normal rotation.");
 
 		_isInvulnerable = false;
-		_isMidPhase     = false;
+		_isMidPhase = false;
 
 		// Stagger next abilities so the fight doesn't immediately spike after
 		// the phase ends.
-		_snowstormTimer     = Mathf.Max(_snowstormTimer,     8f);
-		_icicleTimer        = Mathf.Max(_icicleTimer,        4f);
+		_snowstormTimer = Mathf.Max(_snowstormTimer, 8f);
+		_icicleTimer = Mathf.Max(_icicleTimer, 4f);
 		_burstOfWinterTimer = Mathf.Max(_burstOfWinterTimer, 10f);
-		_iceBlockTimer      = Mathf.Max(_iceBlockTimer,      12f);
+		_iceBlockTimer = Mathf.Max(_iceBlockTimer, 12f);
 
 		if (IsAlive)
 			_sprite.Play("idle");

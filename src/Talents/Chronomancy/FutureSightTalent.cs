@@ -9,7 +9,6 @@ public class FutureSightTalent : ISpellModifier
 {
 
 	public Texture2D EffectIcon { get; set; }
-	readonly float procChance = 0.1f;
 	public ModifierPriority Priority => ModifierPriority.BASE;
 
 	public void OnBeforeCast(SpellContext ctx)
@@ -22,8 +21,7 @@ public class FutureSightTalent : ISpellModifier
 
 	public void OnAfterCast(SpellContext ctx)
 	{
-		var random = GD.Randf();
-		if (ctx.Spell.School != SpellSchool.Chronomancy && random < procChance)
+		if (ctx.Spell.School == SpellSchool.Chronomancy)
 		{
 			ctx.Caster.ApplyEffect(new FutureSightEffect(10f)
 			{

@@ -221,7 +221,7 @@ public static class TalentRegistry
 		{
 			Name = "Future Sight",
 			Description =
-				"Casting a chronomancy spell applies a buff that causes the next non-chronomancy spell cast within 10 seconds to always crit.",
+				"Casting a Chronomancy spell makes your next non-Chronomancy spell always crit.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_24.png",
 			School = SpellSchool.Chronomancy,
 			TalentRow = 3,
@@ -238,11 +238,13 @@ public static class TalentRegistry
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_25.png",
 			School = SpellSchool.Chronomancy,
 			TalentRow = 3,
-			Configure = (t, _) =>
+			Configure = (t, icon) =>
 			{
-				var temporalMomentum = new TemporalMomentumTalent();
+				var temporalMomentum = new TemporalMomentumTalent
+				{
+					EffectIcon = icon
+				};
 				t.SpellModifiers.Add(temporalMomentum);
-				t.CharacterModifiers.Add(temporalMomentum);
 			}
 		}
 	];

@@ -4,7 +4,7 @@ using healerfantasy.Talents;
 
 namespace healerfantasy.Effects;
 
-public partial class FutureSightEffect : CharacterEffect, ISpellModifier
+public partial class FutureSightEffect : CharacterEffect, ISpellModifier, ICharacterModifier
 {
 
 	public FutureSightEffect(float duration) : base(duration)
@@ -12,15 +12,22 @@ public partial class FutureSightEffect : CharacterEffect, ISpellModifier
 		EffectId = "FutureSight";
 		Icon = Icon;
 		School = SpellSchool.Chronomancy;
-		Description = "Your next non-chronomancy spell is instant.";
+		Description = "Your next non-Chronomancy spell will crit.";
 	}
 
 	public ModifierPriority Priority { get; } = ModifierPriority.BASE;
 
+	// ICharacterModifier: injects NextCastIsCrit into the stats snapshot so
+	// the spell pipeline picks it up correctly at cast time.
+	public void Modify(CharacterStats stats)
+	{
+		stats.NextCastIsCrit = true;
+	}
+
 	public override void OnApplied(Character target)
 	{
-		target.GetCharacterStats().NextCastIsCrit = true;
 	}
+
 	public void OnBeforeCast(SpellContext context)
 	{
 	}
@@ -31,8 +38,8 @@ public partial class FutureSightEffect : CharacterEffect, ISpellModifier
 
 	public void OnAfterCast(SpellContext ctx)
 	{
-		// Consume the buff after it has boosted a damage spell.
-		if (ctx.Spell.School != SpellSchool.Chronomancy && ctx.Tags.HasFlag(SpellTags.Damage))
-			ctx.Caster.RemoveEffect(EffectId);
+		// Consume the buff: removing the effect stops Modify() from running,
+		// so NextCastIsCrit will be false on the following cast.
+		ctx.Caster.RemoveEffect(EffectId);
 	}
 }

@@ -32,7 +32,7 @@ public partial class HolyProtectionEffect : CharacterEffect, IConditionalCharact
 	/// 0.3 means the character takes 30% less damage.
 	/// </param>
 	public HolyProtectionEffect(float damageReductionAmount)
-		: base(float.MaxValue, 0f) // Permanent — managed by combat lifetime, not a timer.
+		: base(GameConstants.InfiniteDuration, 0f) // Permanent — managed by combat lifetime, not a timer.
 	{
 		EffectId = "HolyProtection";
 		DamageReductionAmount = damageReductionAmount;

@@ -73,7 +73,7 @@ public static class SpellPipeline
 			mod.OnCalculate(ctx);
 
 		// ── 7. Crit roll ────────────────────────────────────────────────────
-		if (ctx.CasterStats.CritChance > 0f && GD.Randf() < ctx.CasterStats.CritChance)
+		if (ctx.CasterStats.NextCastIsCrit || ctx.CasterStats.CritChance > 0f && GD.Randf() < ctx.CasterStats.CritChance)
 		{
 			ctx.Tags |= SpellTags.Critical;
 			ctx.FinalValue *= ctx.CasterStats.CritMultiplier;

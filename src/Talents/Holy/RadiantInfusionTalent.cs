@@ -14,30 +14,34 @@ namespace healerfantasy.Talents.Holy;
 /// </summary>
 public class RadiantInfusionTalent : ISpellModifier
 {
-    const float DamageBonus = 0.15f;
-    const float BuffDuration = 6f;
+	const float DamageBonus = 0.15f;
+	const float BuffDuration = 6f;
 
-    /// <summary>Icon passed from <see cref="TalentRegistry"/> so the buff indicator
-    /// shows the talent's own icon rather than the triggering spell's icon.</summary>
-    public Texture2D EffectIcon { get; set; }
+	/// <summary>Icon passed from <see cref="TalentRegistry"/> so the buff indicator
+	/// shows the talent's own icon rather than the triggering spell's icon.</summary>
+	public Texture2D EffectIcon { get; set; }
 
-    public ModifierPriority Priority => ModifierPriority.BASE;
+	public ModifierPriority Priority => ModifierPriority.BASE;
 
-    public void OnBeforeCast(SpellContext ctx) { }
+	public void OnBeforeCast(SpellContext ctx)
+	{
+	}
 
-    public void OnCalculate(SpellContext ctx) { }
+	public void OnCalculate(SpellContext ctx)
+	{
+	}
 
-    public void OnAfterCast(SpellContext ctx)
-    {
-        if (!ctx.Tags.HasFlag(SpellTags.Healing)) return;
+	public void OnAfterCast(SpellContext ctx)
+	{
+		if (!ctx.Tags.HasFlag(SpellTags.Healing)) return;
 
-        foreach (var target in ctx.Targets)
-        {
-            if (!target.IsAlive) continue;
-            target.ApplyEffect(new RadiantInfusionEffect(BuffDuration, DamageBonus)
-            {
-                Icon = EffectIcon
-            });
-        }
-    }
+		foreach (var target in ctx.Targets)
+		{
+			if (!target.IsAlive || !target.IsFriendly) continue;
+			target.ApplyEffect(new RadiantInfusionEffect(BuffDuration, DamageBonus)
+			{
+				Icon = EffectIcon
+			});
+		}
+	}
 }
