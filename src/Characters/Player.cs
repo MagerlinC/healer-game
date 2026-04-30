@@ -263,11 +263,7 @@ public partial class Player : Character
 		foreach (var key in cdKeys)
 			_spellCooldowns[key] = Mathf.Max(_spellCooldowns[key] - (float)delta, 0f);
 
-		if (!IsAlive)
-		{
-			CancelCast();
-			return;
-		}
+		if (!IsAlive) return;
 
 		// ── Generic spells (off-GCD, castable even while casting another spell) ──
 		// Checked before the _isCasting early-return so Deflect can be triggered

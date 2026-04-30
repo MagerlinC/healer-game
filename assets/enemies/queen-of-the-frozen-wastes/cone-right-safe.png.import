@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://by8d0jto8kphy"
-path="res://.godot/imported/ice-block.png-3f19d95467c3c223a3ad42818b25612f.ctex"
+uid="uid://dunvddj16ssm0"
+path="res://.godot/imported/cone-right-safe.png-20b3c5206fed7c650231b3736adca879.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/enemies/queen-of-the-frozen-wastes/ice-block.png"
-dest_files=["res://.godot/imported/ice-block.png-3f19d95467c3c223a3ad42818b25612f.ctex"]
+source_file="res://assets/enemies/queen-of-the-frozen-wastes/cone-right-safe.png"
+dest_files=["res://.godot/imported/cone-right-safe.png-20b3c5206fed7c650231b3736adca879.ctex"]
 
 [params]
 

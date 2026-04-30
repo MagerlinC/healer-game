@@ -100,6 +100,21 @@ public partial class QueenOfTheFrozenWastes : Character
 	bool _isInIceBlock;
 	float _absoluteZeroTimer;
 
+	// ── Cone of Cold phase ────────────────────────────────────────────────────
+	bool _isInvulnerable;
+	bool _isMidPhase;
+	bool _phase1Triggered;
+	bool _phase2Triggered;
+
+	/// <summary>
+	/// Counts down the remaining wind-up time for the current cast.
+	/// Resolution happens here in <c>_Process</c> — not in
+	/// <c>OnAnimationFinished</c> — so that <see cref="SpellResource.CastTime"/>
+	/// is the true arbiter of how long the cast takes, regardless of animation
+	/// speed or frame count.
+	/// </summary>
+	float _castWindupTimer;
+
 	BossQueenSnowstormSpell _snowstormSpell;
 	BossQueenVolatileIcicleSpell _icicleSpell;
 	BossQueenBurstOfWinterSpell _burstOfWinterSpell;
@@ -119,6 +134,19 @@ public partial class QueenOfTheFrozenWastes : Character
 	PendingCast _pendingCast;
 
 	const string AssetBase = "res://assets/enemies/queen-of-the-frozen-wastes/";
+
+	// ── invulnerability ───────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Blocks all incoming damage while the Cone of Cold phase is active.
+	/// The shield-break / Ice Block check still uses the raw shield value and
+	/// is unaffected by this flag.
+	/// </summary>
+	public override void TakeDamage(float amount)
+	{
+		if (_isInvulnerable) return;
+		base.TakeDamage(amount);
+	}
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -176,13 +204,43 @@ public partial class QueenOfTheFrozenWastes : Character
 			return; // no other abilities while encased
 		}
 
+		// ── Cone of Cold phase triggers ────────────────────────────────────────────
+		// Check health thresholds before any ability logic. Once a phase begins
+		// _isMidPhase suppresses the rest of _Process until the phase completes.
+		if (!_isMidPhase && !_isInIceBlock)
+		{
+			if (!_phase1Triggered && CurrentHealth <= MaxHealth * 0.66f)
+			{
+				_phase1Triggered = true;
+				TriggerConeOfColdPhase();
+				return;
+			}
+			if (!_phase2Triggered && CurrentHealth <= MaxHealth * 0.33f)
+			{
+				_phase2Triggered = true;
+				TriggerConeOfColdPhase();
+				return;
+			}
+		}
+
+		if (_isMidPhase) return;
+
 		// ── Attack timers ─────────────────────────────────────────────────────
 		_snowstormTimer -= (float)delta;
 		_icicleTimer -= (float)delta;
 		_burstOfWinterTimer -= (float)delta;
 		_iceBlockTimer -= (float)delta;
 
-		if (_pendingCast != PendingCast.None) return; // wait for animation
+		// ── Cast wind-up timer ────────────────────────────────────────────────
+		// Resolution is driven by the spell's CastTime, not the animation length.
+		// OnAnimationFinished loops the cast animation while the timer counts down.
+		if (_pendingCast != PendingCast.None)
+		{
+			_castWindupTimer -= (float)delta;
+			if (_castWindupTimer <= 0f)
+				ResolvePendingCast();
+			return;
+		}
 
 		// Priority: Ice Block > Snowstorm > Burst of Winter > Volatile Icicle.
 		if (_iceBlockTimer <= 0f && !_isSnowstormChanneling)
@@ -216,6 +274,7 @@ public partial class QueenOfTheFrozenWastes : Character
 	void BeginSnowstormCast()
 	{
 		_pendingCast = PendingCast.Snowstorm;
+		_castWindupTimer = _snowstormSpell.CastTime;
 		_sprite.Play("cast");
 		EmitSignalCastWindupStarted("Snowstorm", _snowstormSpell.Icon, _snowstormSpell.CastTime);
 	}
@@ -227,6 +286,7 @@ public partial class QueenOfTheFrozenWastes : Character
 	void BeginBurstOfWinterCast()
 	{
 		_pendingCast = PendingCast.BurstOfWinter;
+		_castWindupTimer = _burstOfWinterSpell.CastTime;
 		_sprite.Play("cast");
 		EmitSignalCastWindupStarted("Burst of Winter", _burstOfWinterSpell.Icon, _burstOfWinterSpell.CastTime);
 	}
@@ -238,6 +298,7 @@ public partial class QueenOfTheFrozenWastes : Character
 	void BeginIcicleCast()
 	{
 		_pendingCast = PendingCast.Icicle;
+		_castWindupTimer = _icicleSpell.CastTime;
 		_sprite.Play("attack");
 		EmitSignalCastWindupStarted("Volatile Icicle", _icicleSpell.Icon, _icicleSpell.CastTime);
 	}
@@ -340,15 +401,20 @@ public partial class QueenOfTheFrozenWastes : Character
 		GD.Print("[QueenOfTheFrozenWastes] Snowstorm channel ended.");
 	}
 
-	// ── animation callbacks ───────────────────────────────────────────────────
+	// ── cast resolution ───────────────────────────────────────────────────────
 
-	void OnAnimationFinished()
+	/// <summary>
+	/// Called by <c>_Process</c> when <see cref="_castWindupTimer"/> reaches zero.
+	/// Resolves the pending spell and returns the boss to idle (or channel) state.
+	/// Keeping resolution here — rather than in <c>OnAnimationFinished</c> —
+	/// means <see cref="SpellResource.CastTime"/> is the true cast duration.
+	/// </summary>
+	void ResolvePendingCast()
 	{
-		// Resolve whichever spell was queued during the cast animation.
 		switch (_pendingCast)
 		{
 			case PendingCast.Snowstorm:
-				EmitSignalCastWindupEnded(); // the spell's Apply will re-emit for the channel
+				EmitSignalCastWindupEnded();
 				var snowTarget = PickRandomPartyMember();
 				if (snowTarget != null)
 					SpellPipeline.Cast(_snowstormSpell, this, snowTarget);
@@ -371,10 +437,93 @@ public partial class QueenOfTheFrozenWastes : Character
 
 		_pendingCast = PendingCast.None;
 
-		// Return to idle — but keep "cast" looping during Snowstorm channel, and
-		// preserve the Ice Block animation when the queen is shielded.
 		if (IsAlive && !_isInIceBlock)
 			_sprite.Play(_isSnowstormChanneling ? "cast" : "idle");
+	}
+
+	// ── animation callbacks ───────────────────────────────────────────────────
+
+	void OnAnimationFinished()
+	{
+		// While a cast is still counting down, loop the current animation so
+		// the boss visually holds the casting pose for the full CastTime duration.
+		if (_pendingCast != PendingCast.None)
+		{
+			_sprite.Play(_sprite.Animation);
+			return;
+		}
+
+		// No cast in progress — return to idle (or channel anim / ice block).
+		if (IsAlive && !_isInIceBlock)
+			_sprite.Play(_isSnowstormChanneling ? "cast" : "idle");
+	}
+
+	// ── Cone of Cold phase ───────────────────────────────────────────────────
+
+	/// <summary>
+	/// Begins the Cone of Cold phase. The boss becomes invulnerable, any active
+	/// cast is interrupted, and a self-contained <see cref="ConeOfColdPhase"/>
+	/// node drives the sequence before calling back to <see cref="OnConeOfColdPhaseComplete"/>.
+	/// </summary>
+	void TriggerConeOfColdPhase()
+	{
+		GD.Print("[QueenOfTheFrozenWastes] Triggering Cone of Cold phase.");
+
+		_isInvulnerable = true;
+		_isMidPhase     = true;
+
+		// Cancel any in-progress cast wind-up so the cast bar is cleared cleanly.
+		if (_pendingCast != PendingCast.None)
+		{
+			_pendingCast     = PendingCast.None;
+			_castWindupTimer = 0f;
+			EmitSignalCastWindupEnded();
+		}
+
+		// Cancel an active Snowstorm channel — EndChannel fires OnChannelFinished
+		// which calls OnSnowstormChannelEnded, resetting the flag and clearing the bar.
+		if (_isSnowstormChanneling)
+		{
+			foreach (var child in GetParent().GetChildren())
+			{
+				if (child is SnowstormChannelNode chan)
+				{
+					chan.Cancel();
+					break;
+				}
+			}
+		}
+
+		var phase = new ConeOfColdPhase();
+		phase.ShowCastBar    = (name, icon, dur) => EmitSignalCastWindupStarted(name, icon, dur);
+		phase.HideCastBar    = () => EmitSignalCastWindupEnded();
+		phase.OnPhaseComplete = OnConeOfColdPhaseComplete;
+
+		// Add as sibling so the phase node can access the full scene tree.
+		GetParent().AddChild(phase);
+		phase.Start(this);
+	}
+
+	/// <summary>
+	/// Fired by <see cref="ConeOfColdPhase"/> when the full sequence has finished.
+	/// Restores normal ability rotation and clears the invulnerability flag.
+	/// </summary>
+	void OnConeOfColdPhaseComplete()
+	{
+		GD.Print("[QueenOfTheFrozenWastes] Cone of Cold phase complete — resuming normal rotation.");
+
+		_isInvulnerable = false;
+		_isMidPhase     = false;
+
+		// Stagger next abilities so the fight doesn't immediately spike after
+		// the phase ends.
+		_snowstormTimer     = Mathf.Max(_snowstormTimer,     8f);
+		_icicleTimer        = Mathf.Max(_icicleTimer,        4f);
+		_burstOfWinterTimer = Mathf.Max(_burstOfWinterTimer, 10f);
+		_iceBlockTimer      = Mathf.Max(_iceBlockTimer,      12f);
+
+		if (IsAlive)
+			_sprite.Play("idle");
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
@@ -404,7 +553,7 @@ public partial class QueenOfTheFrozenWastes : Character
 		frames.AddAnimation("ice_block");
 		frames.SetAnimationLoop("ice_block", true);
 		frames.SetAnimationSpeed("ice_block", 1f);
-		var iceBlockTex = GD.Load<Texture2D>(AssetBase + "ice-block.png");
+		var iceBlockTex = GD.Load<Texture2D>(AssetBase + "queen-ice-block.png");
 		if (iceBlockTex != null)
 			frames.AddFrame("ice_block", iceBlockTex);
 

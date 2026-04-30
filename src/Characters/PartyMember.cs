@@ -54,6 +54,27 @@ public partial class PartyMember : Character
 		_knockbackStunTimer    = stunDuration;
 	}
 
+	/// <summary>
+	/// Stuns the party member in place for <paramref name="duration"/> seconds
+	/// without changing their position. While stunned <see cref="IsKnockedBack"/>
+	/// returns true and movement logic is suppressed, allowing an external tween
+	/// (e.g. from <c>ConeOfColdPhase</c>) to move them smoothly.
+	/// </summary>
+	public void StunInPlace(float duration)
+	{
+		Velocity            = Vector2.Zero;
+		_knockbackStunTimer = duration;
+	}
+
+	/// <summary>
+	/// Immediately clears any active knockback / stun, allowing the party member
+	/// to resume normal movement on the next frame.
+	/// </summary>
+	public void ClearKnockbackStun()
+	{
+		_knockbackStunTimer = 0f;
+	}
+
 	public override void _Process(double delta)
 	{
 		base._Process(delta);

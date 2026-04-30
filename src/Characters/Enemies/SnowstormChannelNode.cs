@@ -93,6 +93,13 @@ public partial class SnowstormChannelNode : Node2D
 		}
 	}
 
+	/// <summary>
+	/// Interrupts the channel immediately, firing <see cref="OnChannelFinished"/>
+	/// so the caller (the Queen) can clean up the cast bar and reset its state.
+	/// Safe to call more than once — guarded by <see cref="_ended"/>.
+	/// </summary>
+	public void Cancel() => EndChannel();
+
 	void EndChannel()
 	{
 		if (_ended) return;

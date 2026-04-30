@@ -38,6 +38,7 @@ public partial class Wizard : PartyMember
     {
         base._Process(delta);
         if (!IsAlive) return;
+        if (IsKnockedBack) return;
 
         _castTimer -= (float)delta;
         if (_castTimer <= 0f)
