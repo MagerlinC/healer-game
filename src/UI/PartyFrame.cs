@@ -129,8 +129,30 @@ public partial class PartyFrame : CharacterFrame
 		AddChild(_panel);
 
 		// ── item-effect row (below the health panel, healer only) ─────────────
+		// The overlay is a zero-height Control so it contributes nothing to the
+		// VBox layout (keeping the healer frame the same height as the others).
+		// ClipContents = false lets the ItemEffectBar render outside the overlay's
+		// zero bounds, hanging visually below the health panel.
 		if (_showItemEffects)
-			AddChild(new ItemEffectBar());
+		{
+			var overlay = new Control();
+			overlay.CustomMinimumSize = Vector2.Zero;
+			overlay.SizeFlagsVertical = SizeFlags.ShrinkBegin;
+			overlay.ClipContents = false;
+			overlay.MouseFilter = MouseFilterEnum.Ignore;
+
+			var itemEffectBar = new ItemEffectBar();
+			// Anchor top & bottom to the overlay's bottom edge, then push the
+			// bottom offset down by the bar's natural height (32 px + 3 px gap).
+			itemEffectBar.AnchorTop = 1f;
+			itemEffectBar.AnchorBottom = 1f;
+			itemEffectBar.AnchorLeft = 0f;
+			itemEffectBar.AnchorRight = 1f;
+			itemEffectBar.OffsetBottom = 35f;
+
+			overlay.AddChild(itemEffectBar);
+			AddChild(overlay);
+		}
 
 		// ── hover border highlight ────────────────────────────────────────────
 		_panel.MouseEntered += () => _panelStyle.BorderColor = BorderHovered;

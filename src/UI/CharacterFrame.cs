@@ -8,7 +8,7 @@ using healerfantasy;
 /// Provides three things every frame needs:
 /// <list type="bullet">
 ///   <item><see cref="BoundCharacter"/> — the game object used for hover-targeting.</item>
-///   <item><see cref="EffectBar"/> — an <see cref="HBoxContainer"/> that displays
+///   <item><see cref="EffectBar"/> — a <see cref="GridContainer"/> that displays
 ///     <see cref="EffectIndicator"/> badges. Subclasses place it in their own layout
 ///     (e.g. above or below the health panel) and the base class handles the
 ///     <see cref="Character.EffectApplied"/> / <see cref="Character.EffectRemoved"/>
@@ -31,18 +31,26 @@ public abstract partial class CharacterFrame : VBoxContainer
 	public Character? BoundCharacter { get; private set; }
 
 	/// <summary>
-	/// Row of <see cref="EffectIndicator"/> badges.
-	/// Created in the constructor (before <c>_Ready</c>); subclasses add it to
-	/// the scene tree at the appropriate position in their own <c>_Ready</c>.
+	/// Grid of <see cref="EffectIndicator"/> badges. Wraps to multiple rows as
+	/// effects accumulate, growing upward while keeping the frame width fixed.
+	/// New effects are inserted at index 0 so the most recently applied badge
+	/// always appears in the top-left position.
 	/// </summary>
-	protected readonly HBoxContainer EffectBar;
+	protected readonly GridContainer EffectBar;
+
+	/// <summary>
+	/// Number of columns in the effect grid. Defaults to 5, which fills a
+	/// 160 px frame at the standard 28 px indicator size with 3 px gaps.
+	/// Override in subclasses that use a different frame width.
+	/// </summary>
+	protected virtual int EffectGridColumns => 5;
 
 	public int _effectIndicatorSize = 28;
 	protected CharacterFrame()
 	{
-		EffectBar = new HBoxContainer();
-		EffectBar.AddThemeConstantOverride("separation", 3);
-		EffectBar.CustomMinimumSize = new Vector2(0, 28);
+		EffectBar = new GridContainer();
+		EffectBar.AddThemeConstantOverride("h_separation", 3);
+		EffectBar.AddThemeConstantOverride("v_separation", 3);
 		EffectBar.MouseFilter = MouseFilterEnum.Ignore;
 	}
 
@@ -54,6 +62,9 @@ public abstract partial class CharacterFrame : VBoxContainer
 	/// </summary>
 	public override void _Ready()
 	{
+		// Set columns here (after construction) so subclass virtual overrides resolve correctly.
+		EffectBar.Columns = EffectGridColumns;
+
 		GlobalAutoLoad.SubscribeToSignal(
 			nameof(Character.EffectApplied),
 			Callable.From((string name, CharacterEffect effect) =>
@@ -91,8 +102,10 @@ public abstract partial class CharacterFrame : VBoxContainer
 	{
 		// Remove the stale badge so a refreshed effect doesn't appear twice.
 		HideEffectIndicator(effect.EffectId);
-		EffectBar.AddChild(new EffectIndicator(effect, _effectIndicatorSize));
-
+		var indicator = new EffectIndicator(effect, _effectIndicatorSize);
+		EffectBar.AddChild(indicator);
+		// Move to the front so the newest effect always appears top-left in the grid.
+		EffectBar.MoveChild(indicator, 0);
 	}
 
 	void HideEffectIndicator(string effectId)

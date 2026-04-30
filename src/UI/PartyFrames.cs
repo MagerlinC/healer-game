@@ -38,7 +38,7 @@ public partial class PartyFrames : Control
 		hbox.AddThemeConstantOverride("separation", 6);
 		hbox.SetAnchorsPreset(LayoutPreset.Center);
 		hbox.GrowHorizontal = GrowDirection.Both;
-		hbox.GrowVertical = GrowDirection.Both;
+		hbox.GrowVertical = GrowDirection.Begin;
 		AddChild(hbox);
 
 		for (var i = 0; i < MemberDefs.Length; i++)
@@ -48,6 +48,9 @@ public partial class PartyFrames : Control
 			// item procs are clearly shown as player-owned effects.
 			var showItemEffects = name == GameConstants.HealerName;
 			_frames[i] = new PartyFrame(name, barColor, maxHp, showItemEffects);
+			// Bottom-align each frame so all health panels stay flush at the same
+			// vertical position when effect rows cause individual frames to grow taller.
+			_frames[i].SizeFlagsVertical = SizeFlags.ShrinkEnd;
 			hbox.AddChild(_frames[i]);
 		}
 	}

@@ -24,7 +24,7 @@ public partial class VoidDrainSpell : SpellResource
 	{
 		Name = "Void Drain";
 		Description =
-			$"Drains void energy from the target, dealing {DamagePerTick} void damage every {TickRate}s over {Duration}s and healing yourself for {(int)(HealFraction * 100)} of damage dealt.";
+			$"Drains void energy from the target, dealing {DamagePerTick} void damage every {TickRate}s over {Duration}s and healing yourself for {(int)(HealFraction * 100)}% of damage dealt.";
 		ManaCost = 10f;
 		CastTime = 0.0f;
 		Cooldown = 4f;

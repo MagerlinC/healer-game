@@ -19,7 +19,10 @@ public partial class ItemEffectBar : HBoxContainer
     public ItemEffectBar()
     {
         AddThemeConstantOverride("separation", 3);
-        CustomMinimumSize = new Vector2(0, 32);
+        // No forced minimum height — the bar collapses to zero when no item
+        // effects are active, so the healer frame stays the same height as the
+        // other party frames (which have no ItemEffectBar).  When indicators
+        // are present they carry their own 32 px CustomMinimumSize.
         MouseFilter = MouseFilterEnum.Ignore;
     }
 

@@ -52,10 +52,10 @@ public partial class FlyingSkull : Character
 
 	[Export] public float MeleeInterval = 2.5f;
 	[Export] public float ScreechInterval = 5.0f;
-	[Export] public float PoolInterval = 11.0f;
+	[Export] public float PoolInterval = 10.0f;
 	[Export] public float WailInterval = 16.0f;
 	[Export] public float WailWindup = 3.5f;
-	[Export] public float WavesInterval = 22.0f;
+	[Export] public float WavesInterval = 18.0f;
 
 	[Export] public float MeleeDamage = 40f;
 	[Export] public float ScreechDamage = 38f;
@@ -137,9 +137,9 @@ public partial class FlyingSkull : Character
 
 		_meleeTimer = MeleeInterval;
 		_screechTimer = ScreechInterval;
-		_poolTimer = PoolInterval;
+		_poolTimer = 4f;
 		_wailTimer = WailInterval;
-		_wavesTimer = WavesInterval;
+		_wavesTimer = 12f;
 
 		_deathChompSpell = new BossDeathChompSpell { DamageAmount = MeleeDamage };
 		_voidScreechSpell = new BossVoidScreechSpell { DamageAmount = ScreechDamage };
@@ -354,25 +354,25 @@ public partial class FlyingSkull : Character
 	{
 		// Convert the screen rect to world-space so gap positions are placed
 		// correctly within the visible arena (mirrors the fix in NecroticWave._Ready).
-		var screenRect    = GetViewportRect();
-		var toWorld       = GetCanvasTransform().AffineInverse();
-		var wTL           = toWorld * screenRect.Position;
-		var wBR           = toWorld * screenRect.End;
-		float worldLeft   = Mathf.Min(wTL.X, wBR.X);
-		float worldRight  = Mathf.Max(wTL.X, wBR.X);
-		float worldTop    = Mathf.Min(wTL.Y, wBR.Y);
-		float worldBottom = Mathf.Max(wTL.Y, wBR.Y);
-		float worldWidth  = worldRight  - worldLeft;
-		float worldHeight = worldBottom - worldTop;
+		var screenRect = GetViewportRect();
+		var toWorld = GetCanvasTransform().AffineInverse();
+		var wTL = toWorld * screenRect.Position;
+		var wBR = toWorld * screenRect.End;
+		var worldLeft = Mathf.Min(wTL.X, wBR.X);
+		var worldRight = Mathf.Max(wTL.X, wBR.X);
+		var worldTop = Mathf.Min(wTL.Y, wBR.Y);
+		var worldBottom = Mathf.Max(wTL.Y, wBR.Y);
+		var worldWidth = worldRight - worldLeft;
+		var worldHeight = worldBottom - worldTop;
 
 		var wave = new NecroticWave { DamageAmount = WavesDamage };
 
 		if (_nextWaveIsHorizontal)
 		{
 			// Horizontal wave: sweeps left→right or right→left; gap is a Y position.
-			var   ltr    = GD.Randi() % 2 == 0;
-			float margin = NecroticWave.WaveThickness * 2f;
-			float gapY   = worldTop + margin + (float)(GD.Randf() * (worldHeight - margin * 2f));
+			var ltr = GD.Randi() % 2 == 0;
+			var margin = NecroticWave.WaveThickness * 2f;
+			var gapY = worldTop + margin + (float)(GD.Randf() * (worldHeight - margin * 2f));
 
 			wave.Direction = ltr ? NecroticWave.WaveDirection.LeftToRight : NecroticWave.WaveDirection.RightToLeft;
 			wave.GapCenter = gapY;
@@ -380,9 +380,9 @@ public partial class FlyingSkull : Character
 		else
 		{
 			// Vertical wave: sweeps top→bottom or bottom→top; gap is an X position.
-			var   ttb    = GD.Randi() % 2 == 0;
-			float margin = NecroticWave.WaveThickness * 2f;
-			float gapX   = worldLeft + margin + (float)(GD.Randf() * (worldWidth - margin * 2f));
+			var ttb = GD.Randi() % 2 == 0;
+			var margin = NecroticWave.WaveThickness * 2f;
+			var gapX = worldLeft + margin + (float)(GD.Randf() * (worldWidth - margin * 2f));
 
 			wave.Direction = ttb ? NecroticWave.WaveDirection.TopToBottom : NecroticWave.WaveDirection.BottomToTop;
 			wave.GapCenter = gapX;

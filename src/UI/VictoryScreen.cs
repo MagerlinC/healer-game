@@ -342,8 +342,8 @@ public partial class VictoryScreen : CanvasLayer
 		{
 			var pointWord = levelsGained == 1 ? "point" : "points";
 			xpText += levelsGained == 1
-				? $"\n✦  LEVEL UP!  ✦  +1 talent point  •  All party members gain +{PlayerProgressStore.MaxHealthBonusPerLevel:0} max health"
-				: $"\n✦  LEVEL UP ×{levelsGained}!  ✦  +{levelsGained} talent {pointWord}  •  All party members gain +{levelsGained * PlayerProgressStore.MaxHealthBonusPerLevel:0} max health";
+				? $"\n✦  LEVEL UP!  ✦  +1 talent point"
+				: $"\n✦  LEVEL UP ×{levelsGained}!  ✦  +{levelsGained} talent {pointWord}";
 		}
 
 		return xpText;
