@@ -38,6 +38,7 @@ public partial class BossQueenSnowstormSpell : SpellResource
 		Description = $"The Queen summons a raging blizzard, dealing {20:F0} frost damage " +
 		              $"to the entire party every second for {8:F0} seconds.";
 		Tags = SpellTags.Damage | SpellTags.Duration;
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/queen-of-the-frozen-wastes/snowstorm.png");
 		ManaCost = 0f;
 		CastTime = 1.0f;
 		EffectType = EffectType.Harmful;

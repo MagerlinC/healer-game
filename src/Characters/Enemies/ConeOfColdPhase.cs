@@ -179,7 +179,7 @@ public partial class ConeOfColdPhase : Node2D
 
 	void StepCast()
 	{
-		// ShowCastBar?.Invoke("Cone of Cold",
+		ShowCastBar?.Invoke("Cone of Cold",
 			GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/queen-of-the-frozen-wastes/absolute-zero.png"), CastDuration);
 		GetTree().CreateTimer(CastDuration).Timeout += StepFire;
 	}
@@ -320,14 +320,14 @@ public partial class ConeDrawNode : Node2D
 	/// corners of the left and right slices extend. Increase to push the outer
 	/// edges further from centre and widen the apparent angle of each slice.
 	/// </summary>
-	const float OuterOvershoot = 120f;
+	const float OuterOvershoot = 140f;
 
 	/// <summary>
 	/// How far past the arena bottom the base of every slice extends, expressed
 	/// as a fraction of RadiusY. Decreasing this shortens the cone and increases
 	/// the apparent angle; increasing it lengthens the cone and narrows the angle.
 	/// </summary>
-	const float BaseExtentFraction = 1.6f;
+	const float BaseExtentFraction = 1.8f;
 
 	/// <summary>
 	/// Half-width of the safe zone as a fraction of RadiusX (0 = no safe zone,
@@ -336,7 +336,7 @@ public partial class ConeDrawNode : Node2D
 	/// simultaneously narrows the dangerous wedges for Left-safe and Right-safe.
 	/// Default 0.33 = equal thirds.
 	/// </summary>
-	const float SafeZoneHalfWidth = 0.33f;
+	const float SafeZoneHalfWidth = 0.35f;
 
 	Texture2D _tex;
 

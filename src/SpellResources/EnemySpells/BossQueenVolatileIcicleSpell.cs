@@ -35,6 +35,7 @@ public partial class BossQueenVolatileIcicleSpell : SpellResource
 		Description = "The Queen conjures a shard of volatile ice that floats toward the healer. " +
 		              "On impact it explodes, leaving a frozen zone that deals damage over time " +
 		              "to anyone standing within it.";
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/queen-of-the-frozen-wastes/volatile-icicle.png");
 		Tags = SpellTags.Damage;
 		ManaCost = 0f;
 		CastTime = 1.5f;
