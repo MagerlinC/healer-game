@@ -248,7 +248,7 @@ public partial class FlyingSkull : Character
 	{
 		_wailWindupTimer = WailWindup;
 		_riserPlayer.Play();
-		ParryWindowManager.OpenWindow();
+		ParryWindowManager.OpenWindow(_bansheeWailSpell.Name, _bansheeWailSpell.Icon, WailWindup);
 		EmitSignalCastWindupStarted(_bansheeWailSpell.Name, _bansheeWailSpell.Icon, WailWindup);
 		_pendingAttack = PendingAttack.None;
 		_sprite.Play("cast");

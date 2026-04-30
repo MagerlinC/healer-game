@@ -199,7 +199,7 @@ public partial class TheNightborne : Character
 	{
 		_umbralWindupTimer = UmbralWindupDuration;
 		_riserPlayer.Play();
-		ParryWindowManager.OpenWindow();
+		ParryWindowManager.OpenWindow(_umbralEruptionSpell.Name, _umbralEruptionSpell.Icon, UmbralWindupDuration);
 		EmitSignalCastWindupStarted(_umbralEruptionSpell.Name, _umbralEruptionSpell.Icon, UmbralWindupDuration);
 		_pendingAttack = PendingAttack.None; // wind-up timer drives this, not animation finish
 		_sprite.Play("run"); // charge-up visual: the knight surges forward

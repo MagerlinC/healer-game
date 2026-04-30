@@ -346,7 +346,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 			_riserPlayer.Play();
 
 		EmitSignalCastWindupStarted(_cataclysmSpell.Name, _cataclysmSpell.Icon, CataclysmHitWindow);
-		ParryWindowManager.OpenWindow();
+		ParryWindowManager.OpenWindow(_cataclysmSpell.Name, _cataclysmSpell.Icon, CataclysmHitWindow);
 		_sprite.Play("cast");
 	}
 

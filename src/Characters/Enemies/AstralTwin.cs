@@ -287,7 +287,7 @@ public partial class AstralTwin : Character
 		_ownsConvergenceWindow = !ParryWindowManager.IsOpen;
 		if (_ownsConvergenceWindow)
 		{
-			ParryWindowManager.OpenWindow();
+			ParryWindowManager.OpenWindow(_novaSpell.Name, _novaSpell.Icon, ConvergenceWindupDuration);
 			EmitSignalCastWindupStarted(_novaSpell.Name, _novaSpell.Icon, ConvergenceWindupDuration);
 			_riserPlayer.Play();
 		}

@@ -1,9 +1,10 @@
 using Godot;
 using healerfantasy;
+using healerfantasy.SpellSystem;
 
 /// <summary>
-/// Full-screen darkening overlay that activates during deflectable boss casts
-/// (Structural Crush). Sits on CanvasLayer 1 — above the game world but below
+/// Full-screen darkening overlay that activates during parryable boss casts.
+/// Sits on CanvasLayer 1 — above the game world but below
 /// the UI (layer 10) — so it darkens enemies and the arena without obscuring
 /// party frames or the cast bar.
 ///
@@ -98,13 +99,12 @@ public partial class DeflectOverlay : Node
 		_mat.SetShaderParameter(PAspectRatio, 16f / 9f);
 		rect.Material = _mat;
 
-		GlobalAutoLoad.SubscribeToSignal(
-			nameof(CrystalKnight.CastWindupStarted),
-			Callable.From((string _, Texture2D __, float duration) => BeginOverlay(duration)));
-
-		GlobalAutoLoad.SubscribeToSignal(
-			nameof(CrystalKnight.CastWindupEnded),
-			Callable.From(EndOverlay));
+		// Subscribe to the central parry-window events rather than individual boss
+		// signals. ParryWindowManager.OpenWindow() is only called for genuinely
+		// parryable casts, so non-parryable spells (e.g. Volatile Icicle) never
+		// trigger the overlay. This also removes the CrystalKnight-specific coupling.
+		ParryWindowManager.WindupStarted += (_, __, duration) => BeginOverlay(duration);
+		ParryWindowManager.WindupEnded   += EndOverlay;
 	}
 
 	public override void _Process(double delta)

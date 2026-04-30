@@ -202,7 +202,7 @@ public partial class BloodKnight : Character
 	{
 		_drainWindupTimer = DrainWindupDuration;
 		_riserPlayer.Play();
-		ParryWindowManager.OpenWindow();
+		ParryWindowManager.OpenWindow(_drainSpell.Name, _drainSpell.Icon, DrainWindupDuration);
 		EmitSignalCastWindupStarted(_drainSpell.Name, _drainSpell.Icon, DrainWindupDuration);
 		_pendingAttack = PendingAttack.None; // animation finish won't fire a spell
 		_sprite.Play("cast");

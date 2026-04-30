@@ -22,15 +22,13 @@ public class FutureSightTalent : ISpellModifier
 
 	public void OnAfterCast(SpellContext ctx)
 	{
-
 		var random = GD.Randf();
 		if (ctx.Spell.School != SpellSchool.Chronomancy && random < procChance)
 		{
-			ctx.Target.ApplyEffect(new FutureSightEffect(10f)
+			ctx.Caster.ApplyEffect(new FutureSightEffect(10f)
 			{
 				Icon = EffectIcon
 			});
-
 		}
 	}
 }

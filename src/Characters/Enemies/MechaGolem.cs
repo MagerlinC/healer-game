@@ -205,7 +205,7 @@ public partial class MechaGolem : Character
 	{
 		_overloadWindupTimer = OverloadWindup;
 		_riserPlayer.Play();
-		ParryWindowManager.OpenWindow();
+		ParryWindowManager.OpenWindow(_systemOverloadSpell.Name, _systemOverloadSpell.Icon, OverloadWindup);
 		EmitSignalCastWindupStarted(_systemOverloadSpell.Name, _systemOverloadSpell.Icon, OverloadWindup);
 		_pendingAttack = PendingAttack.None;
 		_sprite.Play("shield");

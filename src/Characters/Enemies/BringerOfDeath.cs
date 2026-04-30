@@ -197,7 +197,7 @@ public partial class BringerOfDeath : Character
 	{
 		_embraceWindupTimer = EmbraceWindupDuration;
 		_riserPlayer.Play();
-		ParryWindowManager.OpenWindow();
+		ParryWindowManager.OpenWindow(_embraceSpell.Name, _embraceSpell.Icon, EmbraceWindupDuration);
 		EmitSignalCastWindupStarted(_embraceSpell.Name, _embraceSpell.Icon, EmbraceWindupDuration);
 		_pendingAttack = PendingAttack.None;
 		_sprite.Play("spell");

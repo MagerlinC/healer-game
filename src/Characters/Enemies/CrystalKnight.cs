@@ -114,6 +114,7 @@ public partial class CrystalKnight : Character
 		_crushSpell = new BossStructuralCrushSpell { DamageAmount = CrushDamage };
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupStarted));
+
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastWindupEnded));
 
 		// Audio player for the Structural Crush riser telegraph.
@@ -223,7 +224,7 @@ public partial class CrystalKnight : Character
 	{
 		_crushWindupTimer = CrushWindupDuration;
 		_riserPlayer.Play();
-		ParryWindowManager.OpenWindow();
+		ParryWindowManager.OpenWindow(_crushSpell.Name, _crushSpell.Icon, CrushWindupDuration);
 		EmitSignalCastWindupStarted(_crushSpell.Name, _crushSpell.Icon, CrushWindupDuration);
 		// Play the spell animation as a visual telegraph; the actual hit comes
 		// from the wind-up timer rather than OnAnimationFinished.

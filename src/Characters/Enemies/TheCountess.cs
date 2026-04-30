@@ -443,7 +443,7 @@ public partial class TheCountess : Character
 	{
 		_novaWindupTimer = NovaWindupDuration;
 		_riserPlayer.Play();
-		ParryWindowManager.OpenWindow();
+		ParryWindowManager.OpenWindow(_novaSpell.Name, _novaSpell.Icon, NovaWindupDuration);
 		EmitSignalCastWindupStarted(_novaSpell.Name, _novaSpell.Icon, NovaWindupDuration);
 		_pendingAttack = PendingAttack.None;
 		_sprite.Play("casting");

@@ -194,7 +194,7 @@ public partial class FlyingDemon : Character
 	{
 		_eruptionWindupTimer = EruptionWindup;
 		_riserPlayer.Play();
-		ParryWindowManager.OpenWindow();
+		ParryWindowManager.OpenWindow(_eruptionSpell.Name, _eruptionSpell.Icon, EruptionWindup);
 		EmitSignalCastWindupStarted(_eruptionSpell.Name, _eruptionSpell.Icon, EruptionWindup);
 		_pendingAttack = PendingAttack.None;
 		_sprite.Play("cast");
