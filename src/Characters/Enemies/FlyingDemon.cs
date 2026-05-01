@@ -116,6 +116,7 @@ public partial class FlyingDemon : Character
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
+		ApplyRuneModifiers();
 	}
 
 	public override void _Process(double delta)
@@ -262,7 +263,16 @@ public partial class FlyingDemon : Character
 	/// Builds SpriteFrames from individual PNG files at runtime.
 	/// File pattern: res://assets/enemies/flying-demon/{anim}{n}.png
 	/// </summary>
-	void SetupAnimations()
+	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	protected override void OnApplyHasteRune()
+	{
+		MeleeInterval /= GameConstants.RuneTimeHasteMultiplier;
+		BoltInterval /= GameConstants.RuneTimeHasteMultiplier;
+		BurnInterval /= GameConstants.RuneTimeHasteMultiplier;
+		EruptionInterval /= GameConstants.RuneTimeHasteMultiplier;
+	}
+
+		void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

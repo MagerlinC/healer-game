@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Godot;
 using healerfantasy;
 using healerfantasy.CombatLog;
+using healerfantasy.Runes;
 using healerfantasy.UI;
 
 /// <summary>
@@ -49,6 +50,9 @@ public partial class World : Node2D
 		// ── Floating combat text ──────────────────────────────────────────────
 		var fctManager = new FloatingCombatTextManager();
 		AddChild(fctManager);
+
+		// Lock rune selection now that a fight has begun.
+		RunState.Instance.LockRuneSelection();
 
 		var ui      = GetNode<GameUI>("PartyUI");
 		var player  = GetNode<Player>("Healer");
@@ -110,6 +114,14 @@ public partial class World : Node2D
 
 		ui.RebuildActionBar(player.EquippedSpells);
 		ui.BuildGenericActionBar(player);
+
+		// ── Rune of Nature — vines manager ────────────────────────────────────
+		if (RunState.Instance.IsRuneActive(RuneIndex.Nature) && !RunState.Instance.IsDevTestFight)
+		{
+			var vinesManager = new VinesManager();
+			AddChild(vinesManager);
+			vinesManager.Init(new[] { templar, (Character)player, assassin, wizard }, ui);
+		}
 
 		// ── Spellbook selector ────────────────────────────────────────────────
 		var spellbook = new SpellbookSelector();

@@ -124,4 +124,32 @@ public static class GameConstants
 		"res://levels/QueenOfTheFrozenWastes.tscn"
 	};
 
+	// ── Rune system ───────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Per-active-rune health multiplier bonus applied to all bosses.
+	/// E.g. with 3 runes active, boss MaxHealth is multiplied by 1.30.
+	/// </summary>
+	public const float RuneHealthBonusPerRune = 0.10f;
+
+	/// <summary>Rune 3 (Time): bosses cast all abilities this much faster (1.10 = 10% haste).</summary>
+	public const float RuneTimeHasteMultiplier = 1.10f;
+
+	/// <summary>Rune 1 (Void): fraction of damage dealt that becomes healing absorption.</summary>
+	public const float RuneVoidAbsorptionFraction = 0.10f;
+
+	/// <summary>
+	/// Rune 2 (Nature): seconds between each vines spawn during a boss fight.
+	/// </summary>
+	public const float RuneNatureVinesInterval = 8f;
+
+	/// <summary>Rune 2 (Nature): damage the vines deal to their target per second.</summary>
+	public const float RuneNatureVinesDamagePerSecond = 12f;
+
+	/// <summary>Rune 2 (Nature): maximum health of each vines entity.</summary>
+	public const float RuneNatureVinesMaxHealth = 250f;
+
+	/// <summary>Group name used for Vines enemies so they can be found by the UI.</summary>
+	public const string VinesGroupName = "vines";
+
 }

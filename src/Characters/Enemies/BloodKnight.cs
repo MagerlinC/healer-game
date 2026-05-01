@@ -126,6 +126,7 @@ public partial class BloodKnight : Character
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
+		ApplyRuneModifiers();
 	}
 
 	public override void _Process(double delta)
@@ -287,7 +288,15 @@ public partial class BloodKnight : Character
 	/// attack1–3 (one-shot, 10 fps)
 	/// cast1–3   (one-shot, 6 fps; used for Blood Drain wind-up)
 	/// </summary>
-	void SetupAnimations()
+	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	protected override void OnApplyHasteRune()
+	{
+		MeleeAttackInterval /= GameConstants.RuneTimeHasteMultiplier;
+		CleaveInterval /= GameConstants.RuneTimeHasteMultiplier;
+		DrainInterval /= GameConstants.RuneTimeHasteMultiplier;
+	}
+
+		void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

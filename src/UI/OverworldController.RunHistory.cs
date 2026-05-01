@@ -4,6 +4,7 @@ using System.Linq;
 using Godot;
 using healerfantasy;
 using healerfantasy.CombatLog;
+using healerfantasy.Runes;
 
 /// <summary>
 /// Partial class — run history panel and encounter detail modal for <see cref="OverworldController"/>.
@@ -127,6 +128,37 @@ public partial class OverworldController
 		outcome.AddThemeColorOverride("font_color",
 			run.IsVictory ? new Color(0.40f, 0.85f, 0.35f) : new Color(0.85f, 0.28f, 0.22f));
 		header.AddChild(outcome);
+
+		// ── Rune icons ────────────────────────────────────────────────────────
+		// Only shown on records that have rune data (null = legacy save, skip).
+		if (run.ActiveRuneIndices != null)
+		{
+			var runeRow = new HBoxContainer();
+			runeRow.AddThemeConstantOverride("separation", 3);
+			header.AddChild(runeRow);
+
+			if (run.ActiveRuneIndices.Count == 0)
+			{
+				var noRunesLabel = new Label();
+				noRunesLabel.Text = "No runes";
+				noRunesLabel.AddThemeFontSizeOverride("font_size", 11);
+				noRunesLabel.AddThemeColorOverride("font_color", new Color(0.38f, 0.34f, 0.28f));
+				runeRow.AddChild(noRunesLabel);
+			}
+			else
+			{
+				foreach (var runeIndex in run.ActiveRuneIndices)
+				{
+					var icon = new TextureRect();
+					icon.CustomMinimumSize = new Vector2(22f, 22f);
+					icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+					icon.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
+					icon.Texture = GD.Load<Texture2D>(AssetConstants.RuneIconPath(runeIndex));
+					icon.TooltipText = ((RuneIndex)runeIndex).ToString();
+					runeRow.AddChild(icon);
+				}
+			}
+		}
 
 		// ── Per-boss encounter rows grouped by dungeon ───────────────────────
 		// Group encounters by DungeonName, preserving their original order.

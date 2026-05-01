@@ -158,6 +158,7 @@ public partial class FlyingSkull : Character
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
+		ApplyRuneModifiers();
 	}
 
 	public override void _Process(double delta)
@@ -421,7 +422,17 @@ public partial class FlyingSkull : Character
 
 	// ── animation setup ───────────────────────────────────────────────────────
 
-	void SetupAnimations()
+	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	protected override void OnApplyHasteRune()
+	{
+		MeleeInterval /= GameConstants.RuneTimeHasteMultiplier;
+		ScreechInterval /= GameConstants.RuneTimeHasteMultiplier;
+		PoolInterval /= GameConstants.RuneTimeHasteMultiplier;
+		WailInterval /= GameConstants.RuneTimeHasteMultiplier;
+		WavesInterval /= GameConstants.RuneTimeHasteMultiplier;
+	}
+
+		void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

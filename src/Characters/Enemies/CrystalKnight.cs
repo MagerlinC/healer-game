@@ -127,6 +127,7 @@ public partial class CrystalKnight : Character
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
+		ApplyRuneModifiers();
 	}
 
 	public override void _Process(double delta)
@@ -314,7 +315,16 @@ public partial class CrystalKnight : Character
 	///   Row 1 — attack (5 frames)
 	///   Row 2 — spell  (2 frames)
 	/// </summary>
-	void SetupAnimations()
+	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	protected override void OnApplyHasteRune()
+	{
+		MeleeAttackInterval /= GameConstants.RuneTimeHasteMultiplier;
+		SpellCastInterval /= GameConstants.RuneTimeHasteMultiplier;
+		DecayInterval /= GameConstants.RuneTimeHasteMultiplier;
+		CrushInterval /= GameConstants.RuneTimeHasteMultiplier;
+	}
+
+		void SetupAnimations()
 	{
 		var texture = GD.Load<Texture2D>(AssetConstants.EnemyAssets + "/crystal-knight/crystal_knight_sheet.png");
 		var frames = new SpriteFrames();

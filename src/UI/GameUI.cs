@@ -35,6 +35,9 @@ public partial class GameUI : CanvasLayer
 	CombatMeter _damageMeter;
 	Control _anchor = null!;
 
+	/// <summary>Container for Rune-of-Nature vines health bars, below the boss bar.</summary>
+	VBoxContainer? _vinesSection;
+
 	// Stored so GetHoveredCharacter can return the right Character object and
 	// fall back to the alive twin when one is dead.
 	Character? _primaryBossCharacter;
@@ -269,5 +272,48 @@ public partial class GameUI : CanvasLayer
 		// Push the boss cast bar down so it clears both health bars.
 		_bossCastBar.OffsetTop = 170f;
 		_bossCastBar.OffsetBottom = 210f;
+	}
+
+	// ── Vines health bars (Rune of Nature) ────────────────────────────────────
+
+	/// <summary>
+	/// Creates a compact health bar for <paramref name="vines"/> and adds it to
+	/// the vines section below the boss bar.
+	/// Called by <see cref="VinesManager"/> when new vines spawn.
+	/// </summary>
+	public void AddVinesHealthBar(VinesEnemy vines)
+	{
+		// Lazily create the vines section container the first time a vine spawns.
+		if (_vinesSection == null)
+		{
+			_vinesSection = new VBoxContainer();
+			_vinesSection.AddThemeConstantOverride("separation", 2);
+			_vinesSection.SetAnchorsPreset(Control.LayoutPreset.TopWide);
+			_vinesSection.OffsetTop = 95f;   // just below the primary boss bar
+			_vinesSection.OffsetBottom = 175f;
+			_anchor.AddChild(_vinesSection);
+		}
+
+		var bar = new VinesHealthBar(vines.CharacterName, vines.DisplayName,
+		                             vines.CurrentHealth, vines.MaxHealth);
+		_vinesSection.AddChild(bar);
+	}
+
+	/// <summary>
+	/// Removes the vines health bar for the character named
+	/// <paramref name="vinesCharacterName"/>.
+	/// Called when the vines die.
+	/// </summary>
+	public void RemoveVinesHealthBar(string vinesCharacterName)
+	{
+		if (_vinesSection == null) return;
+		foreach (var child in _vinesSection.GetChildren())
+		{
+			if (child is VinesHealthBar bar && bar.TrackedName == vinesCharacterName)
+			{
+				bar.QueueFree();
+				return;
+			}
+		}
 	}
 }

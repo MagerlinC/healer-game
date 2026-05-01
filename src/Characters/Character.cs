@@ -5,6 +5,7 @@ using Godot;
 using healerfantasy;
 using healerfantasy.Effects;
 using healerfantasy.Items;
+using healerfantasy.Runes;
 using healerfantasy.SpellSystem;
 
 /// <summary>
@@ -40,6 +41,15 @@ public abstract partial class Character : CharacterBody2D
 	/// </summary>
 	[Signal]
 	public delegate void ShieldChangedEventHandler(string characterName, float currentShield, float maxHealth);
+
+	/// <summary>
+	/// Emitted whenever <see cref="CurrentHealAbsorption"/> changes.
+	/// Carries the remaining absorption and MaxHealth so the UI can draw a
+	/// proportional dark-purple overlay bar on the party frame.
+	/// Only meaningful for friendly characters (Rune of the Void).
+	/// </summary>
+	[Signal]
+	public delegate void HealAbsorptionChangedEventHandler(string characterName, float absorptionRemaining, float maxHealth);
 
 	/// <summary>
 	/// Emitted when a spell or periodic effect directly deals damage or restores
@@ -79,6 +89,13 @@ public abstract partial class Character : CharacterBody2D
 	/// </summary>
 	public float CurrentShield { get; private set; }
 
+	/// <summary>
+	/// Pending heal-absorption points (Rune of the Void).
+	/// When greater than zero, incoming heals are consumed by this amount first
+	/// before any health is actually restored.
+	/// </summary>
+	public float CurrentHealAbsorption { get; private set; }
+
 	// ── spell / talent / item system ──────────────────────────────────────────
 	/// <summary>
 	/// Talents assigned to this character. Call <see cref="GetCharacterStats"/>
@@ -117,11 +134,16 @@ public abstract partial class Character : CharacterBody2D
 		if (IsFriendly)
 			MaxHealth += PlayerProgressStore.MaxHealthBonus;
 
+		// Scale enemy MaxHealth by 10% per active rune (Rune system baseline).
+		if (!IsFriendly && RunState.Instance != null && RunState.Instance.ActiveRuneCount > 0)
+			MaxHealth *= 1f + RunState.Instance.ActiveRuneCount * GameConstants.RuneHealthBonusPerRune;
+
 		CurrentHealth = MaxHealth;
 		CurrentMana = MaxMana;
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(ManaChanged));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(HealthChanged));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(ShieldChanged));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(HealAbsorptionChanged));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(EffectApplied));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(EffectRemoved));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(Died));
@@ -158,6 +180,14 @@ public abstract partial class Character : CharacterBody2D
 		var stats = GetCharacterStats();
 		amount *= stats.DamageTakenMultiplier;
 
+		// Rune of the Void: apply healing absorption equal to 10% of all
+		// damage taken by friendly characters.
+		if (IsFriendly && amount > 0f &&
+		    RunState.Instance?.IsRuneActive(RuneIndex.Void) == true)
+		{
+			AddHealAbsorption(amount * GameConstants.RuneVoidAbsorptionFraction);
+		}
+
 		// Shield absorbs damage before health is affected.
 		if (CurrentShield > 0f)
 		{
@@ -183,6 +213,8 @@ public abstract partial class Character : CharacterBody2D
 	/// Restore health, clamped at MaxHealth.
 	/// Applies any <see cref="CharacterStats.HealingReceivedMultiplier"/> from active
 	/// effects (e.g. Crimson Curse) before adding the amount.
+	/// If there is active heal-absorption (Rune of the Void), incoming healing
+	/// is consumed by the absorption first before reaching health.
 	/// </summary>
 	public void Heal(float amount)
 	{
@@ -190,6 +222,17 @@ public abstract partial class Character : CharacterBody2D
 		var stats = GetCharacterStats();
 		amount *= Mathf.Max(0f, stats.HealingReceivedMultiplier);
 		if (amount <= 0f) return;
+
+		// Rune of the Void: consume heal absorption before the heal reaches health.
+		if (CurrentHealAbsorption > 0f)
+		{
+			var consumed = Mathf.Min(CurrentHealAbsorption, amount);
+			CurrentHealAbsorption -= consumed;
+			amount -= consumed;
+			EmitSignalHealAbsorptionChanged(CharacterName, CurrentHealAbsorption, MaxHealth);
+			if (amount <= 0f) return;
+		}
+
 		CurrentHealth = Mathf.Min(CurrentHealth + amount, MaxHealth);
 		EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
 	}
@@ -245,6 +288,59 @@ public abstract partial class Character : CharacterBody2D
 	{
 		CurrentShield = Mathf.Max(0f, CurrentShield - amount);
 		EmitSignalShieldChanged(CharacterName, CurrentShield, MaxHealth);
+	}
+
+	// ── heal absorption (Rune of the Void) ───────────────────────────────────
+
+	/// <summary>
+	/// Adds <paramref name="amount"/> to the character's pending heal absorption.
+	/// The next incoming heal(s) will be consumed by this amount before reaching
+	/// health, producing the dark-purple overlay on the party frame.
+	/// </summary>
+	public void AddHealAbsorption(float amount)
+	{
+		CurrentHealAbsorption += amount;
+		EmitSignalHealAbsorptionChanged(CharacterName, CurrentHealAbsorption, MaxHealth);
+	}
+
+	/// <summary>
+	/// Clears all pending heal absorption (e.g. on death or fight reset).
+	/// </summary>
+	public void ClearHealAbsorption()
+	{
+		if (CurrentHealAbsorption <= 0f) return;
+		CurrentHealAbsorption = 0f;
+		EmitSignalHealAbsorptionChanged(CharacterName, 0f, MaxHealth);
+	}
+
+	// ── rune hooks ────────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Convenience property: returns <c>true</c> when Rune 4 (Rune of Purity)
+	/// is active for the current run.  Boss spells check this to decide whether
+	/// to enable their "purest form" extra mechanics.
+	/// </summary>
+	protected bool RuneOfPurityActive =>
+		RunState.Instance?.IsRuneActive(RuneIndex.Purity) == true;
+
+	/// <summary>
+	/// Override in boss subclasses to scale attack/ability interval fields
+	/// by the Rune of Time haste multiplier.
+	/// Called by <see cref="ApplyRuneModifiers"/> at the end of each boss's
+	/// own <c>_Ready()</c>, AFTER interval fields have been initialised.
+	/// </summary>
+	protected virtual void OnApplyHasteRune() { }
+
+	/// <summary>
+	/// Call at the end of a boss character's <c>_Ready()</c> (after all timer
+	/// fields are initialised) to apply any active rune modifiers that require
+	/// per-boss knowledge (currently only Rune 3 — Time).
+	/// </summary>
+	protected void ApplyRuneModifiers()
+	{
+		if (IsFriendly) return;
+		if (RunState.Instance?.IsRuneActive(RuneIndex.Time) == true)
+			OnApplyHasteRune();
 	}
 
 	/// <summary>
@@ -474,6 +570,7 @@ public abstract partial class Character : CharacterBody2D
 	void OnDeath()
 	{
 		IsBeingRemoved = true;
+		ClearHealAbsorption();
 		foreach (var effect in _effects.Values)
 			effect.OnExpired(this);
 		_effects.Clear();

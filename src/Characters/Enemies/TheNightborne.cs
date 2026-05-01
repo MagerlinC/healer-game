@@ -120,6 +120,7 @@ public partial class TheNightborne : Character
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
+		ApplyRuneModifiers();
 	}
 
 	public override void _Process(double delta)
@@ -272,7 +273,16 @@ public partial class TheNightborne : Character
 	/// Builds SpriteFrames from individual PNGs extracted from the source GIFs.
 	/// Path pattern: res://assets/enemies/the-nightborne/frames/{anim}/{anim}_{n}.png
 	/// </summary>
-	void SetupAnimations()
+	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	protected override void OnApplyHasteRune()
+	{
+		ShadowStrikeInterval /= GameConstants.RuneTimeHasteMultiplier;
+		VoidLanceInterval /= GameConstants.RuneTimeHasteMultiplier;
+		NightVeilInterval /= GameConstants.RuneTimeHasteMultiplier;
+		UmbralEruptionInterval /= GameConstants.RuneTimeHasteMultiplier;
+	}
+
+		void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

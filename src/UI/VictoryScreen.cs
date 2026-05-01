@@ -2,6 +2,7 @@ using Godot;
 using healerfantasy;
 using healerfantasy.CombatLog;
 using healerfantasy.Items;
+using healerfantasy.Runes;
 using healerfantasy.UI;
 
 /// <summary>
@@ -195,8 +196,34 @@ public partial class VictoryScreen : CanvasLayer
 	{
 		if (Visible) return;
 		_audioPlayer.Play();
+
+		// ── Rune progression ──────────────────────────────────────────────────
+		// The Queen of the Frozen Wastes drops the next rune if the player ran
+		// with ALL previously acquired runes active (i.e. active count ==
+		// acquired count) and there are still runes left to unlock.
+		var acquired     = RuneStore.AcquiredRuneCount;
+		var active       = RunState.Instance.ActiveRuneCount;
+		var runeDropped  = false;
+		var runeDropName = "";
+		if (acquired < RuneStore.TotalRunes && active == acquired)
+		{
+			RuneStore.UnlockNextRune();
+			runeDropped  = true;
+			runeDropName = (acquired + 1) switch
+			{
+				1 => "Rune of the Void",
+				2 => "Rune of Nature",
+				3 => "Rune of Time",
+				4 => "Rune of Purity",
+				_ => "Unknown Rune"
+			};
+		}
+
 		_titleLabel.Text = "VICTORY!";
-		_subLabel.Text = "The Queen of the Frozen Wastes has fallen.\nAll dungeons conquered — the realm is saved!";
+		var victorySubtext = "The Queen of the Frozen Wastes has fallen.\nAll dungeons conquered — the realm is saved!";
+		if (runeDropped)
+			victorySubtext += $"\n\n✦  {runeDropName} obtained!  ✦";
+		_subLabel.Text = victorySubtext;
 		_xpLabel.Text = BuildXpLine(xpGained, levelsGained);
 		BuildItemSection(droppedItem);
 

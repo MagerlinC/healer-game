@@ -34,6 +34,7 @@ public partial class PartyFrame : CharacterFrame
 	ProgressBar _healthBar = null!;
 	Label _currentHealthLabel = null!;
 	ProgressBar _shieldBar = null!;
+	ProgressBar _absorbBar = null!;
 	StyleBoxFlat _panelStyle = null!;
 
 	/// <param name="showItemEffects">
@@ -126,6 +127,20 @@ public partial class PartyFrame : CharacterFrame
 		_shieldBar.AddThemeStyleboxOverride("fill", new StyleBoxFlat { BgColor = new Color(0.45f, 0.70f, 1.00f, 0.50f) });
 		_panel.AddChild(_shieldBar);
 
+		// ── heal-absorption overlay (Rune of the Void) ────────────────────────
+		// Dark purple bar that fills from the right edge of current health inward,
+		// showing how much incoming healing will be consumed before reaching health.
+		_absorbBar = new ProgressBar();
+		_absorbBar.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		_absorbBar.SizeFlagsVertical = SizeFlags.ExpandFill;
+		_absorbBar.ShowPercentage = false;
+		_absorbBar.MaxValue = _maxHp;
+		_absorbBar.Value = 0f;
+		_absorbBar.MouseFilter = MouseFilterEnum.Ignore;
+		_absorbBar.AddThemeStyleboxOverride("background", new StyleBoxFlat { BgColor = new Color(0f, 0f, 0f, 0f) });
+		_absorbBar.AddThemeStyleboxOverride("fill", new StyleBoxFlat { BgColor = new Color(0.38f, 0.10f, 0.55f, 0.65f) });
+		_panel.AddChild(_absorbBar);
+
 		AddChild(_panel);
 
 		// ── item-effect row (below the health panel, healer only) ─────────────
@@ -173,6 +188,13 @@ public partial class PartyFrame : CharacterFrame
 				if (name == _name) SetShield(shield, maxHp);
 			}));
 
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(Character.HealAbsorptionChanged),
+			Callable.From((string name, float absorb, float maxHp) =>
+			{
+				if (name == _name) SetAbsorb(absorb, maxHp);
+			}));
+
 		base._Ready(); // subscribe effect-badge signals last
 	}
 
@@ -200,6 +222,12 @@ public partial class PartyFrame : CharacterFrame
 	{
 		_shieldBar.MaxValue = maxHp;
 		_shieldBar.Value = shield;
+	}
+
+	void SetAbsorb(float absorb, float maxHp)
+	{
+		_absorbBar.MaxValue = maxHp;
+		_absorbBar.Value = absorb;
 	}
 
 	Label GenerateTextLabel(int fontSize)

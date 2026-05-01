@@ -192,6 +192,7 @@ public partial class TheCountess : Character
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
+		ApplyRuneModifiers();
 	}
 
 	public override void _Process(double delta)
@@ -521,7 +522,16 @@ public partial class TheCountess : Character
 	/// attack1–4   (one-shot, 10 fps)
 	/// casting1–3  (one-shot, 6 fps; used for spells and Nova wind-up)
 	/// </summary>
-	void SetupAnimations()
+	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	protected override void OnApplyHasteRune()
+	{
+		MeleeAttackInterval /= GameConstants.RuneTimeHasteMultiplier;
+		BloodBoltInterval /= GameConstants.RuneTimeHasteMultiplier;
+		CurseInterval /= GameConstants.RuneTimeHasteMultiplier;
+		NovaInterval /= GameConstants.RuneTimeHasteMultiplier;
+	}
+
+		void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

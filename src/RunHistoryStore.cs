@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using Godot;
 using healerfantasy.CombatLog;
 using healerfantasy.Items;
+using healerfantasy.Runes;
 
 namespace healerfantasy;
 
@@ -49,7 +51,13 @@ public static class RunHistoryStore
 		/// Display names of items equipped at the time the run was finalised.
 		/// Null on records saved before the item system was introduced.
 		/// </summary>
-		List<string>? ItemsUsed = null
+		List<string>? ItemsUsed = null,
+		/// <summary>
+		/// Indices (1-based, matching <see cref="RuneIndex"/>) of runes that
+		/// were active when the run started.  Null on records saved before
+		/// the rune system was introduced.
+		/// </summary>
+		List<int>? ActiveRuneIndices = null
 	)
 	{
 		public TimeSpan Duration => TimeSpan.FromTicks(DurationTicks);
@@ -134,13 +142,20 @@ public static class RunHistoryStore
 		if (_runStartTime == default) return;
 
 		var duration = DateTime.Now - _runStartTime;
+
+		// Snapshot which runes were active at run end (before any state reset).
+		var activeRuneIndices = Enumerable.Range(1, RuneStore.TotalRunes)
+			.Where(i => RunState.Instance.IsRuneActive((RuneIndex)i))
+			.ToList();
+
 		var historyRecord =
 			new RunRecord(
 				isVictory,
 				duration.Ticks,
 				new List<BossEncounterRecord>(_currentEncounters),
 				DateTime.Now,
-				ItemStore.GetEquippedItemNames());
+				ItemStore.GetEquippedItemNames(),
+				activeRuneIndices);
 		_history.Add(historyRecord);
 		WriteRunHistoryRecordToSaveFile(historyRecord);
 

@@ -219,6 +219,7 @@ public partial class TheBloodPrince : Character
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
+		ApplyRuneModifiers();
 
 		// Seed the health snapshot so the first frame has valid previous values.
 		SeedPartyHealthSnapshot();
@@ -523,7 +524,16 @@ public partial class TheBloodPrince : Character
 	/// animations. Replace the placeholder blocks below with real asset paths
 	/// once the attack and cast sprite sheets are finalised.
 	/// </summary>
-	void SetupAnimations()
+	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	protected override void OnApplyHasteRune()
+	{
+		SlashInterval /= GameConstants.RuneTimeHasteMultiplier;
+		BloodBoltInterval /= GameConstants.RuneTimeHasteMultiplier;
+		SiphonInterval /= GameConstants.RuneTimeHasteMultiplier;
+		VoidDrainInterval /= GameConstants.RuneTimeHasteMultiplier;
+	}
+
+		void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

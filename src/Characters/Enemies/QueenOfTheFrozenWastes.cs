@@ -131,6 +131,7 @@ public partial class QueenOfTheFrozenWastes : Character
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
+		ApplyRuneModifiers();
 	}
 
 	public override void _Process(double delta)
@@ -492,7 +493,16 @@ public partial class QueenOfTheFrozenWastes : Character
 
 	// ── animation setup ───────────────────────────────────────────────────────
 
-	void SetupAnimations()
+	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	protected override void OnApplyHasteRune()
+	{
+		SnowstormInterval /= GameConstants.RuneTimeHasteMultiplier;
+		IcicleInterval /= GameConstants.RuneTimeHasteMultiplier;
+		BurstOfWinterInterval /= GameConstants.RuneTimeHasteMultiplier;
+		IceBlockInterval /= GameConstants.RuneTimeHasteMultiplier;
+	}
+
+		void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

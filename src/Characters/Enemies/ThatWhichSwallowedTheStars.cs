@@ -162,6 +162,7 @@ public partial class ThatWhichSwallowedTheStars : Character
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
+		ApplyRuneModifiers();
 
 		_fightCamera = GetViewport().GetCamera2D();
 		_worldMusicPlayer = GetParent()?.GetNodeOrNull<AudioStreamPlayer>("AudioStreamPlayer");
@@ -522,7 +523,17 @@ public partial class ThatWhichSwallowedTheStars : Character
 	/// "default" frame is added as a single-frame "default" animation for the
 	/// reveal beat; the boss transitions straight to "idle" during normal combat.
 	/// </summary>
-	void SetupAnimations()
+	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	protected override void OnApplyHasteRune()
+	{
+		MeleeAttackInterval /= GameConstants.RuneTimeHasteMultiplier;
+		BeamInterval /= GameConstants.RuneTimeHasteMultiplier;
+		ConsumeInterval /= GameConstants.RuneTimeHasteMultiplier;
+		CataclysmInterval /= GameConstants.RuneTimeHasteMultiplier;
+		MemoryGameInterval /= GameConstants.RuneTimeHasteMultiplier;
+	}
+
+		void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

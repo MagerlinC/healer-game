@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using healerfantasy.Items;
+using healerfantasy.Runes;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellResources.Chronomancy;
 using healerfantasy.Talents;
@@ -150,6 +151,45 @@ public partial class RunState : Node
 		return MapNodeState.Locked;
 	}
 
+	// ── Active runes ──────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// The set of runes the player has chosen to activate for the current run.
+	/// Set by the Rune Table in the Overworld; locked once the first dungeon is
+	/// entered (<see cref="RuneSelectionLocked"/> becomes true).
+	/// </summary>
+	readonly HashSet<RuneIndex> _activeRunes = new();
+
+	/// <summary>
+	/// When true the player can no longer change rune selections — a dungeon
+	/// fight has already begun this run.
+	/// Set by <see cref="LockRuneSelection"/>; cleared by <see cref="Reset"/>.
+	/// </summary>
+	public bool RuneSelectionLocked { get; private set; } = false;
+
+	/// <summary>Returns <c>true</c> if the given rune is active for this run.</summary>
+	public bool IsRuneActive(RuneIndex rune) => _activeRunes.Contains(rune);
+
+	/// <summary>How many runes are currently active (0–4).</summary>
+	public int ActiveRuneCount => _activeRunes.Count;
+
+	/// <summary>
+	/// Replaces the active-rune set with <paramref name="runes"/>.
+	/// Only valid while <see cref="RuneSelectionLocked"/> is false.
+	/// </summary>
+	public void SetActiveRunes(IEnumerable<RuneIndex> runes)
+	{
+		if (RuneSelectionLocked) return;
+		_activeRunes.Clear();
+		foreach (var r in runes) _activeRunes.Add(r);
+	}
+
+	/// <summary>
+	/// Locks rune selection for the remainder of this run.
+	/// Called when the player enters the first fight of a run.
+	/// </summary>
+	public void LockRuneSelection() => RuneSelectionLocked = true;
+
 	// ── Dev test mode ─────────────────────────────────────────────────────────
 
 	/// <summary>
@@ -231,6 +271,8 @@ public partial class RunState : Node
 		CompletedCamps            = 0;
 		CurrentBossIndexInDungeon = 0;
 		IsDevTestFight            = false;
+		RuneSelectionLocked       = false;
+		_activeRunes.Clear();
 		ItemStore.Clear();
 		RunDungeons = BuildRunDungeons();
 	}

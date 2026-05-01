@@ -120,6 +120,7 @@ public partial class MechaGolem : Character
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
+		ApplyRuneModifiers();
 	}
 
 	public override void _Process(double delta)
@@ -269,7 +270,16 @@ public partial class MechaGolem : Character
 
 	// ── animation setup ───────────────────────────────────────────────────────
 
-	void SetupAnimations()
+	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	protected override void OnApplyHasteRune()
+	{
+		MeleeInterval /= GameConstants.RuneTimeHasteMultiplier;
+		BarrageInterval /= GameConstants.RuneTimeHasteMultiplier;
+		PulseInterval /= GameConstants.RuneTimeHasteMultiplier;
+		OverloadInterval /= GameConstants.RuneTimeHasteMultiplier;
+	}
+
+		void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

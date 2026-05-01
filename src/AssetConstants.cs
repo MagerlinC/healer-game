@@ -63,6 +63,32 @@ public static class AssetConstants
 	public static readonly string RunScrollInteractiblePath = "res://assets/interactibles/run-history-scroll.png";
 	public static readonly string MapInteractiblePath = "res://assets/interactibles/map.png";
 	public static readonly string ArmoryInteractiblePath = "res://assets/interactibles/armory.png";
+	public static readonly string RuneTableInteractiblePath = "res://assets/interactibles/rune-table.png";
+
+	// ── Rune assets ───────────────────────────────────────────────────────────
+
+	static readonly string RuneBasePath = "res://assets/interactibles/";
+	public static readonly string RuneVoidIconPath    = RuneBasePath + "rune-void.png";
+	public static readonly string RuneNatureIconPath  = RuneBasePath + "rune-nature.png";
+	public static readonly string RuneTimeIconPath    = RuneBasePath + "rune-time.png";
+	public static readonly string RuneHolyIconPath    = RuneBasePath + "rune-holy.png";
+
+	/// <summary>Returns the icon path for rune N (1-based).</summary>
+	public static string RuneIconPath(int runeIndex) => runeIndex switch
+	{
+		1 => RuneVoidIconPath,
+		2 => RuneNatureIconPath,
+		3 => RuneTimeIconPath,
+		4 => RuneHolyIconPath,
+		_ => RuneVoidIconPath
+	};
+
+	// ── Vines enemy assets ────────────────────────────────────────────────────
+
+	static readonly string VinesBasePath = "res://assets/enemies/vines/";
+	public static readonly string VinesFrame1Path = VinesBasePath + "grow1.png";
+	public static readonly string VinesFrame2Path = VinesBasePath + "grow2.png";
+	public static readonly string VinesFrame3Path = VinesBasePath + "grow3.png";
 
 	// ── Equipment UI assets ───────────────────────────────────────────────────
 	public static readonly string EquipmentSlotFramePath = "res://assets/frames/equipment-slot.png";

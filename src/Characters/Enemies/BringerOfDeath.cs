@@ -118,6 +118,7 @@ public partial class BringerOfDeath : Character
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
+		ApplyRuneModifiers();
 	}
 
 	public override void _Process(double delta)
@@ -264,7 +265,16 @@ public partial class BringerOfDeath : Character
 	/// Builds SpriteFrames from individual PNG files at runtime.
 	/// File pattern: {SpritePath}{AnimName}/Bringer-of-Death_{AnimName}_{n}.png
 	/// </summary>
-	void SetupAnimations()
+	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	protected override void OnApplyHasteRune()
+	{
+		MeleeInterval /= GameConstants.RuneTimeHasteMultiplier;
+		SoulRendInterval /= GameConstants.RuneTimeHasteMultiplier;
+		DeathMarkInterval /= GameConstants.RuneTimeHasteMultiplier;
+		EmbraceInterval /= GameConstants.RuneTimeHasteMultiplier;
+	}
+
+		void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

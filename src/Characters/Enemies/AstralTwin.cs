@@ -144,6 +144,7 @@ public partial class AstralTwin : Character
 		SetupAnimations();
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
+		ApplyRuneModifiers();
 
 		// Wire sibling reference after all nodes in the scene are ready.
 		CallDeferred(nameof(FindSibling));
@@ -437,7 +438,15 @@ public partial class AstralTwin : Character
 	/// Loads individual PNG frames from res://assets/enemies/astral-twins/.
 	/// idle1–3, attack1–3, casting1–4, shielded (single static frame).
 	/// </summary>
-	void SetupAnimations()
+	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	protected override void OnApplyHasteRune()
+	{
+		StrikeInterval /= GameConstants.RuneTimeHasteMultiplier;
+		StarfallInterval /= GameConstants.RuneTimeHasteMultiplier;
+		ConvergenceInterval /= GameConstants.RuneTimeHasteMultiplier;
+	}
+
+		void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

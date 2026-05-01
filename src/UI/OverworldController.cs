@@ -1,6 +1,7 @@
 #nullable enable
 using Godot;
 using healerfantasy;
+using healerfantasy.UI;
 
 /// <summary>
 /// Root script for the Overworld scene.
@@ -14,6 +15,8 @@ using healerfantasy;
 /// </summary>
 public partial class OverworldController : LoadoutController
 {
+	RuneTablePanel? _runeTablePanel;
+
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
 	public override void _Ready()
@@ -55,19 +58,30 @@ public partial class OverworldController : LoadoutController
 			new Vector2(525f, FloorHeight), new Vector2(0.100f, 0.100f), 28f);
 		mapItem.Scale = new Vector2(1.2f, 1.2f);
 
+		// Rune table — placed to the right of the spell tome.
+		var runeTable = MakeInteractible(AssetConstants.RuneTableInteractiblePath,
+			new Vector2(1110f, FloorHeight - 8f), new Vector2(0.085f, 0.085f), 36f);
+
 		AddChild(spellTome);
 		AddChild(talentBoard);
 		AddChild(historyScroll);
 		AddChild(mapItem);
+		AddChild(runeTable);
 		_interactibles.Add(spellTome);
 		_interactibles.Add(talentBoard);
 		_interactibles.Add(historyScroll);
 		_interactibles.Add(mapItem);
+		_interactibles.Add(runeTable);
 
 		// ── Run History panel (see OverworldController.RunHistory.cs) ─────────
 		(_historyPanel, _) = BuildOverlayPanel("Run History", BuildRunHistoryPane());
 		_panels.Add(_historyPanel);
 		AddChild(_historyPanel);
+
+		// ── Rune Table panel ──────────────────────────────────────────────────
+		_runeTablePanel = new RuneTablePanel();
+		_panels.Add(_runeTablePanel);
+		AddChild(_runeTablePanel);
 
 		// ── Encounter detail modal (layer 15 — above the history panel) ───────
 		_detailModalLayer = BuildDetailModal();
@@ -121,6 +135,13 @@ public partial class OverworldController : LoadoutController
 		};
 		mapItem.MouseEntered += () => _hintLabel!.Text = "World Map  •  Plan your journey";
 		mapItem.MouseExited += () => _hintLabel!.Text = DefaultHint;
+
+		runeTable.InputEvent += (_, ev, _) =>
+		{
+			if (IsLeftClick(ev)) _runeTablePanel!.Open();
+		};
+		runeTable.MouseEntered += () => _hintLabel!.Text = "Rune Table  •  Configure difficulty runes";
+		runeTable.MouseExited += () => _hintLabel!.Text = DefaultHint;
 
 		// ── Dev boss popup (Ctrl+Alt+O) — only available in debug builds ────────
 		if (OS.IsDebugBuild())
