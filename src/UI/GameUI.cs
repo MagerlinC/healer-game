@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using healerfantasy;
@@ -37,6 +38,15 @@ public partial class GameUI : CanvasLayer
 
 	/// <summary>Container for Rune-of-Nature vines health bars, below the boss bar.</summary>
 	VBoxContainer? _vinesSection;
+
+	/// <summary>
+	/// Active vines health bars (Rune of Nature). Stored so <see cref="GetHoveredCharacter"/>
+	/// can check hover state and return the matching <see cref="Character"/> for targeting.
+	/// </summary>
+	readonly List<VinesHealthBar> _vinesHealthBars = new();
+
+	/// <summary>Maps CharacterName → Character for each active VinesEnemy.</summary>
+	readonly Dictionary<string, Character> _vinesCharacters = new();
 
 	// Stored so GetHoveredCharacter can return the right Character object and
 	// fall back to the alive twin when one is dead.
@@ -207,6 +217,14 @@ public partial class GameUI : CanvasLayer
 		if (_bossHealthBar.IsHovered())
 			return AliveOrFallback(_primaryBossCharacter, _secondaryBossCharacter);
 
+		// Vines bars (Rune of Nature) — return the matching VinesEnemy Character.
+		foreach (var bar in _vinesHealthBars)
+		{
+			if (bar.IsHovered() && _vinesCharacters.TryGetValue(bar.TrackedName, out var vines)
+			    && vines.IsAlive)
+				return vines;
+		}
+
 		return _partyFrames.GetHoveredCharacter();
 	}
 
@@ -279,6 +297,8 @@ public partial class GameUI : CanvasLayer
 	/// <summary>
 	/// Creates a compact health bar for <paramref name="vines"/> and adds it to
 	/// the vines section below the boss bar.
+	/// Also registers <paramref name="vines"/> for hover-targeting via
+	/// <see cref="GetHoveredCharacter"/>.
 	/// Called by <see cref="VinesManager"/> when new vines spawn.
 	/// </summary>
 	public void AddVinesHealthBar(VinesEnemy vines)
@@ -297,6 +317,10 @@ public partial class GameUI : CanvasLayer
 		var bar = new VinesHealthBar(vines.CharacterName, vines.DisplayName,
 		                             vines.CurrentHealth, vines.MaxHealth);
 		_vinesSection.AddChild(bar);
+
+		// Register for hover-to-target so the player can click the vines bar to target them.
+		_vinesHealthBars.Add(bar);
+		_vinesCharacters[vines.CharacterName] = vines;
 	}
 
 	/// <summary>
@@ -306,14 +330,13 @@ public partial class GameUI : CanvasLayer
 	/// </summary>
 	public void RemoveVinesHealthBar(string vinesCharacterName)
 	{
-		if (_vinesSection == null) return;
-		foreach (var child in _vinesSection.GetChildren())
+		_vinesCharacters.Remove(vinesCharacterName);
+
+		var bar = _vinesHealthBars.Find(b => b.TrackedName == vinesCharacterName);
+		if (bar != null)
 		{
-			if (child is VinesHealthBar bar && bar.TrackedName == vinesCharacterName)
-			{
-				bar.QueueFree();
-				return;
-			}
+			_vinesHealthBars.Remove(bar);
+			bar.QueueFree();
 		}
 	}
 }

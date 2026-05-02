@@ -18,6 +18,16 @@ public partial class VinesHealthBar : Control
     /// <summary>The CharacterName this bar is tracking.</summary>
     public string TrackedName { get; }
 
+    /// <summary>
+    /// Returns true when the mouse cursor is over this bar's screen rect.
+    /// Used by <see cref="GameUI.GetHoveredCharacter"/> for click-to-target.
+    /// </summary>
+    public bool IsHovered()
+    {
+        var mousePos = GetViewport().GetMousePosition();
+        return GetGlobalRect().HasPoint(mousePos);
+    }
+
     // ── node refs ─────────────────────────────────────────────────────────────
 
     ProgressBar _bar = null!;
