@@ -320,34 +320,89 @@ public abstract partial class LoadoutController : Node2D
 		return (layer, titleLabel);
 	}
 
-	// ── interactible factory ──────────────────────────────────────────────────
+	// ── scene setup helpers ──────────────────────────────────────────────────
 
-	protected Area2D MakeInteractible(string texturePath, Vector2 position,
-		Vector2 scale, float collisionRadius)
+	/// <summary>
+	/// Scales and positions a full-screen background sprite, then returns the
+	/// world-space left and right edges of the visible area for player clamping.
+	/// </summary>
+	protected (float BgLeft, float BgRight) SetupBackground(string texturePath)
 	{
-		var area = new Area2D();
-		area.Position = position;
-		area.InputPickable = true;
-		area.Monitoring = false;
-		area.Monitorable = false;
+		var camera = GetNode<Camera2D>("Camera2D");
+		var viewSize = GetViewport().GetVisibleRect().Size;
+		var worldW = viewSize.X / camera.Zoom.X;
+		var worldH = viewSize.Y / camera.Zoom.Y;
 
-		var sprite = new Sprite2D();
-		sprite.Texture = GD.Load<Texture2D>(texturePath);
-		sprite.Scale = scale;
-		area.AddChild(sprite);
+		var bg = new Sprite2D
+		{
+			Texture = GD.Load<Texture2D>(texturePath),
+			Centered = true,
+			Position = camera.Position
+		};
+		var bgScale = Mathf.Max(worldW / bg.Texture.GetWidth(), worldH / bg.Texture.GetHeight());
+		bg.Scale = new Vector2(bgScale, bgScale);
+		AddChild(bg);
 
-		var collision = new CollisionShape2D();
-		collision.Shape = new CircleShape2D { Radius = collisionRadius };
-		area.AddChild(collision);
-
-		return area;
+		return (camera.Position.X - worldW / 2f, camera.Position.X + worldW / 2f);
 	}
 
-	protected static bool IsLeftClick(InputEvent ev)
+	/// <summary>
+	/// Creates and adds the <see cref="OverworldPlayer"/> to the scene, assigning
+	/// movement bounds from the background edges.
+	/// </summary>
+	protected void SetupPlayer(float xPosition, float bgLeft, float bgRight)
 	{
-		return ev is InputEventMouseButton mb &&
-		       mb.ButtonIndex == MouseButton.Left &&
-		       mb.Pressed;
+		_player = new OverworldPlayer
+		{
+			Position = new Vector2(xPosition, FloorHeight - 15f),
+			Scale = new Vector2(1.5f, 1.5f),
+			XMin = bgLeft,
+			XMax = bgRight
+		};
+		AddChild(_player);
+	}
+
+	/// <summary>
+	/// Builds the shared HUD canvas layer (hint label, back-to-menu button,
+	/// character progress indicator) and returns the layer so subclasses can
+	/// append scene-specific controls to it.
+	/// </summary>
+	protected CanvasLayer SetupHud()
+	{
+		var hud = new CanvasLayer { Layer = 5 };
+		AddChild(hud);
+		hud.AddChild(BuildHintLabel());
+		hud.AddChild(BuildBackToMenuButton());
+		_characterProgressLabel = BuildCharacterProgressLabel();
+		hud.AddChild(_characterProgressLabel);
+		return hud;
+	}
+
+	/// <summary>
+	/// Adds <paramref name="interactible"/> as a child of this node and registers
+	/// it in <see cref="_interactibles"/> so panel open/close logic can toggle its
+	/// pickability.  Returns the interactible for fluent chaining.
+	/// </summary>
+	protected T AddInteractible<T>(T interactible) where T : Area2D
+	{
+		AddChild(interactible);
+		_interactibles.Add(interactible);
+		return interactible;
+	}
+
+	/// <summary>
+	/// Wires <paramref name="area"/>'s hover events to update the hint label.
+	/// </summary>
+	protected void WireHints(Area2D area, string hintText)
+	{
+		area.MouseEntered += () => { if (_hintLabel != null) _hintLabel.Text = hintText; };
+		area.MouseExited += () => { if (_hintLabel != null) _hintLabel.Text = DefaultHint; };
+	}
+
+	/// <summary>Navigates to the Map Screen scene.</summary>
+	protected void OnOpenMap()
+	{
+		GetTree().ChangeSceneToFile("res://levels/MapScreen.tscn");
 	}
 
 	// ══════════════════════════════════════════════════════════════════════════

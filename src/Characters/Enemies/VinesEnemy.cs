@@ -53,7 +53,6 @@ public partial class VinesEnemy : Character
 
 		// ── sprite (3-frame grow animation) ──────────────────────────────────
 		_sprite = new AnimatedSprite2D();
-		_sprite.Scale = new Vector2(0.25f, 0.25f);
 		var frames = new SpriteFrames();
 
 		frames.AddAnimation("idle");
@@ -73,7 +72,7 @@ public partial class VinesEnemy : Character
 		}
 
 		_sprite.SpriteFrames = frames;
-		_sprite.Scale = new Vector2(1.2f, 1.2f);
+		_sprite.Scale = new Vector2(0.2f, 0.2f);
 		AddChild(_sprite);
 		_sprite.Play("idle");
 

@@ -10,13 +10,6 @@ public static class AssetConstants
 
 	public static readonly string MainMenuPath = "res://assets/backgrounds/main-menu/background.png";
 
-	public static readonly string CastingSfx = "res://assets/sound-effects/spell-casting/casting.wav";
-	public static readonly string CastFinishedSfx = "res://assets/sound-effects/spell-casting/cast-finished.wav";
-
-	public static readonly string DeflectRiserSoundPath = "res://assets/sound-effects/riser.mp3";
-	public static readonly string DeflectFailedSoundPath = "res://assets/sound-effects/deflect-failed.mp3";
-	public static readonly string VictorySoundPath = "res://assets/music/victory.mp3";
-
 	static readonly string BackgroundBasePath = "res://assets/backgrounds/";
 
 	/// <summary>Arena background image paths, one per boss encounter (0–2).</summary>
@@ -75,6 +68,19 @@ public static class AssetConstants
 
 	public static readonly string RuneFramePath = "res://assets/frames/rune-frame.png";
 	public static readonly string RuneFrameActivePath = "res://assets/frames/rune-frame-active.png";
+
+	// SFX
+
+	public static readonly string CastingSfx = "res://assets/sound-effects/spell-casting/casting.wav";
+	public static readonly string CastFinishedSfx = "res://assets/sound-effects/spell-casting/cast-finished.wav";
+
+	public static readonly string DeflectRiserSoundPath = "res://assets/sound-effects/riser.mp3";
+	public static readonly string DeflectFailedSoundPath = "res://assets/sound-effects/deflect-failed.mp3";
+	public static readonly string VictorySoundPath = "res://assets/music/victory.mp3";
+
+
+	public static readonly string ButtonClickPath = "res://assets/sound-effects/button-impact.wav";
+
 	public static readonly string RuneSfxPath = "res://assets/sound-effects/rune.wav";
 	public static readonly string SpellbookSfxPath = "res://assets/sound-effects/book.wav";
 	public static readonly string TalentsSfxPath = "res://assets/sound-effects/choir-hit.wav";

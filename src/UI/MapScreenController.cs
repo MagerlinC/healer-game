@@ -26,18 +26,18 @@ public partial class MapScreenController : Node2D
 	// Adjust these to match the actual world-map background art as needed.
 	static readonly Vector2[] NodeCentres =
 	{
-		new(235f,  310f), // Dungeon 0 — upper-left, mountain peaks
-		new(430f,  543f), // Camp 0    — left-centre
-		new(700f,  700f), // Dungeon 1 — centre
+		new(235f, 310f), // Dungeon 0 — upper-left, mountain peaks
+		new(430f, 543f), // Camp 0    — left-centre
+		new(700f, 700f), // Dungeon 1 — centre
 		new(1215f, 780f), // Camp 1    — right-centre
 		new(1490f, 964f), // Dungeon 2 — lower-right
 		new(1640f, 790f), // Camp 2    — far-right, beginning to ascend
-		new(1800f, 540f), // Dungeon 3 — The Frozen Peak, upper-far-right
+		new(1800f, 540f) // Dungeon 3 — The Frozen Peak, upper-far-right
 	};
 
 	static readonly bool[] IsDungeon = { true, false, true, false, true, false, true };
-	static readonly int[]  DungeonIdx = { 0, -1, 1, -1, 2, -1, 3 };
-	static readonly int[]  CampIdx    = { -1, 0, -1, 1, -1, 2, -1 };
+	static readonly int[] DungeonIdx = { 0, -1, 1, -1, 2, -1, 3 };
+	static readonly int[] CampIdx = { -1, 0, -1, 1, -1, 2, -1 };
 
 	static readonly Vector2 DungeonNodeSize = new(160f, 90f);
 	static readonly Vector2 CampNodeSize = new(120f, 72f);
@@ -59,8 +59,18 @@ public partial class MapScreenController : Node2D
 	int _selectedSlot = -1; // which map slot is currently shown in the panel
 	StyleBoxFlat?[] _nodeBorders = null!; // live border refs for selection highlight
 
+	AudioStreamPlayer _sfxPlayer;
+
 	public override void _Ready()
 	{
+
+		_sfxPlayer = new AudioStreamPlayer
+		{
+			Stream = GD.Load<AudioStream>(AssetConstants.ButtonClickPath),
+			VolumeDb = -6f
+		};
+		AddChild(_sfxPlayer);
+
 		_nodeBorders = new StyleBoxFlat?[NodeCentres.Length];
 
 		// ── Background ────────────────────────────────────────────────────────
@@ -429,7 +439,7 @@ public partial class MapScreenController : Node2D
 
 		if (canEnter)
 		{
-			_enterBtn.Text = $"Enter  {name}";
+			_enterBtn.Text = $"Enter {name}";
 			_enterBtn.Disabled = !spellbookReady;
 			_detailPanelStyle.BorderColor = spellbookReady ? ColAvailable : new Color(0.55f, 0.50f, 0.28f);
 		}
@@ -454,6 +464,7 @@ public partial class MapScreenController : Node2D
 	{
 		if (_selectedSlot < 0 || !IsDungeon[_selectedSlot]) return;
 		if (GetNodeState(_selectedSlot) != RunState.MapNodeState.Available) return;
+		_sfxPlayer.Play();
 
 		// Mark camp as completed if we arrived from one (player was at camp)
 		if (RunState.Instance.CompletedCamps < RunState.Instance.CompletedDungeons)

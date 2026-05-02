@@ -10,7 +10,7 @@ using healerfantasy.UI;
 ///
 /// Extends <see cref="LoadoutController"/> to inherit the full spell/talent
 /// overlay system.  Camp-specific additions:
-///   • Camp background (camp.png)
+///   • Camp background
 ///   • Four interactibles: Map, Spell Tome, Talent Board, Armory
 ///   • Map click → navigate to MapScreen to select the next dungeon
 ///   • Armory click → open item equip/unequip panel (item management)
@@ -26,24 +26,7 @@ public partial class CampController : LoadoutController
 
 	protected override void SetupScene()
 	{
-		// ── Camp background ───────────────────────────────────────────────────
-		// Scale the background to cover the full visible world area so it fills
-		// any aspect ratio (e.g. ultrawide) without black bars or distortion.
-		var camera = GetNode<Camera2D>("Camera2D");
-		var viewSize = GetViewport().GetVisibleRect().Size;
-		var worldW = viewSize.X / camera.Zoom.X;
-		var worldH = viewSize.Y / camera.Zoom.Y;
-
-		var bg = new Sprite2D();
-		bg.Texture = GD.Load<Texture2D>(AssetConstants.OverworldBackgroundPath);
-		bg.Centered = true;
-		bg.Position = camera.Position;
-		var bgScale = Mathf.Max(worldW / bg.Texture.GetWidth(), worldH / bg.Texture.GetHeight());
-		bg.Scale = new Vector2(bgScale, bgScale);
-		AddChild(bg);
-
-		var bgLeft = camera.Position.X - worldW / 2f;
-		var bgRight = camera.Position.X + worldW / 2f;
+		var (bgLeft, bgRight) = SetupBackground(AssetConstants.OverworldBackgroundPath);
 
 		// ── Armory overlay panel ──────────────────────────────────────────────
 		// Built before the interactibles so the panel reference is ready to wire.
@@ -53,43 +36,31 @@ public partial class CampController : LoadoutController
 		AddChild(_armoryPanel);
 
 		// ── Interactibles ─────────────────────────────────────────────────────
-		// Map is on the left so it's prominent — the player came here to rest,
-		// spell/talent editing is in the middle/right, Armory on far right.
-		var spellTome = MakeInteractible(AssetConstants.SpellTomeInteractiblePath,
-			new Vector2(996f, FloorHeight - 12f), new Vector2(0.080f, 0.080f), 28f);
-		var talentBoard = MakeInteractible(AssetConstants.TalentBoardInteractiblePath,
-			new Vector2(796f, FloorHeight), new Vector2(0.090f, 0.090f), 50f);
-		var armory = MakeInteractible(AssetConstants.ArmoryInteractiblePath,
-			new Vector2(696f, FloorHeight - 12f), new Vector2(0.125f, 0.125f), 36f);
-		var mapItem = MakeInteractible(AssetConstants.MapInteractiblePath,
-			new Vector2(525f, FloorHeight), new Vector2(0.125f, 0.125f), 28f);
+		var spellTome = AddInteractible(new InteractibleObject(
+			AssetConstants.SpellTomeInteractiblePath,
+			new Vector2(996f, FloorHeight - 12f), new Vector2(0.080f, 0.080f), 28f,
+			AssetConstants.SpellbookSfxPath));
 
-		AddChild(mapItem);
-		AddChild(spellTome);
-		AddChild(talentBoard);
-		AddChild(armory);
-		_interactibles.Add(mapItem);
-		_interactibles.Add(spellTome);
-		_interactibles.Add(talentBoard);
-		_interactibles.Add(armory);
+		var talentBoard = AddInteractible(new InteractibleObject(
+			AssetConstants.TalentBoardInteractiblePath,
+			new Vector2(796f, FloorHeight), new Vector2(0.090f, 0.090f), 50f,
+			AssetConstants.TalentsSfxPath));
+
+		var armory = AddInteractible(new InteractibleObject(
+			AssetConstants.ArmoryInteractiblePath,
+			new Vector2(696f, FloorHeight - 12f), new Vector2(0.125f, 0.125f), 36f));
+
+		var mapItem = AddInteractible(new InteractibleObject(
+			AssetConstants.MapInteractiblePath,
+			new Vector2(525f, FloorHeight), new Vector2(0.125f, 0.125f), 28f));
 
 		// ── Player ────────────────────────────────────────────────────────────
-		_player = new OverworldPlayer();
-		_player.Position = new Vector2(660f, FloorHeight - 15f);
-		_player.Scale = new Vector2(1.5f, 1.5f);
-		_player.XMin = bgLeft;
-		_player.XMax = bgRight;
-		AddChild(_player);
+		SetupPlayer(660f, bgLeft, bgRight);
 
 		// ── HUD ───────────────────────────────────────────────────────────────
-		var hud = new CanvasLayer { Layer = 5 };
-		AddChild(hud);
-		hud.AddChild(BuildHintLabel());
-		hud.AddChild(BuildBackToMenuButton());
-		_characterProgressLabel = BuildCharacterProgressLabel();
-		hud.AddChild(_characterProgressLabel);
+		var hud = SetupHud();
 
-		// Dungeon progress label (e.g. "Dungeon 1 of 3 complete")
+		// Dungeon progress label (e.g. "Rest · 1 of 3 dungeons cleared")
 		var progressLabel = new Label();
 		progressLabel.Text = BuildProgressText();
 		progressLabel.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
@@ -101,33 +72,17 @@ public partial class CampController : LoadoutController
 		hud.AddChild(progressLabel);
 
 		// ── Wire interactible clicks ──────────────────────────────────────────
-		mapItem.InputEvent += (_, ev, _) =>
-		{
-			if (IsLeftClick(ev)) OnOpenMap();
-		};
-		mapItem.MouseEntered += () => _hintLabel!.Text = "World Map  •  Continue your journey";
-		mapItem.MouseExited += () => _hintLabel!.Text = DefaultHint;
+		spellTome.Interacted += () => OpenPanel(_spellPanel!);
+		WireHints(spellTome, "Spellbook  •  Click to open");
 
-		spellTome.InputEvent += (_, ev, _) =>
-		{
-			if (IsLeftClick(ev)) OpenPanel(_spellPanel!);
-		};
-		spellTome.MouseEntered += () => _hintLabel!.Text = "Spellbook  •  Click to open";
-		spellTome.MouseExited += () => _hintLabel!.Text = DefaultHint;
+		talentBoard.Interacted += () => OpenPanel(_talentPanel!);
+		WireHints(talentBoard, "Talent Board  •  Click to open");
 
-		talentBoard.InputEvent += (_, ev, _) =>
-		{
-			if (IsLeftClick(ev)) OpenPanel(_talentPanel!);
-		};
-		talentBoard.MouseEntered += () => _hintLabel!.Text = "Talent Board  •  Click to open";
-		talentBoard.MouseExited += () => _hintLabel!.Text = DefaultHint;
+		armory.Interacted += OpenArmory;
+		WireHints(armory, "Armory  •  Manage your equipped items");
 
-		armory.InputEvent += (_, ev, _) =>
-		{
-			if (IsLeftClick(ev)) OpenArmory();
-		};
-		armory.MouseEntered += () => _hintLabel!.Text = "Armory  •  Manage your equipped items";
-		armory.MouseExited += () => _hintLabel!.Text = DefaultHint;
+		mapItem.Interacted += OnOpenMap;
+		WireHints(mapItem, "World Map  •  Continue your journey");
 	}
 
 	// ── armory panel ──────────────────────────────────────────────────────────
@@ -146,10 +101,5 @@ public partial class CampController : LoadoutController
 		var d = RunState.Instance.CompletedDungeons;
 		var total = RunState.Instance.RunDungeons.Count;
 		return $"Rest  ·  {d} of {total} dungeons cleared";
-	}
-
-	void OnOpenMap()
-	{
-		GetTree().ChangeSceneToFile("res://levels/MapScreen.tscn");
 	}
 }
