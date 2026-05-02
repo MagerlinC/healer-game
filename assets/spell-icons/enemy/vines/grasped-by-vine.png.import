@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://1adple518m5g"
-path="res://.godot/imported/grow2.png-876a7946d1650298a7550a120823c2dc.ctex"
+uid="uid://bsgdq0ratghmu"
+path="res://.godot/imported/grasped-by-vine.png-c5b0f299f6deec79eec87536830ba99e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/enemies/vines/grow2.png"
-dest_files=["res://.godot/imported/grow2.png-876a7946d1650298a7550a120823c2dc.ctex"]
+source_file="res://assets/spell-icons/enemy/vines/grasped-by-vine.png"
+dest_files=["res://.godot/imported/grasped-by-vine.png-c5b0f299f6deec79eec87536830ba99e.ctex"]
 
 [params]
 

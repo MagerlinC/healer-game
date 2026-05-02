@@ -25,13 +25,23 @@ public partial class BossHealthBar : CharacterFrame
 	static readonly Color BarTextColor = new(0.95f, 0.90f, 0.85f);
 
 	/// <summary>
-	/// Horizontal inset shared by both the health panel and the effect-badge row,
-	/// so they always align regardless of viewport width.
+	/// Horizontal inset shared by both the health panel and the effect-badge row.
+	/// Defaults to 48 for the full-width boss bar; pass a smaller value for
+	/// compact bars (e.g. vines bars in a narrow left-side column).
 	/// </summary>
-	const int SideMargin = 48;
+	readonly int _sideMargin;
 
 	// When non-null this overrides RunState to show a specific boss (e.g. second twin).
 	readonly string? _bossNameOverride;
+
+	/// <summary>
+	/// Label text set by <see cref="Init"/>.  When set, this takes priority over
+	/// the <c>charName</c> argument in <see cref="UpdateProgress"/> so that a
+	/// human-readable display name (e.g. "Vine (Templar)") is preserved even when
+	/// subsequent <see cref="Character.HealthChanged"/> signals carry the raw
+	/// <see cref="Character.CharacterName"/> (e.g. "Vines_1").
+	/// </summary>
+	string? _displayName;
 
 	// Evaluated dynamically so it always matches whichever boss is active this run.
 	protected override string FrameCharacterName =>
@@ -66,11 +76,18 @@ public partial class BossHealthBar : CharacterFrame
 
 	/// <param name="bossNameOverride">
 	/// When provided, this bar tracks the named character instead of
-	/// <see cref="RunState.CurrentBossName"/>. Used for the secondary Astral Twin health bar.
+	/// <see cref="RunState.CurrentBossName"/>. Used for secondary bars (Astral Twin,
+	/// Rune-of-Nature vines, etc.).
 	/// </param>
-	public BossHealthBar(string? bossNameOverride = null)
+	/// <param name="sideMargin">
+	/// Horizontal inset in pixels applied to both the health panel and the
+	/// effect-badge row.  Defaults to 48 (full-width boss bar style); pass a
+	/// smaller value for compact bars in a narrow column.
+	/// </param>
+	public BossHealthBar(string? bossNameOverride = null, int sideMargin = 48)
 	{
-		_bossNameOverride = bossNameOverride;
+		_bossNameOverride    = bossNameOverride;
+		_sideMargin          = sideMargin;
 		_effectIndicatorSize = 40;
 	}
 	// ── lifecycle ─────────────────────────────────────────────────────────────
@@ -86,8 +103,8 @@ public partial class BossHealthBar : CharacterFrame
 		// Wrap in the same side margins as the health panel so the badges
 		// align with the bar rather than rendering at the screen edges.
 		var effectMargin = new MarginContainer();
-		effectMargin.AddThemeConstantOverride("margin_left", SideMargin);
-		effectMargin.AddThemeConstantOverride("margin_right", SideMargin);
+		effectMargin.AddThemeConstantOverride("margin_left", _sideMargin);
+		effectMargin.AddThemeConstantOverride("margin_right", _sideMargin);
 		effectMargin.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		effectMargin.AddChild(EffectBar);
 		AddChild(effectMargin);
@@ -97,6 +114,7 @@ public partial class BossHealthBar : CharacterFrame
 			nameof(Character.HealthChanged),
 			Callable.From((string charName, float current, float max) =>
 			{
+				if (!GodotObject.IsInstanceValid(this) || IsQueuedForDeletion()) return;
 				var expected = _bossNameOverride ?? (RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name);
 				if (charName == expected)
 					UpdateProgress(charName, current, max);
@@ -107,6 +125,7 @@ public partial class BossHealthBar : CharacterFrame
 			nameof(Character.ShieldChanged),
 			Callable.From((string charName, float shield, float maxHealth) =>
 			{
+				if (!GodotObject.IsInstanceValid(this) || IsQueuedForDeletion()) return;
 				var expected = _bossNameOverride ?? (RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name);
 				if (charName == expected)
 					UpdateShieldBar(shield, maxHealth);
@@ -175,6 +194,7 @@ public partial class BossHealthBar : CharacterFrame
 	/// </summary>
 	public void Init(string charName, float current, float max)
 	{
+		_displayName = charName; // pin the label to this display name permanently
 		UpdateProgress(charName, current, max);
 	}
 
@@ -183,7 +203,7 @@ public partial class BossHealthBar : CharacterFrame
 		_trackedHealth = current;
 		_trackedMaxHealth = max;
 		_bar.Value = Mathf.Clamp(current / max, 0f, 1f);
-		_nameLabel.Text = charName;
+		_nameLabel.Text = _displayName ?? charName;
 		_currentHealthLabel.Text = $"{current:F0} / {max:F0}";
 		Visible = true;
 		RefreshShieldBar(); // reposition shield overlay when health changes
@@ -267,8 +287,8 @@ public partial class BossHealthBar : CharacterFrame
 		_innerPanel.MouseExited += () => panelStyle.BorderColor = BorderDefault;
 
 		var margin = new MarginContainer();
-		margin.AddThemeConstantOverride("margin_left", SideMargin);
-		margin.AddThemeConstantOverride("margin_right", SideMargin);
+		margin.AddThemeConstantOverride("margin_left", _sideMargin);
+		margin.AddThemeConstantOverride("margin_right", _sideMargin);
 		margin.AddThemeConstantOverride("margin_top", 8);
 		margin.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		AddChild(margin);

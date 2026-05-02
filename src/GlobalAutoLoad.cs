@@ -46,10 +46,28 @@ public partial class GlobalAutoLoad : Node
 		SignalMap[instance].Add(signalName);
 
 		// Connect any subscriptions that arrived before this emitter registered.
+		// Callables that wrap a lambda capturing a disposed GodotObject will throw
+		// ObjectDisposedException when marshalled to native (e.g. a BossHealthBar
+		// that was QueueFree'd mid-fight).  Catch and prune those stale entries so
+		// they can never cause problems again.
 		if (PendingSubscriptions.TryGetValue(signalName, out var pending))
+		{
+			var stale = new List<Callable>();
 			foreach (var cb in pending)
-				if (!instance.IsConnected(signalName, cb))
-					instance.Connect(signalName, cb);
+			{
+				try
+				{
+					if (!instance.IsConnected(signalName, cb))
+						instance.Connect(signalName, cb);
+				}
+				catch (ObjectDisposedException)
+				{
+					stale.Add(cb);
+				}
+			}
+			foreach (var cb in stale)
+				pending.Remove(cb);
+		}
 	}
 
 	public static void UnregisterSignalEmitter(Node instance)

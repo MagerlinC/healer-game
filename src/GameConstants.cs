@@ -144,7 +144,7 @@ public static class GameConstants
 	public const float RuneNatureVinesInterval = 8f;
 
 	/// <summary>Rune 2 (Nature): damage the vines deal to their target per second.</summary>
-	public const float RuneNatureVinesDamagePerSecond = 12f;
+	public const float RuneNatureVinesDamagePerSecond = 10f;
 
 	/// <summary>Rune 2 (Nature): maximum health of each vines entity.</summary>
 	public const float RuneNatureVinesMaxHealth = 250f;

@@ -40,10 +40,10 @@ public partial class GameUI : CanvasLayer
 	VBoxContainer? _vinesSection;
 
 	/// <summary>
-	/// Active vines health bars (Rune of Nature). Stored so <see cref="GetHoveredCharacter"/>
-	/// can check hover state and return the matching <see cref="Character"/> for targeting.
+	/// CharacterName → BossHealthBar for each active VinesEnemy.
+	/// Stored so <see cref="GetHoveredCharacter"/> can check hover state.
 	/// </summary>
-	readonly List<VinesHealthBar> _vinesHealthBars = new();
+	readonly Dictionary<string, BossHealthBar> _vinesBars = new();
 
 	/// <summary>Maps CharacterName → Character for each active VinesEnemy.</summary>
 	readonly Dictionary<string, Character> _vinesCharacters = new();
@@ -218,9 +218,9 @@ public partial class GameUI : CanvasLayer
 			return AliveOrFallback(_primaryBossCharacter, _secondaryBossCharacter);
 
 		// Vines bars (Rune of Nature) — return the matching VinesEnemy Character.
-		foreach (var bar in _vinesHealthBars)
+		foreach (var (charName, bar) in _vinesBars)
 		{
-			if (bar.IsHovered() && _vinesCharacters.TryGetValue(bar.TrackedName, out var vines)
+			if (bar.IsHovered() && _vinesCharacters.TryGetValue(charName, out var vines)
 			    && vines.IsAlive)
 				return vines;
 		}
@@ -306,20 +306,31 @@ public partial class GameUI : CanvasLayer
 		// Lazily create the vines section container the first time a vine spawns.
 		if (_vinesSection == null)
 		{
+			// Left-side column so vines bars don't overlap the boss bar or cast bar.
+			// Anchored to the top-left corner; width is fixed and height grows with content.
 			_vinesSection = new VBoxContainer();
-			_vinesSection.AddThemeConstantOverride("separation", 2);
-			_vinesSection.SetAnchorsPreset(Control.LayoutPreset.TopWide);
-			_vinesSection.OffsetTop = 95f;   // just below the primary boss bar
-			_vinesSection.OffsetBottom = 175f;
+			_vinesSection.AddThemeConstantOverride("separation", 4);
+			_vinesSection.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
+			_vinesSection.OffsetLeft   = 8f;
+			_vinesSection.OffsetRight  = 228f;  // 220 px wide column
+			_vinesSection.OffsetTop    = 130f;  // clear of boss bar + cast bar
+			_vinesSection.SizeFlagsVertical = Control.SizeFlags.ShrinkBegin;
 			_anchor.AddChild(_vinesSection);
 		}
 
-		var bar = new VinesHealthBar(vines.CharacterName, vines.DisplayName,
-		                             vines.CurrentHealth, vines.MaxHealth);
+		// Compact BossHealthBar with a tight side margin to fit the narrow column.
+		// Inherits hover-highlighting, effect badges, and all the same styling.
+		var bar = new BossHealthBar(vines.CharacterName, sideMargin: 6);
+		bar.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		_vinesSection.AddChild(bar);
 
-		// Register for hover-to-target so the player can click the vines bar to target them.
-		_vinesHealthBars.Add(bar);
+		// Initialise immediately — the vines _Ready() has already fired so the
+		// initial HealthChanged signal has already been missed.
+		// Use DisplayName for the label ("Vine (Templar)") but CharacterName is
+		// already baked into the BossHealthBar constructor for signal routing.
+		bar.Init(vines.DisplayName, vines.CurrentHealth, vines.MaxHealth);
+
+		_vinesBars[vines.CharacterName] = bar;
 		_vinesCharacters[vines.CharacterName] = vines;
 	}
 
@@ -332,10 +343,9 @@ public partial class GameUI : CanvasLayer
 	{
 		_vinesCharacters.Remove(vinesCharacterName);
 
-		var bar = _vinesHealthBars.Find(b => b.TrackedName == vinesCharacterName);
-		if (bar != null)
+		if (_vinesBars.TryGetValue(vinesCharacterName, out var bar))
 		{
-			_vinesHealthBars.Remove(bar);
+			_vinesBars.Remove(vinesCharacterName);
 			bar.QueueFree();
 		}
 	}

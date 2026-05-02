@@ -42,9 +42,9 @@ public partial class OverworldController : LoadoutController
 			new Vector2(796f, FloorHeight), new Vector2(0.090f, 0.090f), 50f,
 			AssetConstants.TalentsSfxPath));
 
-		var historyScroll = AddInteractible(new InteractibleObject(
+		var runHistoryScroll = AddInteractible(new InteractibleObject(
 			AssetConstants.RunScrollInteractiblePath,
-			new Vector2(696f, FloorHeight), new Vector2(0.055f, 0.055f), 28f,
+			new Vector2(696f, FloorHeight - 8f), new Vector2(0.075f, 0.075f), 28f,
 			AssetConstants.SpellbookSfxPath));
 
 		var mapItem = AddInteractible(new InteractibleObject(
@@ -88,8 +88,8 @@ public partial class OverworldController : LoadoutController
 		talentBoard.Interacted += () => OpenPanel(_talentPanel!);
 		WireHints(talentBoard, "Talent Board  •  Click to open");
 
-		historyScroll.Interacted += OpenHistoryPanel;
-		WireHints(historyScroll, "Run History  •  Click to open");
+		runHistoryScroll.Interacted += OpenHistoryPanel;
+		WireHints(runHistoryScroll, "Run History  •  Click to open");
 
 		mapItem.Interacted += OnOpenMap;
 		WireHints(mapItem, "World Map  •  Plan your journey");

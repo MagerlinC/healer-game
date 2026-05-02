@@ -1,5 +1,6 @@
 using Godot;
 using healerfantasy;
+using healerfantasy.Effects;
 using healerfantasy.SpellResources;
 
 /// <summary>
@@ -29,6 +30,9 @@ public partial class VinesEnemy : Character
 	float _damageTimer;
 	const float DamageInterval = 1.0f;
 
+	/// <summary>Cached effect ID so we can remove it in <see cref="_ExitTree"/>.</summary>
+	string _graspedEffectId = "";
+
 	AnimatedSprite2D _sprite = null!;
 
 	// ── ctor ──────────────────────────────────────────────────────────────────
@@ -38,7 +42,7 @@ public partial class VinesEnemy : Character
 		MaxHealth = GameConstants.RuneNatureVinesMaxHealth;
 		IsFriendly = false;
 		CharacterName = instanceName;
-		DisplayName = "Growing Vines";
+		DisplayName = $"Vine ({target.CharacterName})";
 		AttachedTarget = target;
 	}
 
@@ -79,6 +83,24 @@ public partial class VinesEnemy : Character
 		// Position near the attached target if possible, else use zero.
 		if (AttachedTarget != null)
 			GlobalPosition = AttachedTarget.GlobalPosition + new Vector2(0f, -30f);
+
+		// Apply the grasped effect to the targeted party member so their portrait
+		// shows an effect indicator for the duration of this vine's life.
+		if (AttachedTarget != null)
+		{
+			var effect = new GraspedByVineEffect(CharacterName);
+			_graspedEffectId = effect.EffectId;
+			AttachedTarget.ApplyEffect(effect);
+		}
+	}
+
+	public override void _ExitTree()
+	{
+		// Remove the grasped effect whether the vine died normally (0.8s timer →
+		// QueueFree) or was force-freed by VinesManager when the boss died.
+		if (_graspedEffectId != "" && AttachedTarget != null
+		    && GodotObject.IsInstanceValid(AttachedTarget))
+			AttachedTarget.RemoveEffect(_graspedEffectId);
 	}
 
 	public override void _Process(double delta)
