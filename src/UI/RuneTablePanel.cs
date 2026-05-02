@@ -9,339 +9,333 @@ namespace healerfantasy.UI;
 /// <summary>
 /// Overlay panel for the Rune Table interactible in the Overworld.
 ///
-/// Shows up to <see cref="RuneStore.TotalRunes"/> rune slots.
-/// Acquired runes can be toggled on/off (activation is sequential — enabling
-/// rune 3 automatically enables runes 1 and 2).  Once the run has started
-/// (<see cref="RunState.RuneSelectionLocked"/>) the panel becomes read-only.
+/// Displays a 2×2 grid of rune slots.  Each slot shows the rune icon inside a
+/// decorative frame (<see cref="AssetConstants.RuneFramePath"/> /
+/// <see cref="AssetConstants.RuneFrameActivePath"/>).  Hovering a slot shows
+/// the rune description (plus the +10% boss-health note) via
+/// <see cref="GameTooltip"/>; unacquired runes show a ??? tooltip.
 ///
-/// Opened by <see cref="OverworldController"/> when the player clicks the
-/// rune-table interactible.
+/// Toggling a rune plays <see cref="AssetConstants.RuneSfxPath"/>.
+/// Rune selection is sequential and locks once the run starts.
 /// </summary>
 public partial class RuneTablePanel : CanvasLayer
 {
-    // ── colours ───────────────────────────────────────────────────────────────
-    static readonly Color PanelBg       = new(0.07f, 0.06f, 0.06f, 0.97f);
-    static readonly Color PanelBorder   = new(0.65f, 0.52f, 0.28f);
-    static readonly Color TitleColor    = new(0.95f, 0.84f, 0.50f);
-    static readonly Color ActiveBorder  = new(0.75f, 0.30f, 0.90f);  // purple — rune active
-    static readonly Color InactiveBorder = new(0.35f, 0.28f, 0.22f); // dim — not active
-    static readonly Color LockedTint    = new(0.40f, 0.40f, 0.40f, 0.55f); // greyed locked slots
+	// ── colours ───────────────────────────────────────────────────────────────
+	static readonly Color PanelBg = new(0.07f, 0.06f, 0.06f, 0.97f);
+	static readonly Color PanelBorder = new(0.65f, 0.52f, 0.28f);
+	static readonly Color TitleColor = new(0.95f, 0.84f, 0.50f);
 
-    // ── rune display info ─────────────────────────────────────────────────────
-    record RuneInfo(RuneIndex Index, string Name, string Description);
+	// Appended to every acquired rune's tooltip description.
+	const string HealthBonusLine = "\n\nEach active rune increases all boss health by +10%.";
 
-    static readonly RuneInfo[] Runes =
-    {
-        new(RuneIndex.Void,   "Rune of the Void",
-            "Enemy damage applies a Healing Absorption equal to 10% of the damage dealt to the target.\nHealing cannot restore health until the absorption is fully consumed.\nIndicated by a dark purple bar on party frames."),
-        new(RuneIndex.Nature, "Rune of Nature",
-            "Growing Vines attach to a party member every 8 seconds during boss fights, dealing 12 damage/s until killed.\nThe vines have their own health bars displayed below the boss bar."),
-        new(RuneIndex.Time,   "Rune of Time",
-            "All bosses gain +10% Haste, causing their abilities to fire 10% more frequently."),
-        new(RuneIndex.Purity, "Rune of Purity",
-            "Enables the 'purest' form of each boss, unlocking extra mechanics where available."),
-    };
+	// ── rune display info ─────────────────────────────────────────────────────
+	record RuneInfo(RuneIndex Index, string Name, string Description);
 
-    // ── node refs ─────────────────────────────────────────────────────────────
-    readonly List<RuneSlotControl> _slots = new();
-    Label _statusLabel = null!;
+	static readonly RuneInfo[] Runes =
+	{
+		new(RuneIndex.Void, "Rune of the Void",
+			"Seeps the world in the energy of the void, making enemy damage apply a Healing Absorption equal to 10% of the damage dealt to the target.\nHealing cannot restore health until the absorption is fully consumed."),
+		new(RuneIndex.Nature, "Rune of Nature",
+			"Embraces the violent growth of nature, causing Growing Vines to appear, attaching to party members and dealing damage until killed."),
+		new(RuneIndex.Time, "Rune of Time",
+			"Energizes the flow of time, granting all bosses +10% Haste, causing their attacks and abilities to fire 10% more frequently."),
+		new(RuneIndex.Purity, "Rune of Purity",
+			"Enables the purest form of each boss, unlocking their true strength.")
+	};
 
-    // ── lifecycle ─────────────────────────────────────────────────────────────
-    public override void _Ready()
-    {
-        Layer   = 10;
-        Visible = false;
+	// ── node refs ─────────────────────────────────────────────────────────────
+	readonly List<RuneSlotControl> _slots = new();
+	Label _statusLabel = null!;
+	AudioStreamPlayer _sfxPlayer = null!;
 
-        // ── backdrop dimmer ───────────────────────────────────────────────────
-        var dimmer = new ColorRect();
-        dimmer.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        dimmer.Color       = new Color(0f, 0f, 0f, 0.72f);
-        dimmer.MouseFilter = Control.MouseFilterEnum.Stop;
-        AddChild(dimmer);
+	// ── lifecycle ─────────────────────────────────────────────────────────────
+	public override void _Ready()
+	{
+		Layer = 10;
+		Visible = false;
 
-        // ── centred panel ─────────────────────────────────────────────────────
-        var margin = new MarginContainer();
-        margin.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        margin.AddThemeConstantOverride("margin_left",   260);
-        margin.AddThemeConstantOverride("margin_right",  260);
-        margin.AddThemeConstantOverride("margin_top",    80);
-        margin.AddThemeConstantOverride("margin_bottom", 80);
-        margin.MouseFilter = Control.MouseFilterEnum.Ignore;
-        AddChild(margin);
+		// ── backdrop dimmer ───────────────────────────────────────────────────
+		var dimmer = new ColorRect();
+		dimmer.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		dimmer.Color = new Color(0f, 0f, 0f, 0.72f);
+		dimmer.MouseFilter = Control.MouseFilterEnum.Stop;
+		AddChild(dimmer);
 
-        var panelStyle = new StyleBoxFlat();
-        panelStyle.BgColor = PanelBg;
-        panelStyle.SetCornerRadiusAll(8);
-        panelStyle.SetBorderWidthAll(2);
-        panelStyle.BorderColor = PanelBorder;
-        panelStyle.ContentMarginLeft = panelStyle.ContentMarginRight = 24f;
-        panelStyle.ContentMarginTop  = panelStyle.ContentMarginBottom = 20f;
+		// ── centred panel ─────────────────────────────────────────────────────
+		var margin = new MarginContainer();
+		margin.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		margin.AddThemeConstantOverride("margin_left", 350);
+		margin.AddThemeConstantOverride("margin_right", 350);
+		margin.AddThemeConstantOverride("margin_top", 100);
+		margin.AddThemeConstantOverride("margin_bottom", 100);
+		margin.MouseFilter = Control.MouseFilterEnum.Ignore;
+		AddChild(margin);
 
-        var panel = new PanelContainer();
-        panel.AddThemeStyleboxOverride("panel", panelStyle);
-        panel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        panel.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
-        margin.AddChild(panel);
+		var panelStyle = new StyleBoxFlat();
+		panelStyle.BgColor = PanelBg;
+		panelStyle.SetCornerRadiusAll(8);
+		panelStyle.SetBorderWidthAll(2);
+		panelStyle.BorderColor = PanelBorder;
+		panelStyle.ContentMarginLeft = panelStyle.ContentMarginRight = 24f;
+		panelStyle.ContentMarginTop = panelStyle.ContentMarginBottom = 20f;
 
-        var vbox = new VBoxContainer();
-        vbox.AddThemeConstantOverride("separation", 16);
-        panel.AddChild(vbox);
+		var panel = new PanelContainer();
+		panel.AddThemeStyleboxOverride("panel", panelStyle);
+		panel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		panel.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		margin.AddChild(panel);
 
-        // ── title row ─────────────────────────────────────────────────────────
-        var titleRow = new HBoxContainer();
-        titleRow.AddThemeConstantOverride("separation", 8);
-        vbox.AddChild(titleRow);
+		var vbox = new VBoxContainer();
+		vbox.AddThemeConstantOverride("separation", 16);
+		panel.AddChild(vbox);
 
-        var titleLabel = new Label();
-        titleLabel.Text = "Rune Table";
-        titleLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        titleLabel.AddThemeFontSizeOverride("font_size", 22);
-        titleLabel.AddThemeColorOverride("font_color", TitleColor);
-        titleRow.AddChild(titleLabel);
+		// ── title row ─────────────────────────────────────────────────────────
+		var titleRow = new HBoxContainer();
+		titleRow.AddThemeConstantOverride("separation", 8);
+		vbox.AddChild(titleRow);
 
-        var closeBtn = new Button();
-        closeBtn.Text = "✕  Close";
-        closeBtn.Flat = true;
-        closeBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-        closeBtn.AddThemeFontSizeOverride("font_size", 14);
-        closeBtn.AddThemeColorOverride("font_color", new Color(0.55f, 0.50f, 0.44f));
-        closeBtn.Pressed += () => Visible = false;
-        titleRow.AddChild(closeBtn);
+		var titleLabel = new Label();
+		titleLabel.Text = "Rune Table";
+		titleLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		titleLabel.AddThemeFontSizeOverride("font_size", 22);
+		titleLabel.AddThemeColorOverride("font_color", TitleColor);
+		titleRow.AddChild(titleLabel);
 
-        var sep = new HSeparator();
-        sep.AddThemeColorOverride("color", new Color(0.50f, 0.40f, 0.22f, 0.55f));
-        vbox.AddChild(sep);
+		var closeBtn = new Button();
+		closeBtn.Text = "✕  Close";
+		closeBtn.Flat = true;
+		closeBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+		closeBtn.AddThemeFontSizeOverride("font_size", 14);
+		closeBtn.AddThemeColorOverride("font_color", new Color(0.55f, 0.50f, 0.44f));
+		closeBtn.Pressed += () => Visible = false;
+		titleRow.AddChild(closeBtn);
 
-        // ── status label ──────────────────────────────────────────────────────
-        _statusLabel = new Label();
-        _statusLabel.HorizontalAlignment = HorizontalAlignment.Center;
-        _statusLabel.AddThemeFontSizeOverride("font_size", 13);
-        _statusLabel.AddThemeColorOverride("font_color", new Color(0.55f, 0.50f, 0.44f));
-        vbox.AddChild(_statusLabel);
+		var sep = new HSeparator();
+		sep.AddThemeColorOverride("color", new Color(0.50f, 0.40f, 0.22f, 0.55f));
+		vbox.AddChild(sep);
 
-        // ── rune health baseline info ─────────────────────────────────────────
-        var baselineLabel = new Label();
-        baselineLabel.Text = "Each active rune increases all boss health by +10%.";
-        baselineLabel.HorizontalAlignment = HorizontalAlignment.Center;
-        baselineLabel.AddThemeFontSizeOverride("font_size", 12);
-        baselineLabel.AddThemeColorOverride("font_color", new Color(0.60f, 0.55f, 0.50f));
-        vbox.AddChild(baselineLabel);
+		// ── status label ──────────────────────────────────────────────────────
+		_statusLabel = new Label();
+		_statusLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		_statusLabel.AddThemeFontSizeOverride("font_size", 13);
+		_statusLabel.AddThemeColorOverride("font_color", new Color(0.55f, 0.50f, 0.44f));
+		vbox.AddChild(_statusLabel);
 
-        // ── rune slots grid ───────────────────────────────────────────────────
-        var slotsContainer = new VBoxContainer();
-        slotsContainer.AddThemeConstantOverride("separation", 12);
-        vbox.AddChild(slotsContainer);
+		// ── 2×2 rune icon grid ────────────────────────────────────────────────
+		// Centred horizontally inside the panel via an aligning HBoxContainer.
+		var gridWrapper = new HBoxContainer();
+		gridWrapper.Alignment = BoxContainer.AlignmentMode.Center;
+		vbox.AddChild(gridWrapper);
 
-        var acquired = RuneStore.AcquiredRuneCount;
-        for (var i = 0; i < RuneStore.TotalRunes; i++)
-        {
-            var info       = Runes[i];
-            var runeNum    = i + 1;
-            var isAcquired = runeNum <= acquired;
-            var slot       = new RuneSlotControl(info.Index, runeNum, info.Name, info.Description, isAcquired);
-            slot.Toggled  += OnRuneToggled;
-            _slots.Add(slot);
-            slotsContainer.AddChild(slot);
-        }
+		var grid = new GridContainer();
+		grid.Columns = 2;
+		grid.AddThemeConstantOverride("h_separation", 16);
+		grid.AddThemeConstantOverride("v_separation", 16);
+		gridWrapper.AddChild(grid);
 
-        // Apply current active rune state.
-        RefreshSlotsFromState();
-    }
+		var acquired = RuneStore.AcquiredRuneCount;
+		for (var i = 0; i < RuneStore.TotalRunes; i++)
+		{
+			var info = Runes[i];
+			var runeNum = i + 1;
+			var isAcquired = runeNum <= acquired;
 
-    // ── public API ────────────────────────────────────────────────────────────
+			var tooltipTitle = isAcquired ? info.Name : "???";
+			var tooltipDesc = isAcquired
+				? info.Description + HealthBonusLine
+				: $"Defeat the Queen with {runeNum - 1} rune(s) active to unlock.";
 
-    /// <summary>Show or hide the panel, refreshing rune state from RunState.</summary>
-    public void Toggle()
-    {
-        Visible = !Visible;
-        if (Visible) RefreshSlotsFromState();
-    }
+			var slot = new RuneSlotControl(info.Index, runeNum, isAcquired, tooltipTitle, tooltipDesc);
+			slot.Toggled += OnRuneToggled;
+			_slots.Add(slot);
+			grid.AddChild(slot);
+		}
 
-    public void Open()
-    {
-        Visible = true;
-        RefreshSlotsFromState();
-    }
+		RefreshSlotsFromState();
 
-    // ── private ───────────────────────────────────────────────────────────────
+		// ── SFX player ────────────────────────────────────────────────────────
+		_sfxPlayer = new AudioStreamPlayer();
+		_sfxPlayer.Stream = GD.Load<AudioStream>(AssetConstants.RuneSfxPath);
+		_sfxPlayer.VolumeDb = -6f;
+		AddChild(_sfxPlayer);
+	}
 
-    void RefreshSlotsFromState()
-    {
-        var locked   = RunState.Instance.RuneSelectionLocked;
-        var acquired = RuneStore.AcquiredRuneCount;
+	// ── public API ────────────────────────────────────────────────────────────
 
-        _statusLabel.Text = locked
-            ? "⚠  Run in progress — rune selection is locked."
-            : acquired == 0
-                ? "Defeat the final boss to unlock your first rune."
-                : "Click an acquired rune to activate or deactivate it.";
+	/// <summary>Show the panel, refreshing rune state.</summary>
+	public void Open()
+	{
+		Visible = true;
+		RefreshSlotsFromState();
+	}
 
-        _statusLabel.AddThemeColorOverride("font_color",
-            locked ? new Color(0.85f, 0.55f, 0.20f) : new Color(0.55f, 0.50f, 0.44f));
+	/// <summary>Toggle visibility, refreshing on show.</summary>
+	public void Toggle()
+	{
+		Visible = !Visible;
+		if (Visible) RefreshSlotsFromState();
+	}
 
-        for (var i = 0; i < _slots.Count; i++)
-        {
-            var runeNum    = i + 1;
-            var isAcquired = runeNum <= acquired;
-            var isActive   = RunState.Instance.IsRuneActive(Runes[i].Index);
-            _slots[i].SetState(isAcquired, isActive, locked);
-        }
-    }
+	// ── private ───────────────────────────────────────────────────────────────
 
-    void OnRuneToggled(RuneIndex rune)
-    {
-        if (RunState.Instance.RuneSelectionLocked) return;
+	void RefreshSlotsFromState()
+	{
+		var locked = RunState.Instance.RuneSelectionLocked;
+		var acquired = RuneStore.AcquiredRuneCount;
 
-        var runeNum  = (int)rune;
-        var acquired = RuneStore.AcquiredRuneCount;
-        if (runeNum > acquired) return; // safety check
+		_statusLabel.Text = locked
+			? "⚠  Run in progress — rune selection is locked."
+			: acquired == 0
+				? "Defeat the final boss to unlock your first rune."
+				: "Click a rune to activate or deactivate it.";
 
-        // Determine current active rune count.
-        var currentActive = RunState.Instance.ActiveRuneCount;
+		_statusLabel.AddThemeColorOverride("font_color",
+			locked ? new Color(0.85f, 0.55f, 0.20f) : new Color(0.55f, 0.50f, 0.44f));
 
-        // Sequential rule: activating rune N also activates 1..N-1.
-        // Deactivating rune N also deactivates N+1..4.
-        if (RunState.Instance.IsRuneActive(rune))
-        {
-            // Deactivate this rune and all above it.
-            var newActive = new List<RuneIndex>();
-            for (var i = 1; i < runeNum; i++)
-                newActive.Add((RuneIndex)i);
-            RunState.Instance.SetActiveRunes(newActive);
-        }
-        else
-        {
-            // Activate this rune and all below it.
-            var newActive = new List<RuneIndex>();
-            for (var i = 1; i <= runeNum; i++)
-                if (i <= acquired) newActive.Add((RuneIndex)i);
-            RunState.Instance.SetActiveRunes(newActive);
-        }
+		for (var i = 0; i < _slots.Count; i++)
+		{
+			var runeNum = i + 1;
+			var isAcquired = runeNum <= acquired;
+			var isActive = RunState.Instance.IsRuneActive(Runes[i].Index);
+			_slots[i].SetState(isAcquired, isActive, locked);
+		}
+	}
 
-        RefreshSlotsFromState();
-    }
+	void OnRuneToggled(RuneIndex rune)
+	{
+		if (RunState.Instance.RuneSelectionLocked) return;
 
-    // ── inner control ─────────────────────────────────────────────────────────
+		var runeNum = (int)rune;
+		var acquired = RuneStore.AcquiredRuneCount;
+		if (runeNum > acquired) return;
 
-    /// <summary>A single rune slot: icon + name + description + toggle button.</summary>
-    sealed partial class RuneSlotControl : PanelContainer
-    {
-        public event System.Action<RuneIndex>? Toggled;
+		// Sequential rule: activating rune N activates 1..N; deactivating N deactivates N..4.
+		List<RuneIndex> newActive;
+		if (RunState.Instance.IsRuneActive(rune))
+		{
+			newActive = new List<RuneIndex>();
+			for (var i = 1; i < runeNum; i++)
+				newActive.Add((RuneIndex)i);
+		}
+		else
+		{
+			newActive = new List<RuneIndex>();
+			for (var i = 1; i <= runeNum; i++)
+				if (i <= acquired)
+					newActive.Add((RuneIndex)i);
+		}
 
-        readonly RuneIndex _index;
-        readonly int       _runeNum;
-        readonly bool      _isAcquired;
-        readonly StyleBoxFlat _borderStyle;
-        readonly Button    _toggleBtn;
-        readonly Label     _descLabel;
-        readonly TextureRect _runeIcon;
-        readonly ColorRect   _lockOverlay;
+		RunState.Instance.SetActiveRunes(newActive);
+		LoadoutPreferences.SaveActiveRunes(newActive);
 
-        public RuneSlotControl(RuneIndex index, int runeNum, string name,
-                               string description, bool isAcquired)
-        {
-            _index      = index;
-            _runeNum    = runeNum;
-            _isAcquired = isAcquired;
+		_sfxPlayer.Play();
+		RefreshSlotsFromState();
+	}
 
-            CustomMinimumSize = new Vector2(0f, 80f);
-            SizeFlagsHorizontal = SizeFlags.ExpandFill;
+	// ── inner slot control ────────────────────────────────────────────────────
 
-            _borderStyle = new StyleBoxFlat();
-            _borderStyle.BgColor = new Color(0.10f, 0.09f, 0.08f, 0.85f);
-            _borderStyle.SetCornerRadiusAll(6);
-            _borderStyle.SetBorderWidthAll(2);
-            _borderStyle.BorderColor = InactiveBorder;
-            _borderStyle.ContentMarginLeft = _borderStyle.ContentMarginRight = 14f;
-            _borderStyle.ContentMarginTop  = _borderStyle.ContentMarginBottom = 10f;
-            AddThemeStyleboxOverride("panel", _borderStyle);
+	/// <summary>
+	/// A square slot: decorative frame texture with the rune icon layered on top.
+	/// Clicking (when acquired and unlocked) fires <see cref="Toggled"/>.
+	/// Hovering shows a <see cref="GameTooltip"/>.
+	/// </summary>
+	sealed partial class RuneSlotControl : Control
+	{
+		public event System.Action<RuneIndex>? Toggled;
 
-            var row = new HBoxContainer();
-            row.AddThemeConstantOverride("separation", 14);
-            AddChild(row);
+		const float SlotSize = 140f;
+		const float IconInset = 20f;
 
-            // ── rune icon ─────────────────────────────────────────────────────
-            _runeIcon = new TextureRect();
-            _runeIcon.CustomMinimumSize = new Vector2(52f, 52f);
-            _runeIcon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-            _runeIcon.ExpandMode  = TextureRect.ExpandModeEnum.FitWidth;
-            if (isAcquired)
-                _runeIcon.Texture = GD.Load<Texture2D>(AssetConstants.RuneIconPath(runeNum));
-            else
-                _runeIcon.Modulate = new Color(0.25f, 0.25f, 0.25f);
-            row.AddChild(_runeIcon);
+		readonly RuneIndex _index;
+		readonly int _runeNum;
+		readonly string _tooltipTitle;
+		readonly string _tooltipDesc;
 
-            // ── text column ───────────────────────────────────────────────────
-            var textCol = new VBoxContainer();
-            textCol.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            textCol.AddThemeConstantOverride("separation", 3);
-            row.AddChild(textCol);
+		TextureRect _frame = null!;
+		TextureRect _icon = null!;
 
-            var nameLabel = new Label();
-            nameLabel.Text = isAcquired ? name : $"??? (Defeat the Queen with {runeNum - 1} rune(s) active to unlock)";
-            nameLabel.AddThemeFontSizeOverride("font_size", 15);
-            nameLabel.AddThemeColorOverride("font_color",
-                isAcquired ? new Color(0.92f, 0.88f, 0.82f) : new Color(0.45f, 0.40f, 0.35f));
-            textCol.AddChild(nameLabel);
+		bool _isAcquired;
+		bool _locked;
 
-            _descLabel = new Label();
-            _descLabel.Text = isAcquired ? description : "";
-            _descLabel.AutowrapMode = TextServer.AutowrapMode.Word;
-            _descLabel.AddThemeFontSizeOverride("font_size", 11);
-            _descLabel.AddThemeColorOverride("font_color", new Color(0.60f, 0.56f, 0.50f));
-            textCol.AddChild(_descLabel);
+		public RuneSlotControl(RuneIndex index, int runeNum, bool isAcquired,
+			string tooltipTitle, string tooltipDesc)
+		{
+			_index = index;
+			_runeNum = runeNum;
+			_isAcquired = isAcquired;
+			_tooltipTitle = tooltipTitle;
+			_tooltipDesc = tooltipDesc;
 
-            // ── toggle button ─────────────────────────────────────────────────
-            _toggleBtn = new Button();
-            _toggleBtn.Text = "Activate";
-            _toggleBtn.CustomMinimumSize = new Vector2(90f, 0f);
-            _toggleBtn.SizeFlagsVertical = SizeFlags.ShrinkCenter;
-            _toggleBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-            _toggleBtn.AddThemeFontSizeOverride("font_size", 13);
-            _toggleBtn.Visible = isAcquired;
-            _toggleBtn.Pressed += () => Toggled?.Invoke(_index);
-            row.AddChild(_toggleBtn);
+			CustomMinimumSize = new Vector2(SlotSize, SlotSize);
+			MouseFilter = MouseFilterEnum.Stop;
+			MouseDefaultCursorShape = isAcquired ? CursorShape.PointingHand : CursorShape.Arrow;
 
-            // ── locked overlay ────────────────────────────────────────────────
-            _lockOverlay = new ColorRect();
-            _lockOverlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-            _lockOverlay.Color = LockedTint;
-            _lockOverlay.MouseFilter = MouseFilterEnum.Ignore;
-            _lockOverlay.Visible = false;
-            AddChild(_lockOverlay);
-        }
+			// ── frame ─────────────────────────────────────────────────────────
+			_frame = new TextureRect();
+			_frame.SetAnchorsPreset(LayoutPreset.FullRect);
+			_frame.StretchMode = TextureRect.StretchModeEnum.Scale;
+			_frame.MouseFilter = MouseFilterEnum.Ignore;
+			_frame.Texture = GD.Load<Texture2D>(AssetConstants.RuneFramePath);
+			AddChild(_frame);
 
-        public void SetState(bool isAcquired, bool isActive, bool locked)
-        {
-            _borderStyle.BorderColor = (isAcquired && isActive) ? ActiveBorder : InactiveBorder;
+			// ── icon (inset via a MarginContainer) ────────────────────────────
+			var iconMargin = new MarginContainer();
+			iconMargin.SetAnchorsPreset(LayoutPreset.FullRect);
+			iconMargin.AddThemeConstantOverride("margin_left", (int)IconInset);
+			iconMargin.AddThemeConstantOverride("margin_right", (int)IconInset);
+			iconMargin.AddThemeConstantOverride("margin_top", (int)IconInset);
+			iconMargin.AddThemeConstantOverride("margin_bottom", (int)IconInset);
+			iconMargin.MouseFilter = MouseFilterEnum.Ignore;
+			AddChild(iconMargin);
 
-            if (_toggleBtn != null)
-            {
-                _toggleBtn.Visible  = isAcquired && !locked;
-                _toggleBtn.Text     = isActive ? "Deactivate" : "Activate";
-                var btnStyle = new StyleBoxFlat();
-                btnStyle.BgColor = isActive
-                    ? new Color(0.30f, 0.10f, 0.45f)
-                    : new Color(0.14f, 0.11f, 0.09f);
-                btnStyle.SetCornerRadiusAll(5);
-                btnStyle.SetBorderWidthAll(1);
-                btnStyle.BorderColor = isActive
-                    ? new Color(0.60f, 0.20f, 0.80f)
-                    : new Color(0.45f, 0.38f, 0.22f);
-                btnStyle.ContentMarginLeft  = btnStyle.ContentMarginRight  = 10f;
-                btnStyle.ContentMarginTop   = btnStyle.ContentMarginBottom = 6f;
-                _toggleBtn.AddThemeStyleboxOverride("normal",  btnStyle);
-                _toggleBtn.AddThemeStyleboxOverride("hover",   btnStyle);
-                _toggleBtn.AddThemeStyleboxOverride("pressed", btnStyle);
-                _toggleBtn.AddThemeStyleboxOverride("focus",   btnStyle);
-                _toggleBtn.AddThemeColorOverride("font_color", new Color(0.90f, 0.87f, 0.83f));
-            }
+			_icon = new TextureRect();
+			_icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+			_icon.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
+			_icon.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+			_icon.SizeFlagsVertical = SizeFlags.ExpandFill;
+			_icon.MouseFilter = MouseFilterEnum.Ignore;
 
-            if (_lockOverlay != null)
-                _lockOverlay.Visible = locked && isAcquired;
+			if (isAcquired)
+				_icon.Texture = GD.Load<Texture2D>(AssetConstants.RuneIconPath(runeNum));
+			else
+				_icon.Modulate = new Color(0.18f, 0.18f, 0.18f);
 
-            if (_runeIcon != null && isAcquired && _runeIcon.Texture == null)
-                _runeIcon.Texture = GD.Load<Texture2D>(AssetConstants.RuneIconPath(_runeNum));
-        }
-    }
+			iconMargin.AddChild(_icon);
+
+			// ── events ────────────────────────────────────────────────────────
+			MouseEntered += () => GameTooltip.Show(_tooltipTitle, _tooltipDesc);
+			MouseExited += () => GameTooltip.Hide();
+			GuiInput += OnGuiInput;
+		}
+
+		void OnGuiInput(InputEvent ev)
+		{
+			if (ev is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
+				if (_isAcquired && !_locked)
+					Toggled?.Invoke(_index);
+		}
+
+		public void SetState(bool isAcquired, bool isActive, bool locked)
+		{
+			_isAcquired = isAcquired;
+			_locked = locked;
+
+			// Swap frame texture.
+			_frame.Texture = GD.Load<Texture2D>(
+				isAcquired && isActive ? AssetConstants.RuneFrameActivePath : AssetConstants.RuneFramePath);
+
+			// Icon tint: dark = not acquired, slightly grey = locked, white = normal.
+			_icon.Modulate = !isAcquired
+				? new Color(0.18f, 0.18f, 0.18f)
+				: locked
+					? new Color(0.60f, 0.60f, 0.60f, 0.80f)
+					: Colors.White;
+
+			// Lazily load the icon texture once the rune is first acquired.
+			if (isAcquired && _icon.Texture == null)
+				_icon.Texture = GD.Load<Texture2D>(AssetConstants.RuneIconPath(_runeNum));
+
+			MouseDefaultCursorShape = isAcquired && !locked ? CursorShape.PointingHand : CursorShape.Arrow;
+		}
+	}
 }

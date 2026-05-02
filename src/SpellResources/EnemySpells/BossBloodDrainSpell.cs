@@ -30,7 +30,7 @@ public partial class BossBloodDrainSpell : SpellResource
 		ManaCost = 0f;
 		CastTime = 0f;
 		Parryable = true;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/blood-knight/spells/blood-drain.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/blood-knight/blood-drain.png");
 		EffectType = EffectType.Harmful;
 	}
 

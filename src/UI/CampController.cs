@@ -42,7 +42,7 @@ public partial class CampController : LoadoutController
 		bg.Scale = new Vector2(bgScale, bgScale);
 		AddChild(bg);
 
-		var bgLeft  = camera.Position.X - worldW / 2f;
+		var bgLeft = camera.Position.X - worldW / 2f;
 		var bgRight = camera.Position.X + worldW / 2f;
 
 		// ── Armory overlay panel ──────────────────────────────────────────────
@@ -60,7 +60,7 @@ public partial class CampController : LoadoutController
 		var talentBoard = MakeInteractible(AssetConstants.TalentBoardInteractiblePath,
 			new Vector2(796f, FloorHeight), new Vector2(0.090f, 0.090f), 50f);
 		var armory = MakeInteractible(AssetConstants.ArmoryInteractiblePath,
-			new Vector2(696f, FloorHeight), new Vector2(0.125f, 0.125f), 36f);
+			new Vector2(696f, FloorHeight - 12f), new Vector2(0.125f, 0.125f), 36f);
 		var mapItem = MakeInteractible(AssetConstants.MapInteractiblePath,
 			new Vector2(525f, FloorHeight), new Vector2(0.125f, 0.125f), 28f);
 

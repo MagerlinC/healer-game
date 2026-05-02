@@ -44,7 +44,7 @@ public partial class OverworldController : LoadoutController
 		bg.Scale = new Vector2(bgScale, bgScale);
 		AddChild(bg);
 
-		var bgLeft  = camera.Position.X - worldW / 2f;
+		var bgLeft = camera.Position.X - worldW / 2f;
 		var bgRight = camera.Position.X + worldW / 2f;
 
 		// ── Interactibles ─────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ public partial class OverworldController : LoadoutController
 
 		// Rune table — placed to the right of the spell tome.
 		var runeTable = MakeInteractible(AssetConstants.RuneTableInteractiblePath,
-			new Vector2(1110f, FloorHeight - 8f), new Vector2(0.085f, 0.085f), 36f);
+			new Vector2(1110f, FloorHeight), new Vector2(0.085f, 0.085f), 36f);
 
 		AddChild(spellTome);
 		AddChild(talentBoard);

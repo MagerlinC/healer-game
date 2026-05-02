@@ -68,20 +68,27 @@ public static class AssetConstants
 	// ── Rune assets ───────────────────────────────────────────────────────────
 
 	static readonly string RuneBasePath = "res://assets/interactibles/";
-	public static readonly string RuneVoidIconPath    = RuneBasePath + "rune-void.png";
-	public static readonly string RuneNatureIconPath  = RuneBasePath + "rune-nature.png";
-	public static readonly string RuneTimeIconPath    = RuneBasePath + "rune-time.png";
-	public static readonly string RuneHolyIconPath    = RuneBasePath + "rune-holy.png";
+	public static readonly string RuneVoidIconPath = RuneBasePath + "rune-void.png";
+	public static readonly string RuneNatureIconPath = RuneBasePath + "rune-nature.png";
+	public static readonly string RuneTimeIconPath = RuneBasePath + "rune-time.png";
+	public static readonly string RuneHolyIconPath = RuneBasePath + "rune-holy.png";
+
+	public static readonly string RuneFramePath = "res://assets/frames/rune-frame.png";
+	public static readonly string RuneFrameActivePath = "res://assets/frames/rune-frame-active.png";
+	public static readonly string RuneSfxPath = "res://assets/sound-effects/rune.wav";
 
 	/// <summary>Returns the icon path for rune N (1-based).</summary>
-	public static string RuneIconPath(int runeIndex) => runeIndex switch
+	public static string RuneIconPath(int runeIndex)
 	{
-		1 => RuneVoidIconPath,
-		2 => RuneNatureIconPath,
-		3 => RuneTimeIconPath,
-		4 => RuneHolyIconPath,
-		_ => RuneVoidIconPath
-	};
+		return runeIndex switch
+		{
+			1 => RuneVoidIconPath,
+			2 => RuneNatureIconPath,
+			3 => RuneTimeIconPath,
+			4 => RuneHolyIconPath,
+			_ => RuneVoidIconPath
+		};
+	}
 
 	// ── Vines enemy assets ────────────────────────────────────────────────────
 

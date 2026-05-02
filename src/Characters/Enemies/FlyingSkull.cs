@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 using healerfantasy;
+using healerfantasy.Runes;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
@@ -209,8 +210,12 @@ public partial class FlyingSkull : Character
 		}
 		else if (_wavesTimer <= 0f && !_wavesActive)
 		{
-			_wavesTimer = WavesInterval;
-			BeginNecroticWaves();
+			// Waves only in pure form  
+			if (RunState.Instance.IsRuneActive(RuneIndex.Purity))
+			{
+				_wavesTimer = WavesInterval;
+				BeginNecroticWaves();
+			}
 		}
 	}
 
@@ -432,7 +437,7 @@ public partial class FlyingSkull : Character
 		WavesInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-		void SetupAnimations()
+	void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

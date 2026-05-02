@@ -248,6 +248,7 @@ public partial class RunState : Node
 		RunDungeons = BuildRunDungeons();
 		InitSpellsFromPreferences();
 		InitTalentsFromPreferences();
+		InitRunesFromPreferences();
 	}
 
 	// ── Public API ────────────────────────────────────────────────────────────
@@ -273,6 +274,7 @@ public partial class RunState : Node
 		IsDevTestFight            = false;
 		RuneSelectionLocked       = false;
 		_activeRunes.Clear();
+		InitRunesFromPreferences();
 		ItemStore.Clear();
 		RunDungeons = BuildRunDungeons();
 	}
@@ -300,5 +302,12 @@ public partial class RunState : Node
 	{
 		if (LoadoutPreferences.HasSavedTalents)
 			SetTalents(LoadoutPreferences.SavedTalents);
+	}
+
+	void InitRunesFromPreferences()
+	{
+		var saved = LoadoutPreferences.SavedActiveRuneIndices;
+		if (saved.Count > 0)
+			SetActiveRunes(saved.Select(i => (RuneIndex)i));
 	}
 }

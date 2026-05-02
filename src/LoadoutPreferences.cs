@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Godot;
+using healerfantasy.Runes;
 using healerfantasy.SpellResources;
 using healerfantasy.Talents;
 
@@ -39,6 +40,13 @@ public static class LoadoutPreferences
         /// Length matches <see cref="Player.MaxSpellSlots"/>.
         /// </summary>
         public List<string> SelectedSpellNames { get; set; } = new();
+
+        /// <summary>
+        /// 1-based <see cref="RuneIndex"/> values for runes that were active
+        /// when last saved.  Stored as ints for JSON friendliness.
+        /// Null-safe on old saves (deserialises to an empty list).
+        /// </summary>
+        public List<int> ActiveRuneIndices { get; set; } = new();
     }
 
     // ── in-memory state ───────────────────────────────────────────────────────
@@ -83,6 +91,23 @@ public static class LoadoutPreferences
         TalentRegistry.AllTalents
             .Where(t => _data.SelectedTalentNames.Contains(t.Name))
             .ToList();
+
+    /// <summary>
+    /// 1-based <see cref="RuneIndex"/> values that were active at last save.
+    /// Returns an empty list on old saves that predate rune persistence.
+    /// </summary>
+    public static IReadOnlyList<int> SavedActiveRuneIndices =>
+        _data.ActiveRuneIndices.AsReadOnly();
+
+    /// <summary>
+    /// Persists the player's current rune selection.  Call this whenever
+    /// the player activates or deactivates a rune at the Rune Table.
+    /// </summary>
+    public static void SaveActiveRunes(IEnumerable<RuneIndex> runes)
+    {
+        _data.ActiveRuneIndices = runes.Select(r => (int)r).ToList();
+        SaveToDisk();
+    }
 
     /// <summary>
     /// Persists the given talent selection. Call this whenever the player

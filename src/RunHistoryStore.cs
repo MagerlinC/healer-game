@@ -71,6 +71,12 @@ public static class RunHistoryStore
 
 	public static IReadOnlyList<RunRecord> History => _history.AsReadOnly();
 
+	/// <summary>
+	/// All boss encounters recorded in the current (in-progress) run.
+	/// Updated after each <see cref="RecordBossEncounter"/> call.
+	/// </summary>
+	public static IReadOnlyList<BossEncounterRecord> CurrentRunEncounters => _currentEncounters.AsReadOnly();
+
 	// Storing and loading from file on disk
 
 	static List<RunRecord> LoadRunHistoryFromDisk()
