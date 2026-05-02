@@ -123,15 +123,14 @@ public partial class RuneTablePanel : CanvasLayer
 
 		// ── 2×2 rune icon grid ────────────────────────────────────────────────
 		// Centred horizontally inside the panel via an aligning HBoxContainer.
-		var gridWrapper = new HBoxContainer();
-		gridWrapper.Alignment = BoxContainer.AlignmentMode.Center;
-		vbox.AddChild(gridWrapper);
+		var rowWrapper = new HBoxContainer();
+		rowWrapper.Alignment = BoxContainer.AlignmentMode.Center;
+		vbox.AddChild(rowWrapper);
 
-		var grid = new GridContainer();
-		grid.Columns = 2;
-		grid.AddThemeConstantOverride("h_separation", 16);
-		grid.AddThemeConstantOverride("v_separation", 16);
-		gridWrapper.AddChild(grid);
+		var row = new HBoxContainer();
+		row.AddThemeConstantOverride("h_separation", 16);
+		row.AddThemeConstantOverride("v_separation", 16);
+		rowWrapper.AddChild(row);
 
 		var acquired = RuneStore.AcquiredRuneCount;
 		for (var i = 0; i < RuneStore.TotalRunes; i++)
@@ -148,7 +147,7 @@ public partial class RuneTablePanel : CanvasLayer
 			var slot = new RuneSlotControl(info.Index, runeNum, isAcquired, tooltipTitle, tooltipDesc);
 			slot.Toggled += OnRuneToggled;
 			_slots.Add(slot);
-			grid.AddChild(slot);
+			row.AddChild(slot);
 		}
 
 		RefreshSlotsFromState();

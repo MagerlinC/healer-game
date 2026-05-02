@@ -80,6 +80,7 @@ public abstract partial class LoadoutController : Node2D
 	protected Label? _hintLabel;
 	protected readonly List<Area2D> _interactibles = new();
 
+
 	/// <summary>All overlay panels — registered so ESC / CloseAllPanels can dismiss any of them.</summary>
 	protected readonly List<CanvasLayer> _panels = new();
 
@@ -129,8 +130,8 @@ public abstract partial class LoadoutController : Node2D
 		AddChild(_talentPanel);
 
 		SetupScene();
-
 		SyncTalentSlotsFromRunState();
+
 	}
 
 	/// <summary>

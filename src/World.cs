@@ -28,7 +28,7 @@ public partial class World : Node2D
 	{
 		CombatLog.Clear();
 
-		var dungeon   = RunState.Instance.CurrentDungeon;
+		var dungeon = RunState.Instance.CurrentDungeon;
 		var bossIndex = RunState.Instance.CurrentBossIndexInDungeon;
 
 		// ── Arena background ──────────────────────────────────────────────────
@@ -36,7 +36,7 @@ public partial class World : Node2D
 		AddChild(bgLayer);
 		var bgRect = new TextureRect();
 		bgRect.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		bgRect.Texture     = GD.Load<Texture2D>(dungeon.ArenaBackgroundPaths[bossIndex]);
+		bgRect.Texture = GD.Load<Texture2D>(dungeon.ArenaBackgroundPaths[bossIndex]);
 		bgRect.StretchMode = TextureRect.StretchModeEnum.Scale;
 		bgRect.MouseFilter = Control.MouseFilterEnum.Ignore;
 		bgLayer.AddChild(bgRect);
@@ -54,15 +54,15 @@ public partial class World : Node2D
 		// Lock rune selection now that a fight has begun.
 		RunState.Instance.LockRuneSelection();
 
-		var ui      = GetNode<GameUI>("PartyUI");
-		var player  = GetNode<Player>("Healer");
-		var templar  = GetNode<Character>("Templar");
+		var ui = GetNode<GameUI>("PartyUI");
+		var player = GetNode<Player>("Healer");
+		var templar = GetNode<Character>("Templar");
 		var assassin = GetNode<Character>("Assassin");
-		var wizard   = GetNode<Character>("Wizard");
+		var wizard = GetNode<Character>("Wizard");
 
 		// ── Boss — instantiated from current dungeon definition ───────────────
 		var bossScene = GD.Load<PackedScene>(dungeon.BossScenePaths[bossIndex]);
-		var bossRoot  = bossScene.Instantiate();
+		var bossRoot = bossScene.Instantiate();
 
 		// Position the boss (or its container) in the arena.
 		if (bossRoot is Node2D bossNode2D)
@@ -123,11 +123,6 @@ public partial class World : Node2D
 			vinesManager.Init(new[] { templar, (Character)player, assassin, wizard }, ui);
 		}
 
-		// ── Spellbook selector ────────────────────────────────────────────────
-		var spellbook = new SpellbookSelector();
-		AddChild(spellbook);
-		spellbook.Init(player, ui);
-
 		// ── Talent selector ───────────────────────────────────────────────────
 		var talentSelector = new TalentSelector();
 		AddChild(talentSelector);
@@ -142,7 +137,7 @@ public partial class World : Node2D
 		AddChild(victoryScreen);
 
 		// ── Pause menu (Escape key) ────────────────────────────────────────────
-		var pauseMenu = new healerfantasy.UI.PauseMenu();
+		var pauseMenu = new PauseMenu();
 		AddChild(pauseMenu);
 
 		// ── Arena bounds ──────────────────────────────────────────────────────
@@ -158,16 +153,17 @@ public partial class World : Node2D
 		// GameConstants.FrozenPeakArenaRadius if the ring looks too large or small.
 		if (dungeon.Tier == GameConstants.FrozenPeakTier)
 		{
-			AddCircularArenaBound(Vector2.Zero, GameConstants.FrozenPeakArenaFractionX, GameConstants.FrozenPeakArenaFractionY, GameConstants.FrozenPeakArenaCenterOffsetY);
+			AddCircularArenaBound(Vector2.Zero, GameConstants.FrozenPeakArenaFractionX, GameConstants.FrozenPeakArenaFractionY,
+				GameConstants.FrozenPeakArenaCenterOffsetY);
 
 			// Also constrain NPC party members via PartyMember.ClampToArenaBoundary().
 			// Compute the same world-space radii that AddCircularArenaBound uses so
 			// both the physics wall and the positional clamp agree on the boundary.
-			var boundsCamera  = GetNode<Camera2D>("Camera2D");
-			var boundsView    = GetViewport().GetVisibleRect().Size;
-			var boundRx       = boundsView.X / (2f * boundsCamera.Zoom.X) * GameConstants.FrozenPeakArenaFractionX;
-			var boundRy       = boundsView.Y / (2f * boundsCamera.Zoom.Y) * GameConstants.FrozenPeakArenaFractionY;
-			var boundCenterY  = boundsView.Y / boundsCamera.Zoom.Y * GameConstants.FrozenPeakArenaCenterOffsetY;
+			var boundsCamera = GetNode<Camera2D>("Camera2D");
+			var boundsView = GetViewport().GetVisibleRect().Size;
+			var boundRx = boundsView.X / (2f * boundsCamera.Zoom.X) * GameConstants.FrozenPeakArenaFractionX;
+			var boundRy = boundsView.Y / (2f * boundsCamera.Zoom.Y) * GameConstants.FrozenPeakArenaFractionY;
+			var boundCenterY = boundsView.Y / boundsCamera.Zoom.Y * GameConstants.FrozenPeakArenaCenterOffsetY;
 			PartyMember.ArenaBoundary = (new Vector2(0f, boundCenterY), boundRx, boundRy);
 		}
 		else
@@ -188,10 +184,10 @@ public partial class World : Node2D
 	/// <see cref="SegmentShape2D"/> walls; <c>MoveAndSlide()</c> handles collision.
 	/// </summary>
 	void AddCircularArenaBound(Vector2 center, float fractionX, float fractionY,
-	                           float centerOffsetFractionY = 0f, int segments = 48)
+		float centerOffsetFractionY = 0f, int segments = 48)
 	{
-		var camera  = GetNode<Camera2D>("Camera2D");
-		var view    = GetViewport().GetVisibleRect().Size;
+		var camera = GetNode<Camera2D>("Camera2D");
+		var view = GetViewport().GetVisibleRect().Size;
 		var radiusX = view.X / (2f * camera.Zoom.X) * fractionX;
 		var radiusY = view.Y / (2f * camera.Zoom.Y) * fractionY;
 
@@ -200,12 +196,12 @@ public partial class World : Node2D
 
 		for (var i = 0; i < segments; i++)
 		{
-			var angleA = Mathf.Tau * i       / segments;
+			var angleA = Mathf.Tau * i / segments;
 			var angleB = Mathf.Tau * (i + 1) / segments;
 			var a = actualCenter + new Vector2(Mathf.Cos(angleA) * radiusX, Mathf.Sin(angleA) * radiusY);
 			var b = actualCenter + new Vector2(Mathf.Cos(angleB) * radiusX, Mathf.Sin(angleB) * radiusY);
 
-			var wall  = new StaticBody2D();
+			var wall = new StaticBody2D();
 			var shape = new CollisionShape2D { Shape = new SegmentShape2D { A = a, B = b } };
 			wall.AddChild(shape);
 			AddChild(wall);
@@ -215,22 +211,22 @@ public partial class World : Node2D
 	void AddArenaBounds()
 	{
 		var camera = GetNode<Camera2D>("Camera2D");
-		var view   = GetViewport().GetVisibleRect().Size;
-		var hw     = view.X / (2f * camera.Zoom.X); // half-width in world units
-		var hh     = view.Y / (2f * camera.Zoom.Y); // half-height in world units
+		var view = GetViewport().GetVisibleRect().Size;
+		var hw = view.X / (2f * camera.Zoom.X); // half-width in world units
+		var hh = view.Y / (2f * camera.Zoom.Y); // half-height in world units
 
 		// (from, to) pairs for left / right / top / bottom edges
 		(Vector2 A, Vector2 B)[] edges =
 		{
-			(new Vector2(-hw, -hh), new Vector2(-hw,  hh)), // left
-			(new Vector2( hw, -hh), new Vector2( hw,  hh)), // right
-			(new Vector2(-hw, -hh), new Vector2( hw, -hh)), // top
-			(new Vector2(-hw,  hh), new Vector2( hw,  hh)), // bottom
+			(new Vector2(-hw, -hh), new Vector2(-hw, hh)), // left
+			(new Vector2(hw, -hh), new Vector2(hw, hh)), // right
+			(new Vector2(-hw, -hh), new Vector2(hw, -hh)), // top
+			(new Vector2(-hw, hh), new Vector2(hw, hh)) // bottom
 		};
 
 		foreach (var (a, b) in edges)
 		{
-			var wall  = new StaticBody2D();
+			var wall = new StaticBody2D();
 			var shape = new CollisionShape2D { Shape = new SegmentShape2D { A = a, B = b } };
 			wall.AddChild(shape);
 			AddChild(wall);

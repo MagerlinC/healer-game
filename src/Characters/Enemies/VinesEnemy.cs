@@ -16,97 +16,98 @@ using healerfantasy.SpellResources;
 /// </summary>
 public partial class VinesEnemy : Character
 {
-    // ── public state ──────────────────────────────────────────────────────────
+	// ── public state ──────────────────────────────────────────────────────────
 
-    /// <summary>The party-member character this vine is currently latched onto.</summary>
-    public Character? AttachedTarget { get; private set; }
+	/// <summary>The party-member character this vine is currently latched onto.</summary>
+	public Character? AttachedTarget { get; private set; }
 
-    /// <summary>Display name shown on the vines health bar.</summary>
-    public string DisplayName { get; private set; } = "Growing Vines";
+	/// <summary>Display name shown on the vines health bar.</summary>
+	public string DisplayName { get; private set; } = "Growing Vines";
 
-    // ── internal ──────────────────────────────────────────────────────────────
+	// ── internal ──────────────────────────────────────────────────────────────
 
-    float _damageTimer;
-    const float DamageInterval = 1.0f;
+	float _damageTimer;
+	const float DamageInterval = 1.0f;
 
-    AnimatedSprite2D _sprite = null!;
+	AnimatedSprite2D _sprite = null!;
 
-    // ── ctor ──────────────────────────────────────────────────────────────────
+	// ── ctor ──────────────────────────────────────────────────────────────────
 
-    public VinesEnemy(Character target, string instanceName)
-    {
-        MaxHealth  = GameConstants.RuneNatureVinesMaxHealth;
-        IsFriendly = false;
-        CharacterName = instanceName;
-        DisplayName   = "Growing Vines";
-        AttachedTarget = target;
-    }
+	public VinesEnemy(Character target, string instanceName)
+	{
+		MaxHealth = GameConstants.RuneNatureVinesMaxHealth;
+		IsFriendly = false;
+		CharacterName = instanceName;
+		DisplayName = "Growing Vines";
+		AttachedTarget = target;
+	}
 
-    // ── lifecycle ─────────────────────────────────────────────────────────────
+	// ── lifecycle ─────────────────────────────────────────────────────────────
 
-    public override void _Ready()
-    {
-        base._Ready();
-        RemoveFromGroup("party");
-        AddToGroup(GameConstants.BossGroupName);
-        AddToGroup(GameConstants.VinesGroupName);
+	public override void _Ready()
+	{
+		base._Ready();
+		RemoveFromGroup("party");
+		AddToGroup(GameConstants.BossGroupName);
+		AddToGroup(GameConstants.VinesGroupName);
 
-        // ── sprite (3-frame grow animation) ──────────────────────────────────
-        _sprite = new AnimatedSprite2D();
-        var frames = new SpriteFrames();
+		// ── sprite (3-frame grow animation) ──────────────────────────────────
+		_sprite = new AnimatedSprite2D();
+		_sprite.Scale = new Vector2(0.25f, 0.25f);
+		var frames = new SpriteFrames();
 
-        frames.AddAnimation("idle");
-        frames.SetAnimationLoop("idle", true);
-        frames.SetAnimationSpeed("idle", 3f);
+		frames.AddAnimation("idle");
+		frames.SetAnimationLoop("idle", true);
+		frames.SetAnimationSpeed("idle", 3f);
 
-        for (var i = 1; i <= 3; i++)
-        {
-            var path = i switch
-            {
-                1 => AssetConstants.VinesFrame1Path,
-                2 => AssetConstants.VinesFrame2Path,
-                _ => AssetConstants.VinesFrame3Path,
-            };
-            var tex = GD.Load<Texture2D>(path);
-            frames.AddFrame("idle", tex);
-        }
+		for (var i = 1; i <= 3; i++)
+		{
+			var path = i switch
+			{
+				1 => AssetConstants.VinesFrame1Path,
+				2 => AssetConstants.VinesFrame2Path,
+				_ => AssetConstants.VinesFrame3Path
+			};
+			var tex = GD.Load<Texture2D>(path);
+			frames.AddFrame("idle", tex);
+		}
 
-        _sprite.SpriteFrames = frames;
-        _sprite.Scale = new Vector2(1.2f, 1.2f);
-        AddChild(_sprite);
-        _sprite.Play("idle");
+		_sprite.SpriteFrames = frames;
+		_sprite.Scale = new Vector2(1.2f, 1.2f);
+		AddChild(_sprite);
+		_sprite.Play("idle");
 
-        // Position near the attached target if possible, else use zero.
-        if (AttachedTarget != null)
-            GlobalPosition = AttachedTarget.GlobalPosition + new Vector2(0f, -30f);
-    }
+		// Position near the attached target if possible, else use zero.
+		if (AttachedTarget != null)
+			GlobalPosition = AttachedTarget.GlobalPosition + new Vector2(0f, -30f);
+	}
 
-    public override void _Process(double delta)
-    {
-        base._Process(delta);
-        if (!IsAlive || AttachedTarget == null) return;
+	public override void _Process(double delta)
+	{
+		base._Process(delta);
+		if (!IsAlive || AttachedTarget == null) return;
 
-        // Follow target loosely.
-        GlobalPosition = AttachedTarget.GlobalPosition + new Vector2(0f, -30f);
+		// Follow target loosely.
+		GlobalPosition = AttachedTarget.GlobalPosition + new Vector2(0f, -30f);
 
-        // Periodic damage tick.
-        _damageTimer -= (float)delta;
-        if (_damageTimer <= 0f)
-        {
-            _damageTimer = DamageInterval;
-            if (AttachedTarget.IsAlive)
-                AttachedTarget.TakeDamage(GameConstants.RuneNatureVinesDamagePerSecond);
-        }
-    }
+		// Periodic damage tick.
+		_damageTimer -= (float)delta;
+		if (_damageTimer <= 0f)
+		{
+			_damageTimer = DamageInterval;
+			if (AttachedTarget.IsAlive)
+				AttachedTarget.TakeDamage(GameConstants.RuneNatureVinesDamagePerSecond);
+		}
+	}
 
-    // ── death ─────────────────────────────────────────────────────────────────
+	// ── death ─────────────────────────────────────────────────────────────────
 
-    protected override void ApplyDeathVisuals()
-    {
-        if (_sprite != null) _sprite.Modulate = new Color(0.5f, 0.5f, 0.5f);
-        // Remove from scene shortly after death so the health bar can clean up.
-        var timer = new Timer { WaitTime = 0.8f, OneShot = true, Autostart = true };
-        AddChild(timer);
-        timer.Timeout += () => QueueFree();
-    }
+	protected override void ApplyDeathVisuals()
+	{
+		if (_sprite != null) _sprite.Modulate = new Color(0.5f, 0.5f, 0.5f);
+		// Remove from scene shortly after death so the health bar can clean up.
+		var timer = new Timer { WaitTime = 0.8f, OneShot = true, Autostart = true };
+		AddChild(timer);
+		timer.Timeout += () => QueueFree();
+	}
 }

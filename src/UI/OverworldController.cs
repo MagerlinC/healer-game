@@ -16,12 +16,16 @@ using healerfantasy.UI;
 public partial class OverworldController : LoadoutController
 {
 	RuneTablePanel? _runeTablePanel;
+	AudioStreamPlayer _sfxPlayer = null!;
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
 	public override void _Ready()
 	{
 		base._Ready();
+		_sfxPlayer = new AudioStreamPlayer();
+		_sfxPlayer.VolumeDb = -6f;
+		AddChild(_sfxPlayer);
 		AddChild(new TutorialPopup());
 	}
 
@@ -110,6 +114,8 @@ public partial class OverworldController : LoadoutController
 			{
 				PlayerProgressStore.MarkSpellbookOpened();
 				OpenPanel(_spellPanel!);
+				_sfxPlayer.Stream = GD.Load<AudioStream>(AssetConstants.SpellbookSfxPath);
+				_sfxPlayer.Play();
 			}
 		};
 		spellTome.MouseEntered += () => _hintLabel!.Text = "Spellbook  •  Click to open";
@@ -117,14 +123,24 @@ public partial class OverworldController : LoadoutController
 
 		talentBoard.InputEvent += (_, ev, _) =>
 		{
-			if (IsLeftClick(ev)) OpenPanel(_talentPanel!);
+			if (IsLeftClick(ev))
+			{
+				OpenPanel(_talentPanel!);
+				_sfxPlayer.Stream = GD.Load<AudioStream>(AssetConstants.TalentsSfxPath);
+				_sfxPlayer.Play();
+			}
 		};
 		talentBoard.MouseEntered += () => _hintLabel!.Text = "Talent Board  •  Click to open";
 		talentBoard.MouseExited += () => _hintLabel!.Text = DefaultHint;
 
 		historyScroll.InputEvent += (_, ev, _) =>
 		{
-			if (IsLeftClick(ev)) OpenHistoryPanel();
+			if (IsLeftClick(ev))
+			{
+				OpenHistoryPanel();
+				_sfxPlayer.Stream = GD.Load<AudioStream>(AssetConstants.SpellbookSfxPath);
+				_sfxPlayer.Play();
+			}
 		};
 		historyScroll.MouseEntered += () => _hintLabel!.Text = "Run History  •  Click to open";
 		historyScroll.MouseExited += () => _hintLabel!.Text = DefaultHint;
@@ -138,7 +154,12 @@ public partial class OverworldController : LoadoutController
 
 		runeTable.InputEvent += (_, ev, _) =>
 		{
-			if (IsLeftClick(ev)) _runeTablePanel!.Open();
+			if (IsLeftClick(ev))
+			{
+				_runeTablePanel!.Open();
+				_sfxPlayer.Stream = GD.Load<AudioStream>(AssetConstants.RuneSfxPath);
+				_sfxPlayer.Play();
+			}
 		};
 		runeTable.MouseEntered += () => _hintLabel!.Text = "Rune Table  •  Configure difficulty runes";
 		runeTable.MouseExited += () => _hintLabel!.Text = DefaultHint;
