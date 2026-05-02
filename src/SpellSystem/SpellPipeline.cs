@@ -83,17 +83,56 @@ public static class SpellPipeline
 		foreach (var mod in modifiers)
 			mod.OnAfterCast(ctx);
 
-		// ── 9. Execute spell ────────────────────────────────────────────────
+		// ── 9. Log to CombatLog BEFORE applying the spell ───────────────────
+		// This must happen before spell.Apply() so that killing-blow damage is
+		// captured in the log before the Died signal fires and snapshots it.
+		// All values (FinalValue, Targets, Tags) are fully resolved by this point.
+		var isDirectSpell = !ctx.Tags.HasFlag(SpellTags.Duration);
+		foreach (var target in ctx.Targets)
+		{
+			if (ctx.Tags.HasFlag(SpellTags.Healing) && isDirectSpell)
+			{
+				CombatLog.CombatLog.Record(new CombatEventRecord
+				{
+					Timestamp  = ctx.Timestamp,
+					SourceName = caster.CharacterName,
+					TargetName = target.CharacterName,
+					AbilityName = spell.Name,
+					Amount      = ctx.FinalValue,
+					Type        = CombatEventType.Healing,
+					IsCrit      = ctx.Tags.HasFlag(SpellTags.Critical),
+					Description = spell.Description
+				});
+			}
+			else if (ctx.Tags.HasFlag(SpellTags.Damage) && isDirectSpell)
+			{
+				CombatLog.CombatLog.Record(new CombatEventRecord
+				{
+					Timestamp  = ctx.Timestamp,
+					SourceName = caster.CharacterName,
+					TargetName = target.CharacterName,
+					AbilityName = spell.Name,
+					Amount      = ctx.FinalValue,
+					Type        = CombatEventType.Damage,
+					IsCrit      = ctx.Tags.HasFlag(SpellTags.Critical),
+					Description = spell.Description
+				});
+			}
+		}
+
+		// ── 10. Execute spell ────────────────────────────────────────────────
+		// Applying after logging ensures that if Apply() triggers a Died signal
+		// (killing blow), RecordBossEncounter's CombatLog.Snapshot() already
+		// contains this hit.
 		spell.Apply(ctx);
 
-		// ── 9b. Floating combat text (direct hits only; DoT/HoT ticks emit their own) ─
-		var isDirectSpell = !ctx.Tags.HasFlag(SpellTags.Duration);
+		// ── 10b. Floating combat text (direct hits only; DoT/HoT ticks emit their own) ─
 		if (isDirectSpell)
 		{
-			var isDamageSpell = ctx.Tags.HasFlag(SpellTags.Damage);
+			var isDamageSpell  = ctx.Tags.HasFlag(SpellTags.Damage);
 			var isHealingSpell = ctx.Tags.HasFlag(SpellTags.Healing) && !isDamageSpell;
-			var isCritSpell = ctx.Tags.HasFlag(SpellTags.Critical);
-			var school = (int)spell.School;
+			var isCritSpell    = ctx.Tags.HasFlag(SpellTags.Critical);
+			var school         = (int)spell.School;
 
 			foreach (var target in ctx.Targets)
 			{
@@ -104,39 +143,6 @@ public static class SpellPipeline
 					target.RaiseFloatingCombatText(ctx.FinalValue, false, school, isCritSpell);
 				else if (isHealingSpell)
 					target.RaiseFloatingCombatText(ctx.FinalValue, true, school, isCritSpell);
-			}
-		}
-
-		// ── 10. Log to CombatLog (direct hits only; HoT ticks log themselves) ─
-		foreach (var target in ctx.Targets)
-		{
-			if (ctx.Tags.HasFlag(SpellTags.Healing) && isDirectSpell)
-			{
-				CombatLog.CombatLog.Record(new CombatEventRecord
-				{
-					Timestamp = ctx.Timestamp,
-					SourceName = caster.CharacterName,
-					TargetName = target.CharacterName,
-					AbilityName = spell.Name,
-					Amount = ctx.FinalValue,
-					Type = CombatEventType.Healing,
-					IsCrit = ctx.Tags.HasFlag(SpellTags.Critical),
-					Description = spell.Description
-				});
-			}
-			else if (ctx.Tags.HasFlag(SpellTags.Damage) && isDirectSpell)
-			{
-				CombatLog.CombatLog.Record(new CombatEventRecord
-				{
-					Timestamp = ctx.Timestamp,
-					SourceName = caster.CharacterName,
-					TargetName = target.CharacterName,
-					AbilityName = spell.Name,
-					Amount = ctx.FinalValue,
-					Type = CombatEventType.Damage,
-					IsCrit = ctx.Tags.HasFlag(SpellTags.Critical),
-					Description = spell.Description
-				});
 			}
 		}
 

@@ -43,11 +43,11 @@ using healerfantasy.UI;
 public partial class VictoryScreen : CanvasLayer
 {
 	// ── palette (matches LoadoutController / OverworldController) ─────────────
-	static readonly Color PanelBg     = new(0.07f, 0.06f, 0.06f, 0.97f);
+	static readonly Color PanelBg = new(0.07f, 0.06f, 0.06f, 0.97f);
 	static readonly Color PanelBorder = new(0.65f, 0.52f, 0.28f);
-	static readonly Color TitleColor  = new(0.95f, 0.84f, 0.50f);
-	static readonly Color HintColor   = new(0.45f, 0.42f, 0.38f);
-	static readonly Color SepColor    = new(0.50f, 0.40f, 0.22f, 0.55f);
+	static readonly Color TitleColor = new(0.95f, 0.84f, 0.50f);
+	static readonly Color HintColor = new(0.45f, 0.42f, 0.38f);
+	static readonly Color SepColor = new(0.50f, 0.40f, 0.22f, 0.55f);
 
 	static readonly HashSet<string> PartyMemberNames = new()
 	{
@@ -60,18 +60,18 @@ public partial class VictoryScreen : CanvasLayer
 	AudioStreamPlayer _audioPlayer = new();
 
 	// ── UI refs ───────────────────────────────────────────────────────────────
-	Label                _titleLabel      = null!;
-	Label                _subLabel        = null!;
-	Label                _xpGainLabel     = null!;
-	Label                _levelUpLabel    = null!;
-	PlayerLevelIndicator _levelIndicator  = null!;
-	VBoxContainer        _itemsCardContent = null!;
-	VBoxContainer        _runLogsContent   = null!;
-	HBoxContainer        _btnRow           = null!;
+	Label _titleLabel = null!;
+	Label _subLabel = null!;
+	Label _xpGainLabel = null!;
+	Label _levelUpLabel = null!;
+	PlayerLevelIndicator _levelIndicator = null!;
+	VBoxContainer _itemsCardContent = null!;
+	VBoxContainer _runLogsContent = null!;
+	HBoxContainer _btnRow = null!;
 
 	// ── encounter detail modal ────────────────────────────────────────────────
-	CanvasLayer   _detailModalLayer   = null!;
-	Label         _detailModalTitle   = null!;
+	CanvasLayer _detailModalLayer = null!;
+	Label _detailModalTitle = null!;
 	VBoxContainer _detailModalContent = null!;
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
@@ -103,9 +103,9 @@ public partial class VictoryScreen : CanvasLayer
 				CombatLog.Clear();
 
 				// Award XP.
-				var dungeon   = RunState.Instance.CurrentDungeon;
+				var dungeon = RunState.Instance.CurrentDungeon;
 				var bossIndex = RunState.Instance.CurrentBossIndexInDungeon;
-				var xpReward  = bossIndex < dungeon.XpRewards.Count
+				var xpReward = bossIndex < dungeon.XpRewards.Count
 					? dungeon.XpRewards[bossIndex]
 					: 100;
 				var levelsGained = PlayerProgressStore.AddXp(xpReward);
@@ -140,7 +140,7 @@ public partial class VictoryScreen : CanvasLayer
 		if (Visible) return;
 		_audioPlayer.Play();
 		_titleLabel.Text = "ARENA CLEARED!";
-		_subLabel.Text   = $"{defeatedBossName} has been defeated.\nPrepare for the next battle.";
+		_subLabel.Text = $"{defeatedBossName} has been defeated.\nPrepare for the next battle.";
 		RefreshXpSection(xpGained, levelsGained);
 		PopulateItemsCard(droppedItem);
 		PopulateRunLogsCard();
@@ -159,7 +159,7 @@ public partial class VictoryScreen : CanvasLayer
 		if (Visible) return;
 		_audioPlayer.Play();
 		_titleLabel.Text = "DUNGEON CLEARED!";
-		_subLabel.Text   = $"{defeatedBossName} has been defeated.\nHead to camp and prepare for the next dungeon.";
+		_subLabel.Text = $"{defeatedBossName} has been defeated.\nHead to camp and prepare for the next dungeon.";
 		RefreshXpSection(xpGained, levelsGained);
 		PopulateItemsCard(droppedItem);
 		PopulateRunLogsCard();
@@ -181,16 +181,16 @@ public partial class VictoryScreen : CanvasLayer
 		// The Queen of the Frozen Wastes drops the next rune if the player ran
 		// with ALL previously acquired runes active (i.e. active count ==
 		// acquired count) and there are still runes left to unlock.
-		var acquired    = RuneStore.AcquiredRuneCount;
-		var active      = RunState.Instance.ActiveRuneCount;
+		var acquired = RuneStore.AcquiredRuneCount;
+		var active = RunState.Instance.ActiveRuneCount;
 		var runeDropped = false;
 		var runeDropName = "";
-		var runeIndex   = 0;
+		var runeIndex = 0;
 		if (acquired < RuneStore.TotalRunes && active == acquired)
 		{
 			RuneStore.UnlockNextRune();
-			runeDropped  = true;
-			runeIndex    = acquired + 1;
+			runeDropped = true;
+			runeIndex = acquired + 1;
 			runeDropName = runeIndex switch
 			{
 				1 => "Rune of the Void",
@@ -202,7 +202,7 @@ public partial class VictoryScreen : CanvasLayer
 		}
 
 		_titleLabel.Text = "VICTORY!";
-		_subLabel.Text   = "The Queen of the Frozen Wastes has fallen.\nAll dungeons conquered — the realm is saved!";
+		_subLabel.Text = "The Queen of the Frozen Wastes has fallen.\nAll dungeons conquered — the realm is saved!";
 		RefreshXpSection(xpGained, levelsGained);
 		PopulateItemsCard(droppedItem, runeDropped, runeDropName, runeIndex);
 		PopulateRunLogsCard();
@@ -228,7 +228,7 @@ public partial class VictoryScreen : CanvasLayer
 		if (Visible) return;
 		_audioPlayer.Play();
 		_titleLabel.Text = "TEST COMPLETE";
-		_subLabel.Text   = $"{defeatedBossName} defeated.\n[Dev mode — run state will be reset]";
+		_subLabel.Text = $"{defeatedBossName} defeated.\n[Dev mode — run state will be reset]";
 		RefreshXpSection(xpGained, levelsGained);
 		PopulateItemsCard(droppedItem);
 		PopulateRunLogsCard();
@@ -292,16 +292,16 @@ public partial class VictoryScreen : CanvasLayer
 		// Dark overlay — blocks clicks to the game underneath.
 		var overlay = new ColorRect();
 		overlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		overlay.Color       = new Color(0f, 0f, 0f, 0.82f);
+		overlay.Color = new Color(0f, 0f, 0f, 0.82f);
 		overlay.MouseFilter = Control.MouseFilterEnum.Stop;
 		AddChild(overlay);
 
 		// Outer margin keeps cards away from the screen edges.
 		var margin = new MarginContainer();
 		margin.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		margin.AddThemeConstantOverride("margin_left",   60);
-		margin.AddThemeConstantOverride("margin_right",  60);
-		margin.AddThemeConstantOverride("margin_top",    48);
+		margin.AddThemeConstantOverride("margin_left", 60);
+		margin.AddThemeConstantOverride("margin_right", 60);
+		margin.AddThemeConstantOverride("margin_top", 48);
 		margin.AddThemeConstantOverride("margin_bottom", 48);
 		overlay.AddChild(margin);
 
@@ -312,13 +312,13 @@ public partial class VictoryScreen : CanvasLayer
 
 		// Left column (36 % width) — title, XP, level indicator, button.
 		var left = BuildLeftColumn();
-		left.SizeFlagsHorizontal  = Control.SizeFlags.ExpandFill;
+		left.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		left.SizeFlagsStretchRatio = 0.36f;
 		hbox.AddChild(left);
 
 		// Right column (64 % width) — items card + run-log card.
 		var right = BuildRightColumn();
-		right.SizeFlagsHorizontal  = Control.SizeFlags.ExpandFill;
+		right.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		right.SizeFlagsStretchRatio = 0.64f;
 		hbox.AddChild(right);
 	}
@@ -334,7 +334,7 @@ public partial class VictoryScreen : CanvasLayer
 
 		var vbox = new VBoxContainer();
 		vbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		vbox.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
+		vbox.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 		vbox.AddThemeConstantOverride("separation", 12);
 		panel.AddChild(vbox);
 
@@ -348,7 +348,7 @@ public partial class VictoryScreen : CanvasLayer
 		// Sub-text (boss name / flavour)
 		_subLabel = new Label();
 		_subLabel.HorizontalAlignment = HorizontalAlignment.Center;
-		_subLabel.AutowrapMode        = TextServer.AutowrapMode.Word;
+		_subLabel.AutowrapMode = TextServer.AutowrapMode.Word;
 		_subLabel.AddThemeFontSizeOverride("font_size", 16);
 		_subLabel.AddThemeColorOverride("font_color", new Color(0.72f, 0.68f, 0.62f));
 		vbox.AddChild(_subLabel);
@@ -365,7 +365,7 @@ public partial class VictoryScreen : CanvasLayer
 		// Level-up notice (hidden unless a level was gained)
 		_levelUpLabel = new Label();
 		_levelUpLabel.HorizontalAlignment = HorizontalAlignment.Center;
-		_levelUpLabel.AutowrapMode        = TextServer.AutowrapMode.Word;
+		_levelUpLabel.AutowrapMode = TextServer.AutowrapMode.Word;
 		_levelUpLabel.AddThemeFontSizeOverride("font_size", 15);
 		_levelUpLabel.AddThemeColorOverride("font_color", new Color(1.00f, 0.82f, 0.20f));
 		_levelUpLabel.Visible = false;
@@ -397,17 +397,17 @@ public partial class VictoryScreen : CanvasLayer
 	{
 		var vbox = new VBoxContainer();
 		vbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		vbox.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
+		vbox.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 		vbox.AddThemeConstantOverride("separation", 12);
 
 		// ── Items Acquired card ───────────────────────────────────────────────
 		var itemsPanel = MakeCardPanel();
-		itemsPanel.SizeFlagsVertical    = Control.SizeFlags.ExpandFill;
+		itemsPanel.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 		itemsPanel.SizeFlagsStretchRatio = 0.42f;
 		{
 			var inner = new VBoxContainer();
 			inner.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-			inner.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
+			inner.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 			inner.AddThemeConstantOverride("separation", 8);
 			itemsPanel.AddChild(inner);
 
@@ -415,8 +415,8 @@ public partial class VictoryScreen : CanvasLayer
 			AddSep(inner);
 
 			var scroll = new ScrollContainer();
-			scroll.SizeFlagsHorizontal  = Control.SizeFlags.ExpandFill;
-			scroll.SizeFlagsVertical    = Control.SizeFlags.ExpandFill;
+			scroll.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+			scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 			scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
 			inner.AddChild(scroll);
 
@@ -429,12 +429,12 @@ public partial class VictoryScreen : CanvasLayer
 
 		// ── Run Logs card ─────────────────────────────────────────────────────
 		var logsPanel = MakeCardPanel();
-		logsPanel.SizeFlagsVertical    = Control.SizeFlags.ExpandFill;
+		logsPanel.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 		logsPanel.SizeFlagsStretchRatio = 0.58f;
 		{
 			var inner = new VBoxContainer();
 			inner.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-			inner.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
+			inner.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 			inner.AddThemeConstantOverride("separation", 8);
 			logsPanel.AddChild(inner);
 
@@ -442,8 +442,8 @@ public partial class VictoryScreen : CanvasLayer
 			AddSep(inner);
 
 			var scroll = new ScrollContainer();
-			scroll.SizeFlagsHorizontal  = Control.SizeFlags.ExpandFill;
-			scroll.SizeFlagsVertical    = Control.SizeFlags.ExpandFill;
+			scroll.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+			scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 			scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
 			inner.AddChild(scroll);
 
@@ -465,19 +465,31 @@ public partial class VictoryScreen : CanvasLayer
 	/// </summary>
 	void RefreshXpSection(int xpGained, int levelsGained)
 	{
-		_xpGainLabel.Text = $"+{xpGained} XP";
-
-		if (levelsGained > 0)
+		if (PlayerProgressStore.Level >= PlayerProgressStore.MaxLevel)
 		{
-			var pts = levelsGained == 1 ? "point" : "points";
-			_levelUpLabel.Text = levelsGained == 1
-				? "✦  Level up!  ✦  +1 talent point gained"
-				: $"✦  Level up ×{levelsGained}!  ✦  +{levelsGained} talent {pts} gained";
-			_levelUpLabel.Visible = true;
+			// At the level cap AddXp() is a no-op, so there's nothing meaningful
+			// to show for XP gained. Display a max-level indicator instead.
+			_xpGainLabel.Text = "Max Level";
+			_xpGainLabel.AddThemeColorOverride("font_color", TitleColor);
+			_levelUpLabel.Visible = false;
 		}
 		else
 		{
-			_levelUpLabel.Visible = false;
+			_xpGainLabel.Text = $"+{xpGained} XP";
+			_xpGainLabel.AddThemeColorOverride("font_color", new Color(0.55f, 0.85f, 0.95f));
+
+			if (levelsGained > 0)
+			{
+				var pts = levelsGained == 1 ? "point" : "points";
+				_levelUpLabel.Text = levelsGained == 1
+					? "✦  Level up!  ✦  +1 talent point gained"
+					: $"✦  Level up ×{levelsGained}!  ✦  +{levelsGained} talent {pts} gained";
+				_levelUpLabel.Visible = true;
+			}
+			else
+			{
+				_levelUpLabel.Visible = false;
+			}
 		}
 
 		_levelIndicator.Refresh();
@@ -495,11 +507,11 @@ public partial class VictoryScreen : CanvasLayer
 		if (item == null && !runeDropped)
 		{
 			var empty = new Label();
-			empty.Text                = "No items found this fight.";
+			empty.Text = "No items found this fight.";
 			empty.HorizontalAlignment = HorizontalAlignment.Center;
-			empty.VerticalAlignment   = VerticalAlignment.Center;
+			empty.VerticalAlignment = VerticalAlignment.Center;
 			empty.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-			empty.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
+			empty.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 			empty.AddThemeFontSizeOverride("font_size", 14);
 			empty.AddThemeColorOverride("font_color", HintColor);
 			_itemsCardContent.AddChild(empty);
@@ -510,11 +522,11 @@ public partial class VictoryScreen : CanvasLayer
 		if (item != null)
 		{
 			var hint = new Label();
-			hint.Text                = "✦  Item Found!  —  Drag to equipment slot to equip";
+			hint.Text = "✦  Item Found!  —  Drag to equipment slot to equip";
 			hint.HorizontalAlignment = HorizontalAlignment.Center;
 			hint.AddThemeFontSizeOverride("font_size", 12);
 			hint.AddThemeColorOverride("font_color", new Color(0.80f, 0.72f, 0.50f));
-			_itemsCardContent.AddChild(hint);
+			//_itemsCardContent.AddChild(hint);
 
 			var pane = new EquipmentPane(item);
 			pane.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
@@ -533,9 +545,9 @@ public partial class VictoryScreen : CanvasLayer
 
 			var icon = new TextureRect();
 			icon.CustomMinimumSize = new Vector2(44f, 44f);
-			icon.StretchMode       = TextureRect.StretchModeEnum.KeepAspectCentered;
-			icon.ExpandMode        = TextureRect.ExpandModeEnum.FitWidth;
-			icon.Texture           = GD.Load<Texture2D>(AssetConstants.RuneIconPath(runeIndex));
+			icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+			icon.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
+			icon.Texture = GD.Load<Texture2D>(AssetConstants.RuneIconPath(runeIndex));
 			runeRow.AddChild(icon);
 
 			var textVBox = new VBoxContainer();
@@ -568,7 +580,7 @@ public partial class VictoryScreen : CanvasLayer
 		if (encounters.Count == 0)
 		{
 			var empty = new Label();
-			empty.Text                = "No encounters recorded yet.";
+			empty.Text = "No encounters recorded yet.";
 			empty.HorizontalAlignment = HorizontalAlignment.Center;
 			empty.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 			empty.AddThemeFontSizeOverride("font_size", 14);
@@ -589,7 +601,7 @@ public partial class VictoryScreen : CanvasLayer
 			if (group.Key != null)
 			{
 				var dungeonLabel = new Label();
-				dungeonLabel.Text        = group.Key;
+				dungeonLabel.Text = group.Key;
 				dungeonLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
 				dungeonLabel.AddThemeFontSizeOverride("font_size", 12);
 				dungeonLabel.AddThemeColorOverride("font_color", new Color(0.65f, 0.55f, 0.35f));
@@ -607,12 +619,12 @@ public partial class VictoryScreen : CanvasLayer
 	Control BuildEncounterRow(RunHistoryStore.BossEncounterRecord enc)
 	{
 		var styleNormal = new StyleBoxFlat { BgColor = new Color(0f, 0f, 0f, 0f) };
-		var styleHover  = new StyleBoxFlat { BgColor = new Color(1f, 1f, 1f, 0.04f) };
+		var styleHover = new StyleBoxFlat { BgColor = new Color(1f, 1f, 1f, 0.04f) };
 		styleHover.SetCornerRadiusAll(4);
 
 		var panel = new PanelContainer();
 		panel.AddThemeStyleboxOverride("panel", styleNormal);
-		panel.MouseFilter             = Control.MouseFilterEnum.Stop;
+		panel.MouseFilter = Control.MouseFilterEnum.Stop;
 		panel.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
 
 		var row = new HBoxContainer();
@@ -623,7 +635,7 @@ public partial class VictoryScreen : CanvasLayer
 		Label Stat(string text, Color color)
 		{
 			var lbl = new Label();
-			lbl.Text        = text;
+			lbl.Text = text;
 			lbl.MouseFilter = Control.MouseFilterEnum.Ignore;
 			lbl.AddThemeFontSizeOverride("font_size", 13);
 			lbl.AddThemeColorOverride("font_color", color);
@@ -633,17 +645,17 @@ public partial class VictoryScreen : CanvasLayer
 		var bossNameLbl = Stat(enc.BossName, new Color(0.88f, 0.84f, 0.78f));
 		bossNameLbl.CustomMinimumSize = new Vector2(130f, 0f);
 		row.AddChild(bossNameLbl);
-		row.AddChild(Stat($"Healing: {enc.TotalHealing:N0}",          new Color(0.40f, 0.85f, 0.55f)));
+		row.AddChild(Stat($"Healing: {enc.TotalHealing:N0}", new Color(0.40f, 0.85f, 0.55f)));
 		row.AddChild(Stat($"Damage dealt: {enc.TotalDamageDealt:N0}", new Color(0.88f, 0.44f, 0.28f)));
 		row.AddChild(Stat($"Damage taken: {enc.TotalDamageTaken:N0}", new Color(0.88f, 0.44f, 0.28f)));
 
 		var spacer = new Control();
 		spacer.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		spacer.MouseFilter         = Control.MouseFilterEnum.Ignore;
+		spacer.MouseFilter = Control.MouseFilterEnum.Ignore;
 		row.AddChild(spacer);
 
 		var detailsHint = new Label();
-		detailsHint.Text        = "Details ▸";
+		detailsHint.Text = "Details ▸";
 		detailsHint.MouseFilter = Control.MouseFilterEnum.Ignore;
 		detailsHint.AddThemeFontSizeOverride("font_size", 12);
 		detailsHint.AddThemeColorOverride("font_color", HintColor);
@@ -684,7 +696,7 @@ public partial class VictoryScreen : CanvasLayer
 		// Full-screen dimmer — click outside to close.
 		var dimmer = new ColorRect();
 		dimmer.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		dimmer.Color       = new Color(0f, 0f, 0f, 0.60f);
+		dimmer.Color = new Color(0f, 0f, 0f, 0.60f);
 		dimmer.MouseFilter = Control.MouseFilterEnum.Stop;
 		layer.AddChild(dimmer);
 		dimmer.GuiInput += ev =>
@@ -696,20 +708,20 @@ public partial class VictoryScreen : CanvasLayer
 		// Inset panel
 		var outerMargin = new MarginContainer();
 		outerMargin.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		outerMargin.AddThemeConstantOverride("margin_left",   180);
-		outerMargin.AddThemeConstantOverride("margin_right",  180);
-		outerMargin.AddThemeConstantOverride("margin_top",    60);
+		outerMargin.AddThemeConstantOverride("margin_left", 180);
+		outerMargin.AddThemeConstantOverride("margin_right", 180);
+		outerMargin.AddThemeConstantOverride("margin_top", 60);
 		outerMargin.AddThemeConstantOverride("margin_bottom", 60);
 		outerMargin.MouseFilter = Control.MouseFilterEnum.Ignore;
 		layer.AddChild(outerMargin);
 
 		var panelStyle = new StyleBoxFlat();
-		panelStyle.BgColor                  = PanelBg;
+		panelStyle.BgColor = PanelBg;
 		panelStyle.SetCornerRadiusAll(8);
 		panelStyle.SetBorderWidthAll(2);
-		panelStyle.BorderColor              = PanelBorder;
-		panelStyle.ContentMarginLeft        = panelStyle.ContentMarginRight  = 24f;
-		panelStyle.ContentMarginTop         = panelStyle.ContentMarginBottom = 18f;
+		panelStyle.BorderColor = PanelBorder;
+		panelStyle.ContentMarginLeft = panelStyle.ContentMarginRight = 24f;
+		panelStyle.ContentMarginTop = panelStyle.ContentMarginBottom = 18f;
 
 		var panel = new PanelContainer();
 		panel.AddThemeStyleboxOverride("panel", panelStyle);
@@ -732,11 +744,11 @@ public partial class VictoryScreen : CanvasLayer
 		titleBar.AddChild(_detailModalTitle);
 
 		var closeBtn = new Button();
-		closeBtn.Text                    = "✕  Close";
-		closeBtn.Flat                    = true;
+		closeBtn.Text = "✕  Close";
+		closeBtn.Flat = true;
 		closeBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
 		closeBtn.AddThemeFontSizeOverride("font_size", 14);
-		closeBtn.AddThemeColorOverride("font_color",       new Color(0.72f, 0.68f, 0.62f));
+		closeBtn.AddThemeColorOverride("font_color", new Color(0.72f, 0.68f, 0.62f));
 		closeBtn.AddThemeColorOverride("font_hover_color", new Color(0.90f, 0.35f, 0.28f));
 		closeBtn.Pressed += () => layer.Visible = false;
 		titleBar.AddChild(closeBtn);
@@ -746,7 +758,7 @@ public partial class VictoryScreen : CanvasLayer
 		vbox.AddChild(sep);
 
 		var scroll = new ScrollContainer();
-		scroll.SizeFlagsHorizontal  = scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		scroll.SizeFlagsHorizontal = scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 		scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
 		vbox.AddChild(scroll);
 
@@ -770,7 +782,7 @@ public partial class VictoryScreen : CanvasLayer
 		statsRow.AddThemeConstantOverride("separation", 48);
 		_detailModalContent.AddChild(statsRow);
 
-		statsRow.AddChild(MakeStatPill("Healing Done", $"{enc.TotalHealing:N0}",     new Color(0.35f, 0.80f, 0.50f)));
+		statsRow.AddChild(MakeStatPill("Healing Done", $"{enc.TotalHealing:N0}", new Color(0.35f, 0.80f, 0.50f)));
 		statsRow.AddChild(MakeStatPill("Damage Dealt", $"{enc.TotalDamageDealt:N0}", new Color(0.88f, 0.55f, 0.28f)));
 		statsRow.AddChild(MakeStatPill("Damage Taken", $"{enc.TotalDamageTaken:N0}", new Color(0.85f, 0.28f, 0.22f)));
 
@@ -789,14 +801,14 @@ public partial class VictoryScreen : CanvasLayer
 		vbox.AddThemeConstantOverride("separation", 2);
 
 		var valueLabel = new Label();
-		valueLabel.Text               = value;
+		valueLabel.Text = value;
 		valueLabel.HorizontalAlignment = HorizontalAlignment.Center;
 		valueLabel.AddThemeFontSizeOverride("font_size", 22);
 		valueLabel.AddThemeColorOverride("font_color", valueColor);
 		vbox.AddChild(valueLabel);
 
 		var descLabel = new Label();
-		descLabel.Text               = descriptor;
+		descLabel.Text = descriptor;
 		descLabel.HorizontalAlignment = HorizontalAlignment.Center;
 		descLabel.AddThemeFontSizeOverride("font_size", 12);
 		descLabel.AddThemeColorOverride("font_color", new Color(0.48f, 0.44f, 0.38f));
@@ -805,7 +817,12 @@ public partial class VictoryScreen : CanvasLayer
 		return vbox;
 	}
 
-	enum DetailSection { DamageTaken, DamageDealt, Healing }
+	enum DetailSection
+	{
+		DamageTaken,
+		DamageDealt,
+		Healing
+	}
 
 	static void BuildDetailSection(VBoxContainer parent,
 		List<CombatEventRecord> events, DetailSection section)
@@ -814,7 +831,7 @@ public partial class VictoryScreen : CanvasLayer
 		var filtered = section switch
 		{
 			DetailSection.DamageTaken => events.Where(e => PartyMemberNames.Contains(e.TargetName)).ToList(),
-			DetailSection.Healing     => events.Where(e => e.Type == CombatEventType.Healing).ToList(),
+			DetailSection.Healing => events.Where(e => e.Type == CombatEventType.Healing).ToList(),
 			DetailSection.DamageDealt => events
 				.Where(e => e.Type == CombatEventType.Damage && !PartyMemberNames.Contains(e.TargetName))
 				.ToList(),
@@ -825,11 +842,11 @@ public partial class VictoryScreen : CanvasLayer
 		var rows = filtered
 			.GroupBy(e => (e.AbilityName, Context: isHealing ? e.TargetName : e.SourceName))
 			.Select(g => (
-				Ability:     g.Key.AbilityName,
-				Context:     g.Key.Context,
-				Total:       g.Sum(e => e.Amount),
-				Hits:        g.Count(),
-				Crits:       g.Count(e => e.IsCrit),
+				Ability: g.Key.AbilityName,
+				Context: g.Key.Context,
+				Total: g.Sum(e => e.Amount),
+				Hits: g.Count(),
+				Crits: g.Count(e => e.IsCrit),
 				Description: g.First().Description
 			))
 			.OrderByDescending(r => r.Total)
@@ -844,7 +861,7 @@ public partial class VictoryScreen : CanvasLayer
 		var sectionHeader = new Label();
 		sectionHeader.Text = section switch
 		{
-			DetailSection.Healing     => "HEALING DONE",
+			DetailSection.Healing => "HEALING DONE",
 			DetailSection.DamageDealt => "DAMAGE DEALT",
 			DetailSection.DamageTaken => "DAMAGE TAKEN",
 			_ => ""
@@ -860,11 +877,11 @@ public partial class VictoryScreen : CanvasLayer
 		table.AddThemeConstantOverride("separation", 1);
 		parent.AddChild(table);
 
-		var ctxHeader   = isHealing ? "Target"      : "Source";
+		var ctxHeader = isHealing ? "Target" : "Source";
 		var totalHeader = isHealing ? "Total Healed" : "Total Dmg";
 
 		table.AddChild(MakeDetailRow("Ability", ctxHeader, "Hits", "Crits", totalHeader,
-			isHeader: true, isHealing: isHealing));
+			true, isHealing: isHealing));
 		AddDetailSeparator(table, new Color(0.42f, 0.38f, 0.33f, 0.55f));
 
 		var alt = false;
@@ -876,14 +893,14 @@ public partial class VictoryScreen : CanvasLayer
 				row.Hits.ToString(),
 				row.Crits > 0 ? row.Crits.ToString() : "–",
 				$"{row.Total:0}",
-				isHeader: false, isAlt: alt, isHealing: isHealing,
+				false, alt, isHealing: isHealing,
 				abilityDescription: row.Description));
 			alt = !alt;
 		}
 
 		AddDetailSeparator(table, new Color(0.42f, 0.38f, 0.33f, 0.55f));
 		table.AddChild(MakeDetailRow("Total", "", "", "", $"{grandTotal:0}",
-			isHeader: false, isTotal: true, isHealing: isHealing));
+			false, isTotal: true, isHealing: isHealing));
 	}
 
 	static Control MakeDetailRow(
@@ -892,15 +909,15 @@ public partial class VictoryScreen : CanvasLayer
 		string? abilityDescription = null)
 	{
 		var bg = isHeader ? new Color(0.10f, 0.08f, 0.07f)
-		       : isTotal  ? new Color(0.20f, 0.14f, 0.11f)
-		       : isAlt    ? new Color(0.18f, 0.13f, 0.11f)
-		                  : new Color(0.14f, 0.10f, 0.09f);
+			: isTotal ? new Color(0.20f, 0.14f, 0.11f)
+			: isAlt ? new Color(0.18f, 0.13f, 0.11f)
+			: new Color(0.14f, 0.10f, 0.09f);
 
 		var panel = new PanelContainer();
 		var style = new StyleBoxFlat();
-		style.BgColor              = bg;
-		style.ContentMarginLeft    = style.ContentMarginRight  = 8f;
-		style.ContentMarginTop     = style.ContentMarginBottom = 4f;
+		style.BgColor = bg;
+		style.ContentMarginLeft = style.ContentMarginRight = 8f;
+		style.ContentMarginTop = style.ContentMarginBottom = 4f;
 		panel.AddThemeStyleboxOverride("panel", style);
 		panel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 
@@ -909,23 +926,24 @@ public partial class VictoryScreen : CanvasLayer
 		row.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		panel.AddChild(row);
 
-		var bodyColor    = new Color(0.88f, 0.84f, 0.78f);
-		var headerColor  = new Color(0.58f, 0.54f, 0.48f);
-		var totalColor   = isHealing ? new Color(0.40f, 0.90f, 0.55f) : new Color(0.95f, 0.55f, 0.35f);
+		var bodyColor = new Color(0.88f, 0.84f, 0.78f);
+		var headerColor = new Color(0.58f, 0.54f, 0.48f);
+		var totalColor = isHealing ? new Color(0.40f, 0.90f, 0.55f) : new Color(0.95f, 0.55f, 0.35f);
 		var contextColor = new Color(0.65f, 0.60f, 0.55f);
-		var critColor    = new Color(0.95f, 0.72f, 0.28f);
-		var dimColor     = new Color(0.48f, 0.44f, 0.40f);
-		var baseSize     = isHeader ? 12 : 13;
+		var critColor = new Color(0.95f, 0.72f, 0.28f);
+		var dimColor = new Color(0.48f, 0.44f, 0.40f);
+		var baseSize = isHeader ? 12 : 13;
 
 		// Ability name
 		var abilityColor = isHeader ? headerColor : isTotal ? totalColor : bodyColor;
-		var abilityCell  = DetailCell(ability, 195f, abilityColor, isTotal ? 14 : baseSize, HorizontalAlignment.Left);
+		var abilityCell = DetailCell(ability, 195f, abilityColor, isTotal ? 14 : baseSize, HorizontalAlignment.Left);
 		if (!isHeader && !isTotal && !string.IsNullOrEmpty(abilityDescription))
 		{
-			abilityCell.MouseFilter   = Control.MouseFilterEnum.Stop;
+			abilityCell.MouseFilter = Control.MouseFilterEnum.Stop;
 			abilityCell.MouseEntered += () => GameTooltip.Show(ability, abilityDescription);
-			abilityCell.MouseExited  += () => GameTooltip.Hide();
+			abilityCell.MouseExited += () => GameTooltip.Hide();
 		}
+
 		row.AddChild(abilityCell);
 
 		// Context (source or target)
@@ -937,10 +955,10 @@ public partial class VictoryScreen : CanvasLayer
 			isHeader ? headerColor : isTotal ? dimColor : bodyColor, baseSize, HorizontalAlignment.Center));
 
 		// Crits (gold when non-zero)
-		var critCellColor = isHeader     ? headerColor
-		                  : isTotal      ? dimColor
-		                  : crits != "–" ? critColor
-		                                 : dimColor;
+		var critCellColor = isHeader ? headerColor
+			: isTotal ? dimColor
+			: crits != "–" ? critColor
+			: dimColor;
 		row.AddChild(DetailCell(crits, 36f, critCellColor, baseSize, HorizontalAlignment.Center));
 
 		// Total
@@ -955,8 +973,8 @@ public partial class VictoryScreen : CanvasLayer
 	static Label DetailCell(string text, float minWidth, Color color, int fontSize, HorizontalAlignment align)
 	{
 		var lbl = new Label();
-		lbl.Text                = text;
-		lbl.CustomMinimumSize   = new Vector2(minWidth, 0f);
+		lbl.Text = text;
+		lbl.CustomMinimumSize = new Vector2(minWidth, 0f);
 		lbl.SizeFlagsHorizontal = Control.SizeFlags.ShrinkBegin;
 		lbl.HorizontalAlignment = align;
 		lbl.AddThemeFontSizeOverride("font_size", fontSize);
@@ -982,19 +1000,19 @@ public partial class VictoryScreen : CanvasLayer
 	static Button MakeButton(string text, Color bgColor, Color borderColor, System.Action onPressed)
 	{
 		var style = new StyleBoxFlat();
-		style.BgColor            = bgColor;
+		style.BgColor = bgColor;
 		style.SetBorderWidthAll(2);
-		style.BorderColor        = borderColor;
+		style.BorderColor = borderColor;
 		style.SetCornerRadiusAll(6);
-		style.ContentMarginLeft  = style.ContentMarginRight  = 18f;
-		style.ContentMarginTop   = style.ContentMarginBottom = 10f;
+		style.ContentMarginLeft = style.ContentMarginRight = 18f;
+		style.ContentMarginTop = style.ContentMarginBottom = 10f;
 
 		var btn = new Button();
-		btn.Text                    = text;
-		btn.CustomMinimumSize       = new Vector2(190f, 52f);
+		btn.Text = text;
+		btn.CustomMinimumSize = new Vector2(190f, 52f);
 		btn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-		btn.AddThemeStyleboxOverride("normal",  style);
-		btn.AddThemeStyleboxOverride("hover",   style);
+		btn.AddThemeStyleboxOverride("normal", style);
+		btn.AddThemeStyleboxOverride("hover", style);
 		btn.AddThemeStyleboxOverride("pressed", style);
 		btn.AddThemeFontSizeOverride("font_size", 16);
 		btn.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.85f));
@@ -1008,17 +1026,17 @@ public partial class VictoryScreen : CanvasLayer
 	static PanelContainer MakeCardPanel()
 	{
 		var style = new StyleBoxFlat();
-		style.BgColor               = PanelBg;
+		style.BgColor = PanelBg;
 		style.SetCornerRadiusAll(8);
 		style.SetBorderWidthAll(2);
-		style.BorderColor           = PanelBorder;
-		style.ContentMarginLeft     = style.ContentMarginRight  = 22f;
-		style.ContentMarginTop      = style.ContentMarginBottom = 18f;
+		style.BorderColor = PanelBorder;
+		style.ContentMarginLeft = style.ContentMarginRight = 22f;
+		style.ContentMarginTop = style.ContentMarginBottom = 18f;
 
 		var panel = new PanelContainer();
 		panel.AddThemeStyleboxOverride("panel", style);
 		panel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		panel.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
+		panel.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 		return panel;
 	}
 
