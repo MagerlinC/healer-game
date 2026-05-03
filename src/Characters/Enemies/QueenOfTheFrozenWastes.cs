@@ -1,6 +1,7 @@
 using Godot;
 using healerfantasy;
 using healerfantasy.Effects;
+using healerfantasy.Runes;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
@@ -157,8 +158,7 @@ public partial class QueenOfTheFrozenWastes : Character
 		if (!IsAlive) return;
 
 		// ── Frostbite — apply on first tick, then manage stacks ───────────────
-		// Runs regardless of boss phase so the debuff is always active.
-		if (!_frostbiteApplied)
+		if (!_frostbiteApplied && RunState.Instance.IsRuneActive(RuneIndex.Purity))
 			ApplyFrostbiteToHealer();
 		UpdateFrostbiteStacks((float)delta);
 
