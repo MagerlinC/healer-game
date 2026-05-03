@@ -6,12 +6,18 @@ using healerfantasy.UI;
 /// <summary>
 /// Root script for the Overworld scene.
 ///
-/// Extends <see cref="LoadoutController"/> so it inherits the full spell/talent
+/// Extends <see cref="LoadoutController"/> so it inherits the full spell
 /// overlay system.  Overworld-specific additions:
 ///   • Library background + walkable player
 ///   • Run History scroll interactible + overlay (see <c>OverworldController.RunHistory.cs</c>)
 ///   • Map interactible — opens MapScreen to start or continue the run
+///   • Rune Table interactible
+///   • Talent / School Affinity interactible — opens the read-only talent panel,
+///     which includes the 4-tome school affinity picker at the top
 ///   • First-time tutorial popup via <see cref="TutorialPopup"/>
+///
+/// Talents are earned during each run via the victory screen after defeating bosses.
+/// School affinity can be set here (before or between runs) or changed at Camp.
 /// </summary>
 public partial class OverworldController : LoadoutController
 {
@@ -37,11 +43,6 @@ public partial class OverworldController : LoadoutController
 			new Vector2(996f, FloorHeight - 12f), new Vector2(0.080f, 0.080f), 28f,
 			AssetConstants.SpellbookSfxPath));
 
-		var talentBoard = AddInteractible(new InteractibleObject(
-			AssetConstants.TalentBoardInteractiblePath,
-			new Vector2(796f, FloorHeight), new Vector2(0.090f, 0.090f), 50f,
-			AssetConstants.TalentsSfxPath));
-
 		var runHistoryScroll = AddInteractible(new InteractibleObject(
 			AssetConstants.RunScrollInteractiblePath,
 			new Vector2(696f, FloorHeight - 8f), new Vector2(0.075f, 0.075f), 28f,
@@ -56,6 +57,11 @@ public partial class OverworldController : LoadoutController
 			AssetConstants.RuneTableInteractiblePath,
 			new Vector2(1110f, FloorHeight), new Vector2(0.085f, 0.085f), 36f,
 			AssetConstants.RuneSfxPath));
+
+		var talentBoard = AddInteractible(new InteractibleObject(
+			AssetConstants.TalentBoardInteractiblePath,
+			new Vector2(820f, FloorHeight - 10f), new Vector2(0.080f, 0.080f), 28f,
+			AssetConstants.TalentsSfxPath));
 
 		// ── Run History panel (see OverworldController.RunHistory.cs) ─────────
 		(_historyPanel, _) = BuildOverlayPanel("Run History", BuildRunHistoryPane());
@@ -85,9 +91,6 @@ public partial class OverworldController : LoadoutController
 		};
 		WireHints(spellTome, "Spellbook  •  Click to open");
 
-		talentBoard.Interacted += () => OpenPanel(_talentPanel!);
-		WireHints(talentBoard, "Talent Board  •  Click to open");
-
 		runHistoryScroll.Interacted += OpenHistoryPanel;
 		WireHints(runHistoryScroll, "Run History  •  Click to open");
 
@@ -96,6 +99,9 @@ public partial class OverworldController : LoadoutController
 
 		runeTable.Interacted += () => _runeTablePanel!.Open();
 		WireHints(runeTable, "Rune Table  •  Configure difficulty runes");
+
+		talentBoard.Interacted += () => OpenPanel(_talentPanel!);
+		WireHints(talentBoard, "School Affinity & Talents  •  Click to open");
 
 		// ── Dev boss popup (Ctrl+Alt+O) — only available in debug builds ─────
 		if (OS.IsDebugBuild())

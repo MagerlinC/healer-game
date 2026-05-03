@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using healerfantasy.SpellResources;
@@ -298,5 +299,105 @@ public static class TalentRegistry
 	public static readonly List<TalentDefinition> AllTalents =
 		GenericTalents.Concat(VoidTalents).Concat(HolyTalents).Concat(NatureTalents).Concat(ChronomancyTalents).ToList();
 
+	/// <summary>
+	/// Returns up to <paramref name="count"/> random talent offers for the victory screen.
+	///
+	/// Eligibility rules:
+	///   • Talent not already in <paramref name="acquired"/>.
+	///   • Row-0 talents are always eligible.
+	///   • Row-N talents require at least one acquired talent in row N−1 of the same school.
+	///
+	/// Weight modifiers (each applied to at most ONE offer slot per school):
+	///   • Acquired-school bonus  — for school X with N acquired talents, the first
+	///     offer picked from school X has its base weight multiplied by (1 + N × 0.1).
+	///   • Affinity bonus         — the first offer picked from the <paramref name="affinity"/>
+	///     school gets an additional ×1.5 multiplier (stacks with the above).
+	///
+	/// The "one slot per school" cap ensures players are nudged toward their
+	/// preferred schools without being locked into them.
+	///
+	/// If fewer eligible talents exist than requested, the full eligible set is returned.
+	/// </summary>
+	public static List<TalentDefinition> GetRandomOffers(
+		IEnumerable<TalentDefinition> acquired,
+		SpellSchool? affinity = null,
+		int count = 3)
+	{
+		var acquiredList = acquired.ToList();
+		var acquiredNames = new HashSet<string>(acquiredList.Select(d => d.Name));
 
+		// Count how many talents the player has acquired per school.
+		var schoolCounts = acquiredList
+			.GroupBy(d => d.School)
+			.ToDictionary(g => g.Key, g => g.Count());
+
+		var eligible = AllTalents.Where(t =>
+		{
+			if (acquiredNames.Contains(t.Name)) return false;
+			if (t.TalentRow == 0) return true;
+			// Requires at least one talent from the previous row in the same school.
+			return AllTalents.Any(other =>
+				other.School == t.School &&
+				other.TalentRow == t.TalentRow - 1 &&
+				acquiredNames.Contains(other.Name));
+		}).ToList();
+
+		if (eligible.Count == 0) return new List<TalentDefinition>();
+
+		var rng = new Random();
+		var pool = eligible.ToList();
+		var result = new List<TalentDefinition>();
+
+		// Track which schools have already had their one-slot weight boost applied
+		// to a picked talent.  Once consumed the remaining offers from that school
+		// use only the base Weight.
+		var boostConsumed = new HashSet<SpellSchool>();
+
+		while (result.Count < count && pool.Count > 0)
+		{
+			// Compute the effective weight for every remaining candidate.
+			var weights = new double[pool.Count];
+			var totalWeight = 0.0;
+
+			for (var i = 0; i < pool.Count; i++)
+			{
+				var t = pool[i];
+				var w = (double)t.Weight;
+
+				if (!boostConsumed.Contains(t.School))
+				{
+					// Acquired-school bonus: +10% per acquired talent in this school.
+					schoolCounts.TryGetValue(t.School, out var n);
+					w *= 1.0 + n * 0.1;
+
+					// Affinity bonus: ×1.5 if this is the player's preferred school.
+					if (affinity.HasValue && t.School == affinity.Value)
+						w *= 1.5;
+				}
+
+				weights[i] = w;
+				totalWeight += w;
+			}
+
+			// Weighted random draw.
+			var roll = rng.NextDouble() * totalWeight;
+			var cumulative = 0.0;
+			var chosenIdx = pool.Count - 1;   // fallback: last element
+
+			for (var i = 0; i < pool.Count; i++)
+			{
+				cumulative += weights[i];
+				if (roll <= cumulative) { chosenIdx = i; break; }
+			}
+
+			var chosen = pool[chosenIdx];
+			result.Add(chosen);
+			pool.RemoveAt(chosenIdx);
+
+			// Consume the weight boost for this school so it only applies once.
+			boostConsumed.Add(chosen.School);
+		}
+
+		return result;
+	}
 }

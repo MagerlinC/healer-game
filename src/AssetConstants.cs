@@ -1,3 +1,5 @@
+using healerfantasy.SpellResources;
+
 namespace healerfantasy;
 
 public static class AssetConstants
@@ -57,6 +59,23 @@ public static class AssetConstants
 	public static readonly string MapInteractiblePath = "res://assets/interactibles/map.png";
 	public static readonly string ArmoryInteractiblePath = "res://assets/interactibles/armory.png";
 	public static readonly string RuneTableInteractiblePath = "res://assets/interactibles/rune-table.png";
+
+	// ── Talent tome assets (school affinity selector) ────────────────────────
+
+	public static readonly string TalentTomeHolyPath = "res://assets/interactibles/talent-tome-holy.png";
+	public static readonly string TalentTomeNaturePath = "res://assets/interactibles/talent-tome-nature.png";
+	public static readonly string TalentTomeVoidPath = "res://assets/interactibles/talent-tome-void.png";
+	public static readonly string TalentTomeChronomancyPath = "res://assets/interactibles/talent-tome-chronomancy.png";
+
+	/// <summary>Returns the res:// path for the tome icon of the given spell school.</summary>
+	public static string TalentTomePath(SpellSchool school) => school switch
+	{
+		SpellSchool.Holy        => TalentTomeHolyPath,
+		SpellSchool.Nature      => TalentTomeNaturePath,
+		SpellSchool.Void        => TalentTomeVoidPath,
+		SpellSchool.Chronomancy => TalentTomeChronomancyPath,
+		_                       => TalentTomeHolyPath
+	};
 
 	// ── Rune assets ───────────────────────────────────────────────────────────
 

@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
@@ -6,14 +7,16 @@ using healerfantasy;
 using healerfantasy.CombatLog;
 using healerfantasy.Items;
 using healerfantasy.Runes;
+using healerfantasy.SpellResources;
+using healerfantasy.Talents;
 using healerfantasy.UI;
 
 /// <summary>
 /// Overlay shown when a boss dies.
 ///
 /// Layout: two-column card design.
-///   Left column  — victory title, sub-text, XP / level-up info,
-///                  <see cref="PlayerLevelIndicator"/>, and the action button.
+///   Left column  — victory title, sub-text, talent offer cards (arena/dungeon
+///                  clears only), and the action button.
 ///   Right column — two cards:
 ///                    • Items Acquired  (item drop + rune drop, if any)
 ///                    • Run Logs        (all encounters so far this run,
@@ -22,20 +25,18 @@ using healerfantasy.UI;
 /// Four possible outcomes after each kill:
 ///
 ///   1. Non-final boss in current dungeon → "ARENA CLEARED!"
+///      Shows 3 talent offer cards; Continue is disabled until one is selected.
 ///      Continue button: advance boss index and reload World.tscn.
 ///
 ///   2. Final boss of a non-final dungeon → "DUNGEON CLEARED!"
+///      Shows 4 talent offer cards; Continue is disabled until two are selected.
 ///      Continue button: mark dungeon as completed and load Camp.tscn.
-///      (Applies after dungeons 0, 1, and 2; leads to camps 0, 1, and 2
-///      respectively before the next dungeon becomes available.)
 ///
 ///   3. Final boss of the final dungeon (The Frozen Peak, dungeon 3) → "VICTORY!"
-///      Play Again / Main Menu buttons: finalize the run.
+///      No talent offer. Play Again / Main Menu buttons: finalize the run.
 ///
 ///   4. Dev test fight → "TEST COMPLETE"
-///      Returns to Overworld without affecting run progression.
-///
-/// XP is awarded on every kill. Level-up notifications are displayed.
+///      No talent offer. Returns to Overworld without affecting run progression.
 ///
 /// Sits on CanvasLayer 20 and is hidden by default.
 /// ProcessMode is Always so buttons keep receiving input while the tree is paused.
@@ -48,6 +49,8 @@ public partial class VictoryScreen : CanvasLayer
 	static readonly Color TitleColor = new(0.95f, 0.84f, 0.50f);
 	static readonly Color HintColor = new(0.45f, 0.42f, 0.38f);
 	static readonly Color SepColor = new(0.50f, 0.40f, 0.22f, 0.55f);
+	static readonly Color OfferBorderUnselected = new(0.30f, 0.26f, 0.18f);
+	static readonly Color OfferBorderSelected = new(0.65f, 0.52f, 0.28f);
 
 	static readonly HashSet<string> PartyMemberNames = new()
 	{
@@ -62,9 +65,8 @@ public partial class VictoryScreen : CanvasLayer
 	// ── UI refs ───────────────────────────────────────────────────────────────
 	Label _titleLabel = null!;
 	Label _subLabel = null!;
-	Label _xpGainLabel = null!;
-	Label _levelUpLabel = null!;
-	PlayerLevelIndicator _levelIndicator = null!;
+	VBoxContainer _offerSectionWrapper = null!;
+	HBoxContainer _offersContainer = null!;
 	VBoxContainer _itemsCardContent = null!;
 	VBoxContainer _runLogsContent = null!;
 	HBoxContainer _btnRow = null!;
@@ -73,6 +75,12 @@ public partial class VictoryScreen : CanvasLayer
 	CanvasLayer _detailModalLayer = null!;
 	Label _detailModalTitle = null!;
 	VBoxContainer _detailModalContent = null!;
+
+	// ── talent offer state ────────────────────────────────────────────────────
+	Label _offerHeaderLabel = null!;
+	readonly List<TalentDefinition> _selectedOffers = new();
+	int _selectionsRequired = 1;
+	Button? _activeBtn;   // the current continue button; disabled until enough cards are selected
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -105,27 +113,19 @@ public partial class VictoryScreen : CanvasLayer
 				RunHistoryStore.RecordBossEncounter(character.CharacterName);
 				CombatLog.Clear();
 
-				// Award XP.
-				var dungeon = RunState.Instance.CurrentDungeon;
-				var bossIndex = RunState.Instance.CurrentBossIndexInDungeon;
-				var xpReward = bossIndex < dungeon.XpRewards.Count
-					? dungeon.XpRewards[bossIndex]
-					: 100;
-				var levelsGained = PlayerProgressStore.AddXp(xpReward);
-
 				// Roll for item drop.
 				var droppedItem = ItemRegistry.RollDrop(character.CharacterName);
 				if (droppedItem != null)
 					ItemStore.AddToInventory(droppedItem);
 
 				if (RunState.Instance.IsDevTestFight)
-					ShowDevTestComplete(character.CharacterName, xpReward, levelsGained, droppedItem);
+					ShowDevTestComplete(character.CharacterName, droppedItem);
 				else if (!RunState.Instance.IsLastBossInDungeon)
-					ShowArenaCleared(character.CharacterName, xpReward, levelsGained, droppedItem);
+					ShowArenaCleared(character.CharacterName, droppedItem);
 				else if (!RunState.Instance.IsLastDungeon)
-					ShowDungeonCleared(character.CharacterName, xpReward, levelsGained, droppedItem);
+					ShowDungeonCleared(character.CharacterName, droppedItem);
 				else
-					ShowVictoryScreen(xpReward, levelsGained, droppedItem);
+					ShowVictoryScreen(droppedItem);
 			}));
 
 		BuildLayout();
@@ -137,45 +137,49 @@ public partial class VictoryScreen : CanvasLayer
 
 	// ── public show API ───────────────────────────────────────────────────────
 
-	public void ShowArenaCleared(string defeatedBossName, int xpGained, int levelsGained,
-		EquippableItem? droppedItem = null)
+	public void ShowArenaCleared(string defeatedBossName, EquippableItem? droppedItem = null)
 	{
 		if (Visible) return;
 		_audioPlayer.Play();
 		_titleLabel.Text = "ARENA CLEARED!";
 		_subLabel.Text = $"{defeatedBossName} has been defeated.\nPrepare for the next battle.";
-		RefreshXpSection(xpGained, levelsGained);
+		PopulateTalentOffers();
 		PopulateItemsCard(droppedItem);
 		PopulateRunLogsCard();
 
 		ClearButtons();
-		_btnRow.AddChild(MakeButton("Continue  ▶",
-			new Color(0.10f, 0.16f, 0.10f), new Color(0.30f, 0.65f, 0.28f), OnArenaContinuePressed));
+		var btn = MakeButton("Continue  ▶",
+			new Color(0.10f, 0.16f, 0.10f), new Color(0.30f, 0.65f, 0.28f), OnArenaContinuePressed);
+		SetContinueButtonDisabled(btn, _offersContainer.GetChildCount() > 0);
+		_activeBtn = btn;
+		_btnRow.AddChild(btn);
 
 		Visible = true;
 		GetTree().Paused = true;
 	}
 
-	public void ShowDungeonCleared(string defeatedBossName, int xpGained, int levelsGained,
-		EquippableItem? droppedItem = null)
+	public void ShowDungeonCleared(string defeatedBossName, EquippableItem? droppedItem = null)
 	{
 		if (Visible) return;
 		_audioPlayer.Play();
 		_titleLabel.Text = "DUNGEON CLEARED!";
 		_subLabel.Text = $"{defeatedBossName} has been defeated.\nHead to camp and prepare for the next dungeon.";
-		RefreshXpSection(xpGained, levelsGained);
+		PopulateTalentOffers(selectionsRequired: 2);
 		PopulateItemsCard(droppedItem);
 		PopulateRunLogsCard();
 
 		ClearButtons();
-		_btnRow.AddChild(MakeButton("Rest at Camp  ▶",
-			new Color(0.10f, 0.14f, 0.18f), new Color(0.28f, 0.52f, 0.75f), OnDungeonClearedContinuePressed));
+		var btn = MakeButton("Rest at Camp  ▶",
+			new Color(0.10f, 0.14f, 0.18f), new Color(0.28f, 0.52f, 0.75f), OnDungeonClearedContinuePressed);
+		SetContinueButtonDisabled(btn, _offersContainer.GetChildCount() > 0);
+		_activeBtn = btn;
+		_btnRow.AddChild(btn);
 
 		Visible = true;
 		GetTree().Paused = true;
 	}
 
-	public void ShowVictoryScreen(int xpGained, int levelsGained, EquippableItem? droppedItem = null)
+	public void ShowVictoryScreen(EquippableItem? droppedItem = null)
 	{
 		if (Visible) return;
 		_audioPlayer.Play();
@@ -206,7 +210,8 @@ public partial class VictoryScreen : CanvasLayer
 
 		_titleLabel.Text = "VICTORY!";
 		_subLabel.Text = "The Queen of the Frozen Wastes has fallen.\nAll dungeons conquered — the realm is saved!";
-		RefreshXpSection(xpGained, levelsGained);
+		_offerSectionWrapper.Visible = false;   // no talent offer on final victory
+		_activeBtn = null;
 		PopulateItemsCard(droppedItem, runeDropped, runeDropName, runeIndex);
 		PopulateRunLogsCard();
 
@@ -225,14 +230,14 @@ public partial class VictoryScreen : CanvasLayer
 	/// the Ctrl+Alt+O popup). Skips normal run progression and returns straight
 	/// to the Overworld with a full RunState reset.
 	/// </summary>
-	public void ShowDevTestComplete(string defeatedBossName, int xpGained, int levelsGained,
-		EquippableItem? droppedItem = null)
+	public void ShowDevTestComplete(string defeatedBossName, EquippableItem? droppedItem = null)
 	{
 		if (Visible) return;
 		_audioPlayer.Play();
 		_titleLabel.Text = "TEST COMPLETE";
 		_subLabel.Text = $"{defeatedBossName} defeated.\n[Dev mode — run state will be reset]";
-		RefreshXpSection(xpGained, levelsGained);
+		_offerSectionWrapper.Visible = false;   // no talent offer in dev test
+		_activeBtn = null;
 		PopulateItemsCard(droppedItem);
 		PopulateRunLogsCard();
 
@@ -248,6 +253,8 @@ public partial class VictoryScreen : CanvasLayer
 
 	void OnArenaContinuePressed()
 	{
+		foreach (var offer in _selectedOffers)
+			RunState.Instance.AddTalent(offer);
 		GetTree().Paused = false;
 		RunState.Instance.AdvanceBossInDungeon();
 		GlobalAutoLoad.Reset();
@@ -256,6 +263,8 @@ public partial class VictoryScreen : CanvasLayer
 
 	void OnDungeonClearedContinuePressed()
 	{
+		foreach (var offer in _selectedOffers)
+			RunState.Instance.AddTalent(offer);
 		GetTree().Paused = false;
 		RunState.Instance.CompleteDungeon();
 		GlobalAutoLoad.Reset();
@@ -313,22 +322,22 @@ public partial class VictoryScreen : CanvasLayer
 		hbox.AddThemeConstantOverride("separation", 16);
 		margin.AddChild(hbox);
 
-		// Left column (36 % width) — title, XP, level indicator, button.
+		// Left column (38 % width) — title, talent offers, button.
 		var left = BuildLeftColumn();
 		left.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		left.SizeFlagsStretchRatio = 0.36f;
+		left.SizeFlagsStretchRatio = 0.38f;
 		hbox.AddChild(left);
 
-		// Right column (64 % width) — items card + run-log card.
+		// Right column (62 % width) — items card + run-log card.
 		var right = BuildRightColumn();
 		right.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		right.SizeFlagsStretchRatio = 0.64f;
+		right.SizeFlagsStretchRatio = 0.62f;
 		hbox.AddChild(right);
 	}
 
 	/// <summary>
-	/// Left panel: title, sub-text, separator, XP gained, level-up notice,
-	/// PlayerLevelIndicator, flexible spacer, and the action button(s).
+	/// Left panel: title, sub-text, separator, talent offer cards (arena/dungeon
+	/// clears only), flexible spacer, and the action button(s).
 	/// </summary>
 	Control BuildLeftColumn()
 	{
@@ -358,26 +367,25 @@ public partial class VictoryScreen : CanvasLayer
 
 		AddSep(vbox);
 
-		// XP gained (large, blue)
-		_xpGainLabel = new Label();
-		_xpGainLabel.HorizontalAlignment = HorizontalAlignment.Center;
-		_xpGainLabel.AddThemeFontSizeOverride("font_size", 26);
-		_xpGainLabel.AddThemeColorOverride("font_color", new Color(0.55f, 0.85f, 0.95f));
-		vbox.AddChild(_xpGainLabel);
+		// ── Talent offer section ─────────────────────────────────────────────
+		// Hidden by default; shown for arena and dungeon clears only.
+		_offerSectionWrapper = new VBoxContainer();
+		_offerSectionWrapper.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		_offerSectionWrapper.AddThemeConstantOverride("separation", 8);
+		_offerSectionWrapper.Visible = false;
+		vbox.AddChild(_offerSectionWrapper);
 
-		// Level-up notice (hidden unless a level was gained)
-		_levelUpLabel = new Label();
-		_levelUpLabel.HorizontalAlignment = HorizontalAlignment.Center;
-		_levelUpLabel.AutowrapMode = TextServer.AutowrapMode.Word;
-		_levelUpLabel.AddThemeFontSizeOverride("font_size", 15);
-		_levelUpLabel.AddThemeColorOverride("font_color", new Color(1.00f, 0.82f, 0.20f));
-		_levelUpLabel.Visible = false;
-		vbox.AddChild(_levelUpLabel);
+		_offerHeaderLabel = new Label();
+		_offerHeaderLabel.Text = "Choose a Talent:";
+		_offerHeaderLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		_offerHeaderLabel.AddThemeFontSizeOverride("font_size", 15);
+		_offerHeaderLabel.AddThemeColorOverride("font_color", TitleColor);
+		_offerSectionWrapper.AddChild(_offerHeaderLabel);
 
-		// PlayerLevelIndicator widget (reflects current level / XP / talent points)
-		_levelIndicator = new PlayerLevelIndicator();
-		_levelIndicator.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		vbox.AddChild(_levelIndicator);
+		_offersContainer = new HBoxContainer();
+		_offersContainer.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		_offersContainer.AddThemeConstantOverride("separation", 8);
+		_offerSectionWrapper.AddChild(_offersContainer);
 
 		// Flexible spacer — pushes the button to the bottom of the panel.
 		var spacer = new Control();
@@ -460,43 +468,185 @@ public partial class VictoryScreen : CanvasLayer
 		return vbox;
 	}
 
-	// ── data populators ───────────────────────────────────────────────────────
+	// ── talent offer populators ───────────────────────────────────────────────
 
 	/// <summary>
-	/// Updates the XP gain label, shows/hides the level-up notice, and
-	/// refreshes the <see cref="PlayerLevelIndicator"/>.
+	/// Populates talent offer cards using <see cref="TalentRegistry.GetRandomOffers"/>.
+	/// Always requests <paramref name="selectionsRequired"/> + 2 offers so the player has
+	/// meaningful choice even when picking 2.  Hides the offer wrapper if no eligible
+	/// talents remain.  The continue button stays disabled until the player has made
+	/// <paramref name="selectionsRequired"/> selections.
 	/// </summary>
-	void RefreshXpSection(int xpGained, int levelsGained)
+	void PopulateTalentOffers(int selectionsRequired = 1)
 	{
-		if (PlayerProgressStore.Level >= PlayerProgressStore.MaxLevel)
+		_selectedOffers.Clear();
+
+		foreach (var child in _offersContainer.GetChildren())
+			child.QueueFree();
+
+		var offers = TalentRegistry.GetRandomOffers(
+			RunState.Instance.SelectedTalentDefs,
+			RunState.Instance.SchoolAffinity,
+			count: selectionsRequired + 2);
+
+		// Cap required to however many offers are actually available.
+		_selectionsRequired = Math.Min(selectionsRequired, offers.Count);
+
+		_offerHeaderLabel.Text = _selectionsRequired == 1
+			? "Choose a Talent:"
+			: $"Choose {_selectionsRequired} Talents:";
+
+		if (offers.Count == 0)
 		{
-			// At the level cap AddXp() is a no-op, so there's nothing meaningful
-			// to show for XP gained. Display a max-level indicator instead.
-			_xpGainLabel.Text = "Max Level";
-			_xpGainLabel.AddThemeColorOverride("font_color", TitleColor);
-			_levelUpLabel.Visible = false;
+			// Nothing left to offer — skip the section and allow immediate continue.
+			_offerSectionWrapper.Visible = false;
+			return;
+		}
+
+		_offerSectionWrapper.Visible = true;
+
+		// Build all card panels first, then wire shared click handlers.
+		var cards = new List<(TalentDefinition def, PanelContainer card)>();
+
+		foreach (var def in offers)
+		{
+			var card = BuildOfferCard(def);
+			cards.Add((def, card));
+			_offersContainer.AddChild(card);
+		}
+
+		// Wire click: toggling a card updates the selection and the continue button.
+		foreach (var (def, card) in cards)
+		{
+			var capturedDef = def;
+			var capturedCards = cards;
+			card.GuiInput += ev =>
+			{
+				if (ev is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
+					ToggleOffer(capturedDef, capturedCards);
+			};
+		}
+	}
+
+	/// <summary>
+	/// Builds a single talent offer card (icon + school label + name + description).
+	/// Click handling is wired by <see cref="PopulateTalentOffers"/> after all cards exist.
+	/// </summary>
+	PanelContainer BuildOfferCard(TalentDefinition def)
+	{
+		var style = new StyleBoxFlat();
+		style.BgColor = new Color(0.10f, 0.08f, 0.07f);
+		style.SetCornerRadiusAll(6);
+		style.SetBorderWidthAll(2);
+		style.BorderColor = OfferBorderUnselected;
+		style.ContentMarginLeft = style.ContentMarginRight = 10f;
+		style.ContentMarginTop = style.ContentMarginBottom = 10f;
+
+		var card = new PanelContainer();
+		card.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		card.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		card.AddThemeStyleboxOverride("panel", style);
+		card.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+		card.MouseFilter = Control.MouseFilterEnum.Stop;
+
+		var inner = new VBoxContainer();
+		inner.AddThemeConstantOverride("separation", 6);
+		inner.MouseFilter = Control.MouseFilterEnum.Ignore;
+		card.AddChild(inner);
+
+		// Icon (centred)
+		var icon = new TextureRect();
+		icon.CustomMinimumSize = new Vector2(56f, 56f);
+		icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+		icon.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
+		icon.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+		icon.MouseFilter = Control.MouseFilterEnum.Ignore;
+		if (!string.IsNullOrEmpty(def.IconPath))
+			icon.Texture = GD.Load<Texture2D>(def.IconPath);
+		inner.AddChild(icon);
+
+		// School label (small, muted)
+		var schoolLabel = new Label();
+		schoolLabel.Text = def.School.ToString();
+		schoolLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		schoolLabel.AddThemeFontSizeOverride("font_size", 11);
+		schoolLabel.AddThemeColorOverride("font_color", HintColor);
+		schoolLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+		inner.AddChild(schoolLabel);
+
+		// Talent name (gold)
+		var nameLabel = new Label();
+		nameLabel.Text = def.Name;
+		nameLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		nameLabel.AutowrapMode = TextServer.AutowrapMode.Word;
+		nameLabel.AddThemeFontSizeOverride("font_size", 14);
+		nameLabel.AddThemeColorOverride("font_color", TitleColor);
+		nameLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+		inner.AddChild(nameLabel);
+
+		// Description (small, wrapping)
+		var descLabel = new Label();
+		descLabel.Text = def.Description;
+		descLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		descLabel.AutowrapMode = TextServer.AutowrapMode.Word;
+		descLabel.AddThemeFontSizeOverride("font_size", 12);
+		descLabel.AddThemeColorOverride("font_color", new Color(0.72f, 0.68f, 0.62f));
+		descLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+		inner.AddChild(descLabel);
+
+		return card;
+	}
+
+	/// <summary>
+	/// Toggles a talent offer card selected/unselected.
+	/// If the card is already selected it is deselected.
+	/// If the player is at capacity (<see cref="_selectionsRequired"/> already chosen),
+	/// the oldest selection is evicted first.
+	/// Enables the continue button once enough cards are selected.
+	/// </summary>
+	void ToggleOffer(TalentDefinition def, List<(TalentDefinition def, PanelContainer card)> allCards)
+	{
+		var alreadySelected = _selectedOffers.Any(d => d.Name == def.Name);
+
+		if (alreadySelected)
+		{
+			_selectedOffers.RemoveAll(d => d.Name == def.Name);
 		}
 		else
 		{
-			_xpGainLabel.Text = $"+{xpGained} XP";
-			_xpGainLabel.AddThemeColorOverride("font_color", new Color(0.55f, 0.85f, 0.95f));
-
-			if (levelsGained > 0)
-			{
-				var pts = levelsGained == 1 ? "point" : "points";
-				_levelUpLabel.Text = levelsGained == 1
-					? "✦  Level up!  ✦  +1 talent point gained"
-					: $"✦  Level up ×{levelsGained}!  ✦  +{levelsGained} talent {pts} gained";
-				_levelUpLabel.Visible = true;
-			}
-			else
-			{
-				_levelUpLabel.Visible = false;
-			}
+			// If at capacity, evict the oldest selection to make room.
+			if (_selectedOffers.Count >= _selectionsRequired)
+				_selectedOffers.RemoveAt(0);
+			_selectedOffers.Add(def);
 		}
 
-		_levelIndicator.Refresh();
+		// Refresh card borders.
+		var selectedNames = _selectedOffers.Select(d => d.Name).ToHashSet();
+		foreach (var (d, card) in allCards)
+		{
+			var style = new StyleBoxFlat();
+			style.BgColor = new Color(0.10f, 0.08f, 0.07f);
+			style.SetCornerRadiusAll(6);
+			style.SetBorderWidthAll(2);
+			style.BorderColor = selectedNames.Contains(d.Name) ? OfferBorderSelected : OfferBorderUnselected;
+			style.ContentMarginLeft = style.ContentMarginRight = 10f;
+			style.ContentMarginTop = style.ContentMarginBottom = 10f;
+			card.AddThemeStyleboxOverride("panel", style);
+		}
+
+		if (_activeBtn != null)
+			SetContinueButtonDisabled(_activeBtn, _selectedOffers.Count < _selectionsRequired);
 	}
+
+	// ── continue button enable / disable ──────────────────────────────────────
+
+	static void SetContinueButtonDisabled(Button btn, bool disabled)
+	{
+		btn.Disabled = disabled;
+		btn.Modulate = disabled ? new Color(1f, 1f, 1f, 0.45f) : Colors.White;
+	}
+
+	// ── data populators ───────────────────────────────────────────────────────
 
 	/// <summary>
 	/// Fills the Items Acquired card.
@@ -524,13 +674,6 @@ public partial class VictoryScreen : CanvasLayer
 		// ── Equipment drop ────────────────────────────────────────────────────
 		if (item != null)
 		{
-			var hint = new Label();
-			hint.Text = "✦  Item Found!  —  Drag to equipment slot to equip";
-			hint.HorizontalAlignment = HorizontalAlignment.Center;
-			hint.AddThemeFontSizeOverride("font_size", 12);
-			hint.AddThemeColorOverride("font_color", new Color(0.80f, 0.72f, 0.50f));
-			//_itemsCardContent.AddChild(hint);
-
 			var pane = new EquipmentPane(item);
 			pane.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 			_itemsCardContent.AddChild(pane);
@@ -1017,6 +1160,7 @@ public partial class VictoryScreen : CanvasLayer
 		btn.AddThemeStyleboxOverride("normal", style);
 		btn.AddThemeStyleboxOverride("hover", style);
 		btn.AddThemeStyleboxOverride("pressed", style);
+		btn.AddThemeStyleboxOverride("disabled", style);
 		btn.AddThemeFontSizeOverride("font_size", 16);
 		btn.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.85f));
 		btn.Pressed += onPressed;

@@ -36,8 +36,22 @@ public partial class RunState : Node
 	/// <summary>The 6 spells the player chose. Null slots are empty.</summary>
 	public SpellResource?[] SelectedSpells { get; private set; } = new SpellResource?[Player.MaxSpellSlots];
 
-	/// <summary>Talent definitions selected by the player.</summary>
+	/// <summary>
+	/// Talent definitions acquired by the player this run.
+	/// Talents are earned by defeating bosses — one per boss kill via the
+	/// victory screen talent picker.  Starts empty at the beginning of each run.
+	/// </summary>
 	public List<TalentDefinition> SelectedTalentDefs { get; } = new();
+
+	/// <summary>
+	/// Adds a talent acquired from a boss victory reward.
+	/// Ignores duplicates (same talent name already present).
+	/// </summary>
+	public void AddTalent(TalentDefinition def)
+	{
+		if (!SelectedTalentDefs.Exists(d => d.Name == def.Name))
+			SelectedTalentDefs.Add(def);
+	}
 
 	public bool HasLoadout => SelectedSpells.Any(s => s != null);
 
@@ -190,6 +204,29 @@ public partial class RunState : Node
 	/// </summary>
 	public void LockRuneSelection() => RuneSelectionLocked = true;
 
+	// ── School affinity ───────────────────────────────────────────────────────
+
+	/// <summary>
+	/// The spell school the player has chosen as their preferred source of
+	/// talent offers.  When set, talents from this school receive a +50%
+	/// weight bonus when the victory screen generates offers (applied to at
+	/// most one offer slot per school, consistent with the acquired-talent
+	/// bonus — see <see cref="TalentRegistry.GetRandomOffers"/>).
+	/// <para>Null means no affinity preference.  Persisted to <see cref="LoadoutPreferences"/> so it
+	/// survives between runs and game restarts.</para>
+	/// </summary>
+	public SpellSchool? SchoolAffinity { get; private set; } = null;
+
+	/// <summary>
+	/// Sets or clears the player's talent school affinity and immediately
+	/// persists the choice to <see cref="LoadoutPreferences"/>.
+	/// </summary>
+	public void SetSchoolAffinity(SpellSchool? school)
+	{
+		SchoolAffinity = school;
+		LoadoutPreferences.SaveSchoolAffinity(school);
+	}
+
 	// ── Dev test mode ─────────────────────────────────────────────────────────
 
 	/// <summary>
@@ -202,7 +239,7 @@ public partial class RunState : Node
 
 	/// <summary>
 	/// Configure a one-off developer test fight against a specific boss.
-	/// Preserves the player's current spell/talent loadout but replaces run
+	/// Preserves the player's current spell loadout but replaces run
 	/// progression so that <see cref="World"/> loads exactly the chosen boss.
 	/// </summary>
 	public void SetupDevTestFight(DungeonDefinition dungeon, int bossIndex)
@@ -247,8 +284,9 @@ public partial class RunState : Node
 		Instance = this;
 		RunDungeons = BuildRunDungeons();
 		InitSpellsFromPreferences();
-		InitTalentsFromPreferences();
 		InitRunesFromPreferences();
+		InitSchoolAffinityFromPreferences();
+		// Talents start empty — they are earned via the victory screen during the run.
 	}
 
 	// ── Public API ────────────────────────────────────────────────────────────
@@ -259,12 +297,6 @@ public partial class RunState : Node
 			SelectedSpells[i] = i < spells.Length ? spells[i] : null;
 	}
 
-	public void SetTalents(IEnumerable<TalentDefinition> defs)
-	{
-		SelectedTalentDefs.Clear();
-		SelectedTalentDefs.AddRange(defs);
-	}
-
 	/// <summary>Resets all run progression for a completely fresh run.</summary>
 	public void Reset()
 	{
@@ -273,6 +305,8 @@ public partial class RunState : Node
 		CurrentBossIndexInDungeon = 0;
 		IsDevTestFight            = false;
 		RuneSelectionLocked       = false;
+		InitSchoolAffinityFromPreferences();   // restore persisted affinity rather than clearing it
+		SelectedTalentDefs.Clear();
 		_activeRunes.Clear();
 		InitRunesFromPreferences();
 		ItemStore.Clear();
@@ -298,16 +332,15 @@ public partial class RunState : Node
 		];
 	}
 
-	void InitTalentsFromPreferences()
-	{
-		if (LoadoutPreferences.HasSavedTalents)
-			SetTalents(LoadoutPreferences.SavedTalents);
-	}
-
 	void InitRunesFromPreferences()
 	{
 		var saved = LoadoutPreferences.SavedActiveRuneIndices;
 		if (saved.Count > 0)
 			SetActiveRunes(saved.Select(i => (RuneIndex)i));
+	}
+
+	void InitSchoolAffinityFromPreferences()
+	{
+		SchoolAffinity = LoadoutPreferences.SavedSchoolAffinity;
 	}
 }

@@ -12,12 +12,19 @@ namespace healerfantasy;
 /// Abstract base class for scenes that display spell and talent selection UI
 /// (currently Overworld and Camp).
 ///
-/// Builds the shared Spellbook and Talent overlay panels in <see cref="_Ready"/>,
-/// then calls the abstract <see cref="SetupScene"/> for subclasses to add their
-/// own background, interactibles, player, and HUD elements.
+/// Builds the shared Spellbook and (read-only) Talent overlay panels in
+/// <see cref="_Ready"/>, then calls the abstract <see cref="SetupScene"/> for
+/// subclasses to add their own background, interactibles, player, and HUD.
 ///
 /// Subclasses add extra panels to <see cref="_panels"/> so ESC / CloseAllPanels
 /// can close them automatically.
+///
+/// Talent panel notes:
+///   • Talents are now earned during each run via the victory screen.
+///   • The talent panel here is READ-ONLY — it shows icons of currently
+///     acquired talents with hover tooltips, organised by school.
+///   • The panel refreshes its content every time it is opened so it
+///     reflects talents picked up mid-run.
 /// </summary>
 public abstract partial class LoadoutController : Node2D
 {
@@ -68,18 +75,15 @@ public abstract partial class LoadoutController : Node2D
 	readonly Dictionary<string, (PanelContainer Panel, StyleBoxFlat Border)> _libraryCards = new();
 	readonly Dictionary<string, List<(ColorRect Overlay, Label Icon)>> _spellLockOverlays = new();
 	(PanelContainer Panel, StyleBoxFlat Border, TextureRect Icon)[]? _loadoutSlots;
-	readonly List<TalentSlot> _talentSlots = new();
-	readonly Dictionary<SpellSchool, Dictionary<int, List<TalentSlot>>> _talentsBySchoolRow = new();
 
-	Label? _talentTitleLabel;
-	protected PlayerLevelIndicator? _characterProgressLabel;
+	/// <summary>Inner VBoxContainer for the read-only talent panel — repopulated on open.</summary>
+	VBoxContainer? _readOnlyTalentContent;
 
 	protected OverworldPlayer? _player;
 	protected CanvasLayer? _spellPanel;
 	protected CanvasLayer? _talentPanel;
 	protected Label? _hintLabel;
 	protected readonly List<Area2D> _interactibles = new();
-
 
 	/// <summary>All overlay panels — registered so ESC / CloseAllPanels can dismiss any of them.</summary>
 	protected readonly List<CanvasLayer> _panels = new();
@@ -109,9 +113,6 @@ public abstract partial class LoadoutController : Node2D
 	public override void _Ready()
 	{
 		// ── Viewport-aware world scaling ──────────────────────────────────────
-		// Scale the root Node2D uniformly so the 1920×1080 world fits the
-		// viewport, then offset it to centre the content (letterbox / pillarbox).
-		// CanvasLayer children ignore this transform and stay full-screen.
 		var vp = GetViewport().GetVisibleRect().Size;
 		var s = Mathf.Min(vp.X / RefW, vp.Y / RefH);
 		Scale = new Vector2(s, s);
@@ -120,18 +121,17 @@ public abstract partial class LoadoutController : Node2D
 		System.Array.Copy(RunState.Instance.SelectedSpells, _loadout, Player.MaxSpellSlots);
 		AddChild(new GameTooltip());
 
-		// Build shared spell + talent panels first so SetupScene can wire interactible
-		// click handlers that reference _spellPanel / _talentPanel.
+		// Build shared spell + talent panels first so SetupScene can wire
+		// interactible click handlers that reference _spellPanel / _talentPanel.
 		(_spellPanel, _) = BuildOverlayPanel("Spellbook", BuildSpellbookPane());
-		(_talentPanel, _talentTitleLabel) = BuildOverlayPanel("Talents", BuildTalentPane());
+		(_talentPanel, _) = BuildOverlayPanel("Talents", BuildReadOnlyTalentPane());
 		_panels.Add(_spellPanel);
 		_panels.Add(_talentPanel);
 		AddChild(_spellPanel);
 		AddChild(_talentPanel);
 
 		SetupScene();
-		SyncTalentSlotsFromRunState();
-
+		RefreshSpellLockVisuals();
 	}
 
 	/// <summary>
@@ -145,6 +145,9 @@ public abstract partial class LoadoutController : Node2D
 	protected void OpenPanel(CanvasLayer panel)
 	{
 		CloseAllPanels();
+		// Refresh the read-only talent list every time the panel is shown,
+		// since talents may have been earned since the scene last loaded.
+		if (panel == _talentPanel) RefreshReadOnlyTalentPane();
 		panel.Visible = true;
 		SetInteractiblesPickable(false);
 		_player?.SetPhysicsProcess(false);
@@ -229,19 +232,6 @@ public abstract partial class LoadoutController : Node2D
 		GlobalAutoLoad.Reset();
 		RunState.Instance.Reset();
 		GetTree().ChangeSceneToFile("res://levels/MainMenu.tscn");
-	}
-
-	/// <summary>Builds the top-left character level / XP progress indicator.</summary>
-	protected PlayerLevelIndicator BuildCharacterProgressLabel()
-	{
-		var indicator = new PlayerLevelIndicator();
-		indicator.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
-		indicator.OffsetLeft = 20f;
-		indicator.OffsetTop = 10f;
-		indicator.AddThemeFontSizeOverride("font_size", 18);
-		indicator.AddThemeColorOverride("font_color", new Color(0.70f, 0.65f, 0.60f));
-		indicator.MouseFilter = Control.MouseFilterEnum.Ignore;
-		return indicator;
 	}
 
 	// ── overlay panel builder ─────────────────────────────────────────────────
@@ -363,9 +353,8 @@ public abstract partial class LoadoutController : Node2D
 	}
 
 	/// <summary>
-	/// Builds the shared HUD canvas layer (hint label, back-to-menu button,
-	/// character progress indicator) and returns the layer so subclasses can
-	/// append scene-specific controls to it.
+	/// Builds the shared HUD canvas layer (hint label, back-to-menu button)
+	/// and returns the layer so subclasses can append scene-specific controls.
 	/// </summary>
 	protected CanvasLayer SetupHud()
 	{
@@ -373,8 +362,6 @@ public abstract partial class LoadoutController : Node2D
 		AddChild(hud);
 		hud.AddChild(BuildHintLabel());
 		hud.AddChild(BuildBackToMenuButton());
-		_characterProgressLabel = BuildCharacterProgressLabel();
-		hud.AddChild(_characterProgressLabel);
 		return hud;
 	}
 
@@ -395,8 +382,14 @@ public abstract partial class LoadoutController : Node2D
 	/// </summary>
 	protected void WireHints(Area2D area, string hintText)
 	{
-		area.MouseEntered += () => { if (_hintLabel != null) _hintLabel.Text = hintText; };
-		area.MouseExited += () => { if (_hintLabel != null) _hintLabel.Text = DefaultHint; };
+		area.MouseEntered += () =>
+		{
+			if (_hintLabel != null) _hintLabel.Text = hintText;
+		};
+		area.MouseExited += () =>
+		{
+			if (_hintLabel != null) _hintLabel.Text = DefaultHint;
+		};
 	}
 
 	/// <summary>Navigates to the Map Screen scene.</summary>
@@ -481,7 +474,9 @@ public abstract partial class LoadoutController : Node2D
 		}
 		else
 		{
-			foreach (var spell in spells) flow.AddChild(BuildSpellCard(spell));
+
+			var orderedSpells = spells.OrderBy(s => s.School).ThenBy(s => s.RequiredSchoolPoints).ThenBy(s => s.Name);
+			foreach (var spell in orderedSpells) flow.AddChild(BuildSpellCard(spell));
 		}
 
 		return scroll;
@@ -571,7 +566,6 @@ public abstract partial class LoadoutController : Node2D
 			if (IsSpellLocked(spell))
 			{
 				var tooltip = GetLockedSpellTooltip(spell);
-
 				GameTooltip.Show(tooltip.title, tooltip.desc);
 				return;
 			}
@@ -600,19 +594,24 @@ public abstract partial class LoadoutController : Node2D
 
 	// ── spell lock helpers ────────────────────────────────────────────────────
 
+	/// <summary>
+	/// A spell is locked if the player has not yet acquired enough talents of its
+	/// school during the current run.
+	/// </summary>
 	bool IsSpellLocked(SpellResource spell)
 	{
 		if (spell.RequiredSchoolPoints <= 0) return false;
-		var invested = _talentSlots.Count(s => s.IsSelected && s.Definition.School == spell.School);
+		var invested = RunState.Instance.SelectedTalentDefs.Count(d => d.School == spell.School);
 		return invested < spell.RequiredSchoolPoints;
 	}
 
 	(string title, string desc) GetLockedSpellTooltip(SpellResource spell)
 	{
+		var invested = RunState.Instance.SelectedTalentDefs.Count(d => d.School == spell.School);
 		return (spell.Name,
-			$"{spell.Description}\nRequires {spell.RequiredSchoolPoints} {spell.School} talent point" +
-			$"{(spell.RequiredSchoolPoints > 1 ? "s" : "")} invested.\n" +
-			$"({_talentSlots.Count(s => s.IsSelected && s.Definition.School == spell.School)} / {spell.RequiredSchoolPoints} selected)");
+			$"{spell.Description}\nRequires {spell.RequiredSchoolPoints} {spell.School} talent" +
+			$"{(spell.RequiredSchoolPoints > 1 ? "s" : "")} acquired.\n" +
+			$"({invested} / {spell.RequiredSchoolPoints} acquired this run)");
 	}
 
 	void RefreshSpellLockVisuals()
@@ -796,10 +795,15 @@ public abstract partial class LoadoutController : Node2D
 	}
 
 	// ══════════════════════════════════════════════════════════════════════════
-	// TALENT PANE
+	// READ-ONLY TALENT PANE  (acquired talents this run, shown in Camp)
 	// ══════════════════════════════════════════════════════════════════════════
 
-	Control BuildTalentPane()
+	/// <summary>
+	/// Builds the outer structure of the read-only talent panel.
+	/// The inner <see cref="_readOnlyTalentContent"/> VBoxContainer is populated
+	/// (and repopulated on each open) by <see cref="RefreshReadOnlyTalentPane"/>.
+	/// </summary>
+	Control BuildReadOnlyTalentPane()
 	{
 		var margin = new MarginContainer();
 		margin.AddThemeConstantOverride("margin_left", 16);
@@ -807,202 +811,243 @@ public abstract partial class LoadoutController : Node2D
 		margin.AddThemeConstantOverride("margin_top", 8);
 		margin.AddThemeConstantOverride("margin_bottom", 8);
 
-		var vbox = new VBoxContainer();
-		vbox.AddThemeConstantOverride("separation", 10);
-		margin.AddChild(vbox);
+		var outerVbox = new VBoxContainer();
+		outerVbox.AddThemeConstantOverride("separation", 10);
+		margin.AddChild(outerVbox);
 
 		var scroll = new ScrollContainer();
 		scroll.SizeFlagsHorizontal = scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
+		outerVbox.AddChild(scroll);
 
-		var hbox = new HBoxContainer();
-		hbox.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-		hbox.AddThemeConstantOverride("separation", 0);
-		scroll.AddChild(hbox);
-
-		for (var i = 0; i < TalentSchoolOrder.Length; i++)
-		{
-			if (i > 0)
-			{
-				var vsep = new VSeparator();
-				vsep.AddThemeColorOverride("color", SepColor);
-				vsep.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-				hbox.AddChild(vsep);
-			}
-
-			var (school, name, accent) = TalentSchoolOrder[i];
-			hbox.AddChild(BuildTalentSchoolColumn(school, name, accent));
-		}
-
-		vbox.AddChild(scroll);
+		_readOnlyTalentContent = new VBoxContainer();
+		_readOnlyTalentContent.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		_readOnlyTalentContent.AddThemeConstantOverride("separation", 10);
+		scroll.AddChild(_readOnlyTalentContent);
 
 		var hint = new Label();
-		hint.Text = "Click to select a talent  •  Each row requires a selection in the row above";
+		hint.Text = "Talents are earned by defeating bosses.  Hover an icon to read its effect.\nSet School Affinity above to bias offers (+50%) toward your preferred school.";
 		hint.HorizontalAlignment = HorizontalAlignment.Center;
+		hint.AutowrapMode = TextServer.AutowrapMode.Word;
 		hint.AddThemeFontSizeOverride("font_size", 11);
 		hint.AddThemeColorOverride("font_color", HintColor);
-		vbox.AddChild(hint);
+		outerVbox.AddChild(hint);
 
 		return margin;
 	}
 
-	void UpdateTalentPointsLabel()
+	/// <summary>
+	/// Clears and repopulates <see cref="_readOnlyTalentContent"/> from
+	/// <see cref="RunState.Instance.SelectedTalentDefs"/>.
+	/// Called each time the talent panel is opened so it reflects the latest
+	/// acquisitions.
+	///
+	/// Always renders the school affinity picker at the top (so players can
+	/// set their preferred school even before any talents are acquired).
+	/// </summary>
+	void RefreshReadOnlyTalentPane()
 	{
-		if (_talentTitleLabel == null) return;
-		var total = PlayerProgressStore.TalentPoints;
-		var selected = _talentSlots.Count(s => s.IsSelected);
-		_talentTitleLabel.Text = $"Talents ({selected}/{total} allocated)";
-	}
+		if (_readOnlyTalentContent == null) return;
+		foreach (var child in _readOnlyTalentContent.GetChildren()) child.QueueFree();
 
-	Control BuildTalentSchoolColumn(SpellSchool school, string colName, Color accent)
-	{
-		var margin = new MarginContainer();
-		margin.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-		margin.AddThemeConstantOverride("margin_left", 20);
-		margin.AddThemeConstantOverride("margin_right", 20);
-		margin.AddThemeConstantOverride("margin_top", 16);
-		margin.AddThemeConstantOverride("margin_bottom", 16);
+		// ── School affinity picker ─────────────────────────────────────────────
+		BuildAffinityPicker(_readOnlyTalentContent);
 
-		var col = new VBoxContainer();
-		col.AddThemeConstantOverride("separation", 10);
-		col.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-		margin.AddChild(col);
+		var affinitySep = new HSeparator();
+		affinitySep.AddThemeColorOverride("color", SepColor);
+		_readOnlyTalentContent.AddChild(affinitySep);
 
-		var header = new Label();
-		header.Text = colName;
-		header.HorizontalAlignment = HorizontalAlignment.Center;
-		header.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		header.AddThemeFontSizeOverride("font_size", 16);
-		header.AddThemeColorOverride("font_color", accent);
-		col.AddChild(header);
+		// ── Acquired talent icons ──────────────────────────────────────────────
+		var acquired = RunState.Instance.SelectedTalentDefs;
 
-		var sep = new HSeparator();
-		sep.AddThemeColorOverride("color", new Color(accent.R, accent.G, accent.B, 0.45f));
-		col.AddChild(sep);
-
-		var rowGroups = TalentRegistry.AllTalents
-			.Where(t => t.School == school)
-			.GroupBy(t => t.TalentRow)
-			.OrderBy(g => g.Key)
-			.ToList();
-
-		if (rowGroups.Count == 0)
+		if (acquired.Count == 0)
 		{
 			var empty = new Label();
-			empty.Text = "Coming soon!";
+			empty.Text = "No talents acquired yet.\nDefeat bosses during your run to earn talents.";
 			empty.HorizontalAlignment = HorizontalAlignment.Center;
+			empty.AutowrapMode = TextServer.AutowrapMode.Word;
 			empty.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-			empty.AddThemeFontSizeOverride("font_size", 12);
+			empty.AddThemeFontSizeOverride("font_size", 14);
 			empty.AddThemeColorOverride("font_color", HintColor);
-			col.AddChild(empty);
-			return margin;
+			_readOnlyTalentContent.AddChild(empty);
+			return;
 		}
 
-		for (var i = 0; i < rowGroups.Count; i++)
+		// Display talents organised by school (only schools with at least one acquired talent).
+		foreach (var (school, schoolName, accent) in TalentSchoolOrder)
 		{
-			var rowGroup = rowGroups[i];
-			var rowIndex = rowGroup.Key;
+			var schoolTalents = acquired.Where(t => t.School == school).ToList();
+			if (schoolTalents.Count == 0) continue;
 
-			var rowBox = new HBoxContainer();
-			rowBox.Alignment = BoxContainer.AlignmentMode.Center;
-			rowBox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-			rowBox.AddThemeConstantOverride("separation", 12);
+			// School header
+			var header = new Label();
+			header.Text = schoolName;
+			header.AddThemeFontSizeOverride("font_size", 13);
+			header.AddThemeColorOverride("font_color", accent);
+			_readOnlyTalentContent.AddChild(header);
 
-			foreach (var def in rowGroup)
+			var sep = new HSeparator();
+			sep.AddThemeColorOverride("color", new Color(accent.R, accent.G, accent.B, 0.35f));
+			_readOnlyTalentContent.AddChild(sep);
+
+			// Icon flow
+			var flow = new HFlowContainer();
+			flow.AddThemeConstantOverride("h_separation", 8);
+			flow.AddThemeConstantOverride("v_separation", 8);
+			flow.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+			_readOnlyTalentContent.AddChild(flow);
+
+			foreach (var def in schoolTalents)
 			{
-				var slot = new TalentSlot(def);
-				slot.Toggled += OnTalentSlotToggled;
-				_talentSlots.Add(slot);
+				var iconStyle = new StyleBoxFlat();
+				iconStyle.BgColor = new Color(0.09f, 0.07f, 0.07f, 0.97f);
+				iconStyle.SetCornerRadiusAll(4);
+				iconStyle.SetBorderWidthAll(2);
+				iconStyle.BorderColor = new Color(accent.R * 0.7f, accent.G * 0.7f, accent.B * 0.7f);
 
-				if (!_talentsBySchoolRow.ContainsKey(school))
-					_talentsBySchoolRow[school] = new Dictionary<int, List<TalentSlot>>();
-				if (!_talentsBySchoolRow[school].ContainsKey(rowIndex))
-					_talentsBySchoolRow[school][rowIndex] = new List<TalentSlot>();
-				_talentsBySchoolRow[school][rowIndex].Add(slot);
+				var iconPanel = new PanelContainer();
+				iconPanel.CustomMinimumSize = new Vector2(58f, 58f);
+				iconPanel.AddThemeStyleboxOverride("panel", iconStyle);
+				iconPanel.MouseFilter = Control.MouseFilterEnum.Stop;
+				iconPanel.MouseDefaultCursorShape = Control.CursorShape.Arrow;
 
-				rowBox.AddChild(slot);
+				var icon = new TextureRect();
+				icon.Texture = GD.Load<Texture2D>(def.IconPath);
+				icon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+				icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+				icon.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+				icon.MouseFilter = Control.MouseFilterEnum.Ignore;
+				iconPanel.AddChild(icon);
+
+				var capturedDef = def;
+				iconPanel.MouseEntered += () => GameTooltip.Show(capturedDef.Name, capturedDef.Description);
+				iconPanel.MouseExited += () => GameTooltip.Hide();
+
+				flow.AddChild(iconPanel);
 			}
 
-			col.AddChild(rowBox);
-
-			if (i < rowGroups.Count - 1)
-			{
-				var arrow = new Label();
-				arrow.Text = "▼";
-				arrow.HorizontalAlignment = HorizontalAlignment.Center;
-				arrow.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-				arrow.AddThemeFontSizeOverride("font_size", 18);
-				arrow.AddThemeColorOverride("font_color", ArrowColor);
-				col.AddChild(arrow);
-			}
-		}
-
-		return margin;
-	}
-
-	// ── talent helpers ────────────────────────────────────────────────────────
-
-	void OnTalentSlotToggled(TalentSlot slot)
-	{
-		if (slot.IsSelected)
-		{
-			var selected = _talentSlots.Count(s => s.IsSelected);
-			if (selected > PlayerProgressStore.TalentPoints)
-			{
-				slot.SetSelected(false);
-				UpdateTalentPointsLabel();
-				return;
-			}
-		}
-
-		ValidateTalentTree(slot.Definition.School);
-		CommitTalentsToRunState();
-		UpdateTalentPointsLabel();
-		_characterProgressLabel?.Refresh();
-		RefreshSpellLockVisuals();
-	}
-
-	void ValidateTalentTree(SpellSchool school)
-	{
-		if (!_talentsBySchoolRow.TryGetValue(school, out var rowDict)) return;
-		foreach (var row in rowDict.Keys.OrderBy(r => r))
-		{
-			var unlocked = row == 0
-			               || rowDict.TryGetValue(row - 1, out var prev) && prev.Any(s => s.IsSelected);
-			foreach (var slot in rowDict[row])
-			{
-				if (!unlocked && slot.IsSelected) slot.SetSelected(false);
-				slot.SetLocked(!unlocked);
-			}
+			// Small spacer between schools
+			var spacer = new Control();
+			spacer.CustomMinimumSize = new Vector2(0f, 4f);
+			_readOnlyTalentContent.AddChild(spacer);
 		}
 	}
 
-	void CommitTalentsToRunState()
+	/// <summary>
+	/// Builds and appends the school affinity picker row into <paramref name="parent"/>.
+	///
+	/// Four tome icons (Holy / Nature / Void / Chronomancy) are displayed in a
+	/// horizontal row.  Clicking a tome sets <see cref="RunState.SchoolAffinity"/>
+	/// to that school (+50% weight bias on the victory screen).  Clicking the
+	/// currently selected tome clears the affinity.  The active tome shows a gold
+	/// border; inactive tomes show a dim border.
+	/// </summary>
+	void BuildAffinityPicker(VBoxContainer parent)
 	{
-		var selected = _talentSlots.Where(s => s.IsSelected).Select(s => s.Definition).ToList();
-		RunState.Instance.SetTalents(selected);
-		LoadoutPreferences.SaveTalents(selected);
-	}
+		// Section header
+		var header = new Label();
+		header.Text = "School Affinity";
+		header.AddThemeFontSizeOverride("font_size", 13);
+		header.AddThemeColorOverride("font_color", TitleColor);
+		parent.AddChild(header);
 
-	protected void SyncTalentSlotsFromRunState()
-	{
-		var active = new HashSet<string>(
-			RunState.Instance.SelectedTalentDefs.Select(d => d.Name));
-		foreach (var slot in _talentSlots)
-			slot.SetSelected(active.Contains(slot.Definition.Name));
-		foreach (var (school, _, _) in TalentSchoolOrder)
-			ValidateTalentTree(school);
+		var subHint = new Label();
+		subHint.Text = "Choose a school to bias talent offers (+50%). Click the selected tome to clear.";
+		subHint.AutowrapMode = TextServer.AutowrapMode.Word;
+		subHint.AddThemeFontSizeOverride("font_size", 11);
+		subHint.AddThemeColorOverride("font_color", HintColor);
+		parent.AddChild(subHint);
 
-		var excess = _talentSlots.Count(s => s.IsSelected) - PlayerProgressStore.TalentPoints;
-		if (excess > 0)
+		// Row of 4 tomes — one per school that can have affinity.
+		// SpellSchool.Generic is excluded (it's a catch-all, not a real choice).
+		var tomeRow = new HBoxContainer();
+		tomeRow.AddThemeConstantOverride("separation", 12);
+		parent.AddChild(tomeRow);
+
+		// We'll keep references so we can rebuild borders after a click without
+		// re-creating all nodes (the whole pane is rebuilt on next open anyway).
+		var tomeSchools = new[]
 		{
-			foreach (var slot in _talentSlots.Where(s => s.IsSelected).Reverse().Take(excess))
-				slot.SetSelected(false);
-			CommitTalentsToRunState();
-		}
+			SpellSchool.Holy, SpellSchool.Nature,
+			SpellSchool.Void, SpellSchool.Chronomancy
+		};
 
-		UpdateTalentPointsLabel();
-		_characterProgressLabel?.Refresh();
-		RefreshSpellLockVisuals();
+		var tomePanels = new List<(SpellSchool School, PanelContainer Panel, StyleBoxFlat Style)>();
+
+		foreach (var school in tomeSchools)
+		{
+			var (_, schoolName, accent) = TalentSchoolOrder.First(e => e.School == school);
+
+			var isSelected = RunState.Instance.SchoolAffinity == school;
+
+			var tomeStyle = new StyleBoxFlat();
+			tomeStyle.BgColor = new Color(0.09f, 0.07f, 0.07f, 0.97f);
+			tomeStyle.SetCornerRadiusAll(6);
+			tomeStyle.SetBorderWidthAll(2);
+			tomeStyle.BorderColor = isSelected
+				? PanelBorder                                                    // gold
+				: new Color(0.28f, 0.24f, 0.16f);                               // dim
+			tomeStyle.ContentMarginLeft = tomeStyle.ContentMarginRight = 6f;
+			tomeStyle.ContentMarginTop = tomeStyle.ContentMarginBottom = 6f;
+
+			var tomePanel = new PanelContainer();
+			tomePanel.CustomMinimumSize = new Vector2(80f, 100f);
+			tomePanel.AddThemeStyleboxOverride("panel", tomeStyle);
+			tomePanel.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+			tomePanel.MouseFilter = Control.MouseFilterEnum.Stop;
+
+			var inner = new VBoxContainer();
+			inner.AddThemeConstantOverride("separation", 4);
+			inner.MouseFilter = Control.MouseFilterEnum.Ignore;
+			tomePanel.AddChild(inner);
+
+			var tomeIcon = new TextureRect();
+			tomeIcon.Texture = GD.Load<Texture2D>(AssetConstants.TalentTomePath(school));
+			tomeIcon.CustomMinimumSize = new Vector2(64f, 64f);
+			tomeIcon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+			tomeIcon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+			tomeIcon.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+			tomeIcon.MouseFilter = Control.MouseFilterEnum.Ignore;
+			inner.AddChild(tomeIcon);
+
+			var nameLabel = new Label();
+			nameLabel.Text = schoolName;
+			nameLabel.HorizontalAlignment = HorizontalAlignment.Center;
+			nameLabel.AddThemeFontSizeOverride("font_size", 11);
+			nameLabel.AddThemeColorOverride("font_color", accent);
+			nameLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+			inner.AddChild(nameLabel);
+
+			tomePanels.Add((school, tomePanel, tomeStyle));
+			tomeRow.AddChild(tomePanel);
+
+			// Hover tooltip
+			var capturedSchool = school;
+			var capturedName   = schoolName;
+			tomePanel.MouseEntered += () =>
+				GameTooltip.Show(capturedName + " Affinity",
+					$"Set your school affinity to {capturedName}.\n+50% chance of at least one {capturedName} talent appearing in each offer.");
+			tomePanel.MouseExited += () => GameTooltip.Hide();
+
+			// Click: toggle affinity
+			tomePanel.GuiInput += ev =>
+			{
+				if (ev is not InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left }) return;
+
+				var alreadySelected = RunState.Instance.SchoolAffinity == capturedSchool;
+				RunState.Instance.SetSchoolAffinity(alreadySelected ? null : capturedSchool);
+
+				// Update all tome borders immediately without rebuilding the whole pane.
+				foreach (var (s, p, style) in tomePanels)
+				{
+					var (_, _, a) = TalentSchoolOrder.First(e => e.School == s);
+					style.BorderColor = RunState.Instance.SchoolAffinity == s
+						? PanelBorder
+						: new Color(0.28f, 0.24f, 0.16f);
+					_ = p; _ = a; // suppress unused-var warnings
+				}
+			};
+		}
 	}
 
 	// ── shared helpers ────────────────────────────────────────────────────────

@@ -6,6 +6,8 @@ using Godot;
 using healerfantasy.CombatLog;
 using healerfantasy.Items;
 using healerfantasy.Runes;
+using healerfantasy.SpellResources;
+using healerfantasy.Talents;
 
 namespace healerfantasy;
 
@@ -27,6 +29,12 @@ public static class RunHistoryStore
 
 	static readonly List<string> PartyNames =
 		[GameConstants.HealerName, GameConstants.WizardName, GameConstants.AssassinName, GameConstants.TemplarName];
+
+	/// <summary>Immutable snapshot of a single spell in the player's loadout at run end.</summary>
+	public sealed record SpellSnapshot(string Name, string School);
+
+	/// <summary>Immutable snapshot of a talent acquired during the run.</summary>
+	public sealed record TalentSnapshot(string Name, string School, string Description);
 
 	public sealed record BossEncounterRecord(
 		string BossName,
@@ -57,7 +65,17 @@ public static class RunHistoryStore
 		/// were active when the run started.  Null on records saved before
 		/// the rune system was introduced.
 		/// </summary>
-		List<int>? ActiveRuneIndices = null
+		List<int>? ActiveRuneIndices = null,
+		/// <summary>
+		/// Spells the player had equipped when the run was finalised.
+		/// Null on records saved before loadout snapshot was introduced.
+		/// </summary>
+		List<SpellSnapshot>? SpellLoadout = null,
+		/// <summary>
+		/// Talents acquired over the course of the run.
+		/// Null on records saved before loadout snapshot was introduced.
+		/// </summary>
+		List<TalentSnapshot>? TalentsAcquired = null
 	)
 	{
 		public TimeSpan Duration => TimeSpan.FromTicks(DurationTicks);
@@ -154,6 +172,17 @@ public static class RunHistoryStore
 			.Where(i => RunState.Instance.IsRuneActive((RuneIndex)i))
 			.ToList();
 
+		// Snapshot the player's spell loadout.
+		var spellLoadout = RunState.Instance.SelectedSpells
+			.Where(s => s != null)
+			.Select(s => new SpellSnapshot(s!.Name, s.School.ToString()))
+			.ToList();
+
+		// Snapshot all talents acquired during the run.
+		var talentsAcquired = RunState.Instance.SelectedTalentDefs
+			.Select(d => new TalentSnapshot(d.Name, d.School.ToString(), d.Description))
+			.ToList();
+
 		var historyRecord =
 			new RunRecord(
 				isVictory,
@@ -161,7 +190,9 @@ public static class RunHistoryStore
 				new List<BossEncounterRecord>(_currentEncounters),
 				DateTime.Now,
 				ItemStore.GetEquippedItemNames(),
-				activeRuneIndices);
+				activeRuneIndices,
+				spellLoadout,
+				talentsAcquired);
 		_history.Add(historyRecord);
 		WriteRunHistoryRecordToSaveFile(historyRecord);
 

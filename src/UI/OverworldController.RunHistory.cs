@@ -275,8 +275,125 @@ public partial class OverworldController
 			}
 		}
 
+		// ── Loadout section (spells, talents, items) ─────────────────────────
+		// Only shown on records that have loadout data (null = legacy save, skip).
+		if (run.SpellLoadout != null || run.TalentsAcquired != null)
+		{
+			var loadoutSep = new HSeparator();
+			loadoutSep.AddThemeColorOverride("color", SepColor);
+			vbox.AddChild(loadoutSep);
+
+			// Toggle button row
+			var toggleBtn = new Button();
+			toggleBtn.Text = "Loadout  ▸";
+			toggleBtn.Flat = true;
+			toggleBtn.Alignment = HorizontalAlignment.Left;
+			toggleBtn.AddThemeFontSizeOverride("font_size", 13);
+			toggleBtn.AddThemeColorOverride("font_color", new Color(0.55f, 0.50f, 0.42f));
+			toggleBtn.AddThemeColorOverride("font_hover_color", TitleColor);
+			toggleBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+			vbox.AddChild(toggleBtn);
+
+			// Collapsible body
+			var loadoutBody = new VBoxContainer();
+			loadoutBody.AddThemeConstantOverride("separation", 8);
+			loadoutBody.Visible = false;
+			vbox.AddChild(loadoutBody);
+
+			toggleBtn.Pressed += () =>
+			{
+				loadoutBody.Visible = !loadoutBody.Visible;
+				toggleBtn.Text = loadoutBody.Visible ? "Loadout  ▾" : "Loadout  ▸";
+			};
+
+			// ── SPELLS ──────────────────────────────────────────────────────────
+			if (run.SpellLoadout is { Count: > 0 })
+			{
+				var spellHeader = new Label();
+				spellHeader.Text = "SPELLS";
+				spellHeader.AddThemeFontSizeOverride("font_size", 11);
+				spellHeader.AddThemeColorOverride("font_color", new Color(0.45f, 0.42f, 0.35f));
+				loadoutBody.AddChild(spellHeader);
+
+				var spellFlow = new HFlowContainer();
+				spellFlow.AddThemeConstantOverride("h_separation", 8);
+				spellFlow.AddThemeConstantOverride("v_separation", 4);
+				loadoutBody.AddChild(spellFlow);
+
+				foreach (var spell in run.SpellLoadout)
+				{
+					var spellLabel = new Label();
+					spellLabel.Text = spell.Name;
+					spellLabel.AddThemeFontSizeOverride("font_size", 13);
+					spellLabel.AddThemeColorOverride("font_color", SchoolColor(spell.School));
+					spellLabel.TooltipText = spell.School;
+					spellFlow.AddChild(spellLabel);
+				}
+			}
+
+			// ── TALENTS ─────────────────────────────────────────────────────────
+			if (run.TalentsAcquired is { Count: > 0 })
+			{
+				var talentHeader = new Label();
+				talentHeader.Text = "TALENTS";
+				talentHeader.AddThemeFontSizeOverride("font_size", 11);
+				talentHeader.AddThemeColorOverride("font_color", new Color(0.45f, 0.42f, 0.35f));
+				loadoutBody.AddChild(talentHeader);
+
+				var talentFlow = new HFlowContainer();
+				talentFlow.AddThemeConstantOverride("h_separation", 8);
+				talentFlow.AddThemeConstantOverride("v_separation", 4);
+				loadoutBody.AddChild(talentFlow);
+
+				foreach (var talent in run.TalentsAcquired)
+				{
+					var talentLabel = new Label();
+					talentLabel.Text = talent.Name;
+					talentLabel.AddThemeFontSizeOverride("font_size", 13);
+					talentLabel.AddThemeColorOverride("font_color", SchoolColor(talent.School));
+					talentLabel.MouseFilter = Control.MouseFilterEnum.Stop;
+					talentLabel.TooltipText = $"{talent.School}\n{talent.Description}";
+					talentFlow.AddChild(talentLabel);
+				}
+			}
+
+			// ── ITEMS ────────────────────────────────────────────────────────────
+			if (run.ItemsUsed is { Count: > 0 })
+			{
+				var itemHeader = new Label();
+				itemHeader.Text = "ITEMS";
+				itemHeader.AddThemeFontSizeOverride("font_size", 11);
+				itemHeader.AddThemeColorOverride("font_color", new Color(0.45f, 0.42f, 0.35f));
+				loadoutBody.AddChild(itemHeader);
+
+				var itemFlow = new HFlowContainer();
+				itemFlow.AddThemeConstantOverride("h_separation", 8);
+				itemFlow.AddThemeConstantOverride("v_separation", 4);
+				loadoutBody.AddChild(itemFlow);
+
+				foreach (var item in run.ItemsUsed)
+				{
+					var itemLabel = new Label();
+					itemLabel.Text = item;
+					itemLabel.AddThemeFontSizeOverride("font_size", 13);
+					itemLabel.AddThemeColorOverride("font_color", new Color(0.80f, 0.72f, 0.55f));
+					itemFlow.AddChild(itemLabel);
+				}
+			}
+		}
+
 		return vbox;
 	}
+
+	/// <summary>Maps a spell school name string to its display colour.</summary>
+	static Color SchoolColor(string school) => school switch
+	{
+		"Holy"        => new Color(0.95f, 0.88f, 0.35f),   // gold
+		"Nature"      => new Color(0.38f, 0.88f, 0.48f),   // green
+		"Void"        => new Color(0.72f, 0.45f, 0.95f),   // purple
+		"Chronomancy" => new Color(0.38f, 0.78f, 0.98f),   // cyan-blue
+		_             => new Color(0.85f, 0.80f, 0.75f)    // neutral
+	};
 
 	// ══════════════════════════════════════════════════════════════════════════
 	// ENCOUNTER DETAIL MODAL

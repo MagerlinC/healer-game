@@ -128,12 +128,6 @@ public abstract partial class Character : CharacterBody2D
 	// ── lifecycle ────────────────────────────────────────────────────────────
 	public override void _Ready()
 	{
-		// Apply the persistent level-up health bonus to friendly characters.
-		// IsFriendly is set by subclass constructors or scene exports before
-		// _Ready() runs, so this check is safe here.
-		if (IsFriendly)
-			MaxHealth += PlayerProgressStore.MaxHealthBonus;
-
 		// Scale enemy MaxHealth by 10% per active rune (Rune system baseline).
 		if (!IsFriendly && RunState.Instance != null && RunState.Instance.ActiveRuneCount > 0)
 			MaxHealth *= 1f + RunState.Instance.ActiveRuneCount * GameConstants.RuneHealthBonusPerRune;

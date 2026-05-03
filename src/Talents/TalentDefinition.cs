@@ -41,6 +41,13 @@ public class TalentDefinition
 	public string IconPath { get; init; }
 
 	/// <summary>
+	/// Relative weight used when randomly selecting talent offers on the victory screen.
+	/// Higher values make this talent more likely to appear.
+	/// Defaults to 1.0 — override per-entry in <see cref="TalentRegistry"/> to bias offers.
+	/// </summary>
+	public float Weight { get; init; } = 1f;
+
+	/// <summary>
 	/// Attaches modifiers to the talent being built.
 	/// Receives the blank <see cref="Talent"/> and the loaded icon texture.
 	/// <para>
