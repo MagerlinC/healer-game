@@ -1,5 +1,6 @@
 using Godot;
 using healerfantasy;
+using healerfantasy.Effects;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
@@ -29,6 +30,9 @@ public partial class QueenOfTheFrozenWastes : Character
 
 	// ── tuneable exports ──────────────────────────────────────────────────────
 
+	[Export] public float MeleeAttackInterval = 3f;
+	[Export] public float MeleeDamage = 25f;
+
 	[Export] public float SnowstormInterval = 18f;
 	[Export] public float IcicleInterval = 12f;
 	[Export] public float BurstOfWinterInterval = 26f;
@@ -42,6 +46,7 @@ public partial class QueenOfTheFrozenWastes : Character
 
 	// ── internal state ────────────────────────────────────────────────────────
 
+	float _meleeTimer;
 	float _snowstormTimer;
 	float _icicleTimer;
 	float _burstOfWinterTimer;
@@ -50,6 +55,11 @@ public partial class QueenOfTheFrozenWastes : Character
 	bool _isSnowstormChanneling;
 	bool _isInIceBlock;
 	float _absoluteZeroTimer;
+
+	// ── Frostbite debuff ──────────────────────────────────────────────────────
+	bool _frostbiteApplied;
+	float _frostbiteStackTimer;
+	FrostbiteEffect _frostbiteEffect;
 
 	// ── Cone of Cold phase ────────────────────────────────────────────────────
 	bool _isInvulnerable;
@@ -66,6 +76,7 @@ public partial class QueenOfTheFrozenWastes : Character
 	/// </summary>
 	float _castWindupTimer;
 
+	BossQueenIcyStrikeSpell _meleeSpell;
 	BossQueenSnowstormSpell _snowstormSpell;
 	BossQueenVolatileIcicleSpell _icicleSpell;
 	BossQueenBurstOfWinterSpell _burstOfWinterSpell;
@@ -79,7 +90,8 @@ public partial class QueenOfTheFrozenWastes : Character
 		None,
 		Snowstorm,
 		Icicle,
-		BurstOfWinter
+		BurstOfWinter,
+		Melee
 	}
 
 	PendingCast _pendingCast;
@@ -110,11 +122,16 @@ public partial class QueenOfTheFrozenWastes : Character
 		IsFriendly = false;
 
 		// Stagger first casts so the fight has a brief breathing window.
+		_meleeTimer = MeleeAttackInterval;
 		_snowstormTimer = 12f;
 		_icicleTimer = 4f;
 		_burstOfWinterTimer = 24f;
 		_iceBlockTimer = 32f;
 
+		// Frostbite: first stack-check fires after 1 second.
+		_frostbiteStackTimer = 1f;
+
+		_meleeSpell = new BossQueenIcyStrikeSpell { DamageAmount = MeleeDamage };
 		_snowstormSpell = new BossQueenSnowstormSpell { Boss = this, DamagePerTick = SnowstormDamagePerTick };
 		_icicleSpell = new BossQueenVolatileIcicleSpell { Boss = this, ZoneDamagePerTick = IcicleDamagePerTick };
 		_burstOfWinterSpell = new BossQueenBurstOfWinterSpell { Boss = this, Damage = BurstOfWinterDamage };
@@ -138,6 +155,12 @@ public partial class QueenOfTheFrozenWastes : Character
 	{
 		base._Process(delta);
 		if (!IsAlive) return;
+
+		// ── Frostbite — apply on first tick, then manage stacks ───────────────
+		// Runs regardless of boss phase so the debuff is always active.
+		if (!_frostbiteApplied)
+			ApplyFrostbiteToHealer();
+		UpdateFrostbiteStacks((float)delta);
 
 		// ── Ice Block — track Absolute Zero countdown ────────────────────────
 		if (_isInIceBlock)
@@ -179,6 +202,7 @@ public partial class QueenOfTheFrozenWastes : Character
 		if (_isMidPhase) return;
 
 		// ── Attack timers ─────────────────────────────────────────────────────
+		_meleeTimer -= (float)delta;
 		_snowstormTimer -= (float)delta;
 		_icicleTimer -= (float)delta;
 		_burstOfWinterTimer -= (float)delta;
@@ -195,7 +219,7 @@ public partial class QueenOfTheFrozenWastes : Character
 			return;
 		}
 
-		// Priority: Ice Block > Snowstorm > Burst of Winter > Volatile Icicle.
+		// Priority: Ice Block > Snowstorm > Burst of Winter > Volatile Icicle > Melee.
 		if (_iceBlockTimer <= 0f && !_isSnowstormChanneling)
 		{
 			_iceBlockTimer = IceBlockInterval;
@@ -215,6 +239,11 @@ public partial class QueenOfTheFrozenWastes : Character
 		{
 			_icicleTimer = IcicleInterval;
 			BeginIcicleCast();
+		}
+		else if (_meleeTimer <= 0f && !_isSnowstormChanneling)
+		{
+			_meleeTimer = MeleeAttackInterval;
+			BeginMeleeAttack();
 		}
 	}
 
@@ -366,6 +395,13 @@ public partial class QueenOfTheFrozenWastes : Character
 	{
 		switch (_pendingCast)
 		{
+			case PendingCast.Melee:
+				// No cast bar to clear — melee auto-attacks are unannounced.
+				var meleeTarget = FindTank() ?? PickRandomPartyMember();
+				if (meleeTarget != null)
+					SpellPipeline.Cast(_meleeSpell, this, meleeTarget);
+				break;
+
 			case PendingCast.Snowstorm:
 				EmitSignalCastWindupEnded();
 				var snowTarget = PickRandomPartyMember();
@@ -479,7 +515,100 @@ public partial class QueenOfTheFrozenWastes : Character
 			_sprite.Play("idle");
 	}
 
+	// ── combat actions (melee) ────────────────────────────────────────────────
+
+	/// <summary>
+	/// Begins the melee auto-attack. Plays the "attack" animation and sets a
+	/// short resolution timer. No cast bar is shown — melee is unannounced.
+	/// </summary>
+	void BeginMeleeAttack()
+	{
+		_pendingCast = PendingCast.Melee;
+		_castWindupTimer = 0.5f; // visual delay; matches attack animation length
+		_sprite.Play("attack");
+	}
+
+	// ── Frostbite helpers ─────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Applies the <see cref="FrostbiteEffect"/> to the healer on the first
+	/// <c>_Process</c> frame, ensuring the scene tree is fully ready.
+	/// </summary>
+	void ApplyFrostbiteToHealer()
+	{
+		_frostbiteApplied = true; // set immediately so we never retry on failure
+
+		var healer = FindHealer();
+		if (healer == null)
+		{
+			GD.PrintErr("[QueenOfTheFrozenWastes] Could not find healer to apply Frostbite.");
+			return;
+		}
+
+		_frostbiteEffect = new FrostbiteEffect
+		{
+			AbilityName = "Frostbite",
+			Description = "The Queen's icy presence seeps into the healer's bones. " +
+			              "Deals 5 damage per second per stack. " +
+			              "Gains a stack each second spent standing still; " +
+			              "loses a stack each second spent moving (minimum 1 stack).",
+			SourceCharacterName = CharacterName,
+			Icon = GD.Load<Texture2D>(
+				AssetConstants.SpellIconAssets + "enemy/queen-of-the-frozen-wastes/frostbite.png")
+		};
+
+		healer.ApplyEffect(_frostbiteEffect);
+		GD.Print($"[QueenOfTheFrozenWastes] Frostbite applied to {healer.CharacterName}.");
+	}
+
+	/// <summary>
+	/// Called every frame. Every second, checks whether the healer is moving
+	/// and adds or removes a Frostbite stack accordingly.
+	/// </summary>
+	void UpdateFrostbiteStacks(float delta)
+	{
+		if (_frostbiteEffect == null) return;
+
+		_frostbiteStackTimer -= delta;
+		if (_frostbiteStackTimer > 0f) return;
+		_frostbiteStackTimer += 1f;
+
+		var healer = FindHealer();
+		if (healer == null) return;
+
+		// CharacterBody2D.Velocity is zero when the player isn't pressing movement keys.
+		var isMoving = healer is CharacterBody2D body && body.Velocity.LengthSquared() > 0f;
+		if (isMoving)
+			_frostbiteEffect.LoseStack();
+		else
+			_frostbiteEffect.GainStack();
+
+		GD.Print($"[QueenOfTheFrozenWastes] Frostbite — stacks: {_frostbiteEffect.CurrentStacks} (moving: {isMoving}).");
+	}
+
 	// ── targeting helpers ─────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Returns the alive healer (player character), or null if not found.
+	/// </summary>
+	Character FindHealer()
+	{
+		foreach (var node in GetTree().GetNodesInGroup("party"))
+			if (node is Character c && c.CharacterName == GameConstants.HealerName && c.IsAlive)
+				return c;
+		return null;
+	}
+
+	/// <summary>
+	/// Returns the alive Templar (the tank), or null if not found.
+	/// </summary>
+	Character FindTank()
+	{
+		foreach (var node in GetTree().GetNodesInGroup("party"))
+			if (node is Character c && c.CharacterName == "Templar" && c.IsAlive)
+				return c;
+		return null;
+	}
 
 	Character PickRandomPartyMember()
 	{
@@ -496,13 +625,14 @@ public partial class QueenOfTheFrozenWastes : Character
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
+		MeleeAttackInterval /= GameConstants.RuneTimeHasteMultiplier;
 		SnowstormInterval /= GameConstants.RuneTimeHasteMultiplier;
 		IcicleInterval /= GameConstants.RuneTimeHasteMultiplier;
 		BurstOfWinterInterval /= GameConstants.RuneTimeHasteMultiplier;
 		IceBlockInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-		void SetupAnimations()
+	void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

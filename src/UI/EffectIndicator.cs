@@ -4,8 +4,13 @@ using healerfantasy;
 
 /// <summary>
 /// A small icon badge displayed on a party frame while an effect is active.
-/// Shows the effect's icon with a ceiling-integer countdown overlaid at the bottom.
-/// Self-destructs when its timer reaches zero.
+///
+/// Layout (all inside the PanelContainer):
+///        2            ← stack count, centered, breaks out above the top edge
+///   ┌──────────┐
+///   │  icon    │
+///   │      10s │  ← duration, bottom-right inside the badge
+///   └──────────┘
 ///
 /// Hovering the badge shows the shared <see cref="GameTooltip"/> with the
 /// effect's display name and a live remaining-duration countdown.
@@ -17,7 +22,8 @@ public partial class EffectIndicator : PanelContainer
 
 	// ── private ───────────────────────────────────────────────────────────────
 	string _displayName;
-	Label _countLabel;
+	Label _durationLabel;
+	Label _stackLabel;
 	bool _hovered;
 
 	StyleBoxFlat _style;
@@ -30,7 +36,7 @@ public partial class EffectIndicator : PanelContainer
 	// Harmful buff color
 	static readonly Color HarmfulBadgeBorder = new(0.70f, 0.25f, 0.35f, 0.90f);
 
-	// Bright orange color for dispellable harmful effects 
+	// Bright orange color for dispellable harmful effects
 	static readonly Color HarmfulDispellableBadgeBorder = new(0.90f, 0.40f, 0.10f, 0.95f);
 
 	// ── constructor ──────────────────────────────────────────────────────────
@@ -40,7 +46,7 @@ public partial class EffectIndicator : PanelContainer
 		_displayName = FormatDisplayName(effect.EffectId);
 
 		CustomMinimumSize = new Vector2(indicatorSize, indicatorSize);
-		MouseFilter = MouseFilterEnum.Stop; // must be non-Ignore to receive mouse events
+		MouseFilter = MouseFilterEnum.Stop;
 
 		// ── badge style ──────────────────────────────────────────────────────
 		_style = new StyleBoxFlat();
@@ -53,17 +59,15 @@ public partial class EffectIndicator : PanelContainer
 			: HelpfulBadgeBorder;
 
 		_style.BorderColor = borderColor;
-		// Glow dispellable effects
-		SetupGlow(borderColor, effect.IsHarmful && effect.IsDispellable);
-
 		_style.ContentMarginLeft = 1f;
 		_style.ContentMarginRight = 1f;
 		_style.ContentMarginTop = 1f;
 		_style.ContentMarginBottom = 1f;
 
 		AddThemeStyleboxOverride("panel", _style);
+		SetupGlow(borderColor, effect.IsHarmful && effect.IsDispellable);
 
-		// Stacking layer for icon + countdown label
+		// Stacking layer for icon + labels
 		var inner = new Control();
 		inner.MouseFilter = MouseFilterEnum.Ignore;
 		AddChild(inner);
@@ -80,20 +84,48 @@ public partial class EffectIndicator : PanelContainer
 			inner.AddChild(iconRect);
 		}
 
-		// Countdown label — bottom-right corner, small + shadowed for legibility
-		_countLabel = new Label();
-		_countLabel.MouseFilter = MouseFilterEnum.Ignore;
-		_countLabel.AddThemeFontSizeOverride("font_size", 9);
-		_countLabel.AddThemeColorOverride("font_color", new Color(1f, 1f, 1f, 1f));
-		_countLabel.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 1f));
-		_countLabel.AddThemeConstantOverride("shadow_offset_x", 1);
-		_countLabel.AddThemeConstantOverride("shadow_offset_y", 1);
-		_countLabel.SetAnchorsAndOffsetsPreset(LayoutPreset.BottomRight);
-		_countLabel.GrowHorizontal = GrowDirection.Begin;
-		_countLabel.GrowVertical = GrowDirection.Begin;
-		inner.AddChild(_countLabel);
+		// Stack count — centered on the top edge, breaking out above the badge.
+		_stackLabel = new Label();
+		_stackLabel.MouseFilter = MouseFilterEnum.Ignore;
+		_stackLabel.AddThemeFontSizeOverride("font_size", 10);
+		_stackLabel.AddThemeColorOverride("font_color", new Color(1f, 1f, 1f, 1f));
+		_stackLabel.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 1f));
+		_stackLabel.AddThemeConstantOverride("shadow_offset_x", 1);
+		_stackLabel.AddThemeConstantOverride("shadow_offset_y", 1);
+		_stackLabel.AnchorLeft   = 0.5f;
+		_stackLabel.AnchorRight  = 0.5f;
+		_stackLabel.AnchorTop    = 0f;
+		_stackLabel.AnchorBottom = 0f;
+		_stackLabel.OffsetTop    = -9f;  // negative: break above the top border
+		_stackLabel.OffsetBottom =  9f;  // 18 px tall hit area for the text
+		_stackLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		_stackLabel.GrowHorizontal = GrowDirection.Both;
+		_stackLabel.GrowVertical   = GrowDirection.End;
+		inner.AddChild(_stackLabel);
 
-		UpdateCountLabel();
+		// Duration — bottom-right inside the badge.
+		// Full-width bottom strip (OffsetTop = -13 pulls the top edge up from the
+		// bottom anchor), text right-aligned within it.  Explicit height avoids
+		// the unreliable expansion that BottomRight preset + GrowDirection produces.
+		_durationLabel = new Label();
+		_durationLabel.MouseFilter = MouseFilterEnum.Ignore;
+		_durationLabel.AddThemeFontSizeOverride("font_size", 9);
+		_durationLabel.AddThemeColorOverride("font_color", new Color(1f, 1f, 1f, 1f));
+		_durationLabel.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 1f));
+		_durationLabel.AddThemeConstantOverride("shadow_offset_x", 1);
+		_durationLabel.AddThemeConstantOverride("shadow_offset_y", 1);
+		_durationLabel.AnchorLeft   = 0f;
+		_durationLabel.AnchorRight  = 1f;
+		_durationLabel.AnchorTop    = 1f;
+		_durationLabel.AnchorBottom = 1f;
+		_durationLabel.OffsetTop    = -13f; // 13 px strip at the very bottom of the icon
+		_durationLabel.OffsetBottom = -1f;  // 1 px breathing room from the border
+		_durationLabel.HorizontalAlignment = HorizontalAlignment.Right;
+		_durationLabel.GrowHorizontal = GrowDirection.Both;
+		_durationLabel.GrowVertical   = GrowDirection.Begin;
+		inner.AddChild(_durationLabel);
+
+		UpdateLabels();
 
 		// ── tooltip wiring ───────────────────────────────────────────────────
 		MouseEntered += () =>
@@ -112,9 +144,8 @@ public partial class EffectIndicator : PanelContainer
 	// ── lifecycle ────────────────────────────────────────────────────────────
 	public override void _Process(double delta)
 	{
-		UpdateCountLabel();
+		UpdateLabels();
 
-		// Refresh the live countdown in the tooltip while the mouse is over the badge.
 		if (_hovered)
 		{
 			var tooltip = TooltipText();
@@ -123,15 +154,15 @@ public partial class EffectIndicator : PanelContainer
 	}
 
 	// ── private helpers ──────────────────────────────────────────────────────
-	void UpdateCountLabel()
+	void UpdateLabels()
 	{
-		if (CharacterEffect.Remaining == GameConstants.InfiniteDuration)
-		{
-			_countLabel.Text = "";
-			return;
-		}
+		_stackLabel.Text = CharacterEffect.CurrentStacks > 1
+			? CharacterEffect.CurrentStacks.ToString()
+			: "";
 
-		_countLabel.Text = Mathf.CeilToInt(CharacterEffect.Remaining).ToString();
+		_durationLabel.Text = CharacterEffect.Remaining == GameConstants.InfiniteDuration
+			? ""
+			: Mathf.CeilToInt(CharacterEffect.Remaining) + "s";
 	}
 
 	(string title, string desc) TooltipText()
@@ -154,30 +185,28 @@ public partial class EffectIndicator : PanelContainer
 	{
 		return Regex.Replace(id, @"(?<=[a-z])(?=[A-Z])", " ");
 	}
+
 	void SetupGlow(Color color, bool shouldPulse)
 	{
-		// Create once
 		if (_glowRect == null)
 		{
 			_glowRect = new ColorRect();
 			AddChild(_glowRect);
-			MoveChild(_glowRect, 0); // ensure it's behind
+			MoveChild(_glowRect, 0); // behind everything
 
 			_glowRect.MouseFilter = MouseFilterEnum.Ignore;
 		}
 
-		// Slightly bigger than the panel
-		_glowRect.AnchorLeft = 0;
-		_glowRect.AnchorTop = 0;
-		_glowRect.AnchorRight = 1;
+		_glowRect.AnchorLeft   = 0;
+		_glowRect.AnchorTop    = 0;
+		_glowRect.AnchorRight  = 1;
 		_glowRect.AnchorBottom = 1;
 
-		_glowRect.OffsetLeft = -3;
-		_glowRect.OffsetTop = -3;
-		_glowRect.OffsetRight = 3;
-		_glowRect.OffsetBottom = 3;
+		_glowRect.OffsetLeft   = -3;
+		_glowRect.OffsetTop    = -3;
+		_glowRect.OffsetRight  =  3;
+		_glowRect.OffsetBottom =  3;
 
-		// Soft glow color
 		_glowRect.Color = new Color(color.R, color.G, color.B, 0.25f);
 
 		if (shouldPulse)
@@ -185,6 +214,7 @@ public partial class EffectIndicator : PanelContainer
 		else
 			StopPulse();
 	}
+
 	void StartPulse(Color baseColor)
 	{
 		StopPulse();
@@ -193,7 +223,6 @@ public partial class EffectIndicator : PanelContainer
 
 		_pulseTween = CreateTween().SetLoops();
 
-		// Border pulse
 		_pulseTween.TweenMethod(
 				Callable.From<float>(t => { _style.BorderColor = baseColor.Lerp(bright, t); }),
 				0f, 1f, 0.6f
@@ -205,13 +234,10 @@ public partial class EffectIndicator : PanelContainer
 			0f, 1f, 0.6f
 		);
 
-		// Glow alpha pulse (subtle)
-		_pulseTween.Parallel().TweenProperty(
-			_glowRect, "modulate:a", 0.5f, 0.6f);
-
-		_pulseTween.Parallel().TweenProperty(
-			_glowRect, "modulate:a", 0.2f, 0.6f);
+		_pulseTween.Parallel().TweenProperty(_glowRect, "modulate:a", 0.5f, 0.6f);
+		_pulseTween.Parallel().TweenProperty(_glowRect, "modulate:a", 0.2f, 0.6f);
 	}
+
 	void StopPulse()
 	{
 		if (_pulseTween != null)
