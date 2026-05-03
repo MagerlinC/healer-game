@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://pmnetiivabo4"
-path="res://.godot/imported/talent-frames.png-3de7a01ab3e1d18f27e2fb76cca92367.ctex"
+uid="uid://dhd5alx2i41v4"
+path="res://.godot/imported/talent-frame.png-d5fc2592c6962bde285f3579843b4946.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/frames/talent-frames.png"
-dest_files=["res://.godot/imported/talent-frames.png-3de7a01ab3e1d18f27e2fb76cca92367.ctex"]
+source_file="res://assets/frames/talent-frame.png"
+dest_files=["res://.godot/imported/talent-frame.png-d5fc2592c6962bde285f3579843b4946.ctex"]
 
 [params]
 
