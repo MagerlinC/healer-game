@@ -99,6 +99,14 @@ public partial class TheFrozenTerror : EnemyCharacter
 	Vector2 _chargeTarget;
 	FrozenTerrorChargeLine _chargeLine;
 
+	/// <summary>
+	/// Flips every charge so the boss alternates between charging outward (toward
+	/// the arena wall) and inward (back toward the arena centre).  Initialised to
+	/// <c>true</c> so the toggle on the very first charge produces <c>false</c>,
+	/// making charge #1 always outward (appropriate since the boss lands near centre).
+	/// </summary>
+	bool _nextChargeIsInward = true;
+
 	// Jump slam sequence
 	List<Character> _jumpTargets;
 	int _jumpTargetIndex;
@@ -246,10 +254,25 @@ public partial class TheFrozenTerror : EnemyCharacter
 
 		_chargesRemaining--;
 
-		// Pick a random direction and find arena-wall intersection
-		var angle = (float)GD.RandRange(0.0, Mathf.Tau);
-		_chargeDirection = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
-		_chargeTarget = ComputeWallTarget(GlobalPosition, _chargeDirection);
+		// Alternate between outward (→ wall) and inward (→ arena centre) charges.
+		_nextChargeIsInward = !_nextChargeIsInward;
+
+		if (_nextChargeIsInward)
+		{
+			// Periphery → centre: aim straight for the arena centre.
+			var center = PartyMember.ArenaBoundary is { } b ? b.Center : Vector2.Zero;
+			var toCenter = center - GlobalPosition;
+			_chargeDirection = toCenter.LengthSquared() > 1f ? toCenter.Normalized() : Vector2.Right;
+			_chargeTarget = center;
+		}
+		else
+		{
+			// Centre → periphery: pick a random angle and find the arena-wall
+			// intersection so the boss can never shoot past the boundary.
+			var angle = (float)GD.RandRange(0.0, Mathf.Tau);
+			_chargeDirection = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+			_chargeTarget = ComputeWallTarget(GlobalPosition, _chargeDirection);
+		}
 
 		// Show the red preview line
 		_chargeLine?.QueueFree();
@@ -323,41 +346,57 @@ public partial class TheFrozenTerror : EnemyCharacter
 
 	/// <summary>
 	/// Finds where the ray from <paramref name="origin"/> in <paramref name="dir"/>
-	/// first hits the arena ellipse boundary (or falls back to a generous flat box).
+	/// first hits the arena ellipse boundary.
+	///
+	/// <para>
+	/// If the origin lies on or outside the ellipse (e.g. due to floating-point drift
+	/// after arriving at a wall), it is pulled 5 % toward the arena centre before
+	/// solving so the ray always starts inside and the positive root is well-defined.
+	/// </para>
 	/// </summary>
 	Vector2 ComputeWallTarget(Vector2 origin, Vector2 dir)
 	{
 		if (PartyMember.ArenaBoundary is { } b)
 		{
-			// Parametric ray–ellipse intersection: solve for t in
-			// ((ox + dx*t - cx) / rx)^2 + ((oy + dy*t - cy) / ry)^2 = 1
 			var rx = b.RadiusX;
 			var ry = b.RadiusY;
-			var cx = b.Center.X;
-			var cy = b.Center.Y;
-			var ex = origin.X - cx;
-			var ey = origin.Y - cy;
+			var center = b.Center;
+
+			// ── Guard: clamp origin to strictly inside the ellipse ─────────────
+			var ox = origin.X - center.X;
+			var oy = origin.Y - center.Y;
+			if (ox * ox / (rx * rx) + oy * oy / (ry * ry) >= 1f)
+			{
+				// Pull 5 % toward centre so the quadratic always has one positive root.
+				origin = center + new Vector2(ox, oy) * 0.95f;
+				ox = origin.X - center.X;
+				oy = origin.Y - center.Y;
+			}
+
+			// ── Parametric ray–ellipse intersection ────────────────────────────
+			// Solve for t:  ((ox + dx*t) / rx)^2 + ((oy + dy*t) / ry)^2 = 1
 			var dx = dir.X;
 			var dy = dir.Y;
 
-			var a = dx * dx / (rx * rx) + dy * dy / (ry * ry);
-			var bCoef = 2f * (ex * dx / (rx * rx) + ey * dy / (ry * ry));
-			var c = ex * ex / (rx * rx) + ey * ey / (ry * ry) - 1f;
+			var a    = dx * dx / (rx * rx) + dy * dy / (ry * ry);
+			var bCoef = 2f * (ox * dx / (rx * rx) + oy * dy / (ry * ry));
+			var c    = ox * ox / (rx * rx) + oy * oy / (ry * ry) - 1f;
 
-			var discriminant = bCoef * bCoef - 4f * a * c;
-			if (discriminant >= 0f)
+			var disc = bCoef * bCoef - 4f * a * c;
+			if (disc >= 0f)
 			{
-				var sqrtDisc = Mathf.Sqrt(discriminant);
+				var sqrtDisc = Mathf.Sqrt(disc);
 				var t1 = (-bCoef + sqrtDisc) / (2f * a);
 				var t2 = (-bCoef - sqrtDisc) / (2f * a);
-				// Pick the positive root (forward direction)
+				// Origin is inside the ellipse: one root is positive (forward wall),
+				// one is negative (behind).  Pick the positive one.
 				var t = t1 > 0f ? t1 : t2;
 				if (t > 0f)
 					return origin + dir * t;
 			}
 		}
 
-		// Fallback: just go 400 pixels in the direction
+		// Fallback (no arena boundary): go 400 px in the chosen direction.
 		return origin + dir * 400f;
 	}
 

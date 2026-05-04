@@ -27,7 +27,7 @@ public partial class CourtOfReflectionsEffect : CharacterEffect
 
 	/// <param name="baseDamage">Damage dealt on the first tick.</param>
 	/// <param name="rampPerTick">Additional damage added each successive tick.</param>
-	public CourtOfReflectionsEffect(float baseDamage = 8f, float rampPerTick = 5f)
+	public CourtOfReflectionsEffect(float baseDamage = 10f, float rampPerTick = 5f)
 		: base(EffectDuration, TickInterval)
 	{
 		BaseDamage = baseDamage;

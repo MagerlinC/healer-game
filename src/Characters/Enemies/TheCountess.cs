@@ -86,7 +86,7 @@ public partial class TheCountess : EnemyCharacter
 	[Export] public float ShieldThreshold = 0.35f;
 
 	/// <summary>Base damage per tick for the Court of Reflections DoT.</summary>
-	[Export] public float CourtDotBaseDamage = 8f;
+	[Export] public float CourtDotBaseDamage = 10f;
 
 	/// <summary>Additional damage added per tick (ramp) for the Court of Reflections DoT.</summary>
 	[Export] public float CourtDotRampPerTick = 5f;
@@ -120,7 +120,7 @@ public partial class TheCountess : EnemyCharacter
 	/// </summary>
 	readonly bool[] _courtThresholdsTriggered = new bool[3];
 
-	static readonly float[] CourtThresholds  = { 0.75f, 0.50f, 0.25f };
+	static readonly float[] CourtThresholds = { 0.75f, 0.50f, 0.25f };
 
 	/// <summary>Number of DECOY clones spawned at each threshold (real boss is always +1).</summary>
 	static readonly int[] CourtDecoyCounts = { 2, 3, 4 };
@@ -134,11 +134,11 @@ public partial class TheCountess : EnemyCharacter
 	/// </summary>
 	static readonly Vector2[] CloneOffsets =
 	{
-		new(-130f,    0f),
-		new( 130f,    0f),
-		new(   0f,  -90f),
-		new( -75f,   90f),
-		new(  75f,   90f),
+		new(-130f, 0f),
+		new(130f, 0f),
+		new(0f, -90f),
+		new(-75f, 90f),
+		new(75f, 90f)
 	};
 
 	// ─────────────────────────────────────────────────────────────────────────
@@ -304,6 +304,7 @@ public partial class TheCountess : EnemyCharacter
 			ParryWindowManager.ConsumeResult();
 			EmitSignalCastWindupEnded();
 		}
+
 		_pendingAttack = PendingAttack.None;
 		_pendingTarget = null;
 
@@ -337,7 +338,7 @@ public partial class TheCountess : EnemyCharacter
 		for (var i = 0; i < totalClones; i++)
 		{
 			var isReal = i == realIndex;
-			var clone  = new CountessClone(this, isReal);
+			var clone = new CountessClone(this, isReal);
 			clone.Position = bossPos + CloneOffsets[i];
 			GetParent().AddChild(clone);
 			_activeClones.Add(clone);
@@ -399,10 +400,10 @@ public partial class TheCountess : EnemyCharacter
 		EmitSignalCourtOfReflectionsEnded();
 
 		// Give the party a brief breather before attacks resume.
-		_meleeTimer    = MeleeAttackInterval;
+		_meleeTimer = MeleeAttackInterval;
 		_bloodBoltTimer = BloodBoltInterval;
-		_curseTimer    = CurseInterval;
-		_novaTimer     = NovaInterval;
+		_curseTimer = CurseInterval;
+		_novaTimer = NovaInterval;
 
 		GD.Print("[TheCountess] Court of Reflections resolved — resuming normal combat.");
 	}
@@ -476,10 +477,10 @@ public partial class TheCountess : EnemyCharacter
 		{
 			SpellResource spell = _pendingAttack switch
 			{
-				PendingAttack.Melee     => _meleeSpell,
+				PendingAttack.Melee => _meleeSpell,
 				PendingAttack.BloodBolt => _bloodBoltSpell,
-				PendingAttack.Curse     => _curseSpell,
-				_                       => null
+				PendingAttack.Curse => _curseSpell,
+				_ => null
 			};
 
 			if (spell != null)
@@ -494,7 +495,6 @@ public partial class TheCountess : EnemyCharacter
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
-
 
 
 	// ── animation setup ───────────────────────────────────────────────────────
@@ -515,14 +515,14 @@ public partial class TheCountess : EnemyCharacter
 		NovaInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-		void SetupAnimations()
+	void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");
 
-		AddAnimFromFiles(frames, "idle", AssetBase + "idle",    2, 3f,  true);
-		AddAnimFromFiles(frames, "attack", AssetBase + "attack",  4, 10f, false);
-		AddAnimFromFiles(frames, "casting", AssetBase + "casting", 3, 6f,  false);
+		AddAnimFromFiles(frames, "idle", AssetBase + "idle", 2, 3f, true);
+		AddAnimFromFiles(frames, "attack", AssetBase + "attack", 4, 10f, false);
+		AddAnimFromFiles(frames, "casting", AssetBase + "casting", 3, 6f, false);
 
 		_sprite.SpriteFrames = frames;
 	}

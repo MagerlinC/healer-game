@@ -26,6 +26,11 @@ using healerfantasy;
 /// </summary>
 public abstract partial class EnemyCharacter : Character
 {
+
+	public EnemyCharacter()
+	{
+		IsFriendly = false;
+	}
 	// ── Targeting helpers ──────────────────────────────────────────────────────
 
 	/// <summary>
@@ -81,6 +86,7 @@ public abstract partial class EnemyCharacter : Character
 			var j = (int)(GD.Randi() % (uint)(i + 1));
 			(members[i], members[j]) = (members[j], members[i]);
 		}
+
 		return members;
 	}
 
