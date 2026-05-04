@@ -68,14 +68,17 @@ public static class AssetConstants
 	public static readonly string TalentTomeChronomancyPath = "res://assets/interactibles/talent-tome-chronomancy.png";
 
 	/// <summary>Returns the res:// path for the tome icon of the given spell school.</summary>
-	public static string TalentTomePath(SpellSchool school) => school switch
+	public static string TalentTomePath(SpellSchool school)
 	{
-		SpellSchool.Holy        => TalentTomeHolyPath,
-		SpellSchool.Nature      => TalentTomeNaturePath,
-		SpellSchool.Void        => TalentTomeVoidPath,
-		SpellSchool.Chronomancy => TalentTomeChronomancyPath,
-		_                       => TalentTomeHolyPath
-	};
+		return school switch
+		{
+			SpellSchool.Holy => TalentTomeHolyPath,
+			SpellSchool.Nature => TalentTomeNaturePath,
+			SpellSchool.Void => TalentTomeVoidPath,
+			SpellSchool.Chronomancy => TalentTomeChronomancyPath,
+			_ => TalentTomeHolyPath
+		};
+	}
 
 	// ── Rune assets ───────────────────────────────────────────────────────────
 
@@ -95,6 +98,8 @@ public static class AssetConstants
 
 	public static readonly string DeflectRiserSoundPath = "res://assets/sound-effects/riser.mp3";
 	public static readonly string DeflectFailedSoundPath = "res://assets/sound-effects/deflect-failed.mp3";
+	public static readonly string RumbleSoundPath = "res://assets/sound-effects/rumble.mp3";
+	public static readonly string LandingImpactSoundPath = "res://assets/sound-effects/landing-impact.wav";
 	public static readonly string VictorySoundPath = "res://assets/music/victory.mp3";
 
 

@@ -68,6 +68,9 @@ public partial class QueenOfTheFrozenWastes : Character
 	bool _phase1Triggered;
 	bool _phase2Triggered;
 
+	// ── Frozen Terror mid-phase ───────────────────────────────────────────────
+	bool _frozenTerrorTriggered;
+
 	/// <summary>
 	/// Counts down the remaining wind-up time for the current cast.
 	/// Resolution happens here in <c>_Process</c> — not in
@@ -179,11 +182,20 @@ public partial class QueenOfTheFrozenWastes : Character
 			return; // no other abilities while encased
 		}
 
-		// ── Cone of Cold phase triggers ────────────────────────────────────────────
+		// ── Phase triggers ────────────────────────────────────────────────────────
 		// Check health thresholds before any ability logic. Once a phase begins
 		// _isMidPhase suppresses the rest of _Process until the phase completes.
 		if (!_isMidPhase && !_isInIceBlock)
 		{
+			// ── Frozen Terror spawns at 50% ──────────────────────────────────────
+			if (!_frozenTerrorTriggered && CurrentHealth <= MaxHealth * 0.50f)
+			{
+				_frozenTerrorTriggered = true;
+				TriggerFrozenTerrorPhase();
+				return;
+			}
+
+			// ── Cone of Cold phases (66% and 33%) ────────────────────────────────
 			if (!_phase1Triggered && CurrentHealth <= MaxHealth * 0.66f)
 			{
 				_phase1Triggered = true;
@@ -445,6 +457,73 @@ public partial class QueenOfTheFrozenWastes : Character
 		// No cast in progress — return to idle (or channel anim / ice block).
 		if (IsAlive && !_isInIceBlock)
 			_sprite.Play(_isSnowstormChanneling ? "cast" : "idle");
+	}
+
+	// ── Frozen Terror phase ───────────────────────────────────────────────────
+
+	/// <summary>
+	/// Triggers the dramatic mid-fight entrance of The Frozen Terror when the
+	/// Queen reaches 50% health. Briefly suppresses the Queen's ability rotation
+	/// while the entrance sequence plays, then resumes normally.
+	/// </summary>
+	void TriggerFrozenTerrorPhase()
+	{
+		GD.Print("[QueenOfTheFrozenWastes] Triggering Frozen Terror entrance at 50% health.");
+
+		_isInvulnerable = true;
+		_isMidPhase = true;
+
+		// Cancel any in-progress cast wind-up cleanly.
+		if (_pendingCast != PendingCast.None)
+		{
+			_pendingCast = PendingCast.None;
+			_castWindupTimer = 0f;
+			EmitSignalCastWindupEnded();
+		}
+
+		// Cancel an active Snowstorm channel.
+		if (_isSnowstormChanneling)
+		{
+			foreach (var child in GetParent().GetChildren())
+			{
+				if (child is SnowstormChannelNode chan)
+				{
+					chan.Cancel();
+					break;
+				}
+			}
+		}
+
+		var phase = new FrozenTerrorJumpInPhase();
+		phase.OnPhaseComplete = OnFrozenTerrorPhaseComplete;
+		// Uncomment and set PhaseMusic if you want music to change here, e.g.:
+		// phase.PhaseMusic = GD.Load<AudioStreamOggVorbis>(AssetConstants.FinalBossPhase2MusicPath);
+		// phase.PhaseMusic.Loop = true;
+
+		GetParent().AddChild(phase);
+		phase.Start(this);
+	}
+
+	/// <summary>
+	/// Called by <see cref="FrozenTerrorJumpInPhase"/> when the entrance animation
+	/// completes and the Frozen Terror has begun combat. The Queen resumes her
+	/// normal ability rotation.
+	/// </summary>
+	void OnFrozenTerrorPhaseComplete()
+	{
+		GD.Print("[QueenOfTheFrozenWastes] Frozen Terror entrance complete — Queen resumes combat.");
+
+		_isInvulnerable = false;
+		_isMidPhase = false;
+
+		// Brief breather after the dramatic entrance.
+		_snowstormTimer = Mathf.Max(_snowstormTimer, 6f);
+		_icicleTimer = Mathf.Max(_icicleTimer, 3f);
+		_burstOfWinterTimer = Mathf.Max(_burstOfWinterTimer, 8f);
+		_iceBlockTimer = Mathf.Max(_iceBlockTimer, 10f);
+
+		if (IsAlive)
+			_sprite.Play("idle");
 	}
 
 	// ── Cone of Cold phase ───────────────────────────────────────────────────

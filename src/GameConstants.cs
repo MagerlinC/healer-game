@@ -41,6 +41,7 @@ public static class GameConstants
 	public const int FrozenPeakTier = 4;
 
 	public const string FrozenPeakBossName = "Queen of the Frozen Wastes";
+	public const string FrozenTerrorName = "The Frozen Terror";
 
 
 	public const string BossGroupName = "boss";
