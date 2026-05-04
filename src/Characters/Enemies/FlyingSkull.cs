@@ -34,7 +34,7 @@ using healerfantasy.SpellSystem;
 ///   attack (5 frames, one-shot → idle)
 ///   cast   (4 frames, one-shot → idle)
 /// </summary>
-public partial class FlyingSkull : Character
+public partial class FlyingSkull : EnemyCharacter
 {
 	public FlyingSkull()
 	{
@@ -407,23 +407,7 @@ public partial class FlyingSkull : Character
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-	Character FindTank()
-	{
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.CharacterName == GameConstants.TemplarName && c.IsAlive)
-				return c;
-		return null;
-	}
 
-	Character PickRandomPartyMember()
-	{
-		var alive = new List<Character>();
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive)
-				alive.Add(c);
-		if (alive.Count == 0) return null;
-		return alive[(int)(GD.Randi() % (uint)alive.Count)];
-	}
 
 	// ── animation setup ───────────────────────────────────────────────────────
 

@@ -5,7 +5,7 @@ using healerfantasy.Runes;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
-public partial class QueenOfTheFrozenWastes : Character
+public partial class QueenOfTheFrozenWastes : EnemyCharacter
 {
 	public QueenOfTheFrozenWastes()
 	{
@@ -665,40 +665,6 @@ public partial class QueenOfTheFrozenWastes : Character
 		GD.Print($"[QueenOfTheFrozenWastes] Frostbite — stacks: {_frostbiteEffect.CurrentStacks} (moving: {isMoving}).");
 	}
 
-	// ── targeting helpers ─────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Returns the alive healer (player character), or null if not found.
-	/// </summary>
-	Character FindHealer()
-	{
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.CharacterName == GameConstants.HealerName && c.IsAlive)
-				return c;
-		return null;
-	}
-
-	/// <summary>
-	/// Returns the alive Templar (the tank), or null if not found.
-	/// </summary>
-	Character FindTank()
-	{
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.CharacterName == "Templar" && c.IsAlive)
-				return c;
-		return null;
-	}
-
-	Character PickRandomPartyMember()
-	{
-		var alive = new System.Collections.Generic.List<Character>();
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive)
-				alive.Add(c);
-		if (alive.Count == 0) return null;
-		return alive[(int)(GD.Randi() % (uint)alive.Count)];
-	}
-
 	// ── animation setup ───────────────────────────────────────────────────────
 
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
@@ -716,9 +682,9 @@ public partial class QueenOfTheFrozenWastes : Character
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");
 
-		AddAnimFromFiles(frames, "idle", "idle", 3, 4f, true);
-		AddAnimFromFiles(frames, "attack", "attack", 3, 10f, false);
-		AddAnimFromFiles(frames, "cast", "cast", 3, 6f, false);
+		AddAnimFromFiles(frames, "idle",   AssetBase + "idle",   3, 4f,  true);
+		AddAnimFromFiles(frames, "attack", AssetBase + "attack", 3, 10f, false);
+		AddAnimFromFiles(frames, "cast",   AssetBase + "cast",   3, 6f,  false);
 
 		// Ice Block — single static frame; looping so it holds indefinitely.
 		frames.AddAnimation("ice_block");
@@ -729,18 +695,5 @@ public partial class QueenOfTheFrozenWastes : Character
 			frames.AddFrame("ice_block", iceBlockTex);
 
 		_sprite.SpriteFrames = frames;
-	}
-
-	static void AddAnimFromFiles(SpriteFrames frames, string animName,
-		string filePrefix, int count, float fps, bool looping)
-	{
-		frames.AddAnimation(animName);
-		frames.SetAnimationLoop(animName, looping);
-		frames.SetAnimationSpeed(animName, fps);
-		for (var i = 1; i <= count; i++)
-		{
-			var texture = GD.Load<Texture2D>(AssetBase + $"{filePrefix}{i}.png");
-			frames.AddFrame(animName, texture);
-		}
 	}
 }

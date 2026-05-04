@@ -27,7 +27,7 @@ using healerfantasy.SpellSystem;
 ///   "idle"   — 6 frames  (01_demon_idle/demon_idle_{n}.png),   looping
 ///   "cleave" — 15 frames (03_demon_cleave/demon_cleave_{n}.png), one-shot → idle
 /// </summary>
-public partial class DemonSlime : Character
+public partial class DemonSlime : EnemyCharacter
 {
 	// ── signals ───────────────────────────────────────────────────────────────
 
@@ -258,32 +258,8 @@ public partial class DemonSlime : Character
 		_sprite.Play("idle");
 	}
 
-	// ── targeting helpers ─────────────────────────────────────────────────────
-	Character FindHealer()
-	{
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.CharacterName == GameConstants.HealerName && c.IsAlive)
-				return c;
-		return null;
-	}
 
-	Character FindTank()
-	{
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.CharacterName == GameConstants.TemplarName && c.IsAlive)
-				return c;
-		return null;
-	}
 
-	Character PickRandomPartyMember()
-	{
-		var alive = new List<Character>();
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive)
-				alive.Add(c);
-		if (alive.Count == 0) return null;
-		return alive[(int)(GD.Randi() % (uint)alive.Count)];
-	}
 
 	// ── animation setup ───────────────────────────────────────────────────────
 

@@ -68,7 +68,7 @@ using healerfantasy.SpellSystem;
 ///   "attack" — attack1–attack4 (one-shot → idle, 10 fps)
 ///   "cast"   — cast1–cast4   (one-shot → idle, 6 fps)
 /// </summary>
-public partial class TheBloodPrince : Character
+public partial class TheBloodPrince : EnemyCharacter
 {
 	public TheBloodPrince()
 	{
@@ -473,23 +473,7 @@ public partial class TheBloodPrince : Character
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-	Character FindTank()
-	{
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.CharacterName == GameConstants.TemplarName && c.IsAlive)
-				return c;
-		return null;
-	}
 
-	Character PickRandomPartyMember()
-	{
-		var alive = new List<Character>();
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive)
-				alive.Add(c);
-		if (alive.Count == 0) return null;
-		return alive[(int)(GD.Randi() % (uint)alive.Count)];
-	}
 
 	/// <summary>
 	/// Picks mark targets: one in Phase 1, two distinct members in Phase 2.
@@ -538,23 +522,11 @@ public partial class TheBloodPrince : Character
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");
 
-		AddAnimFromFiles(frames, "idle", "idle", 3, 4f, true);
-		AddAnimFromFiles(frames, "attack", "attack", 4, 10f, false);
-		AddAnimFromFiles(frames, "cast", "cast", 4, 6f, false);
+		AddAnimFromFiles(frames, "idle", AssetBase + "idle", 3, 4f, true);
+		AddAnimFromFiles(frames, "attack", AssetBase + "attack", 4, 10f, false);
+		AddAnimFromFiles(frames, "cast", AssetBase + "cast", 4, 6f, false);
 
 		_sprite.SpriteFrames = frames;
 	}
 
-	static void AddAnimFromFiles(SpriteFrames frames, string animName,
-		string filePrefix, int count, float fps, bool loop)
-	{
-		frames.AddAnimation(animName);
-		frames.SetAnimationLoop(animName, loop);
-		frames.SetAnimationSpeed(animName, fps);
-		for (var i = 1; i <= count; i++)
-		{
-			var texture = GD.Load<Texture2D>(AssetBase + $"{filePrefix}{i}.png");
-			frames.AddFrame(animName, texture);
-		}
-	}
 }

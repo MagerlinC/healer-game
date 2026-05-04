@@ -47,7 +47,7 @@ using healerfantasy.SpellSystem;
 ///   "attack"  — attack1–attack4 (one-shot → idle)
 ///   "casting" — casting1–casting3 (one-shot → idle; used for spells and Nova wind-up)
 /// </summary>
-public partial class TheCountess : Character
+public partial class TheCountess : EnemyCharacter
 {
 	public TheCountess()
 	{
@@ -495,23 +495,7 @@ public partial class TheCountess : Character
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-	Character FindTank()
-	{
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.CharacterName == GameConstants.TemplarName && c.IsAlive)
-				return c;
-		return null;
-	}
 
-	Character PickRandomPartyMember()
-	{
-		var alive = new List<Character>();
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive)
-				alive.Add(c);
-		if (alive.Count == 0) return null;
-		return alive[(int)(GD.Randi() % (uint)alive.Count)];
-	}
 
 	// ── animation setup ───────────────────────────────────────────────────────
 
@@ -536,23 +520,11 @@ public partial class TheCountess : Character
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");
 
-		AddAnimFromFiles(frames, "idle",    "idle",    2, 3f,  true);
-		AddAnimFromFiles(frames, "attack",  "attack",  4, 10f, false);
-		AddAnimFromFiles(frames, "casting", "casting", 3, 6f,  false);
+		AddAnimFromFiles(frames, "idle", AssetBase + "idle",    2, 3f,  true);
+		AddAnimFromFiles(frames, "attack", AssetBase + "attack",  4, 10f, false);
+		AddAnimFromFiles(frames, "casting", AssetBase + "casting", 3, 6f,  false);
 
 		_sprite.SpriteFrames = frames;
 	}
 
-	static void AddAnimFromFiles(SpriteFrames frames, string animName,
-		string filePrefix, int count, float fps, bool loop)
-	{
-		frames.AddAnimation(animName);
-		frames.SetAnimationLoop(animName, loop);
-		frames.SetAnimationSpeed(animName, fps);
-		for (var i = 1; i <= count; i++)
-		{
-			var texture = GD.Load<Texture2D>(AssetBase + $"{filePrefix}{i}.png");
-			frames.AddFrame(animName, texture);
-		}
-	}
 }

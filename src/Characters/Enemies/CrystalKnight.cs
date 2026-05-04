@@ -28,7 +28,7 @@ using healerfantasy.SpellSystem;
 ///   Row 1 — "attack" (5 frames, one-shot → returns to idle)
 ///   Row 2 — "spell"  (2 frames, one-shot → returns to idle)
 /// </summary>
-public partial class CrystalKnight : Character
+public partial class CrystalKnight : EnemyCharacter
 {
 	public CrystalKnight()
 	{
@@ -279,31 +279,7 @@ public partial class CrystalKnight : Character
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-	/// <summary>
-	/// Returns the alive party member named "Templar" (the tank),
-	/// or null if none is found.
-	/// </summary>
-	Character FindTank()
-	{
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.CharacterName == "Templar" && c.IsAlive)
-				return c;
-		return null;
-	}
 
-	/// <summary>
-	/// Picks a uniformly random alive member from the "party" group.
-	/// Returns null if the whole party has been wiped.
-	/// </summary>
-	Character PickRandomPartyMember()
-	{
-		var alive = new List<Character>();
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive)
-				alive.Add(c);
-		if (alive.Count == 0) return null;
-		return alive[(int)(GD.Randi() % (uint)alive.Count)];
-	}
 
 	// ── animation setup ───────────────────────────────────────────────────────
 

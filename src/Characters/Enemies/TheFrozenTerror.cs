@@ -33,7 +33,7 @@ using healerfantasy.SpellSystem;
 ///   "jump"   — jump1–4     (one-shot for take-off; jump4 held during hang time)
 ///   "land"   — land1–2     (one-shot → idle)
 /// </summary>
-public partial class TheFrozenTerror : Character
+public partial class TheFrozenTerror : EnemyCharacter
 {
 	public TheFrozenTerror()
 	{
@@ -472,47 +472,9 @@ public partial class TheFrozenTerror : Character
 
 	// ── targeting helpers ──────────────────────────────────────────────────────
 
-	Character FindTank()
-	{
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.CharacterName == GameConstants.TemplarName && c.IsAlive)
-				return c;
-		return null;
-	}
 
-	Character FindHealer()
-	{
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.CharacterName == GameConstants.HealerName && c.IsAlive)
-				return c;
-		return null;
-	}
 
-	Character PickRandomPartyMember()
-	{
-		var alive = new List<Character>();
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive)
-				alive.Add(c);
-		if (alive.Count == 0) return null;
-		return alive[(int)(GD.Randi() % (uint)alive.Count)];
-	}
 
-	List<Character> CollectAlivePartyMembers()
-	{
-		var members = new List<Character>();
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive)
-				members.Add(c);
-		// Shuffle order for variety
-		for (var i = members.Count - 1; i > 0; i--)
-		{
-			var j = (int)(GD.Randi() % (uint)(i + 1));
-			(members[i], members[j]) = (members[j], members[i]);
-		}
-
-		return members;
-	}
 
 	// ── public animation API (called by FrozenTerrorJumpInPhase) ─────────────
 
@@ -536,12 +498,12 @@ public partial class TheFrozenTerror : Character
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");
 
-		AddAnimFromFiles(frames, "idle", "idle", 4, 5f, true);
-		AddAnimFromFiles(frames, "attack", "attack", 5, 10f, false);
-		AddAnimFromFiles(frames, "charge", "charge", 3, 8f, true);
+		AddAnimFromFiles(frames, "idle", AssetBase + "idle", 4, 5f, true);
+		AddAnimFromFiles(frames, "attack", AssetBase + "attack", 5, 10f, false);
+		AddAnimFromFiles(frames, "charge", AssetBase + "charge", 3, 8f, true);
 
 		// Jump: frames 1–4 as a one-shot. We stop on frame 4 ("jump4") for hang time.
-		AddAnimFromFiles(frames, "jump", "jump", 4, 8f, false);
+		AddAnimFromFiles(frames, "jump", AssetBase + "jump", 4, 8f, false);
 
 		// jump_hang: single frame (jump4), looping — used while airborne over target.
 		frames.AddAnimation("jump_hang");
@@ -551,23 +513,11 @@ public partial class TheFrozenTerror : Character
 		if (hangTex != null) frames.AddFrame("jump_hang", hangTex);
 
 		// land: frames 1–2, one-shot.
-		AddAnimFromFiles(frames, "land", "land", 2, 6f, false);
+		AddAnimFromFiles(frames, "land", AssetBase + "land", 2, 6f, false);
 
 		_sprite.SpriteFrames = frames;
 	}
 
-	static void AddAnimFromFiles(SpriteFrames frames, string animName,
-		string filePrefix, int count, float fps, bool looping)
-	{
-		frames.AddAnimation(animName);
-		frames.SetAnimationLoop(animName, looping);
-		frames.SetAnimationSpeed(animName, fps);
-		for (var i = 1; i <= count; i++)
-		{
-			var tex = GD.Load<Texture2D>(AssetBase + $"{filePrefix}{i}.png");
-			frames.AddFrame(animName, tex);
-		}
-	}
 }
 
 /// <summary>

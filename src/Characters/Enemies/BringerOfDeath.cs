@@ -30,7 +30,7 @@ using healerfantasy.SpellSystem;
 ///   "cast"   — 9 frames, one-shot → idle
 ///   "spell"  — 16 frames, one-shot → idle
 /// </summary>
-public partial class BringerOfDeath : Character
+public partial class BringerOfDeath : EnemyCharacter
 {
 	public BringerOfDeath()
 	{
@@ -241,23 +241,7 @@ public partial class BringerOfDeath : Character
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-	Character FindTank()
-	{
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.CharacterName == "Templar" && c.IsAlive)
-				return c;
-		return null;
-	}
 
-	Character PickRandomPartyMember()
-	{
-		var alive = new List<Character>();
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive)
-				alive.Add(c);
-		if (alive.Count == 0) return null;
-		return alive[(int)(GD.Randi() % (uint)alive.Count)];
-	}
 
 	// ── animation setup ───────────────────────────────────────────────────────
 

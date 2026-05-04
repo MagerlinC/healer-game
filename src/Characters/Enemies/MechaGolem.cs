@@ -32,7 +32,7 @@ using healerfantasy.SpellSystem;
 ///   hurt   (8 frames, one-shot → idle)
 ///   death  (23 frames, one-shot)
 /// </summary>
-public partial class MechaGolem : Character
+public partial class MechaGolem : EnemyCharacter
 {
 	public MechaGolem()
 	{
@@ -250,23 +250,7 @@ public partial class MechaGolem : Character
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-	Character FindTank()
-	{
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.CharacterName == GameConstants.TemplarName && c.IsAlive)
-				return c;
-		return null;
-	}
 
-	Character PickRandomPartyMember()
-	{
-		var alive = new List<Character>();
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive)
-				alive.Add(c);
-		if (alive.Count == 0) return null;
-		return alive[(int)(GD.Randi() % (uint)alive.Count)];
-	}
 
 	// ── animation setup ───────────────────────────────────────────────────────
 
