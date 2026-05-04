@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b8ef6fmtbxmhi"
-path="res://.godot/imported/idle3.png-36d3a925e41a9c3cb2f243785b18f3d3.ctex"
+uid="uid://3nv82xms72u3"
+path="res://.godot/imported/attack4.png-8cbf81b8e1fd3e59cc75e5fd28cfb824.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/enemies/queen-of-the-frozen-wastes/idle3.png"
-dest_files=["res://.godot/imported/idle3.png-36d3a925e41a9c3cb2f243785b18f3d3.ctex"]
+source_file="res://assets/enemies/queen-of-the-frozen-wastes/attack4.png"
+dest_files=["res://.godot/imported/attack4.png-8cbf81b8e1fd3e59cc75e5fd28cfb824.ctex"]
 
 [params]
 

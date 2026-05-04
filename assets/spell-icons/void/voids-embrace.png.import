@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b8ef6fmtbxmhi"
-path="res://.godot/imported/idle3.png-36d3a925e41a9c3cb2f243785b18f3d3.ctex"
+uid="uid://cvsxcb273x6ji"
+path="res://.godot/imported/voids-embrace.png-a3edb6d26d0abb4877eb2cbc8873a6a4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/enemies/queen-of-the-frozen-wastes/idle3.png"
-dest_files=["res://.godot/imported/idle3.png-36d3a925e41a9c3cb2f243785b18f3d3.ctex"]
+source_file="res://assets/spell-icons/void/voids-embrace.png"
+dest_files=["res://.godot/imported/voids-embrace.png-a3edb6d26d0abb4877eb2cbc8873a6a4.ctex"]
 
 [params]
 

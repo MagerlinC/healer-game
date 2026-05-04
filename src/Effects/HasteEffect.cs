@@ -14,19 +14,20 @@ namespace healerfantasy.Effects;
 public partial class HasteEffect : CharacterEffect, ICharacterModifier
 {
 	/// <summary>Flat cast-speed bonus while active. 0.40 = +40% haste.</summary>
-	public float CastSpeedBonus { get; }
+	public float SpeedBonus { get; }
 
-	public HasteEffect(float duration, float castSpeedBonus = 0.40f)
+	public HasteEffect(float duration, float speedBonus = 0.40f)
 		: base(duration, 0f)
 	{
 		EffectId = "Haste";
-		CastSpeedBonus = castSpeedBonus;
+		SpeedBonus = speedBonus;
 	}
 
 	// ── ICharacterModifier ────────────────────────────────────────────────────
 
 	public void Modify(CharacterStats stats)
 	{
-		stats.IncreasedHaste += CastSpeedBonus;
+		stats.IncreasedHaste += SpeedBonus;
+		stats.IncreasedMovementSpeed += SpeedBonus;
 	}
 }

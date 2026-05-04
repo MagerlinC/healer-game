@@ -407,13 +407,13 @@ public partial class Player : Character
 		// Apply a greyscale shader to indicate death.
 		var shader = new Shader();
 		shader.Code = """
-			shader_type canvas_item;
-			void fragment() {
-				vec4 col = texture(TEXTURE, UV);
-				float grey = dot(col.rgb, vec3(0.299, 0.587, 0.114));
-				COLOR = vec4(grey, grey, grey, col.a);
-			}
-			""";
+		              shader_type canvas_item;
+		              void fragment() {
+		              	vec4 col = texture(TEXTURE, UV);
+		              	float grey = dot(col.rgb, vec3(0.299, 0.587, 0.114));
+		              	COLOR = vec4(grey, grey, grey, col.a);
+		              }
+		              """;
 		var mat = new ShaderMaterial();
 		mat.Shader = shader;
 		_sprite.Material = mat;
@@ -423,9 +423,11 @@ public partial class Player : Character
 	{
 		if (!IsAlive) return;
 		var dir = Input.GetVector("move_left", "move_right", "move_up", "move_down");
-		// TODO: Flip sprite when moving left/right  
+		// TODO: Flip sprite when moving left/right
 
-		Velocity = dir != Vector2.Zero ? dir * Speed : Vector2.Zero;
+		var stats = GetCharacterStats();
+		var effectiveSpeed = Speed * (1f + stats.IncreasedMovementSpeed);
+		Velocity = dir != Vector2.Zero ? dir * effectiveSpeed : Vector2.Zero;
 		MoveAndSlide();
 	}
 }

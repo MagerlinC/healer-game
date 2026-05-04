@@ -16,27 +16,27 @@ namespace healerfantasy.SpellResources.Chronomancy;
 [GlobalClass]
 public partial class HasteSpell : SpellResource
 {
-	[Export] public float CastSpeedBonus = 0.40f;
+	[Export] public float SpeedBonus = 0.40f;
 	[Export] public float BuffDuration = 8f;
 
 	public HasteSpell()
 	{
 		Name = "Haste";
 		Description =
-			$"Accelerate your own flow of time, increasing your haste by {(int)(CastSpeedBonus * 100)}% for {BuffDuration}s.";
+			$"Accelerate your own flow of time, increasing your haste and movement speed by {SpeedBonus:F0}% for {BuffDuration}s.";
 		ManaCost = 10f;
 		CastTime = 0.0f;
 		Cooldown = 15f;
 		School = SpellSchool.Chronomancy;
 		Tags = SpellTags.Duration;
-		RequiredSchoolPoints = 1;
+		RequiredSchoolPoints = 0;
 		EffectType = EffectType.Helpful;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "healer/healer2.png");
 	}
 
 	public override void Apply(SpellContext ctx)
 	{
-		ctx.Caster.ApplyEffect(new HasteEffect(BuffDuration, CastSpeedBonus)
+		ctx.Caster.ApplyEffect(new HasteEffect(BuffDuration, SpeedBonus)
 		{
 			Icon = ctx.Spell.Icon,
 			School = School,

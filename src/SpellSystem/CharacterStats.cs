@@ -27,6 +27,8 @@ public class CharacterStats
 
 	public float IncreasedHaste { get; set; } = 0.0f;
 
+	public float IncreasedMovementSpeed { get; set; } = 0.0f;
+
 	public Dictionary<SpellSchool, float> SpellSchoolIncreasedDamage = new()
 	{
 		{ SpellSchool.Nature, 0.0f },

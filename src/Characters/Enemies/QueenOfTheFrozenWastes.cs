@@ -682,9 +682,9 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");
 
-		AddAnimFromFiles(frames, "idle",   AssetBase + "idle",   3, 4f,  true);
-		AddAnimFromFiles(frames, "attack", AssetBase + "attack", 3, 10f, false);
-		AddAnimFromFiles(frames, "cast",   AssetBase + "cast",   3, 6f,  false);
+		AddAnimFromFiles(frames, "idle", AssetBase + "idle", 3, 4f, true);
+		AddAnimFromFiles(frames, "attack", AssetBase + "attack", 4, 10f, false);
+		AddAnimFromFiles(frames, "cast", AssetBase + "cast", 4, 6f, false);
 
 		// Ice Block — single static frame; looping so it holds indefinitely.
 		frames.AddAnimation("ice_block");

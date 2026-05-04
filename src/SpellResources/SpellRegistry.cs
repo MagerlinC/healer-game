@@ -2,6 +2,7 @@
 using System.Linq;
 using healerfantasy.SpellResources.Chronomancy;
 using healerfantasy.SpellResources.Generic;
+using healerfantasy.SpellResources.Void;
 
 namespace healerfantasy.SpellResources;
 
@@ -24,7 +25,8 @@ public static class SpellRegistry
 		new ShadowBoltSpell(),
 		new VoidDrainSpell(),
 		new SoulShatterSpell(),
-		new DarkPactSpell()
+		new DarkPactSpell(),
+		new VoidsEmbraceSpell()
 	];
 
 	public static readonly List<SpellResource> ChronomancySpells =
