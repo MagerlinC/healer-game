@@ -372,7 +372,7 @@ public static class TalentRegistry
 
 					// Affinity bonus: ×1.5 if this is the player's preferred school.
 					if (affinity.HasValue && t.School == affinity.Value)
-						w *= 1.5;
+						w *= 2;
 				}
 
 				weights[i] = w;
@@ -382,12 +382,16 @@ public static class TalentRegistry
 			// Weighted random draw.
 			var roll = rng.NextDouble() * totalWeight;
 			var cumulative = 0.0;
-			var chosenIdx = pool.Count - 1;   // fallback: last element
+			var chosenIdx = pool.Count - 1; // fallback: last element
 
 			for (var i = 0; i < pool.Count; i++)
 			{
 				cumulative += weights[i];
-				if (roll <= cumulative) { chosenIdx = i; break; }
+				if (roll <= cumulative)
+				{
+					chosenIdx = i;
+					break;
+				}
 			}
 
 			var chosen = pool[chosenIdx];

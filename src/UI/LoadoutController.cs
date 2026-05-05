@@ -826,7 +826,8 @@ public abstract partial class LoadoutController : Node2D
 		scroll.AddChild(_readOnlyTalentContent);
 
 		var hint = new Label();
-		hint.Text = "Talents are earned by defeating bosses.  Hover an icon to read its effect.\nSet School Affinity above to bias offers (+50%) toward your preferred school.";
+		hint.Text =
+			"Talents are earned by defeating bosses.  Hover an icon to read its effect.\nSet School Affinity above to bias offers (+50%) toward your preferred school.";
 		hint.HorizontalAlignment = HorizontalAlignment.Center;
 		hint.AutowrapMode = TextServer.AutowrapMode.Word;
 		hint.AddThemeFontSizeOverride("font_size", 11);
@@ -951,12 +952,6 @@ public abstract partial class LoadoutController : Node2D
 		header.AddThemeColorOverride("font_color", TitleColor);
 		parent.AddChild(header);
 
-		var subHint = new Label();
-		subHint.Text = "Choose a school to bias talent offers (+50%). Click the selected tome to clear.";
-		subHint.AutowrapMode = TextServer.AutowrapMode.Word;
-		subHint.AddThemeFontSizeOverride("font_size", 11);
-		subHint.AddThemeColorOverride("font_color", HintColor);
-		parent.AddChild(subHint);
 
 		// Row of 4 tomes — one per school that can have affinity.
 		// SpellSchool.Generic is excluded (it's a catch-all, not a real choice).
@@ -985,8 +980,8 @@ public abstract partial class LoadoutController : Node2D
 			tomeStyle.SetCornerRadiusAll(6);
 			tomeStyle.SetBorderWidthAll(2);
 			tomeStyle.BorderColor = isSelected
-				? PanelBorder                                                    // gold
-				: new Color(0.28f, 0.24f, 0.16f);                               // dim
+				? PanelBorder // gold
+				: new Color(0.28f, 0.24f, 0.16f); // dim
 			tomeStyle.ContentMarginLeft = tomeStyle.ContentMarginRight = 6f;
 			tomeStyle.ContentMarginTop = tomeStyle.ContentMarginBottom = 6f;
 
@@ -1023,10 +1018,10 @@ public abstract partial class LoadoutController : Node2D
 
 			// Hover tooltip
 			var capturedSchool = school;
-			var capturedName   = schoolName;
+			var capturedName = schoolName;
 			tomePanel.MouseEntered += () =>
 				GameTooltip.Show(capturedName + " Affinity",
-					$"Set your school affinity to {capturedName}.\n+50% chance of at least one {capturedName} talent appearing in each offer.");
+					$"Set your school affinity to {capturedName}.\nDouble the chance of at least one {capturedName} talent appearing in each offer.");
 			tomePanel.MouseExited += () => GameTooltip.Hide();
 
 			// Click: toggle affinity
@@ -1044,7 +1039,8 @@ public abstract partial class LoadoutController : Node2D
 					style.BorderColor = RunState.Instance.SchoolAffinity == s
 						? PanelBorder
 						: new Color(0.28f, 0.24f, 0.16f);
-					_ = p; _ = a; // suppress unused-var warnings
+					_ = p;
+					_ = a; // suppress unused-var warnings
 				}
 			};
 		}
