@@ -53,7 +53,7 @@ public partial class TemporalWardSpell : SpellResource
 	{
 		foreach (var target in ctx.Targets)
 		{
-			target.ApplyEffect(new ShieldEffect(ctx.FinalValue, ShieldDuration)
+			target.ApplyEffect(new ShieldEffect("TemporalWard", ctx.FinalValue, ShieldDuration)
 			{
 				EffectId = "TemporalWard",
 				Icon = ctx.Spell.Icon,

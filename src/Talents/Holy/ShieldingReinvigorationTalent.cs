@@ -43,7 +43,7 @@ public class ShieldingReinvigorationTalent : ISpellModifier
 		foreach (var target in ctx.Targets)
 		{
 			if (!target.IsAlive || !target.IsFriendly) continue;
-			target.ApplyEffect(new ShieldEffect(shieldAmount, ShieldDuration)
+			target.ApplyEffect(new ShieldEffect("ShieldReinvigoration", shieldAmount, ShieldDuration)
 			{
 				Icon = EffectIcon // talent icon, not the triggering spell's icon
 			});

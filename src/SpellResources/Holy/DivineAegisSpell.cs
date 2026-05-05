@@ -37,7 +37,7 @@ public partial class DivineAegisSpell : SpellResource
 
 	public override void Apply(SpellContext ctx)
 	{
-		ctx.Target?.ApplyEffect(new ShieldEffect(ctx.FinalValue, ShieldDuration)
+		ctx.Target?.ApplyEffect(new ShieldEffect("DivineAegis", ctx.FinalValue, ShieldDuration)
 		{
 			EffectId = "DivineAegis",
 			Icon = ctx.Spell.Icon,

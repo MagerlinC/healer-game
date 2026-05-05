@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b32uh8cwxhtf6"
-path="res://.godot/imported/court-of-reflections.png-aefff83d8b0ede78a0a6bef03693d43e.ctex"
+uid="uid://da1fcwsd8uxdj"
+path="res://.godot/imported/blood-shield.png-3af15e9b5a7938e73a5f911e144465db.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/spell-icons/enemy/the-countess/court-of-reflections.png"
-dest_files=["res://.godot/imported/court-of-reflections.png-aefff83d8b0ede78a0a6bef03693d43e.ctex"]
+source_file="res://assets/enemies/the-countess/blood-shield.png"
+dest_files=["res://.godot/imported/blood-shield.png-3af15e9b5a7938e73a5f911e144465db.ctex"]
 
 [params]
 

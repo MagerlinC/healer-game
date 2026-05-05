@@ -48,18 +48,10 @@ public static class GameConstants
 
 	public static Dictionary<int, List<int>> BossHealthBaseValuesByDungeonTier = new()
 	{
-		{ 1, new List<int> { 1000, 1200, 1600 } },
-		{ 2, new List<int> { 1800, 2100, 2500 } },
-		{ 3, new List<int> { 2800, 3000, 4000 } },
-		{ 4, new List<int> { 6000 } }
-	};
-
-	public static Dictionary<int, List<int>> XpRewardsByDungeonTier = new()
-	{
-		{ 1, new List<int> { 200, 250, 300 } },
-		{ 2, new List<int> { 350, 400, 450 } },
-		{ 3, new List<int> { 500, 600, 1000 } },
-		{ 4, new List<int> { 2000 } }
+		{ 1, new List<int> { 800, 1000, 1200 } },
+		{ 2, new List<int> { 1400, 2000, 2200 } },
+		{ 3, new List<int> { 2400, 2800, 3000 } },
+		{ 4, new List<int> { 5000 } }
 	};
 
 	public static float InfiniteDuration = 999999f;

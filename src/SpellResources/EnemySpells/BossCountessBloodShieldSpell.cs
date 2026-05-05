@@ -13,7 +13,7 @@ namespace healerfantasy.SpellResources;
 [GlobalClass]
 public partial class BossCountessBloodShieldSpell : SpellResource
 {
-	public float ShieldAmount = 450f;
+	public float ShieldAmount = 400f;
 	public float ShieldDuration = 30f;
 
 	public BossCountessBloodShieldSpell()
@@ -23,12 +23,13 @@ public partial class BossCountessBloodShieldSpell : SpellResource
 		Tags = SpellTags.Healing;
 		ManaCost = 0f;
 		CastTime = 0f;
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemies/the-countess/blood-shield.png");
 		EffectType = EffectType.Helpful;
 	}
 
 	public override void Apply(SpellContext ctx)
 	{
-		ctx.Caster?.ApplyEffect(new ShieldEffect(ShieldAmount, ShieldDuration)
+		ctx.Caster?.ApplyEffect(new ShieldEffect("BloodShield", ShieldAmount, ShieldDuration)
 		{
 			AbilityName = Name,
 			Description = Description,

@@ -16,11 +16,11 @@ using healerfantasy;
 public partial class TutorialPopup : CanvasLayer
 {
 	// ── colours (mirrored from LoadoutController so this class is self-contained) ─
-	static readonly Color PanelBg     = new(0.07f, 0.06f, 0.06f, 0.97f);
+	static readonly Color PanelBg = new(0.07f, 0.06f, 0.06f, 0.97f);
 	static readonly Color PanelBorder = new(0.65f, 0.52f, 0.28f);
-	static readonly Color TitleColor  = new(0.95f, 0.84f, 0.50f);
-	static readonly Color SepColor    = new(0.50f, 0.40f, 0.22f, 0.55f);
-	static readonly Color BodyColor   = new(0.82f, 0.78f, 0.72f);
+	static readonly Color TitleColor = new(0.95f, 0.84f, 0.50f);
+	static readonly Color SepColor = new(0.50f, 0.40f, 0.22f, 0.55f);
+	static readonly Color BodyColor = new(0.82f, 0.78f, 0.72f);
 
 	// ── Godot lifecycle ───────────────────────────────────────────────────────────
 
@@ -118,8 +118,8 @@ public partial class TutorialPopup : CanvasLayer
 		contentVbox.AddChild(MakeSection(
 			"✦  Talents",
 			"Talents are passive upgrades that enhance your spells and playstyle. " +
-			"You earn talent points by levelling up — each boss kill grants experience.\n\n" +
-			"➜  Click the Talent Board in the camp to spend your talent points!"));
+			"Talent points are offered as rewards for killing bosses during a run - use the Talent Board to pick a spell school affinity before starting a run.\n\n" +
+			"➜  Click the Talent Board in the camp during a run to change your affinity or to see the talents you've picked so far!"));
 
 		contentVbox.AddChild(MakeSection(
 			"🎒  Items",
@@ -142,7 +142,7 @@ public partial class TutorialPopup : CanvasLayer
 		outerVbox.AddChild(MakeSep());
 
 		var normalStyle = MakeButtonStyle(new Color(0.12f, 0.17f, 0.12f), new Color(0.30f, 0.65f, 0.28f));
-		var hoverStyle  = MakeButtonStyle(new Color(0.18f, 0.24f, 0.16f), new Color(0.40f, 0.80f, 0.35f));
+		var hoverStyle = MakeButtonStyle(new Color(0.18f, 0.24f, 0.16f), new Color(0.40f, 0.80f, 0.35f));
 
 		var gotItBtn = new Button();
 		gotItBtn.Text = "Got it!  Let's go!";
@@ -150,12 +150,12 @@ public partial class TutorialPopup : CanvasLayer
 		gotItBtn.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
 		gotItBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
 		gotItBtn.AddThemeFontSizeOverride("font_size", 16);
-		gotItBtn.AddThemeColorOverride("font_color",       new Color(0.90f, 0.87f, 0.83f));
+		gotItBtn.AddThemeColorOverride("font_color", new Color(0.90f, 0.87f, 0.83f));
 		gotItBtn.AddThemeColorOverride("font_hover_color", new Color(0.95f, 0.92f, 0.88f));
-		gotItBtn.AddThemeStyleboxOverride("normal",  normalStyle);
-		gotItBtn.AddThemeStyleboxOverride("hover",   hoverStyle);
+		gotItBtn.AddThemeStyleboxOverride("normal", normalStyle);
+		gotItBtn.AddThemeStyleboxOverride("hover", hoverStyle);
 		gotItBtn.AddThemeStyleboxOverride("pressed", normalStyle);
-		gotItBtn.AddThemeStyleboxOverride("focus",   normalStyle);
+		gotItBtn.AddThemeStyleboxOverride("focus", normalStyle);
 		gotItBtn.Pressed += OnGotItPressed;
 		outerVbox.AddChild(gotItBtn);
 	}
@@ -207,9 +207,9 @@ public partial class TutorialPopup : CanvasLayer
 		s.BgColor = bg;
 		s.SetCornerRadiusAll(6);
 		s.SetBorderWidthAll(2);
-		s.BorderColor           = border;
-		s.ContentMarginLeft     = s.ContentMarginRight  = 20f;
-		s.ContentMarginTop      = s.ContentMarginBottom = 10f;
+		s.BorderColor = border;
+		s.ContentMarginLeft = s.ContentMarginRight = 20f;
+		s.ContentMarginTop = s.ContentMarginBottom = 10f;
 		return s;
 	}
 

@@ -17,10 +17,10 @@ public partial class ShieldEffect : CharacterEffect
 
 	/// <param name="amount">Total shield points added.</param>
 	/// <param name="duration">How long the shield lasts in seconds.</param>
-	public ShieldEffect(float amount, float duration)
+	public ShieldEffect(string effectId, float amount, float duration)
 		: base(duration, 0f)
 	{
-		EffectId = "ShieldingReinvigoration";
+		EffectId = effectId;
 		_shieldAmount = amount;
 	}
 
