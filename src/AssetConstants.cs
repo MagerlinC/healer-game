@@ -55,6 +55,16 @@ public static class AssetConstants
 
 	public static readonly string SpellTomeInteractiblePath = "res://assets/interactibles/spell-tome.png";
 	public static readonly string TalentBoardInteractiblePath = "res://assets/interactibles/talent-board.png";
+	public static readonly string TalentBoardFullInteractiblePath = "res://assets/interactibles/talent-board-full.png";
+
+	/// <summary>
+	/// Returns the correct talent board sprite path based on whether the player
+	/// has unlocked the Sanguimancy school (which adds a fifth tome icon to the board).
+	/// </summary>
+	public static string TalentBoardPath() =>
+		PlayerProgressStore.HasDefeatedCastleOfBlood
+			? TalentBoardFullInteractiblePath
+			: TalentBoardInteractiblePath;
 	public static readonly string RunScrollInteractiblePath = "res://assets/interactibles/run-history-scroll.png";
 	public static readonly string MapInteractiblePath = "res://assets/interactibles/map.png";
 	public static readonly string ArmoryInteractiblePath = "res://assets/interactibles/armory.png";
@@ -66,6 +76,7 @@ public static class AssetConstants
 	public static readonly string TalentTomeNaturePath = "res://assets/interactibles/talent-tome-nature.png";
 	public static readonly string TalentTomeVoidPath = "res://assets/interactibles/talent-tome-void.png";
 	public static readonly string TalentTomeChronomancyPath = "res://assets/interactibles/talent-tome-chronomancy.png";
+	public static readonly string TalentTomeSanguimancyPath = "res://assets/interactibles/talent-tome-sanguimancy.png";
 
 	/// <summary>Returns the res:// path for the tome icon of the given spell school.</summary>
 	public static string TalentTomePath(SpellSchool school)
@@ -76,6 +87,7 @@ public static class AssetConstants
 			SpellSchool.Nature => TalentTomeNaturePath,
 			SpellSchool.Void => TalentTomeVoidPath,
 			SpellSchool.Chronomancy => TalentTomeChronomancyPath,
+			SpellSchool.Sanguimancy => TalentTomeSanguimancyPath,
 			_ => TalentTomeHolyPath
 		};
 	}

@@ -57,7 +57,8 @@ public abstract partial class LoadoutController : Node2D
 		(SpellSchool.Holy, "Holy"),
 		(SpellSchool.Nature, "Nature"),
 		(SpellSchool.Void, "Void"),
-		(SpellSchool.Chronomancy, "Chronomancy")
+		(SpellSchool.Chronomancy, "Chronomancy"),
+		(SpellSchool.Sanguimancy, "Sanguimancy")
 	};
 
 	protected static readonly (SpellSchool School, string Name, Color Accent)[] TalentSchoolOrder =
@@ -66,7 +67,8 @@ public abstract partial class LoadoutController : Node2D
 		(SpellSchool.Holy, "Holy", new Color(0.95f, 0.85f, 0.40f)),
 		(SpellSchool.Nature, "Nature", new Color(0.40f, 0.80f, 0.35f)),
 		(SpellSchool.Void, "Void", new Color(0.65f, 0.35f, 0.85f)),
-		(SpellSchool.Chronomancy, "Chronomancy", new Color(0.35f, 0.75f, 0.90f))
+		(SpellSchool.Chronomancy, "Chronomancy", new Color(0.35f, 0.75f, 0.90f)),
+		(SpellSchool.Sanguimancy, "Sanguimancy", new Color(0.85f, 0.15f, 0.15f))
 	};
 
 	// ── runtime state ─────────────────────────────────────────────────────────
@@ -344,7 +346,7 @@ public abstract partial class LoadoutController : Node2D
 	{
 		_player = new OverworldPlayer
 		{
-			Position = new Vector2(xPosition, FloorHeight - 15f),
+			Position = new Vector2(xPosition, FloorHeight - 8f),
 			Scale = new Vector2(1.5f, 1.5f),
 			XMin = bgLeft,
 			XMax = bgRight
@@ -595,11 +597,16 @@ public abstract partial class LoadoutController : Node2D
 	// ── spell lock helpers ────────────────────────────────────────────────────
 
 	/// <summary>
-	/// A spell is locked if the player has not yet acquired enough talents of its
-	/// school during the current run.
+	/// A spell is locked if its school has not been unlocked yet (e.g. Sanguimancy
+	/// requires the Castle of Blood to have been defeated), or if the player has not
+	/// yet acquired enough school talents this run.
 	/// </summary>
 	bool IsSpellLocked(SpellResource spell)
 	{
+		// School-wide unlock check.
+		if (spell.School == SpellSchool.Sanguimancy && !PlayerProgressStore.HasDefeatedCastleOfBlood)
+			return true;
+
 		if (spell.RequiredSchoolPoints <= 0) return false;
 		var invested = RunState.Instance.SelectedTalentDefs.Count(d => d.School == spell.School);
 		return invested < spell.RequiredSchoolPoints;
@@ -607,6 +614,11 @@ public abstract partial class LoadoutController : Node2D
 
 	(string title, string desc) GetLockedSpellTooltip(SpellResource spell)
 	{
+		// School unlock tooltip for Sanguimancy.
+		if (spell.School == SpellSchool.Sanguimancy && !PlayerProgressStore.HasDefeatedCastleOfBlood)
+			return (spell.Name,
+				$"{spell.Description}\n\n🔒 Sanguimancy is locked.\nDefeat The Blood Prince in the Castle of Blood to unlock this school.");
+
 		var invested = RunState.Instance.SelectedTalentDefs.Count(d => d.School == spell.School);
 		return (spell.Name,
 			$"{spell.Description}\nRequires {spell.RequiredSchoolPoints} {spell.School} talent" +
@@ -953,19 +965,23 @@ public abstract partial class LoadoutController : Node2D
 		parent.AddChild(header);
 
 
-		// Row of 4 tomes — one per school that can have affinity.
+		// Row of tomes — one per school that can have affinity.
 		// SpellSchool.Generic is excluded (it's a catch-all, not a real choice).
+		// Sanguimancy only appears after the Castle of Blood has been defeated.
 		var tomeRow = new HBoxContainer();
 		tomeRow.AddThemeConstantOverride("separation", 12);
 		parent.AddChild(tomeRow);
 
 		// We'll keep references so we can rebuild borders after a click without
 		// re-creating all nodes (the whole pane is rebuilt on next open anyway).
-		var tomeSchools = new[]
+		var tomeSchoolsList = new List<SpellSchool>
 		{
 			SpellSchool.Holy, SpellSchool.Nature,
 			SpellSchool.Void, SpellSchool.Chronomancy
 		};
+		if (PlayerProgressStore.HasDefeatedCastleOfBlood)
+			tomeSchoolsList.Add(SpellSchool.Sanguimancy);
+		var tomeSchools = tomeSchoolsList.ToArray();
 
 		var tomePanels = new List<(SpellSchool School, PanelContainer Panel, StyleBoxFlat Style)>();
 
@@ -1063,7 +1079,7 @@ public abstract partial class LoadoutController : Node2D
 		return actionName.StartsWith("spell_") ? actionName["spell_".Length..] : actionName;
 	}
 
-	protected static Color SpellSchoolColor(SpellSchool school)
+	public static Color SpellSchoolColor(SpellSchool school)
 	{
 		return school switch
 		{
@@ -1071,6 +1087,7 @@ public abstract partial class LoadoutController : Node2D
 			SpellSchool.Nature => new Color(0.40f, 0.80f, 0.35f),
 			SpellSchool.Void => new Color(0.65f, 0.35f, 0.85f),
 			SpellSchool.Chronomancy => new Color(0.35f, 0.75f, 0.90f),
+			SpellSchool.Sanguimancy => new Color(0.85f, 0.15f, 0.15f),
 			_ => new Color(0.70f, 0.65f, 0.60f)
 		};
 	}

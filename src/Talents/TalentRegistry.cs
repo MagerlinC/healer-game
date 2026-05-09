@@ -6,6 +6,7 @@ using healerfantasy.SpellSystem;
 using healerfantasy.Talents.Chronomancy;
 using healerfantasy.Talents.Holy;
 using healerfantasy.Talents.Nature;
+using healerfantasy.Talents.Sanguimancy;
 using healerfantasy.Talents.Void;
 
 namespace healerfantasy.Talents;
@@ -296,8 +297,44 @@ public static class TalentRegistry
 		}
 	];
 
+	public static readonly List<TalentDefinition> SanguimancyTalents =
+	[
+		new()
+		{
+			Name = "Crimson Rebound",
+			Description = "After casting a Sanguimancy spell, recover 40% of its health cost as healing over 5 seconds.",
+			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_17.png",
+			School = SpellSchool.Sanguimancy,
+			TalentRow = 0,
+			Configure = (t, icon) =>
+				t.SpellModifiers.Add(new CrimsonReboundTalent { EffectIcon = icon })
+		},
+		new()
+		{
+			Name = "Bloodthirst",
+			Description = "Sanguimancy spells deal and heal 25% more.",
+			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_9.png",
+			School = SpellSchool.Sanguimancy,
+			TalentRow = 1,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new BloodthirstTalent())
+		},
+		new()
+		{
+			Name = "Sanguine Ward",
+			Description =
+				"When you spend health on a Sanguimancy spell, all living allies gain a shield equal to the health cost for 10 seconds.",
+			IconPath = AssetConstants.TalentIconAssets + "sanguimancy/sanguine-ward.png",
+			School = SpellSchool.Sanguimancy,
+			TalentRow = 2,
+			Configure = (t, icon) =>
+				t.SpellModifiers.Add(new SanguineWardTalent { EffectIcon = icon })
+		}
+	];
+
 	public static readonly List<TalentDefinition> AllTalents =
-		GenericTalents.Concat(VoidTalents).Concat(HolyTalents).Concat(NatureTalents).Concat(ChronomancyTalents).ToList();
+		GenericTalents.Concat(VoidTalents).Concat(HolyTalents).Concat(NatureTalents).Concat(ChronomancyTalents)
+			.Concat(SanguimancyTalents).ToList();
 
 	/// <summary>
 	/// Returns up to <paramref name="count"/> random talent offers for the victory screen.
@@ -334,6 +371,9 @@ public static class TalentRegistry
 		var eligible = AllTalents.Where(t =>
 		{
 			if (acquiredNames.Contains(t.Name)) return false;
+			// Sanguimancy requires the Castle of Blood to have been defeated in a previous run.
+			if (t.School == SpellSchool.Sanguimancy && !PlayerProgressStore.HasDefeatedCastleOfBlood)
+				return false;
 			if (t.TalentRow == 0) return true;
 			// Requires at least one talent from the previous row in the same school.
 			return AllTalents.Any(other =>

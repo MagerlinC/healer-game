@@ -36,6 +36,7 @@ public partial class HolyProtectionEffect : CharacterEffect, IConditionalCharact
 	{
 		EffectId = "HolyProtection";
 		DamageReductionAmount = damageReductionAmount;
+		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(2));
 	}
 
 	// ── IConditionalCharacterModifier ─────────────────────────────────────────

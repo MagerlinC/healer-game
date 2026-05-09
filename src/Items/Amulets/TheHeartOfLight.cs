@@ -71,11 +71,6 @@ public class TheHeartOfLight : EquippableItem
 				if (target.IsFriendly)
 					target.ApplyEffect(new HolyProtectionEffect(_damageReductionAmount));
 			}
-
-			// Also protect the caster (the healer) — Holy group heals may not
-			// list them explicitly as a target.
-			if (context.Caster.IsFriendly)
-				context.Caster.ApplyEffect(new HolyProtectionEffect(_damageReductionAmount));
 		}
 	}
 }

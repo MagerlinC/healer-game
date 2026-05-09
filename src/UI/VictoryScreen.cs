@@ -50,7 +50,7 @@ public partial class VictoryScreen : CanvasLayer
 	static readonly Color HintColor = new(0.45f, 0.42f, 0.38f);
 	static readonly Color SepColor = new(0.50f, 0.40f, 0.22f, 0.55f);
 	static readonly Color OfferBorderUnselected = new(0.30f, 0.26f, 0.18f);
-	static readonly Color OfferBorderSelected = new(0.65f, 0.52f, 0.28f);
+	static readonly Color OfferBorderSelected = new(1.00f, 0.90f, 0.40f);
 
 	static readonly HashSet<string> PartyMemberNames = new()
 	{
@@ -66,7 +66,7 @@ public partial class VictoryScreen : CanvasLayer
 	Label _titleLabel = null!;
 	Label _subLabel = null!;
 	VBoxContainer _offerSectionWrapper = null!;
-	HBoxContainer _offersContainer = null!;
+	VBoxContainer _offersContainer = null!;
 	VBoxContainer _itemsCardContent = null!;
 	VBoxContainer _runLogsContent = null!;
 	HBoxContainer _btnRow = null!;
@@ -78,9 +78,13 @@ public partial class VictoryScreen : CanvasLayer
 
 	// ── talent offer state ────────────────────────────────────────────────────
 	Label _offerHeaderLabel = null!;
-	readonly List<TalentDefinition> _selectedOffers = new();
-	int _selectionsRequired = 1;
-	Button? _activeBtn;   // the current continue button; disabled until enough cards are selected
+	/// <summary>
+	/// One slot per offer row.  null = no talent chosen for that row yet.
+	/// A single-row offer (arena) has one slot; a dual-row offer (dungeon) has two.
+	/// The continue button is enabled only when every slot is non-null.
+	/// </summary>
+	readonly List<TalentDefinition?> _rowSelections = new();
+	Button? _activeBtn;   // the current continue button; disabled until all rows are selected
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -150,7 +154,7 @@ public partial class VictoryScreen : CanvasLayer
 		ClearButtons();
 		var btn = MakeButton("Continue  ▶",
 			new Color(0.10f, 0.16f, 0.10f), new Color(0.30f, 0.65f, 0.28f), OnArenaContinuePressed);
-		SetContinueButtonDisabled(btn, _offersContainer.GetChildCount() > 0);
+		SetContinueButtonDisabled(btn, _rowSelections.Any(s => s == null));
 		_activeBtn = btn;
 		_btnRow.AddChild(btn);
 
@@ -171,7 +175,7 @@ public partial class VictoryScreen : CanvasLayer
 		ClearButtons();
 		var btn = MakeButton("Rest at Camp  ▶",
 			new Color(0.10f, 0.14f, 0.18f), new Color(0.28f, 0.52f, 0.75f), OnDungeonClearedContinuePressed);
-		SetContinueButtonDisabled(btn, _offersContainer.GetChildCount() > 0);
+		SetContinueButtonDisabled(btn, _rowSelections.Any(s => s == null));
 		_activeBtn = btn;
 		_btnRow.AddChild(btn);
 
@@ -253,8 +257,8 @@ public partial class VictoryScreen : CanvasLayer
 
 	void OnArenaContinuePressed()
 	{
-		foreach (var offer in _selectedOffers)
-			RunState.Instance.AddTalent(offer);
+		foreach (var sel in _rowSelections)
+			if (sel != null) RunState.Instance.AddTalent(sel);
 		GetTree().Paused = false;
 		RunState.Instance.AdvanceBossInDungeon();
 		GlobalAutoLoad.Reset();
@@ -263,8 +267,8 @@ public partial class VictoryScreen : CanvasLayer
 
 	void OnDungeonClearedContinuePressed()
 	{
-		foreach (var offer in _selectedOffers)
-			RunState.Instance.AddTalent(offer);
+		foreach (var sel in _rowSelections)
+			if (sel != null) RunState.Instance.AddTalent(sel);
 		GetTree().Paused = false;
 		RunState.Instance.CompleteDungeon();
 		GlobalAutoLoad.Reset();
@@ -382,7 +386,7 @@ public partial class VictoryScreen : CanvasLayer
 		_offerHeaderLabel.AddThemeColorOverride("font_color", TitleColor);
 		_offerSectionWrapper.AddChild(_offerHeaderLabel);
 
-		_offersContainer = new HBoxContainer();
+		_offersContainer = new VBoxContainer();
 		_offersContainer.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		_offersContainer.AddThemeConstantOverride("separation", 8);
 		_offerSectionWrapper.AddChild(_offersContainer);
@@ -472,31 +476,34 @@ public partial class VictoryScreen : CanvasLayer
 
 	/// <summary>
 	/// Populates talent offer cards using <see cref="TalentRegistry.GetRandomOffers"/>.
-	/// Always requests <paramref name="selectionsRequired"/> + 2 offers so the player has
-	/// meaningful choice even when picking 2.  Hides the offer wrapper if no eligible
-	/// talents remain.  The continue button stays disabled until the player has made
-	/// <paramref name="selectionsRequired"/> selections.
+	///
+	/// Arena clears (<paramref name="selectionsRequired"/> == 1):
+	///   One row of 3 cards — player picks 1.
+	///
+	/// Dungeon clears (<paramref name="selectionsRequired"/> == 2):
+	///   Two rows of 3 cards — player picks 1 from each row independently.
+	///   The continue button requires both rows to have a selection.
+	///
+	/// Hides the offer wrapper and enables the button immediately if no eligible
+	/// talents remain.
 	/// </summary>
 	void PopulateTalentOffers(int selectionsRequired = 1)
 	{
-		_selectedOffers.Clear();
+		_rowSelections.Clear();
 
 		foreach (var child in _offersContainer.GetChildren())
 			child.QueueFree();
 
-		var offers = TalentRegistry.GetRandomOffers(
+		var isDualRow = selectionsRequired >= 2;
+		var rowCount = isDualRow ? 2 : 1;
+		const int CardsPerRow = 3;
+
+		var allOffers = TalentRegistry.GetRandomOffers(
 			RunState.Instance.SelectedTalentDefs,
 			RunState.Instance.SchoolAffinity,
-			count: selectionsRequired + 2);
+			count: rowCount * CardsPerRow);
 
-		// Cap required to however many offers are actually available.
-		_selectionsRequired = Math.Min(selectionsRequired, offers.Count);
-
-		_offerHeaderLabel.Text = _selectionsRequired == 1
-			? "Choose a Talent:"
-			: $"Choose {_selectionsRequired} Talents:";
-
-		if (offers.Count == 0)
+		if (allOffers.Count == 0)
 		{
 			// Nothing left to offer — skip the section and allow immediate continue.
 			_offerSectionWrapper.Visible = false;
@@ -505,40 +512,85 @@ public partial class VictoryScreen : CanvasLayer
 
 		_offerSectionWrapper.Visible = true;
 
-		// Build all card panels first, then wire shared click handlers.
-		var cards = new List<(TalentDefinition def, PanelContainer card)>();
+		_offerHeaderLabel.Text = isDualRow
+			? "Choose 1 talent from each row:"
+			: "Choose a Talent:";
 
-		foreach (var def in offers)
+		// One null slot per row — filled when the player clicks a card.
+		for (var r = 0; r < rowCount; r++)
+			_rowSelections.Add(null);
+
+		// Build all rows and collect (rowIndex, def, card) so click handlers can
+		// reference the full card list for border updates.
+		var allCards = new List<(int RowIndex, TalentDefinition Def, PanelContainer Card)>();
+
+		for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
 		{
-			var card = BuildOfferCard(def);
-			cards.Add((def, card));
-			_offersContainer.AddChild(card);
+			// Row label shown only in dual-row mode.
+			if (isDualRow)
+			{
+				var rowLabel = new Label();
+				rowLabel.Text = rowIndex == 0 ? "— Row 1 —" : "— Row 2 —";
+				rowLabel.HorizontalAlignment = HorizontalAlignment.Center;
+				rowLabel.AddThemeFontSizeOverride("font_size", 11);
+				rowLabel.AddThemeColorOverride("font_color", HintColor);
+				_offersContainer.AddChild(rowLabel);
+			}
+
+			var hrow = new HBoxContainer();
+			hrow.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+			hrow.AddThemeConstantOverride("separation", 8);
+			_offersContainer.AddChild(hrow);
+
+			var rowOffers = allOffers
+				.Skip(rowIndex * CardsPerRow)
+				.Take(CardsPerRow)
+				.ToList();
+
+			foreach (var def in rowOffers)
+			{
+				var card = BuildOfferCard(def);
+				allCards.Add((rowIndex, def, card));
+				hrow.AddChild(card);
+			}
 		}
 
-		// Wire click: toggling a card updates the selection and the continue button.
-		foreach (var (def, card) in cards)
+		// Wire click handlers after all cards exist so each handler has the full list.
+		foreach (var (rowIndex, def, card) in allCards)
 		{
+			var capturedRow = rowIndex;
 			var capturedDef = def;
-			var capturedCards = cards;
 			card.GuiInput += ev =>
 			{
 				if (ev is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
-					ToggleOffer(capturedDef, capturedCards);
+					SelectOffer(capturedRow, capturedDef, allCards);
 			};
 		}
 	}
 
 	/// <summary>
-	/// Builds a single talent offer card (icon + school label + name + description).
+	/// Builds a single talent offer card.
+	///
+	/// Visual school identity:
+	///   • Card border = school colour at 55 % brightness (idle); snaps to gold when selected.
+	///   • Draped-cloth banner (<see cref="TierBanner"/>) in the top-left of the icon area,
+	///     filled with the school colour and labelled "T1"–"T4".
+	///   • School name label tinted the school colour.
+	///   • Talent name also tinted the school colour.
+	///
 	/// Click handling is wired by <see cref="PopulateTalentOffers"/> after all cards exist.
 	/// </summary>
 	PanelContainer BuildOfferCard(TalentDefinition def)
 	{
+		var schoolColor = LoadoutController.SpellSchoolColor(def.School);
+		var idleBorderColor = schoolColor * 0.55f;
+		idleBorderColor.A = 1f;
+
 		var style = new StyleBoxFlat();
 		style.BgColor = new Color(0.10f, 0.08f, 0.07f);
 		style.SetCornerRadiusAll(6);
 		style.SetBorderWidthAll(2);
-		style.BorderColor = OfferBorderUnselected;
+		style.BorderColor = idleBorderColor;
 		style.ContentMarginLeft = style.ContentMarginRight = 10f;
 		style.ContentMarginTop = style.ContentMarginBottom = 10f;
 
@@ -554,37 +606,51 @@ public partial class VictoryScreen : CanvasLayer
 		inner.MouseFilter = Control.MouseFilterEnum.Ignore;
 		card.AddChild(inner);
 
-		// Icon (centred)
+		// ── Icon area: plain Control (not a Container) so the banner can
+		//    overlay it freely without fighting a layout pass. ──────────────────
+		var iconArea = new Control();
+		iconArea.CustomMinimumSize = new Vector2(56f, 64f);
+		iconArea.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		iconArea.MouseFilter = Control.MouseFilterEnum.Ignore;
+		inner.AddChild(iconArea);
+
 		var icon = new TextureRect();
-		icon.CustomMinimumSize = new Vector2(56f, 56f);
+		icon.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 		icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-		icon.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
-		icon.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+		icon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 		icon.MouseFilter = Control.MouseFilterEnum.Ignore;
 		if (!string.IsNullOrEmpty(def.IconPath))
 			icon.Texture = GD.Load<Texture2D>(def.IconPath);
-		inner.AddChild(icon);
+		iconArea.AddChild(icon);
 
-		// School label (small, muted)
+		// Tier banner pinned to the top-left corner of the icon area.
+		var banner = new TierBanner(schoolColor, def.TalentRow);
+		banner.SetAnchor(Side.Left, 0f);  banner.SetAnchor(Side.Right, 0f);
+		banner.SetAnchor(Side.Top,  0f);  banner.SetAnchor(Side.Bottom, 0f);
+		banner.OffsetRight  = TierBanner.W;
+		banner.OffsetBottom = TierBanner.H;
+		iconArea.AddChild(banner);
+
+		// School name — tinted the school colour.
 		var schoolLabel = new Label();
 		schoolLabel.Text = def.School.ToString();
 		schoolLabel.HorizontalAlignment = HorizontalAlignment.Center;
 		schoolLabel.AddThemeFontSizeOverride("font_size", 11);
-		schoolLabel.AddThemeColorOverride("font_color", HintColor);
+		schoolLabel.AddThemeColorOverride("font_color", schoolColor);
 		schoolLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
 		inner.AddChild(schoolLabel);
 
-		// Talent name (gold)
+		// Talent name — school-coloured instead of generic gold.
 		var nameLabel = new Label();
 		nameLabel.Text = def.Name;
 		nameLabel.HorizontalAlignment = HorizontalAlignment.Center;
 		nameLabel.AutowrapMode = TextServer.AutowrapMode.Word;
 		nameLabel.AddThemeFontSizeOverride("font_size", 14);
-		nameLabel.AddThemeColorOverride("font_color", TitleColor);
+		nameLabel.AddThemeColorOverride("font_color", schoolColor);
 		nameLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
 		inner.AddChild(nameLabel);
 
-		// Description (small, wrapping)
+		// Description (small, wrapping, muted)
 		var descLabel = new Label();
 		descLabel.Text = def.Description;
 		descLabel.HorizontalAlignment = HorizontalAlignment.Center;
@@ -598,44 +664,59 @@ public partial class VictoryScreen : CanvasLayer
 	}
 
 	/// <summary>
-	/// Toggles a talent offer card selected/unselected.
-	/// If the card is already selected it is deselected.
-	/// If the player is at capacity (<see cref="_selectionsRequired"/> already chosen),
-	/// the oldest selection is evicted first.
-	/// Enables the continue button once enough cards are selected.
+	/// Handles a card click in a given offer row.
+	///
+	/// Clicking an unselected card selects it and clears any previous selection in
+	/// the same row.  Clicking the already-selected card deselects it (toggle).
+	/// Selections in other rows are unaffected.
+	///
+	/// The continue button is enabled only when every row has a selection.
 	/// </summary>
-	void ToggleOffer(TalentDefinition def, List<(TalentDefinition def, PanelContainer card)> allCards)
+	void SelectOffer(int rowIndex, TalentDefinition def,
+		List<(int RowIndex, TalentDefinition Def, PanelContainer Card)> allCards)
 	{
-		var alreadySelected = _selectedOffers.Any(d => d.Name == def.Name);
+		// Toggle: clicking the active card deselects it; anything else selects it.
+		_rowSelections[rowIndex] = _rowSelections[rowIndex]?.Name == def.Name ? null : def;
 
-		if (alreadySelected)
-		{
-			_selectedOffers.RemoveAll(d => d.Name == def.Name);
-		}
-		else
-		{
-			// If at capacity, evict the oldest selection to make room.
-			if (_selectedOffers.Count >= _selectionsRequired)
-				_selectedOffers.RemoveAt(0);
-			_selectedOffers.Add(def);
-		}
+		// Collect the names that are currently selected across all rows.
+		var selectedNames = _rowSelections
+			.Where(s => s != null)
+			.Select(s => s!.Name)
+			.ToHashSet();
 
-		// Refresh card borders.
-		var selectedNames = _selectedOffers.Select(d => d.Name).ToHashSet();
-		foreach (var (d, card) in allCards)
+		// Refresh borders on all cards.
+		// Selected cards get the gold border; unselected cards revert to their
+		// dimmed school colour so the identity hint is preserved.
+		foreach (var (_, d, card) in allCards)
 		{
+			Color borderColor;
+			int borderWidth;
+			if (selectedNames.Contains(d.Name))
+			{
+				borderColor = OfferBorderSelected;
+				borderWidth = 3;
+			}
+			else
+			{
+				var sc = LoadoutController.SpellSchoolColor(d.School);
+				borderColor = sc * 0.55f;
+				borderColor.A = 1f;
+				borderWidth = 2;
+			}
+
 			var style = new StyleBoxFlat();
 			style.BgColor = new Color(0.10f, 0.08f, 0.07f);
 			style.SetCornerRadiusAll(6);
-			style.SetBorderWidthAll(2);
-			style.BorderColor = selectedNames.Contains(d.Name) ? OfferBorderSelected : OfferBorderUnselected;
+			style.SetBorderWidthAll(borderWidth);
+			style.BorderColor = borderColor;
 			style.ContentMarginLeft = style.ContentMarginRight = 10f;
 			style.ContentMarginTop = style.ContentMarginBottom = 10f;
 			card.AddThemeStyleboxOverride("panel", style);
 		}
 
+		// Enable continue only when every row has a selection.
 		if (_activeBtn != null)
-			SetContinueButtonDisabled(_activeBtn, _selectedOffers.Count < _selectionsRequired);
+			SetContinueButtonDisabled(_activeBtn, _rowSelections.Any(s => s == null));
 	}
 
 	// ── continue button enable / disable ──────────────────────────────────────
@@ -1165,6 +1246,67 @@ public partial class VictoryScreen : CanvasLayer
 		btn.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.85f));
 		btn.Pressed += onPressed;
 		return btn;
+	}
+
+	// ── TierBanner ────────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// A draped-cloth banner pinned to the top-left corner of a talent card's
+	/// icon area.  Rendered as a filled pentagon — a rectangle with a downward-
+	/// pointing triangular notch at the bottom — coloured by spell school, with
+	/// a "T1"–"T4" tier label centred in the upper portion.
+	/// </summary>
+	private partial class TierBanner : Control
+	{
+		public const float W = 28f;
+		public const float H = 36f;
+
+		// How deep the triangular point extends below the rectangular body.
+		const float PointDepth = 9f;
+
+		readonly Color _color;
+
+		public TierBanner(Color color, int talentRow)
+		{
+			_color = color;
+			MouseFilter = MouseFilterEnum.Ignore;
+
+			var label = new Label();
+			label.Text = $"T{talentRow + 1}";
+			label.MouseFilter = MouseFilterEnum.Ignore;
+			label.AddThemeFontSizeOverride("font_size", 10);
+			label.AddThemeColorOverride("font_color", Colors.White);
+			label.AddThemeColorOverride("font_outline_color", Colors.Black);
+			label.AddThemeConstantOverride("outline_size", 4);
+
+			// Centre the label inside the rectangular body (above the point).
+			label.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+			label.OffsetBottom = -(PointDepth);
+			label.HorizontalAlignment = HorizontalAlignment.Center;
+			label.VerticalAlignment = VerticalAlignment.Center;
+			AddChild(label);
+		}
+
+		public override void _Draw()
+		{
+			// Pentagon: rectangle top + downward triangle at the bottom.
+			//   (0, 0) ─────────── (W, 0)
+			//      |                   |
+			//   (0, H-PointDepth) ─ (W, H-PointDepth)
+			//              ╲       ╱
+			//            (W/2, H)
+			var body = H - PointDepth;
+			var points = new Vector2[]
+			{
+				new(0f,     0f),
+				new(W,      0f),
+				new(W,      body),
+				new(W / 2f, H),
+				new(0f,     body),
+			};
+
+			DrawPolygon(points, new[] { _color });
+		}
 	}
 
 	// ── shared layout helpers ─────────────────────────────────────────────────

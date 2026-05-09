@@ -18,6 +18,7 @@ public partial class OverworldPlayer : CharacterBody2D
 	/// <summary>World-space X bounds set by <see cref="OverworldController"/> to keep
 	/// the player within the background image edges.</summary>
 	public float XMin = float.NegativeInfinity;
+
 	public float XMax = float.PositiveInfinity;
 
 	AnimatedSprite2D _sprite = null!;
@@ -58,7 +59,7 @@ public partial class OverworldPlayer : CharacterBody2D
 		if (dir != Vector2.Zero)
 		{
 			// Flip sprite to face horizontal movement direction
-			if (dir.X != 0f) _sprite.FlipH = dir.X < 0f;
+			if (dir.X != 0f) _sprite.FlipH = -1 * dir.X < 0f;
 			dir = dir.Normalized();
 		}
 

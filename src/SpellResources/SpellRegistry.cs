@@ -2,6 +2,7 @@
 using System.Linq;
 using healerfantasy.SpellResources.Chronomancy;
 using healerfantasy.SpellResources.Generic;
+using healerfantasy.SpellResources.Sanguimancy;
 using healerfantasy.SpellResources.Void;
 
 namespace healerfantasy.SpellResources;
@@ -25,7 +26,6 @@ public static class SpellRegistry
 		new ShadowBoltSpell(),
 		new VoidDrainSpell(),
 		new SoulShatterSpell(),
-		new DarkPactSpell(),
 		new VoidsEmbraceSpell()
 	];
 
@@ -58,10 +58,19 @@ public static class SpellRegistry
 		new HolyNovaSpell()
 	];
 
+	public static readonly List<SpellResource> SanguimancySpells =
+	[
+		new SanguinePact(),
+		new VitalSurgeSpell(),
+		new SanguineDrainSpell(),
+		new ExsanguinateSpell()
+	];
+
 	public static readonly List<SpellResource> AllSpells = new List<SpellResource>()
 		.Concat(VoidSpells)
 		.Concat(ChronomancySpells)
 		.Concat(NatureSpells)
 		.Concat(HolySpells)
+		.Concat(SanguimancySpells)
 		.ToList();
 }

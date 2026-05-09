@@ -35,7 +35,8 @@ public class CharacterStats
 		{ SpellSchool.Holy, 0.0f },
 		{ SpellSchool.Void, 0.0f },
 		{ SpellSchool.Chronomancy, 0.0f },
-		{ SpellSchool.Generic, 0.0f }
+		{ SpellSchool.Generic, 0.0f },
+		{ SpellSchool.Sanguimancy, 0.0f }
 	};
 
 	/// <summary>

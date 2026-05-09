@@ -42,8 +42,8 @@ public partial class CampController : LoadoutController
 			AssetConstants.SpellbookSfxPath));
 
 		var talentBoard = AddInteractible(new InteractibleObject(
-			AssetConstants.TalentBoardInteractiblePath,
-			new Vector2(796f, FloorHeight), new Vector2(0.090f, 0.090f), 50f,
+			AssetConstants.TalentBoardPath(),
+			new Vector2(796f, FloorHeight), new Vector2(0.080f, 0.080f), 50f,
 			AssetConstants.TalentsSfxPath));
 
 		var armory = AddInteractible(new InteractibleObject(

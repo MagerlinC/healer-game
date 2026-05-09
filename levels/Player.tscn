@@ -1,28 +1,28 @@
 [gd_scene format=3 uid="uid://rgui8intvs0v"]
 
+[ext_resource type="Texture2D" uid="uid://bbq2chohjwba1" path="res://assets/characters/healer/cast1.png" id="2_bg8ov"]
+[ext_resource type="Texture2D" uid="uid://biu7b007ncwn0" path="res://assets/characters/healer/cast2.png" id="3_0x02o"]
+[ext_resource type="Texture2D" uid="uid://b8btvvmluo1to" path="res://assets/characters/healer/cast3.png" id="4_e0bdv"]
+[ext_resource type="Texture2D" uid="uid://dfd8epagovy53" path="res://assets/characters/healer/cast4.png" id="5_dsttt"]
+[ext_resource type="Texture2D" uid="uid://2rdsvuefnqii" path="res://assets/characters/healer/idle1.png" id="6_faooq"]
+[ext_resource type="Texture2D" uid="uid://b17cltds5cmq4" path="res://assets/characters/healer/idle2.png" id="7_47485"]
+[ext_resource type="Texture2D" uid="uid://cv78w7fko1ruh" path="res://assets/characters/healer/idle3.png" id="8_lrkey"]
 [ext_resource type="Script" uid="uid://bkua5fxmutm7j" path="res://src/Characters/Player.cs" id="Script_player"]
-[ext_resource type="Texture2D" uid="uid://cbogghmjstg7p" path="res://assets/characters/healer/cast1.png" id="Texture_cast1"]
-[ext_resource type="Texture2D" uid="uid://nrby0r1vb23c" path="res://assets/characters/healer/cast2.png" id="Texture_cast2"]
-[ext_resource type="Texture2D" uid="uid://r6qrpvxn0j16" path="res://assets/characters/healer/cast3.png" id="Texture_cast3"]
-[ext_resource type="Texture2D" uid="uid://dd7ffwrbiyhv0" path="res://assets/characters/healer/cast4.png" id="Texture_cast4"]
-[ext_resource type="Texture2D" uid="uid://nvsa0aosh1uh" path="res://assets/characters/healer/idle1.png" id="Texture_idle1"]
-[ext_resource type="Texture2D" uid="uid://3ahwcsn0ogla" path="res://assets/characters/healer/idle2.png" id="Texture_idle2"]
-[ext_resource type="Texture2D" uid="uid://bsflg16oams2e" path="res://assets/characters/healer/idle3.png" id="Texture_idle3"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_healer"]
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": ExtResource("Texture_cast1")
+"texture": ExtResource("2_bg8ov")
 }, {
 "duration": 1.0,
-"texture": ExtResource("Texture_cast2")
+"texture": ExtResource("3_0x02o")
 }, {
 "duration": 1.0,
-"texture": ExtResource("Texture_cast3")
+"texture": ExtResource("4_e0bdv")
 }, {
 "duration": 1.0,
-"texture": ExtResource("Texture_cast4")
+"texture": ExtResource("5_dsttt")
 }],
 "loop": true,
 "name": &"cast",
@@ -30,13 +30,13 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": ExtResource("Texture_idle1")
+"texture": ExtResource("6_faooq")
 }, {
 "duration": 1.0,
-"texture": ExtResource("Texture_idle2")
+"texture": ExtResource("7_47485")
 }, {
 "duration": 1.0,
-"texture": ExtResource("Texture_idle3")
+"texture": ExtResource("8_lrkey")
 }],
 "loop": true,
 "name": &"idle",
@@ -60,4 +60,3 @@ speed_scale = 0.5
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=109809528]
 position = Vector2(0, 4)
 shape = SubResource("CapsuleShape2D_player")
-

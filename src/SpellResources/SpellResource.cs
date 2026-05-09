@@ -17,7 +17,8 @@ public enum SpellSchool
 	Void,
 	Holy,
 	Chronomancy,
-	Generic
+	Generic,
+	Sanguimancy
 }
 
 [GlobalClass]
@@ -49,6 +50,13 @@ public partial class SpellResource : Resource
 	/// </summary>
 	public int RequiredSchoolPoints { get; protected set; } = 0;
 	// ── Pipeline integration ─────────────────────────────────────────────────
+
+	/// <summary>
+	/// The health cost of this spell, paid by the caster when the spell is applied.
+	/// 0 for spells that use mana instead. Sanguimancy spells override this.
+	/// Readable by talents via <see cref="SpellSystem.SpellContext.Spell"/>.
+	/// </summary>
+	public virtual float HpCost => 0f;
 
 	/// <summary>
 	/// The raw numeric value that seeds <see cref="SpellContext.BaseValue"/>.

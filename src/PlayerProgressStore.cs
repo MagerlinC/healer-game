@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text.Json;
 using Godot;
 
@@ -25,6 +26,17 @@ public static class PlayerProgressStore
 		/// <summary>True once the player has opened the Spellbook at least once.</summary>
 		public bool HasOpenedSpellbook { get; set; } = false;
 	}
+
+	/// <summary>
+	/// True if the player has defeated The Blood Prince (the final boss of the
+	/// Castle of Blood) in any previous run.  Unlocks the Sanguimancy spell school.
+	///
+	/// Derived from run history so no separate flag is needed — the history already
+	/// persists to disk and survives game restarts.
+	/// </summary>
+	public static bool HasDefeatedCastleOfBlood =>
+		RunHistoryStore.History.Any(r =>
+			r.BossEncounters.Any(e => e.BossName == GameConstants.CastleBoss3Name));
 
 	// ── in-memory state ───────────────────────────────────────────────────────
 

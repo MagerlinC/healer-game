@@ -22,5 +22,8 @@ public enum SpellTags
 	/// haste, rather than a cast-time spell. Used to distinguish melee/ranged
 	/// attacks from spells so the haste pipeline applies to the right value.
 	/// </summary>
-	Attack = 1 << 8
+	Attack = 1 << 8,
+
+	/// <summary>Marks a spell as belonging to the Sanguimancy school (blood magic).</summary>
+	Sanguimancy = 1 << 9
 }
