@@ -16,30 +16,34 @@ namespace healerfantasy.Talents.Sanguimancy;
 /// </summary>
 public class CrimsonReboundTalent : ISpellModifier
 {
-    const float RecoveryFraction = 0.40f;
-    const float Duration = 5f;
-    const float TickInterval = 1f;
+	const float RecoveryFraction = 0.40f;
+	const float Duration = 5f;
+	const float TickInterval = 1f;
 
-    public Texture2D EffectIcon { get; set; }
-    public ModifierPriority Priority => ModifierPriority.BASE;
+	public Texture2D EffectIcon { get; set; }
+	public ModifierPriority Priority => ModifierPriority.BASE;
 
-    public void OnBeforeCast(SpellContext ctx) { }
-    public void OnCalculate(SpellContext ctx) { }
+	public void OnBeforeCast(SpellContext ctx)
+	{
+	}
+	public void OnCalculate(SpellContext ctx)
+	{
+	}
 
-    public void OnAfterCast(SpellContext ctx)
-    {
-        if (ctx.Spell.School != SpellSchool.Sanguimancy) return;
-        if (ctx.Spell.HpCost <= 0f) return;
+	public void OnAfterCast(SpellContext ctx)
+	{
+		if (ctx.Spell.School != SpellSchool.Sanguimancy) return;
+		if (ctx.Spell.HealthCost <= 0f) return;
 
-        var healPerTick = ctx.Spell.HpCost * RecoveryFraction / (Duration / TickInterval);
+		var healPerTick = ctx.Spell.HealthCost * RecoveryFraction / (Duration / TickInterval);
 
-        ctx.Caster.ApplyEffect(new HealOverTimeEffect(healPerTick, Duration, TickInterval)
-        {
-            Icon = EffectIcon,
-            School = SpellSchool.Sanguimancy,
-            SourceCharacterName = ctx.Caster.CharacterName,
-            AbilityName = "Crimson Rebound",
-            Description = "Recovering health spent on blood magic."
-        });
-    }
+		ctx.Caster.ApplyEffect(new HealOverTimeEffect(healPerTick, Duration, TickInterval)
+		{
+			Icon = EffectIcon,
+			School = SpellSchool.Sanguimancy,
+			SourceCharacterName = ctx.Caster.CharacterName,
+			AbilityName = "Crimson Rebound",
+			Description = "Recovering health spent on blood magic."
+		});
+	}
 }

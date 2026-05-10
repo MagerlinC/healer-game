@@ -27,7 +27,6 @@ public partial class ExsanguinateSpell : SpellResource
 
 	// HpCost reports per-member drain so talents (Crimson Rebound, Sanguine Ward)
 	// can react to it in a meaningful way.
-	public override float HpCost => DrainPerMember;
 
 	public ExsanguinateSpell()
 	{
@@ -36,6 +35,7 @@ public partial class ExsanguinateSpell : SpellResource
 			$"Extract {DrainPerMember} health from each living party member (non-lethal), dealing twice the total as damage to the boss.";
 		ManaCost = 0f;
 		CastTime = 2.5f;
+		HealthCost = 5f;
 		Cooldown = 30f;
 		School = SpellSchool.Sanguimancy;
 		Tags = SpellTags.Damage | SpellTags.Sanguimancy;
@@ -74,7 +74,7 @@ public partial class ExsanguinateSpell : SpellResource
 			var drain = Math.Min(DrainPerMember, member.CurrentHealth - 1f);
 			if (drain <= 0f) continue;
 
-			member.TakeDamage(drain);
+			member.SpendLife(drain);
 			totalDrained += drain;
 		}
 

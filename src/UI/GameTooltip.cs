@@ -129,8 +129,16 @@ public partial class GameTooltip : CanvasLayer
 			? "Instant"
 			: $"{spell.CastTime:F1}s";
 
+		var healthCost = spell.HealthCost > 0f
+			? $"{(int)spell.HealthCost} Health"
+			: "";
+
+		var manaCost = spell.ManaCost > 0f
+			? $"{(int)spell.ManaCost} Mana"
+			: "";
+
 		return (spell.Name,
-			$"{spell.Description}\nMana: {(int)spell.ManaCost}\nCast time: {castInfo}\nCooldown: {(spell.Cooldown > 0f ? $"{spell.Cooldown:F1}s" : "None")}");
+			$"{spell.Description}\n\nCost: {healthCost} {manaCost}\nCast time: {castInfo}\nCooldown: {(spell.Cooldown > 0f ? $"{spell.Cooldown:F1}s" : "None")}");
 	}
 
 	// ── private ───────────────────────────────────────────────────────────────

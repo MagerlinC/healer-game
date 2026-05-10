@@ -18,56 +18,52 @@ namespace healerfantasy.SpellResources.Sanguimancy;
 [GlobalClass]
 public partial class SanguineDrainSpell : SpellResource
 {
-    const float DamageAmount = 28f;
-    const float HealPerAlly = 10f;
-    const float HpCostAmount = 10f;
+	const float DamageAmount = 28f;
+	const float HealPerAlly = 10f;
+	const float HpCostAmount = 10f;
 
-    public override float HpCost => HpCostAmount;
+	public SanguineDrainSpell()
+	{
+		Name = "Sanguine Drain";
+		Description =
+			$"Spend {HpCostAmount} health to siphon vitality from the enemy, dealing {DamageAmount} damage and healing all allies for {HealPerAlly} health.";
+		ManaCost = 0f;
+		HealthCost = HpCostAmount;
+		CastTime = 2f;
+		Cooldown = 8f;
+		School = SpellSchool.Sanguimancy;
+		Tags = SpellTags.Damage | SpellTags.Sanguimancy;
+		RequiredSchoolPoints = 1;
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/sanguine-drain.png");
+	}
 
-    public SanguineDrainSpell()
-    {
-        Name = "Sanguine Drain";
-        Description =
-            $"Spend {HpCostAmount} health to siphon vitality from the enemy, dealing {DamageAmount} damage and healing all allies for {HealPerAlly} health.";
-        ManaCost = 0f;
-        CastTime = 2f;
-        Cooldown = 8f;
-        School = SpellSchool.Sanguimancy;
-        Tags = SpellTags.Damage | SpellTags.Sanguimancy;
-        RequiredSchoolPoints = 1;
-        Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/sanguine-drain.png");
-    }
+	/// <summary>
+	/// Always resolves to the boss so the spell pipeline treats this as a
+	/// damage spell against the correct target.
+	/// </summary>
+	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)
+	{
+		foreach (var node in caster.GetTree().GetNodesInGroup(GameConstants.BossGroupName))
+			if (node is Character { IsAlive: true } boss)
+				return [boss];
+		return [explicitTarget];
+	}
 
-    /// <summary>
-    /// Always resolves to the boss so the spell pipeline treats this as a
-    /// damage spell against the correct target.
-    /// </summary>
-    public override List<Character> ResolveTargets(Character caster, Character explicitTarget)
-    {
-        foreach (var node in caster.GetTree().GetNodesInGroup(GameConstants.BossGroupName))
-            if (node is Character { IsAlive: true } boss)
-                return [boss];
-        return [explicitTarget];
-    }
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
-    public override float GetBaseValue() => DamageAmount;
+	public override void Apply(SpellContext ctx)
+	{
+		// Deal damage to the boss (FinalValue has been run through the modifier pipeline).
+		ctx.Target?.TakeDamage(ctx.FinalValue);
 
-    public override void Apply(SpellContext ctx)
-    {
-        // Guard: never cast if it would be lethal to the caster.
-        if (ctx.Caster.CurrentHealth <= HpCostAmount) return;
-
-        // Pay the blood price.
-        ctx.Caster.TakeDamage(HpCostAmount);
-
-        // Deal damage to the boss (FinalValue has been run through the modifier pipeline).
-        ctx.Target?.TakeDamage(ctx.FinalValue);
-
-        // Disperse the stolen vitality across all living allies.
-        foreach (var node in ctx.Caster.GetTree().GetNodesInGroup("party"))
-        {
-            if (node is Character { IsAlive: true } ally)
-                ally.Heal(HealPerAlly);
-        }
-    }
+		// Disperse the stolen vitality across all living allies.
+		foreach (var node in ctx.Caster.GetTree().GetNodesInGroup("party"))
+		{
+			if (node is Character { IsAlive: true } ally)
+				ally.Heal(HealPerAlly);
+		}
+	}
 }

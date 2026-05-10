@@ -27,6 +27,7 @@ public partial class SpellResource : Resource
 	[Export] public string Name;
 	[Export] public string Description;
 	[Export] public float ManaCost;
+	[Export] public float HealthCost;
 	[Export] public float CastTime;
 	[Export] public float Cooldown;
 	[Export] public bool Parryable = false;
@@ -56,8 +57,6 @@ public partial class SpellResource : Resource
 	/// 0 for spells that use mana instead. Sanguimancy spells override this.
 	/// Readable by talents via <see cref="SpellSystem.SpellContext.Spell"/>.
 	/// </summary>
-	public virtual float HpCost => 0f;
-
 	/// <summary>
 	/// The raw numeric value that seeds <see cref="SpellContext.BaseValue"/>.
 	/// Override in subclasses to return the primary magnitude (heal amount,

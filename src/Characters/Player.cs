@@ -217,6 +217,7 @@ public partial class Player : Character
 			PartyMember.NotifyPlayerAttackedBoss(target);
 
 		SpendMana(spell.ManaCost);
+		SpendLife(spell.HealthCost);
 		SpellPipeline.Cast(spell, this, target);
 
 		if (spell.Cooldown > 0f)
@@ -303,8 +304,8 @@ public partial class Player : Character
 
 		if (spellToCast is not null)
 		{
-			var hasMana = CurrentMana >= spellToCast.ManaCost;
-			if (hasMana && !IsOnCooldown(spellToCast))
+			var canPayCost = CurrentMana >= spellToCast.ManaCost && CurrentHealth > spellToCast.HealthCost;
+			if (canPayCost && !IsOnCooldown(spellToCast))
 			{
 				// Lock in the target at cast-start: whichever party frame is under
 				// the cursor, or self if the cursor is not over any frame.

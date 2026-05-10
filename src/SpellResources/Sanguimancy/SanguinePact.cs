@@ -47,9 +47,6 @@ public partial class SanguinePact : SpellResource
 
 	public override void Apply(SpellContext ctx)
 	{
-		// Pay the HP cost (goes through shields/damage-reduction as normal).
-		ctx.Caster.TakeDamage(HpCost);
-
 		// Receive the mana gain.
 		ctx.Caster.RestoreMana(ManaGained);
 	}

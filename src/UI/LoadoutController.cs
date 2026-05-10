@@ -53,7 +53,6 @@ public abstract partial class LoadoutController : Node2D
 	// ── school definitions ────────────────────────────────────────────────────
 	protected static readonly (SpellSchool? School, string Name)[] SpellSchoolTabs =
 	{
-		(null, "All"),
 		(SpellSchool.Holy, "Holy"),
 		(SpellSchool.Nature, "Nature"),
 		(SpellSchool.Void, "Void"),
@@ -416,17 +415,38 @@ public abstract partial class LoadoutController : Node2D
 		vbox.AddThemeConstantOverride("separation", 12);
 		margin.AddChild(vbox);
 
-		var libTabs = new TabContainer();
-		libTabs.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-		libTabs.CustomMinimumSize = new Vector2(0, 280f);
+		// Spell school columns
+		var columns = new HBoxContainer();
+		columns.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		columns.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		columns.CustomMinimumSize = new Vector2(0, 280f);
+		columns.AddThemeConstantOverride("separation", 12);
+
 		foreach (var (school, name) in SpellSchoolTabs)
 		{
 			var pane = BuildSpellLibraryPane(school);
-			pane.Name = name;
-			libTabs.AddChild(pane);
+
+			pane.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+			pane.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+
+			// Optional header label for each school
+			var wrapper = new VBoxContainer();
+			wrapper.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+			wrapper.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+			wrapper.AddThemeConstantOverride("separation", 6);
+
+			var header = new Label();
+			header.Text = name;
+			header.HorizontalAlignment = HorizontalAlignment.Center;
+			header.AddThemeFontSizeOverride("font_size", 13);
+
+			wrapper.AddChild(header);
+			wrapper.AddChild(pane);
+
+			columns.AddChild(wrapper);
 		}
 
-		vbox.AddChild(libTabs);
+		vbox.AddChild(columns);
 
 		AddHSep(vbox);
 		vbox.AddChild(BuildLoadoutRow());
@@ -621,7 +641,7 @@ public abstract partial class LoadoutController : Node2D
 
 		var invested = RunState.Instance.SelectedTalentDefs.Count(d => d.School == spell.School);
 		return (spell.Name,
-			$"{spell.Description}\nRequires {spell.RequiredSchoolPoints} {spell.School} talent" +
+			$"{spell.Description}\n\nRequires {spell.RequiredSchoolPoints} {spell.School} talent" +
 			$"{(spell.RequiredSchoolPoints > 1 ? "s" : "")} acquired.\n" +
 			$"({invested} / {spell.RequiredSchoolPoints} acquired this run)");
 	}

@@ -16,31 +16,35 @@ namespace healerfantasy.Talents.Sanguimancy;
 /// </summary>
 public class SanguineWardTalent : ISpellModifier
 {
-    const float ShieldDuration = 10f;
+	const float ShieldDuration = 10f;
 
-    public Texture2D EffectIcon { get; set; }
-    public ModifierPriority Priority => ModifierPriority.BASE;
+	public Texture2D EffectIcon { get; set; }
+	public ModifierPriority Priority => ModifierPriority.BASE;
 
-    public void OnBeforeCast(SpellContext ctx) { }
-    public void OnCalculate(SpellContext ctx) { }
+	public void OnBeforeCast(SpellContext ctx)
+	{
+	}
+	public void OnCalculate(SpellContext ctx)
+	{
+	}
 
-    public void OnAfterCast(SpellContext ctx)
-    {
-        if (ctx.Spell.School != SpellSchool.Sanguimancy) return;
-        if (ctx.Spell.HpCost <= 0f) return;
+	public void OnAfterCast(SpellContext ctx)
+	{
+		if (ctx.Spell.School != SpellSchool.Sanguimancy) return;
+		if (ctx.Spell.HealthCost <= 0f) return;
 
-        foreach (var node in ctx.Caster.GetTree().GetNodesInGroup("party"))
-        {
-            if (node is not Character { IsAlive: true } ally) continue;
+		foreach (var node in ctx.Caster.GetTree().GetNodesInGroup("party"))
+		{
+			if (node is not Character { IsAlive: true } ally) continue;
 
-            ally.ApplyEffect(new ShieldEffect("SanguineWard", ctx.Spell.HpCost, ShieldDuration)
-            {
-                Icon = EffectIcon,
-                School = SpellSchool.Sanguimancy,
-                SourceCharacterName = ctx.Caster.CharacterName,
-                AbilityName = "Sanguine Ward",
-                Description = $"Shielded by the caster's blood sacrifice."
-            });
-        }
-    }
+			ally.ApplyEffect(new ShieldEffect("SanguineWard", ctx.Spell.HealthCost, ShieldDuration)
+			{
+				Icon = EffectIcon,
+				School = SpellSchool.Sanguimancy,
+				SourceCharacterName = ctx.Caster.CharacterName,
+				AbilityName = "Sanguine Ward",
+				Description = $"Shielded by the caster's blood sacrifice."
+			});
+		}
+	}
 }

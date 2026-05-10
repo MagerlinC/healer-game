@@ -63,7 +63,8 @@ public static class SpellRegistry
 		new SanguinePact(),
 		new VitalSurgeSpell(),
 		new SanguineDrainSpell(),
-		new ExsanguinateSpell()
+		new ExsanguinateSpell(),
+		new NovaOfSacrifice()
 	];
 
 	public static readonly List<SpellResource> AllSpells = new List<SpellResource>()

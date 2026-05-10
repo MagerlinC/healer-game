@@ -6,6 +6,7 @@ using healerfantasy;
 using healerfantasy.Effects;
 using healerfantasy.Items;
 using healerfantasy.Runes;
+using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
 /// <summary>
@@ -517,6 +518,13 @@ public abstract partial class Character : CharacterBody2D
 		CurrentMana = Mathf.Max(0f, CurrentMana - adjustedAmount);
 		EmitSignalManaChanged(CharacterName, CurrentMana, MaxMana);
 	}
+
+	public void SpendLife(float amount)
+	{
+		CurrentHealth = Mathf.Max(1f, CurrentHealth - amount);
+		EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
+	}
+
 
 	/// <summary>Restore mana, clamped at MaxMana.</summary>
 	public void RestoreMana(float amount)
