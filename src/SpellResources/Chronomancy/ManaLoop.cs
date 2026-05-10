@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 using healerfantasy;
 using healerfantasy.SpellSystem;
@@ -13,16 +14,16 @@ namespace healerfantasy.SpellResources.Chronomancy;
 /// and the heal fires automatically at the right moment.
 /// </summary>
 [GlobalClass]
-public partial class TimeLoopSpell : SpellResource
+public partial class ManaLoopSpell : SpellResource
 {
-	[Export] public float HealAmount = 50f;
+	[Export] public float ManaAmount = 50f;
 	[Export] public float Delay = 4f;
 
-	public TimeLoopSpell()
+	public ManaLoopSpell()
 	{
 		Name = "Time Loop";
 		Description =
-			$"Traps an ally in a temporal loop. After {Delay}s, the loop resolves and restores {HealAmount} health.";
+			$"Traps an ally in a temporal loop. After {Delay}s, the loop resolves and restores {ManaAmount} mana.";
 		ManaCost = 8f;
 		CastTime = 0.0f;
 		Cooldown = 4f;
@@ -30,12 +31,18 @@ public partial class TimeLoopSpell : SpellResource
 		Tags = SpellTags.Healing | SpellTags.Duration;
 		RequiredSchoolPoints = 1;
 		EffectType = EffectType.Helpful;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/time-loop.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/mana-loop.png");
+	}
+
+	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)
+	{
+		// Always target self
+		return [caster];
 	}
 
 	public override float GetBaseValue()
 	{
-		return HealAmount;
+		return ManaAmount;
 	}
 
 	public override void Apply(SpellContext ctx)

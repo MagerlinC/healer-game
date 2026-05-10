@@ -36,6 +36,7 @@ public static class SpellRegistry
 		new RewindSpell(),
 		new TimeWarpSpell(),
 		new TimeLoopSpell(),
+		new ManaLoopSpell(),
 		new HasteSpell(),
 		new TemporalWardSpell()
 	];
