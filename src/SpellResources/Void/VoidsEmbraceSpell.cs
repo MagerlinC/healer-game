@@ -20,7 +20,6 @@ public partial class VoidsEmbraceSpell : SpellResource
 		CastTime = 0.0f;
 		Cooldown = 20f;
 		School = SpellSchool.Void;
-		Tags = SpellTags.Void;
 		RequiredSchoolPoints = 3;
 		EffectType = EffectType.Helpful;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/voids-embrace.png");

@@ -9,22 +9,26 @@ namespace healerfantasy.SpellResources;
 [Godot.GlobalClass]
 public partial class BossSoulRendSpell : SpellResource
 {
-    public float DamageAmount = 20f;
+	public float DamageAmount = 20f;
 
-    public BossSoulRendSpell()
-    {
-        Name        = "Soul Rend";
-        Description = "The Bringer tears at the target's very soul, dealing void damage.";
-        Tags        = SpellTags.Damage | SpellTags.Void;
-        ManaCost    = 0f;
-        CastTime    = 0f;
-    }
+	public BossSoulRendSpell()
+	{
+		Name = "Soul Rend";
+		Description = "The Bringer tears at the target's very soul, dealing void damage.";
+		Tags = SpellTags.Damage;
+		School = SpellSchool.Void;
+		ManaCost = 0f;
+		CastTime = 0f;
+	}
 
-    public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
-    public override void Apply(SpellContext ctx)
-    {
-        foreach (var target in ctx.Targets)
-            target.TakeDamage(ctx.FinalValue);
-    }
+	public override void Apply(SpellContext ctx)
+	{
+		foreach (var target in ctx.Targets)
+			target.TakeDamage(ctx.FinalValue);
+	}
 }

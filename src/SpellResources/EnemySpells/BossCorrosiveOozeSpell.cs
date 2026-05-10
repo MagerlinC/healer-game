@@ -17,7 +17,8 @@ public partial class BossCorrosiveOozeSpell : SpellResource
 	{
 		Name = "Corrosive Ooze";
 		Description = "Coats the target in acidic slime, burning for 12 damage per second until cleansed.";
-		Tags = SpellTags.Damage | SpellTags.Nature | SpellTags.Duration;
+		Tags = SpellTags.Damage | SpellTags.Duration;
+		School = SpellSchool.Nature;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/demon-slime/corrosive-ooze.png");

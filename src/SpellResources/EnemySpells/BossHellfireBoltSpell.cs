@@ -14,14 +14,18 @@ public partial class BossHellfireBoltSpell : SpellResource
 
 	public BossHellfireBoltSpell()
 	{
-		Name        = "Hellfire Bolt";
+		Name = "Hellfire Bolt";
 		Description = "A concentrated ball of fel fire hurled at a party member, dealing fire damage on impact.";
-		Tags        = SpellTags.Damage | SpellTags.Nature;
-		ManaCost    = 0f;
-		CastTime    = 0f;
+		Tags = SpellTags.Damage;
+		School = SpellSchool.Nature;
+		ManaCost = 0f;
+		CastTime = 0f;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	public override void Apply(SpellContext ctx)
 	{

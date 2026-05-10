@@ -38,7 +38,7 @@ public partial class ExsanguinateSpell : SpellResource
 		HealthCost = 5f;
 		Cooldown = 30f;
 		School = SpellSchool.Sanguimancy;
-		Tags = SpellTags.Damage | SpellTags.Sanguimancy;
+		Tags = SpellTags.Damage;
 		RequiredSchoolPoints = 2;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/exsanguinate.png");
 	}

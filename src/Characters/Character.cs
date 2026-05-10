@@ -398,11 +398,15 @@ public abstract partial class Character : CharacterBody2D
 		FriendlyOnly
 	}
 
-	public void RefreshAllPlayerEffects(EffectFilter filter = EffectFilter.All)
+	public void RefreshAllPlayerEffects(EffectFilter filter = EffectFilter.All, SpellSchool? school = null)
 	{
 		if (_effects.Count == 0) return;
 
-		foreach (var effect in _effects.Values.Where(effect => effect.SourceCharacterName == GameConstants.HealerName))
+		var effectsForSchool = school.HasValue
+			? _effects.Values.Where(effect => effect.School == school.Value)
+			: _effects.Values;
+
+		foreach (var effect in effectsForSchool.Where(effect => effect.SourceCharacterName == GameConstants.HealerName))
 		{
 			switch (filter)
 			{

@@ -28,7 +28,8 @@ public partial class BossTwstsConsumeSpell : SpellResource
 			"The star-devourer's void seeps into the party, dealing increasing damage " +
 			"over 30 seconds. Dispelling it returns the energy to the boss as healing — " +
 			"the sooner it is cleansed, the greater the heal.";
-		Tags = SpellTags.Damage | SpellTags.Void | SpellTags.Duration;
+		Tags = SpellTags.Damage | SpellTags.Duration;
+		School = SpellSchool.Void;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets +

@@ -1,4 +1,5 @@
 using healerfantasy.Effects;
+using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
 
@@ -15,34 +16,38 @@ namespace healerfantasy.Talents.Nature;
 /// </summary>
 public class DeepRootsTalent : ISpellModifier
 {
-    const float ManaRestore = 4f;
+	const float ManaRestore = 4f;
 
-    public ModifierPriority Priority => ModifierPriority.BASE;
+	public ModifierPriority Priority => ModifierPriority.BASE;
 
-    public void OnBeforeCast(SpellContext ctx) { }
+	public void OnBeforeCast(SpellContext ctx)
+	{
+	}
 
-    public void OnCalculate(SpellContext ctx) { }
+	public void OnCalculate(SpellContext ctx)
+	{
+	}
 
-    public void OnAfterCast(SpellContext ctx)
-    {
-        // Only trigger for Nature HoT spells.
-        if (!ctx.Tags.HasFlag(SpellTags.Healing)) return;
-        if (!ctx.Tags.HasFlag(SpellTags.Duration)) return;
-        if (!ctx.Tags.HasFlag(SpellTags.Nature)) return;
+	public void OnAfterCast(SpellContext ctx)
+	{
+		// Only trigger for Nature HoT spells.
+		if (!ctx.Tags.HasFlag(SpellTags.Healing)) return;
+		if (!ctx.Tags.HasFlag(SpellTags.Duration)) return;
+		if (!ctx.IsSpellOfSchool(SpellSchool.Nature)) return;
 
-        // Check each target: if they already had a HoT active when this spell
-        // was cast (OnAfterCast runs before Apply, so existing effects are intact).
-        bool anyHadHot = false;
-        foreach (var target in ctx.Targets)
-        {
-            if (target.GetEffectById(nameof(HealOverTimeEffect)) != null)
-            {
-                anyHadHot = true;
-                break;
-            }
-        }
+		// Check each target: if they already had a HoT active when this spell
+		// was cast (OnAfterCast runs before Apply, so existing effects are intact).
+		var anyHadHot = false;
+		foreach (var target in ctx.Targets)
+		{
+			if (target.GetEffectById(nameof(HealOverTimeEffect)) != null)
+			{
+				anyHadHot = true;
+				break;
+			}
+		}
 
-        if (anyHadHot)
-            ctx.Caster.RestoreMana(ManaRestore);
-    }
+		if (anyHadHot)
+			ctx.Caster.RestoreMana(ManaRestore);
+	}
 }

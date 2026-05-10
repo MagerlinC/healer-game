@@ -1,4 +1,5 @@
 using Godot;
+using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.Talents.Void;
@@ -10,19 +11,23 @@ namespace healerfantasy.Talents.Void;
 /// </summary>
 public class EntropicSurgeTalent : ISpellModifier
 {
-    const float SurgeChance = 0.15f;
-    const float SurgeMultiplier = 2.0f;
+	const float SurgeChance = 0.15f;
+	const float SurgeMultiplier = 2.0f;
 
-    public ModifierPriority Priority => ModifierPriority.BASE;
+	public ModifierPriority Priority => ModifierPriority.BASE;
 
-    public void OnBeforeCast(SpellContext ctx) { }
+	public void OnBeforeCast(SpellContext ctx)
+	{
+	}
 
-    public void OnCalculate(SpellContext ctx)
-    {
-        if (!ctx.Tags.HasFlag(SpellTags.Void)) return;
-        if (GD.Randf() < SurgeChance)
-            ctx.FinalValue *= SurgeMultiplier;
-    }
+	public void OnCalculate(SpellContext ctx)
+	{
+		if (!ctx.IsSpellOfSchool(SpellSchool.Void)) return;
+		if (GD.Randf() < SurgeChance)
+			ctx.FinalValue *= SurgeMultiplier;
+	}
 
-    public void OnAfterCast(SpellContext ctx) { }
+	public void OnAfterCast(SpellContext ctx)
+	{
+	}
 }

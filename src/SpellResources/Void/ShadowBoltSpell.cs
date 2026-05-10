@@ -22,7 +22,7 @@ public partial class ShadowBoltSpell : SpellResource
 		ManaCost = 10f;
 		CastTime = 1.5f;
 		School = SpellSchool.Void;
-		Tags = SpellTags.Damage | SpellTags.Void;
+		Tags = SpellTags.Damage;
 		EffectType = EffectType.Harmful;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/shadow-bolt.png");
 	}

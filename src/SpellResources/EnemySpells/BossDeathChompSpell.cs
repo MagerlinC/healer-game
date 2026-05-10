@@ -14,14 +14,18 @@ public partial class BossDeathChompSpell : SpellResource
 
 	public BossDeathChompSpell()
 	{
-		Name        = "Death Chomp";
+		Name = "Death Chomp";
 		Description = "The Flying Skull snaps its jaw shut on the party's frontline, dealing heavy void damage.";
-		Tags        = SpellTags.Damage | SpellTags.Void | SpellTags.Attack;
-		ManaCost    = 0f;
-		CastTime    = 0f;
+		Tags = SpellTags.Damage | SpellTags.Attack;
+		School = SpellSchool.Void;
+		ManaCost = 0f;
+		CastTime = 0f;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	public override void Apply(SpellContext ctx)
 	{

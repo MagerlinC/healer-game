@@ -22,7 +22,8 @@ public partial class BossToxicNovaSpell : SpellResource
 	{
 		Name = "Toxic Nova";
 		Description = "The Demon Slime erupts in a wave of toxic bile, drenching the entire party — unless deflected.";
-		Tags = SpellTags.Damage | SpellTags.Nature;
+		Tags = SpellTags.Damage;
+		School = SpellSchool.Nature;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Parryable = true;

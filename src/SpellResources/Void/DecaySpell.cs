@@ -19,7 +19,7 @@ public partial class DecaySpellResource : SpellResource
 		ManaCost = 6f;
 		CastTime = 0.0f;
 		// HealOverTime implies Healing; the per-tick value is what gets modified.
-		Tags = SpellTags.Damage | SpellTags.Duration | SpellTags.Void;
+		Tags = SpellTags.Damage | SpellTags.Duration;
 		EffectType = EffectType.Harmful;
 		School = SpellSchool.Void;
 		RequiredSchoolPoints = 1;

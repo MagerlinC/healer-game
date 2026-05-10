@@ -15,16 +15,20 @@ public partial class BossTwstsBeamSpell : SpellResource
 
 	public BossTwstsBeamSpell()
 	{
-		Name        = "Stellar Beam";
+		Name = "Stellar Beam";
 		Description = "A searing beam of compressed starlight burns through a random party member.";
-		Tags        = SpellTags.Damage | SpellTags.Void;
-		ManaCost    = 0f;
-		CastTime    = 0f;
-		Parryable   = false;
-		EffectType  = EffectType.Harmful;
+		Tags = SpellTags.Damage;
+		School = SpellSchool.Void;
+		ManaCost = 0f;
+		CastTime = 0f;
+		Parryable = false;
+		EffectType = EffectType.Harmful;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	public override void Apply(SpellContext ctx)
 	{

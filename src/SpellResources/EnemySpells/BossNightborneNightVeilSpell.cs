@@ -20,7 +20,8 @@ public partial class BossNightborneNightVeilSpell : SpellResource
 		Name = "Night Veil";
 		Description =
 			$"Wraps the target in a suffocating veil of shadow, dealing {DamagePerSecond} damage per second for {Duration} seconds. Dispellable.";
-		Tags = SpellTags.Damage | SpellTags.Void | SpellTags.Duration;
+		Tags = SpellTags.Damage | SpellTags.Duration;
+		School = SpellSchool.Void;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/the-nightborne/night-veil.png");

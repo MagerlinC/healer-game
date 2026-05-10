@@ -14,14 +14,18 @@ public partial class BossVoidScreechSpell : SpellResource
 
 	public BossVoidScreechSpell()
 	{
-		Name        = "Void Screech";
+		Name = "Void Screech";
 		Description = "A piercing screech of void energy aimed at a party member, dealing void damage.";
-		Tags        = SpellTags.Damage | SpellTags.Void;
-		ManaCost    = 0f;
-		CastTime    = 0f;
+		Tags = SpellTags.Damage;
+		School = SpellSchool.Void;
+		ManaCost = 0f;
+		CastTime = 0f;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	public override void Apply(SpellContext ctx)
 	{

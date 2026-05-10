@@ -27,8 +27,8 @@ public partial class BoonOfTheWildsSpell : SpellResource
 		CastTime = 0.0f;
 		Cooldown = 10f;
 		School = SpellSchool.Nature;
-		Tags = SpellTags.Healing | SpellTags.Nature;
-		RequiredSchoolPoints = 1;
+		Tags = SpellTags.Healing;
+		RequiredSchoolPoints = 2;
 		EffectType = EffectType.Helpful;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "healer/healer6.png");
 	}

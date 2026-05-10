@@ -1,3 +1,4 @@
+using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.Talents.Nature;
@@ -8,17 +9,22 @@ namespace healerfantasy.Talents.Nature;
 /// </summary>
 public class ToxicPotencyTalent : ISpellModifier
 {
-    const float Bonus = 1.20f;
+	const float Bonus = 1.20f;
 
-    public ModifierPriority Priority => ModifierPriority.BASE;
+	public ModifierPriority Priority => ModifierPriority.BASE;
 
-    public void OnBeforeCast(SpellContext ctx) { }
+	public void OnBeforeCast(SpellContext ctx)
+	{
+	}
 
-    public void OnCalculate(SpellContext ctx)
-    {
-        if (!ctx.Tags.HasFlag(SpellTags.Nature | SpellTags.Damage)) return;
-        ctx.FinalValue *= Bonus;
-    }
+	public void OnCalculate(SpellContext ctx)
+	{
+		if (!ctx.IsSpellOfSchool(SpellSchool.Nature)) return;
+		if (!ctx.Spell.Tags.HasFlag(SpellTags.Damage)) return;
+		ctx.FinalValue *= Bonus;
+	}
 
-    public void OnAfterCast(SpellContext ctx) { }
+	public void OnAfterCast(SpellContext ctx)
+	{
+	}
 }

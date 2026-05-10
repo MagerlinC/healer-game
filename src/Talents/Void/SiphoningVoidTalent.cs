@@ -1,3 +1,4 @@
+using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.Talents.Void;
@@ -9,17 +10,23 @@ namespace healerfantasy.Talents.Void;
 /// </summary>
 public class SiphoningVoidTalent : ISpellModifier
 {
-    const float ManaPerCast = 1f;
+	const float ManaPerCast = 1f;
 
-    public ModifierPriority Priority => ModifierPriority.BASE;
+	public ModifierPriority Priority => ModifierPriority.BASE;
 
-    public void OnBeforeCast(SpellContext ctx) { }
+	public void OnBeforeCast(SpellContext ctx)
+	{
+	}
 
-    public void OnCalculate(SpellContext ctx) { }
+	public void OnCalculate(SpellContext ctx)
+	{
+	}
 
-    public void OnAfterCast(SpellContext ctx)
-    {
-        if (!ctx.Tags.HasFlag(SpellTags.Void | SpellTags.Damage)) return;
-        ctx.Caster.RestoreMana(ManaPerCast);
-    }
+	public void OnAfterCast(SpellContext ctx)
+	{
+
+		if (!ctx.IsSpellOfSchool(SpellSchool.Void)) return;
+		if (!ctx.Tags.HasFlag(SpellTags.Damage)) return;
+		ctx.Caster.RestoreMana(ManaPerCast);
+	}
 }

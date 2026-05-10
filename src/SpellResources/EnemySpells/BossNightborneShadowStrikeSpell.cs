@@ -14,15 +14,19 @@ public partial class BossNightborneShadowStrikeSpell : SpellResource
 
 	public BossNightborneShadowStrikeSpell()
 	{
-		Name        = "Shadow Strike";
+		Name = "Shadow Strike";
 		Description = "The Nightborne lunges forward with a devastating shadow-infused blade, targeting the frontline defender.";
-		Tags        = SpellTags.Damage | SpellTags.Void | SpellTags.Attack;
-		ManaCost    = 0f;
-		CastTime    = 0f;
-		EffectType  = EffectType.Harmful;
+		Tags = SpellTags.Damage | SpellTags.Attack;
+		School = SpellSchool.Void;
+		ManaCost = 0f;
+		CastTime = 0f;
+		EffectType = EffectType.Harmful;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	public override void Apply(SpellContext ctx)
 	{

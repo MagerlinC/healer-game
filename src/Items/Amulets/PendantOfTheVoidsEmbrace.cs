@@ -89,7 +89,7 @@ public class PendantOfTheVoidsEmbrace : EquippableItem
 		public void OnAfterCast(SpellContext context)
 		{
 			// Charge the pendant whenever a Void damage spell lands.
-			if (context.Tags.HasFlag(SpellTags.Void) && context.Tags.HasFlag(SpellTags.Damage))
+			if (context.Spell.School.HasFlag(SpellSchool.Void) && context.Tags.HasFlag(SpellTags.Damage))
 			{
 				_pendingBonus = true;
 				ItemEffectBus.Activate(EffectId, _icon, _displayName, _indicatorDescription);

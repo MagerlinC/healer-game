@@ -15,14 +15,18 @@ public partial class BossTwstsMeleeAttackSpell : SpellResource
 
 	public BossTwstsMeleeAttackSpell()
 	{
-		Name        = "Void Tendril Strike";
+		Name = "Void Tendril Strike";
 		Description = "A lashing strike from one of the star-devourer's vast cosmic tendrils.";
-		Tags        = SpellTags.Damage | SpellTags.Void | SpellTags.Attack;
-		ManaCost    = 0f;
-		CastTime    = 0f;
+		Tags = SpellTags.Damage | SpellTags.Attack;
+		School = SpellSchool.Void;
+		ManaCost = 0f;
+		CastTime = 0f;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	public override void Apply(SpellContext ctx)
 	{

@@ -1,3 +1,4 @@
+using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.Talents.Nature;
@@ -27,7 +28,7 @@ public class OvergrowthTalent : ISpellModifier
 	{
 		if (!ctx.Tags.HasFlag(SpellTags.Healing)) return;
 		if (!ctx.Tags.HasFlag(SpellTags.Duration)) return;
-		if (!ctx.Tags.HasFlag(SpellTags.Nature)) return;
+		if (!ctx.IsSpellOfSchool(SpellSchool.Nature)) return;
 
 		// For group spells (Wild Growth), check whether the primary target
 		// is healthy. For single-target HoTs, check that target directly.

@@ -19,7 +19,8 @@ public partial class BossFelBurnSpell : SpellResource
 	{
 		Name = "Fel Burn";
 		Description = "Coats the target in corrosive demonic fire, burning for 15 damage per second until cleansed.";
-		Tags = SpellTags.Damage | SpellTags.Nature | SpellTags.Duration;
+		Tags = SpellTags.Damage | SpellTags.Duration;
+		School = SpellSchool.Nature;
 		ManaCost = 0f;
 		CastTime = 0f;
 		EffectType = EffectType.Harmful;

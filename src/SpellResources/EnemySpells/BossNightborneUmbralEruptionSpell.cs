@@ -17,16 +17,21 @@ public partial class BossNightborneUmbralEruptionSpell : SpellResource
 
 	public BossNightborneUmbralEruptionSpell()
 	{
-		Name        = "Umbral Eruption";
-		Description = "The Nightborne charges with terrifying speed and erupts in a wave of pure shadow, engulfing the entire party — unless deflected.";
-		Tags        = SpellTags.Damage | SpellTags.Void;
-		ManaCost    = 0f;
-		CastTime    = 0f;
-		Parryable   = true;
-		EffectType  = EffectType.Harmful;
+		Name = "Umbral Eruption";
+		Description =
+			"The Nightborne charges with terrifying speed and erupts in a wave of pure shadow, engulfing the entire party — unless deflected.";
+		Tags = SpellTags.Damage;
+		School = SpellSchool.Void;
+		ManaCost = 0f;
+		CastTime = 0f;
+		Parryable = true;
+		EffectType = EffectType.Harmful;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	/// <summary>Targets the entire living party.</summary>
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)

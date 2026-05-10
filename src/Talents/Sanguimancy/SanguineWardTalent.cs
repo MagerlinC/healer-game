@@ -30,7 +30,7 @@ public class SanguineWardTalent : ISpellModifier
 
 	public void OnAfterCast(SpellContext ctx)
 	{
-		if (ctx.Spell.School != SpellSchool.Sanguimancy) return;
+		if (!ctx.IsSpellOfSchool(SpellSchool.Sanguimancy)) return;
 		if (ctx.Spell.HealthCost <= 0f) return;
 
 		foreach (var node in ctx.Caster.GetTree().GetNodesInGroup("party"))

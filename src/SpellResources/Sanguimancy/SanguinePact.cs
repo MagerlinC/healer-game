@@ -30,7 +30,6 @@ public partial class SanguinePact : SpellResource
 		CastTime = 0.0f;
 		Cooldown = 14f;
 		School = SpellSchool.Sanguimancy;
-		Tags = SpellTags.Sanguimancy;
 		RequiredSchoolPoints = 1;
 		EffectType = EffectType.Helpful;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/sanguine-pact.png");

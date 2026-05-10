@@ -45,7 +45,8 @@ public static class SpellRegistry
 		new PoisonBoltSpell(),
 		new BarkskinSpell(),
 		new BoonOfTheWildsSpell(),
-		new NourishSpell()
+		new NourishSpell(),
+		new OneWithNatureSpell()
 	];
 
 	public static readonly List<SpellResource> HolySpells =

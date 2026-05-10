@@ -31,7 +31,7 @@ public partial class VitalSurgeSpell : SpellResource
 		CastTime = 1.5f;
 		Cooldown = 2f;
 		School = SpellSchool.Sanguimancy;
-		Tags = SpellTags.Healing | SpellTags.Sanguimancy;
+		Tags = SpellTags.Healing;
 		RequiredSchoolPoints = 0;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/vital-surge.png");
 	}

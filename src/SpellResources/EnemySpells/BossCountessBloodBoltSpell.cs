@@ -15,13 +15,17 @@ public partial class BossCountessBloodBoltSpell : SpellResource
 	{
 		Name = "Blood Bolt";
 		Description = "A condensed bolt of cursed blood hurled at a random party member.";
-		Tags = SpellTags.Damage | SpellTags.Void;
+		Tags = SpellTags.Damage;
+		School = SpellSchool.Sanguimancy;
 		ManaCost = 0f;
 		CastTime = 0f;
 		EffectType = EffectType.Harmful;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	public override void Apply(SpellContext ctx)
 	{

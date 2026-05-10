@@ -23,7 +23,8 @@ public partial class BossEmbraceOfDeathSpell : SpellResource
 		Name = "Embrace of Death";
 		Description =
 			$"The Bringer of Death envelops the entire party in a crushing wave of necrotic energy, dealing {DamageAmount} void damage unless deflected.";
-		Tags = SpellTags.Damage | SpellTags.Void;
+		Tags = SpellTags.Damage;
+		School = SpellSchool.Void;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Parryable = true;

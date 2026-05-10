@@ -15,13 +15,17 @@ public partial class BossBloodPrinceBloodBoltSpell : SpellResource
 	{
 		Name = "Blood Bolt";
 		Description = "A pressurised burst of the Prince's own blood, launched at a random target.";
-		Tags = SpellTags.Damage | SpellTags.Void;
+		Tags = SpellTags.Damage;
+		School = SpellSchool.Void;
 		ManaCost = 0f;
 		CastTime = 0f;
 		EffectType = EffectType.Harmful;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	public override void Apply(SpellContext ctx)
 	{

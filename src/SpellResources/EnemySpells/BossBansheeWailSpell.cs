@@ -24,7 +24,8 @@ public partial class BossBansheeWailSpell : SpellResource
 		Name = "Banshee Wail";
 		Description =
 			"The Flying Skull unleashes a devastating wail of void energy that crashes over the entire party — unless deflected.";
-		Tags = SpellTags.Damage | SpellTags.Void;
+		Tags = SpellTags.Damage;
+		School = SpellSchool.Void;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Parryable = true;

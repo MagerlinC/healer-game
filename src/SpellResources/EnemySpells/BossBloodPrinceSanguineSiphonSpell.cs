@@ -66,7 +66,8 @@ public partial class BossBloodPrinceSanguineSiphonSpell : SpellResource
 		Description = $"The Blood Prince links his blood to nearby enemies, " +
 		              $"draining {LifeLeechedPerTick:F0} life per second from each. " +
 		              $"Deal enough damage to break the channel.";
-		Tags = SpellTags.Damage | SpellTags.Void | SpellTags.Duration;
+		Tags = SpellTags.Damage | SpellTags.Duration;
+		School = SpellSchool.Void;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/the-blood-prince/sanguine-siphon.png");
 		ManaCost = 0f;
 		CastTime = 1.0f;

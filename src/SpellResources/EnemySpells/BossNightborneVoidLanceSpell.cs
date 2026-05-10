@@ -14,15 +14,19 @@ public partial class BossNightborneVoidLanceSpell : SpellResource
 
 	public BossNightborneVoidLanceSpell()
 	{
-		Name        = "Void Lance";
+		Name = "Void Lance";
 		Description = "A concentrated spear of void energy that pierces through armour and strikes a random party member.";
-		Tags        = SpellTags.Damage | SpellTags.Void;
-		ManaCost    = 0f;
-		CastTime    = 0f;
-		EffectType  = EffectType.Harmful;
+		Tags = SpellTags.Damage;
+		School = SpellSchool.Void;
+		ManaCost = 0f;
+		CastTime = 0f;
+		EffectType = EffectType.Harmful;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	public override void Apply(SpellContext ctx)
 	{

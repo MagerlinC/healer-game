@@ -23,7 +23,8 @@ public partial class BossTwstsVoidCataclysmSpell : SpellResource
 		Name = "Void Cataclysm";
 		Description =
 			"A cataclysmic eruption of void energy — three detonations strike the entire party in rapid succession. Each can be deflected independently.";
-		Tags = SpellTags.Damage | SpellTags.Void;
+		Tags = SpellTags.Damage;
+		School = SpellSchool.Void;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Parryable = true;

@@ -15,7 +15,8 @@ public partial class BossAcidSpitSpell : SpellResource
 	{
 		Name = "Acid Spit";
 		Description = "A glob of corrosive acid hurled at a random party member.";
-		Tags = SpellTags.Damage | SpellTags.Nature;
+		Tags = SpellTags.Damage;
+		School = SpellSchool.Nature;
 		EffectType = EffectType.Harmful;
 		ManaCost = 0f;
 		CastTime = 1.0f;

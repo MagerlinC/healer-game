@@ -30,7 +30,8 @@ public partial class BossBloodPrinceVoidDrainSpell : SpellResource
 		Description =
 			"Ancient blood magic drains the life from the entire party simultaneously, " +
 			"dealing 20 damage per second for 10 seconds. This curse cannot be dispelled.";
-		Tags = SpellTags.Damage | SpellTags.Void | SpellTags.Duration;
+		Tags = SpellTags.Damage | SpellTags.Duration;
+		School = SpellSchool.Void;
 		ManaCost = 0f;
 		CastTime = 0f;
 		EffectType = EffectType.Harmful;

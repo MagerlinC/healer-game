@@ -1,3 +1,4 @@
+using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.Talents;
@@ -10,7 +11,6 @@ namespace healerfantasy.Talents;
 /// </summary>
 public class VoidSpecialistTalent : ISpellModifier
 {
-	const SpellTags VoidMask = SpellTags.Void;
 	const float Bonus = 1.20f; // +20 %
 
 	public ModifierPriority Priority => ModifierPriority.BASE;
@@ -21,8 +21,7 @@ public class VoidSpecialistTalent : ISpellModifier
 
 	public void OnCalculate(SpellContext ctx)
 	{
-		// Applies if the spell carries ANY elemental tag.
-		if ((ctx.Tags & VoidMask) == SpellTags.None) return;
+		if (!ctx.IsSpellOfSchool(SpellSchool.Void)) return;
 		ctx.FinalValue *= Bonus;
 	}
 

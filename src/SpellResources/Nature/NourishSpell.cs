@@ -35,7 +35,7 @@ public partial class NourishSpell : SpellResource
         CastTime = 2.0f;
         Cooldown = 0f;
         School = SpellSchool.Nature;
-        Tags = SpellTags.Healing | SpellTags.Nature;
+        Tags = SpellTags.Healing ;
         RequiredSchoolPoints = 1;
         EffectType = EffectType.Helpful;
         Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "nature/swarm-of-locusts.png");

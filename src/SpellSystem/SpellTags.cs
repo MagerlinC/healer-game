@@ -12,18 +12,14 @@ public enum SpellTags
 	Damage = 1 << 0,
 	Healing = 1 << 1,
 	Light = 1 << 2,
-	Void = 1 << 3,
-	Nature = 1 << 4,
 	Critical = 1 << 5, // Set by the pipeline on a successful crit roll
 	Duration = 1 << 6,
 	GroupSpell = 1 << 7,
+
 	/// <summary>
 	/// Marks a basic auto-attack whose cooldown (attack interval) is scaled by
 	/// haste, rather than a cast-time spell. Used to distinguish melee/ranged
 	/// attacks from spells so the haste pipeline applies to the right value.
 	/// </summary>
-	Attack = 1 << 8,
-
-	/// <summary>Marks a spell as belonging to the Sanguimancy school (blood magic).</summary>
-	Sanguimancy = 1 << 9
+	Attack = 1 << 8
 }

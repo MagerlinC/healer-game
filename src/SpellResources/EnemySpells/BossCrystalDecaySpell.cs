@@ -17,7 +17,7 @@ public partial class BossCrystalDecaySpell : SpellResource
 		Name = "Crystal Decay";
 		Description =
 			"Afflicts the target with crystalline corruption, causing them to take 20 void damage per second until dispelled.";
-		Tags = SpellTags.Damage | SpellTags.Void | SpellTags.Duration;
+		Tags = SpellTags.Damage | SpellTags.Duration;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/crystal-knight/crystal-decay.png");

@@ -20,18 +20,25 @@ public partial class BossNecroticWavesSpell : SpellResource
 {
 	public BossNecroticWavesSpell()
 	{
-		Name        = "Necrotic Waves";
-		Description = "The Flying Skull channels necrotic energy and unleashes a series of void waves across the battlefield. Stand in the gap of each wave to avoid damage.";
-		Tags        = SpellTags.Damage | SpellTags.Void;
-		ManaCost    = 0f;
-		CastTime    = 0f;
-		Parryable   = false;
-		Icon        = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/flying-skull/banshee-wail.png");
-		EffectType  = EffectType.Harmful;
+		Name = "Necrotic Waves";
+		Description =
+			"The Flying Skull channels necrotic energy and unleashes a series of void waves across the battlefield. Stand in the gap of each wave to avoid damage.";
+		Tags = SpellTags.Damage;
+		School = SpellSchool.Void;
+		ManaCost = 0f;
+		CastTime = 0f;
+		Parryable = false;
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/flying-skull/banshee-wail.png");
+		EffectType = EffectType.Harmful;
 	}
 
-	public override float GetBaseValue() => 0f;
+	public override float GetBaseValue()
+	{
+		return 0f;
+	}
 
 	// No Apply — FlyingSkull drives all wave spawning directly.
-	public override void Apply(SpellContext ctx) { }
+	public override void Apply(SpellContext ctx)
+	{
+	}
 }

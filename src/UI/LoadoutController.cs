@@ -44,14 +44,14 @@ public abstract partial class LoadoutController : Node2D
 	static readonly Color SlotBorderFilled = new(0.60f, 0.48f, 0.22f);
 
 	// ── layout constants ──────────────────────────────────────────────────────
-	const float CardW = 92f;
-	const float CardH = 116f;
+	const float CardW = 95f;
+	const float CardH = 110f;
 	const float CardIconSz = 64f;
 	protected const float FloorHeight = 780f;
 	protected const string DefaultHint = "Walk up to an object and click it to interact";
 
 	// ── school definitions ────────────────────────────────────────────────────
-	protected static readonly (SpellSchool? School, string Name)[] SpellSchoolTabs =
+	protected static readonly (SpellSchool School, string Name)[] SpellSchoolTabs =
 	{
 		(SpellSchool.Holy, "Holy"),
 		(SpellSchool.Nature, "Nature"),
@@ -429,21 +429,47 @@ public abstract partial class LoadoutController : Node2D
 			pane.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 			pane.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 
-			// Optional header label for each school
+			// Outer panel with gold border
+			var panel = new PanelContainer();
+			panel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+			panel.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+
+			var style = new StyleBoxFlat();
+			style.BorderColor = PanelBorder;
+			style.BorderWidthLeft = 1;
+			style.BorderWidthRight = 1;
+			style.BorderWidthTop = 1;
+			style.BorderWidthBottom = 1;
+			style.CornerRadiusTopLeft = 8;
+			style.CornerRadiusTopRight = 8;
+			style.CornerRadiusBottomLeft = 8;
+			style.CornerRadiusBottomRight = 8;
+			style.BgColor = new Color(0.08f, 0.07f, 0.04f, 0.9f); // subtle dark backing
+			style.ShadowColor = new Color(0, 0, 0, 0.4f);
+			style.ShadowSize = 6;
+
+			panel.AddThemeStyleboxOverride("panel", style);
+
+			// Inner layout
 			var wrapper = new VBoxContainer();
 			wrapper.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 			wrapper.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 			wrapper.AddThemeConstantOverride("separation", 6);
 
+			var headerMarginContainer = new MarginContainer();
+			headerMarginContainer.AddThemeConstantOverride("margin_top", 8);
 			var header = new Label();
 			header.Text = name;
 			header.HorizontalAlignment = HorizontalAlignment.Center;
 			header.AddThemeFontSizeOverride("font_size", 13);
+			header.AddThemeColorOverride("font_color", SpellSchoolColor(school));
+			headerMarginContainer.AddChild(header);
 
-			wrapper.AddChild(header);
+			wrapper.AddChild(headerMarginContainer);
 			wrapper.AddChild(pane);
 
-			columns.AddChild(wrapper);
+			panel.AddChild(wrapper);
+			columns.AddChild(panel);
 		}
 
 		vbox.AddChild(columns);
@@ -474,11 +500,10 @@ public abstract partial class LoadoutController : Node2D
 		margin.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		scroll.AddChild(margin);
 
-		var flow = new HFlowContainer();
-		flow.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		flow.AddThemeConstantOverride("h_separation", 10);
-		flow.AddThemeConstantOverride("v_separation", 10);
-		margin.AddChild(flow);
+		var column = new VBoxContainer();
+		column.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		column.AddThemeConstantOverride("separation", 14);
+		margin.AddChild(column);
 
 		var spells = school == null
 			? SpellRegistry.AllSpells
@@ -492,13 +517,48 @@ public abstract partial class LoadoutController : Node2D
 			empty.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 			empty.AddThemeFontSizeOverride("font_size", 13);
 			empty.AddThemeColorOverride("font_color", HintColor);
-			flow.AddChild(empty);
+			column.AddChild(empty);
 		}
 		else
 		{
+			var tiers = spells
+				.OrderBy(s => s.RequiredSchoolPoints)
+				.ThenBy(s => s.Name)
+				.GroupBy(s => s.RequiredSchoolPoints);
 
-			var orderedSpells = spells.OrderBy(s => s.School).ThenBy(s => s.RequiredSchoolPoints).ThenBy(s => s.Name);
-			foreach (var spell in orderedSpells) flow.AddChild(BuildSpellCard(spell));
+			foreach (var tier in tiers)
+			{
+				var row = new HBoxContainer();
+				row.AddThemeConstantOverride("separation", 12);
+				row.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+
+				// Tier label
+				var tierLabel = new Label();
+				tierLabel.Text = $"T{tier.Key}";
+				tierLabel.CustomMinimumSize = new Vector2(32, 0);
+				tierLabel.VerticalAlignment = VerticalAlignment.Center;
+				tierLabel.HorizontalAlignment = HorizontalAlignment.Center;
+				tierLabel.AddThemeFontSizeOverride("font_size", 14);
+				tierLabel.AddThemeColorOverride(
+					"font_color",
+					new Color(1f, 0.84f, 0.3f)
+				);
+
+				row.AddChild(tierLabel);
+
+				// Spell cards
+				var flow = new HFlowContainer();
+				flow.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+				flow.AddThemeConstantOverride("h_separation", 10);
+				flow.AddThemeConstantOverride("v_separation", 10);
+
+				foreach (var spell in tier)
+					flow.AddChild(BuildSpellCard(spell));
+
+				row.AddChild(flow);
+
+				column.AddChild(row);
+			}
 		}
 
 		return scroll;
@@ -534,15 +594,6 @@ public abstract partial class LoadoutController : Node2D
 		iconRect.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		iconRect.MouseFilter = Control.MouseFilterEnum.Ignore;
 		vbox.AddChild(iconRect);
-
-		var schoolLabel = new Label();
-		schoolLabel.Text = spell.School.ToString();
-		schoolLabel.HorizontalAlignment = HorizontalAlignment.Center;
-		schoolLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		schoolLabel.AddThemeFontSizeOverride("font_size", 9);
-		schoolLabel.AddThemeColorOverride("font_color", SpellSchoolColor(spell.School));
-		schoolLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
-		vbox.AddChild(schoolLabel);
 
 		var nameLabel = new Label();
 		nameLabel.Text = spell.Name ?? "";

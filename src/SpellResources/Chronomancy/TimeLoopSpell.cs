@@ -15,8 +15,8 @@ namespace healerfantasy.SpellResources.Chronomancy;
 [GlobalClass]
 public partial class TimeLoopSpell : SpellResource
 {
-	[Export] public float HealAmount = 35f;
-	[Export] public float Delay = 5f;
+	[Export] public float HealAmount = 50f;
+	[Export] public float Delay = 4f;
 
 	public TimeLoopSpell()
 	{
@@ -27,7 +27,7 @@ public partial class TimeLoopSpell : SpellResource
 		CastTime = 0.0f;
 		School = SpellSchool.Chronomancy;
 		Tags = SpellTags.Healing | SpellTags.Duration;
-		RequiredSchoolPoints = 2;
+		RequiredSchoolPoints = 1;
 		EffectType = EffectType.Helpful;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/time-loop.png");
 	}

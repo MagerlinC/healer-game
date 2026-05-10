@@ -12,17 +12,21 @@ namespace healerfantasy.Talents.Sanguimancy;
 /// </summary>
 public class BloodthirstTalent : ISpellModifier
 {
-    const float Bonus = 0.25f;
+	const float Bonus = 0.25f;
 
-    public ModifierPriority Priority => ModifierPriority.BASE;
+	public ModifierPriority Priority => ModifierPriority.BASE;
 
-    public void OnBeforeCast(SpellContext ctx) { }
+	public void OnBeforeCast(SpellContext ctx)
+	{
+	}
 
-    public void OnCalculate(SpellContext ctx)
-    {
-        if (ctx.Spell.School != SpellSchool.Sanguimancy) return;
-        ctx.FinalValue *= 1f + Bonus;
-    }
+	public void OnCalculate(SpellContext ctx)
+	{
+		if (!ctx.IsSpellOfSchool(SpellSchool.Sanguimancy)) return;
+		ctx.FinalValue *= 1f + Bonus;
+	}
 
-    public void OnAfterCast(SpellContext ctx) { }
+	public void OnAfterCast(SpellContext ctx)
+	{
+	}
 }

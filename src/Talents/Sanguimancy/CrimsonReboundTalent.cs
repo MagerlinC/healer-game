@@ -32,7 +32,7 @@ public class CrimsonReboundTalent : ISpellModifier
 
 	public void OnAfterCast(SpellContext ctx)
 	{
-		if (ctx.Spell.School != SpellSchool.Sanguimancy) return;
+		if (!ctx.IsSpellOfSchool(SpellSchool.Sanguimancy)) return;
 		if (ctx.Spell.HealthCost <= 0f) return;
 
 		var healPerTick = ctx.Spell.HealthCost * RecoveryFraction / (Duration / TickInterval);

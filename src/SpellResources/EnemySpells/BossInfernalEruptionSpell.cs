@@ -22,7 +22,8 @@ public partial class BossInfernalEruptionSpell : SpellResource
 	{
 		Name = "Infernal Eruption";
 		Description = "The Flying Demon exhales a torrent of fel flames that scorches the entire party — unless deflected.";
-		Tags = SpellTags.Damage | SpellTags.Nature;
+		Tags = SpellTags.Damage;
+		School = SpellSchool.Nature;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Parryable = true;

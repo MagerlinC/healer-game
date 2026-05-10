@@ -32,7 +32,7 @@ public class NecroticTouchTalent : ISpellModifier
 
 	public void OnAfterCast(SpellContext ctx)
 	{
-		if (!ctx.Tags.HasFlag(SpellTags.Void)) return;
+		if (!ctx.IsSpellOfSchool(SpellSchool.Void)) return;
 		if (!ctx.Tags.HasFlag(SpellTags.Damage)) return;
 		if (GD.Randf() >= ProcChance) return;
 
