@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://de6qmj8in4dpm"
-path="res://.godot/imported/archangel-of-light.png-c3622b1d06368f84d52d2dd8a65df2a9.ctex"
+uid="uid://cff1ba3icx51l"
+path="res://.godot/imported/mirror-image.png-d8969866e82744a53414a4a4a291f166.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/spell-icons/holy/archangel-of-light.png"
-dest_files=["res://.godot/imported/archangel-of-light.png-c3622b1d06368f84d52d2dd8a65df2a9.ctex"]
+source_file="res://assets/spell-icons/chronomancy/mirror-image.png"
+dest_files=["res://.godot/imported/mirror-image.png-d8969866e82744a53414a4a4a291f166.ctex"]
 
 [params]
 

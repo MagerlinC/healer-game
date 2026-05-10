@@ -7,6 +7,7 @@ using healerfantasy.Items;
 using healerfantasy.Runes;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellResources.Chronomancy;
+using healerfantasy.SpellResources.Void;
 using healerfantasy.Talents;
 
 namespace healerfantasy;
@@ -35,6 +36,13 @@ public partial class RunState : Node
 
 	/// <summary>The 6 spells the player chose. Null slots are empty.</summary>
 	public SpellResource?[] SelectedSpells { get; private set; } = new SpellResource?[Player.MaxSpellSlots];
+
+	/// <summary>
+	/// The ultimate spell the player has equipped for this run.
+	/// Null if no ultimate has been selected.
+	/// Set by the loadout UI; loaded by <see cref="Player._Ready"/>.
+	/// </summary>
+	public UltimateSpellResource? SelectedUltimate { get; set; } = null;
 
 	/// <summary>
 	/// Talent definitions acquired by the player this run.
@@ -135,7 +143,13 @@ public partial class RunState : Node
 
 	// ── Map node state ────────────────────────────────────────────────────────
 
-	public enum MapNodeState { Locked, Available, InProgress, Completed }
+	public enum MapNodeState
+	{
+		Locked,
+		Available,
+		InProgress,
+		Completed
+	}
 
 	/// <summary>
 	/// Visual state of dungeon node [index] on the world map.
@@ -153,6 +167,7 @@ public partial class RunState : Node
 			if (CompletedCamps >= CompletedDungeons - 1)
 				return MapNodeState.Available;
 		}
+
 		return MapNodeState.Locked;
 	}
 
@@ -182,7 +197,10 @@ public partial class RunState : Node
 	public bool RuneSelectionLocked { get; private set; } = false;
 
 	/// <summary>Returns <c>true</c> if the given rune is active for this run.</summary>
-	public bool IsRuneActive(RuneIndex rune) => _activeRunes.Contains(rune);
+	public bool IsRuneActive(RuneIndex rune)
+	{
+		return _activeRunes.Contains(rune);
+	}
 
 	/// <summary>How many runes are currently active (0–4).</summary>
 	public int ActiveRuneCount => _activeRunes.Count;
@@ -202,7 +220,10 @@ public partial class RunState : Node
 	/// Locks rune selection for the remainder of this run.
 	/// Called when the player enters the first fight of a run.
 	/// </summary>
-	public void LockRuneSelection() => RuneSelectionLocked = true;
+	public void LockRuneSelection()
+	{
+		RuneSelectionLocked = true;
+	}
 
 	// ── School affinity ───────────────────────────────────────────────────────
 
@@ -244,10 +265,10 @@ public partial class RunState : Node
 	/// </summary>
 	public void SetupDevTestFight(DungeonDefinition dungeon, int bossIndex)
 	{
-		CompletedDungeons         = 0;
-		CompletedCamps            = 0;
+		CompletedDungeons = 0;
+		CompletedCamps = 0;
 		CurrentBossIndexInDungeon = bossIndex;
-		RunDungeons               = new List<DungeonDefinition> { dungeon };
+		RunDungeons = new List<DungeonDefinition> { dungeon };
 		ItemStore.Clear();
 		IsDevTestFight = true;
 	}
@@ -258,7 +279,10 @@ public partial class RunState : Node
 	/// Call when a non-final boss in the current dungeon is defeated.
 	/// Advances to the next boss without leaving the dungeon.
 	/// </summary>
-	public void AdvanceBossInDungeon() => CurrentBossIndexInDungeon++;
+	public void AdvanceBossInDungeon()
+	{
+		CurrentBossIndexInDungeon++;
+	}
 
 	/// <summary>
 	/// Call when the LAST boss of a non-final dungeon is defeated.
@@ -275,7 +299,10 @@ public partial class RunState : Node
 	/// Call when the player departs from a rest camp (clicks the map on MapScreen).
 	/// Increments CompletedCamps so the next dungeon appears Available on the map.
 	/// </summary>
-	public void CompleteCamp() => CompletedCamps++;
+	public void CompleteCamp()
+	{
+		CompletedCamps++;
+	}
 
 	// ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -297,15 +324,20 @@ public partial class RunState : Node
 			SelectedSpells[i] = i < spells.Length ? spells[i] : null;
 	}
 
+	public void SetUltimate(UltimateSpellResource? ult)
+	{
+		SelectedUltimate = ult;
+	}
+
 	/// <summary>Resets all run progression for a completely fresh run.</summary>
 	public void Reset()
 	{
-		CompletedDungeons         = 0;
-		CompletedCamps            = 0;
+		CompletedDungeons = 0;
+		CompletedCamps = 0;
 		CurrentBossIndexInDungeon = 0;
-		IsDevTestFight            = false;
-		RuneSelectionLocked       = false;
-		InitSchoolAffinityFromPreferences();   // restore persisted affinity rather than clearing it
+		IsDevTestFight = false;
+		RuneSelectionLocked = false;
+		InitSchoolAffinityFromPreferences(); // restore persisted affinity rather than clearing it
 		SelectedTalentDefs.Clear();
 		_activeRunes.Clear();
 		InitRunesFromPreferences();

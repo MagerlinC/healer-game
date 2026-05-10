@@ -5,6 +5,7 @@ using Godot;
 using healerfantasy;
 using healerfantasy.Items;
 using healerfantasy.SpellResources;
+using healerfantasy.SpellResources.Void;
 using healerfantasy.SpellSystem;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
 
@@ -43,6 +44,13 @@ public partial class Player : Character
 	/// </summary>
 	public SpellResource?[] EquippedSpells { get; } = new SpellResource?[MaxSpellSlots];
 
+	/// <summary>
+	/// The player's currently equipped ultimate spell (bound to the "ultimate" action,
+	/// default key R). Null if no ultimate has been equipped.
+	/// Loaded from <see cref="RunState.SelectedUltimate"/> in <see cref="_Ready"/>.
+	/// </summary>
+	public UltimateSpellResource? EquippedUltimate { get; set; } = null;
+
 	/// <param name="spell">The spell being cast.</param>
 	/// <param name="adjustedCastTime">
 	/// The actual cast duration after applying the caster's
@@ -70,6 +78,16 @@ public partial class Player : Character
 	/// </summary>
 	[Signal]
 	public delegate void GlobalCooldownStartedEventHandler(float duration);
+
+	/// <summary>
+	/// Emitted whenever the equipped ultimate spell's progress or state changes
+	/// (after each spell cast and each process tick).
+	/// <paramref name="progress"/> is the current accumulated progress.
+	/// <paramref name="requirement"/> is the threshold needed to cast.
+	/// Used by <see cref="UI.UltimateSlot"/> to refresh the progress display.
+	/// </summary>
+	[Signal]
+	public delegate void UltimateProgressChangedEventHandler(float progress, float requirement);
 
 	/// <summary>
 	/// Set by World after the scene is ready.
@@ -121,6 +139,11 @@ public partial class Player : Character
 		{
 			System.Array.Copy(RunState.Instance.SelectedSpells, EquippedSpells, MaxSpellSlots);
 		}
+
+		// Load the ultimate spell (may be null if none was selected in the overworld).
+		EquippedUltimate = RunState.Instance?.SelectedUltimate;
+
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(UltimateProgressChanged));
 
 		// Apply talents chosen in the Overworld
 		if (RunState.Instance?.SelectedTalentDefs.Count > 0)
@@ -218,7 +241,22 @@ public partial class Player : Character
 
 		SpendMana(spell.ManaCost);
 		SpendLife(spell.HealthCost);
-		SpellPipeline.Cast(spell, this, target);
+		var ctx = SpellPipeline.Cast(spell, this, target);
+
+		// Notify the ultimate spell about this cast so it can track progress.
+		// Also check if this was the ultimate itself — if so, reset progress.
+		if (EquippedUltimate != null)
+		{
+			if (ReferenceEquals(spell, EquippedUltimate))
+			{
+				EquippedUltimate.ResetProgress();
+			}
+			else
+			{
+				EquippedUltimate.OnRegularSpellCast(ctx);
+			}
+			EmitSignalUltimateProgressChanged(EquippedUltimate.Progress, EquippedUltimate.Requirement);
+		}
 
 		if (spell.Cooldown > 0f)
 		{
@@ -266,6 +304,15 @@ public partial class Player : Character
 
 		if (!IsAlive) return;
 
+		// ── Tick ultimate progress every frame while alive ────────────────────────
+		if (EquippedUltimate != null)
+		{
+			var prevProgress = EquippedUltimate.Progress;
+			EquippedUltimate.OnProcessTick(this, (float)delta);
+			if (!Mathf.IsEqualApprox(EquippedUltimate.Progress, prevProgress))
+				EmitSignalUltimateProgressChanged(EquippedUltimate.Progress, EquippedUltimate.Requirement);
+		}
+
 		// ── Generic spells (off-GCD, castable even while casting another spell) ──
 		// Checked before the _isCasting early-return so Deflect can be triggered
 		// at any time during a cast.
@@ -299,6 +346,46 @@ public partial class Player : Character
 
 		var canCast = IsAlive && _globalCooldownTimer == 0f;
 		if (!canCast) return;
+
+		// ── Ultimate spell (bound to "ultimate", default key R) ───────────────────
+		if (EquippedUltimate != null && Input.IsActionJustPressed("ultimate"))
+		{
+			var ultimate = EquippedUltimate;
+			var canPayCost = CurrentMana >= ultimate.ManaCost && CurrentHealth > ultimate.HealthCost;
+			if (canPayCost && !IsOnCooldown(ultimate) && ultimate.IsRequirementMet)
+			{
+				var hoveredCharacter = ResolveTargetWithFallback(GameUI?.GetHoveredCharacter(), ultimate);
+				if (hoveredCharacter != null)
+				{
+					_castTarget = hoveredCharacter;
+					_castSpell  = ultimate;
+
+					var stats    = GetCharacterStats();
+					var isInstant = ultimate.CastTime == 0.0f
+					                || stats.NextCastIsInstant && ultimate.School != SpellSchool.Chronomancy;
+
+					if (isInstant)
+					{
+						FireSpell(ultimate, hoveredCharacter);
+					}
+					else
+					{
+						var adjustedCastTime = ultimate.CastTime - ultimate.CastTime * stats.IncreasedHaste;
+						EmitSignalCastStarted(ultimate, adjustedCastTime);
+						_isCasting  = true;
+						_castTimer  = adjustedCastTime;
+						_castingAudioPlayer.Play();
+						_sprite.SpeedScale = CastAnimBaseDuration / adjustedCastTime;
+						_sprite.Play("cast");
+					}
+
+					var adjustedGcd = Mathf.Max(GlobalCooldown * (1f - stats.IncreasedHaste), 0.1f);
+					_globalCooldownTimer = adjustedGcd;
+					EmitSignalGlobalCooldownStarted(adjustedGcd);
+				}
+			}
+			return;
+		}
 
 		var spellToCast = GetSpellForInput();
 

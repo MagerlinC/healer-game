@@ -6,6 +6,7 @@ using healerfantasy.SpellResources.Holy;
 using healerfantasy.SpellResources.Nature;
 using healerfantasy.SpellResources.Sanguimancy;
 using healerfantasy.SpellResources.Void;
+using UltimateSpellResource = healerfantasy.SpellResources.Void.UltimateSpellResource;
 
 namespace healerfantasy.SpellResources;
 
@@ -20,6 +21,19 @@ public static class SpellRegistry
 	[
 		new DispelSpell(),
 		new DeflectSpell()
+	];
+
+	/// <summary>
+	/// All available ultimate spells, one per school. These occupy the dedicated
+	/// ultimate slot (key R) rather than the regular 6-slot loadout.
+	/// </summary>
+	public static readonly List<UltimateSpellResource> UltimateSpells =
+	[
+		new ArchangelOfLightSpell(),
+		new OneWithNatureSpell(),
+		new VoidsEmbraceSpell(),
+		new MirrorImage(),
+		new VampiricEmbrace()
 	];
 
 	public static readonly List<SpellResource> VoidSpells =
@@ -38,7 +52,8 @@ public static class SpellRegistry
 		new TimeLoopSpell(),
 		new ManaLoopSpell(),
 		new HasteSpell(),
-		new TemporalWardSpell()
+		new TemporalWardSpell(),
+		new MirrorImage()
 	];
 
 	public static readonly List<SpellResource> NatureSpells =
@@ -69,7 +84,8 @@ public static class SpellRegistry
 		new VitalSurgeSpell(),
 		new SanguineDrainSpell(),
 		new ExsanguinateSpell(),
-		new NovaOfSacrifice()
+		new NovaOfSacrifice(),
+		new VampiricEmbrace()
 	];
 
 	public static readonly List<SpellResource> AllSpells = new List<SpellResource>()

@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using healerfantasy.Effects;
 using healerfantasy.SpellResources.Void;
 using healerfantasy.SpellSystem;
@@ -7,16 +7,25 @@ namespace healerfantasy.SpellResources.Holy;
 
 public partial class ArchangelOfLightSpell : UltimateSpellResource
 {
-
 	static float BuffDuration = 10f;
 	static float HealingIncrease = 30f;
+
+	/// <summary>
+	/// Requirement: spend a total of 50 mana on holy spells.
+	/// Each holy spell cast contributes its ManaCost to Progress.
+	/// </summary>
+	public override float Requirement => 50f;
+
+	public override string ActiveEffectId => "ArchangelOfLightEffect";
+
 	public ArchangelOfLightSpell()
 	{
 		Name = "Archangel of Light";
 		Description =
 			$"Embody the ultimate form of light for {BuffDuration:F0}s, making all spells free and increasing holy spell healing by {100 * HealingIncrease:F0}%. Overhealing a target causes the excess healing to heal all allies and damage all enemies.";
+		ActivationDescription = "Spend a total of 50 mana on holy spells.";
 		ManaCost = 10f;
-		CastTime = 2.0f;
+		CastTime = 0.0f;
 		Cooldown = 0f;
 		School = SpellSchool.Holy;
 		Tags = SpellTags.Healing;
@@ -38,8 +47,17 @@ public partial class ArchangelOfLightSpell : UltimateSpellResource
 		});
 	}
 
-	// TODO: Allow casting after having spent a total of 50 mana on holy spells 
+	/// <summary>
+	/// Accumulate mana spent on holy spells toward the 50-mana requirement.
+	/// </summary>
+	public override void OnRegularSpellCast(SpellContext ctx)
+	{
+		if (ctx.Spell.School != SpellSchool.Holy) return;
+		Progress = Mathf.Min(Progress + ctx.Spell.ManaCost, Requirement);
+	}
+
 	public override bool CanCast(SpellContext ctx)
 	{
+		return IsRequirementMet;
 	}
 }

@@ -33,7 +33,7 @@ public partial class ArchangelOfLightEffect : CharacterEffect, ISpellModifier, I
 	}
 	public void OnCalculate(SpellContext context)
 	{
-		if (context.Spell.School == SpellSchool.Nature && context.Spell.Tags.HasFlag(SpellTags.Healing))
+		if (context.Spell.School == SpellSchool.Holy && context.Spell.Tags.HasFlag(SpellTags.Healing))
 		{
 			context.FinalValue *= _healingIncrease;
 		}

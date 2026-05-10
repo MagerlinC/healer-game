@@ -1,5 +1,6 @@
 #nullable enable
 using Godot;
+using healerfantasy.SpellResources.Void;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
 
 /// <summary>
@@ -125,6 +126,12 @@ public partial class GameTooltip : CanvasLayer
 	/// </summary>
 	public static (string title, string desc) FormatSpellTooltip(SpellResource spell)
 	{
+		if (spell is UltimateSpellResource ult)
+		{
+			return (spell.Name + " (Ultimate)",
+				$"{spell.Description}\n\nActivation: {ult.ActivationDescription} \nCooldown: {(spell.Cooldown > 0f ? $"{spell.Cooldown:F1}s" : "None")}");
+		}
+
 		var castInfo = spell.CastTime <= 0f
 			? "Instant"
 			: $"{spell.CastTime:F1}s";

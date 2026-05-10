@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://de6qmj8in4dpm"
-path="res://.godot/imported/archangel-of-light.png-c3622b1d06368f84d52d2dd8a65df2a9.ctex"
+uid="uid://dqhx82l86vphs"
+path="res://.godot/imported/vampiric-embrace.png-925a77d6901fde60967242987a772a5b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/spell-icons/holy/archangel-of-light.png"
-dest_files=["res://.godot/imported/archangel-of-light.png-c3622b1d06368f84d52d2dd8a65df2a9.ctex"]
+source_file="res://assets/spell-icons/sanguimancy/vampiric-embrace.png"
+dest_files=["res://.godot/imported/vampiric-embrace.png-925a77d6901fde60967242987a772a5b.ctex"]
 
 [params]
 

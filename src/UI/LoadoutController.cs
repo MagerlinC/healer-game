@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using healerfantasy.SpellResources;
+using healerfantasy.SpellResources.Void;
 using healerfantasy.Talents;
 using healerfantasy.UI;
 
@@ -832,12 +833,19 @@ public abstract partial class LoadoutController : Node2D
 
 	void ToggleSpell(SpellResource spell)
 	{
-		var slot = System.Array.FindIndex(_loadout, s => s?.Name == spell.Name);
-		if (slot >= 0) _loadout[slot] = null;
+		if (spell is UltimateSpellResource ult)
+		{
+			RunState.Instance.SetUltimate(RunState.Instance.SelectedUltimate?.ActiveEffectId == ult.ActiveEffectId ? null : ult);
+		}
 		else
 		{
-			var empty = System.Array.FindIndex(_loadout, s => s == null);
-			if (empty >= 0) _loadout[empty] = spell;
+			var slot = System.Array.FindIndex(_loadout, s => s?.Name == spell.Name);
+			if (slot >= 0) _loadout[slot] = null;
+			else
+			{
+				var empty = System.Array.FindIndex(_loadout, s => s == null);
+				if (empty >= 0) _loadout[empty] = spell;
+			}
 		}
 
 		RefreshSpellVisuals();

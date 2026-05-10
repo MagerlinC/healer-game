@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using healerfantasy;
+using healerfantasy.SpellResources.Void;
 using healerfantasy.UI;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
 
@@ -32,6 +33,7 @@ public partial class GameUI : CanvasLayer
 	BossCastBar _bossCastBar = null!;
 	ActionBar _actionBar;
 	GenericActionBar _genericActionBar;
+	UltimateSlot _ultimateSlot = null!;
 	CombatMeter _healingMeter;
 	CombatMeter _damageMeter;
 	Control _anchor = null!;
@@ -176,6 +178,14 @@ public partial class GameUI : CanvasLayer
 		_genericActionBar = new GenericActionBar();
 		barRow.AddChild(_genericActionBar);
 
+		// Thin separator then the ultimate slot to the right of the generic bar.
+		var ultimateSep = new VSeparator();
+		ultimateSep.AddThemeColorOverride("color", new Color(0.45f, 0.28f, 0.60f, 0.55f));
+		barRow.AddChild(ultimateSep);
+
+		_ultimateSlot = new UltimateSlot();
+		barRow.AddChild(_ultimateSlot);
+
 		// ── Signal subscriptions owned by GameUI ──────────────────────────────
 		// Mana changes shade action-bar icons; all other party signals are
 		// handled directly inside PartyFrames and ManaBar.
@@ -253,6 +263,16 @@ public partial class GameUI : CanvasLayer
 	public void BuildGenericActionBar(Player player)
 	{
 		_genericActionBar.Build(player);
+	}
+
+	/// <summary>
+	/// Bind the ultimate slot to <paramref name="player"/> and their equipped ultimate.
+	/// Must be called once from World after the Player node is resolved.
+	/// The slot handles all further updates autonomously via polling.
+	/// </summary>
+	public void BindUltimateSlot(Player player)
+	{
+		_ultimateSlot.Bind(player, player.EquippedUltimate);
 	}
 
 	/// <summary>

@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using healerfantasy.Effects;
 using healerfantasy.SpellResources.Void;
 using healerfantasy.SpellSystem;
@@ -7,16 +7,26 @@ namespace healerfantasy.SpellResources.Nature;
 
 public partial class OneWithNatureSpell : UltimateSpellResource
 {
-
 	static float BuffDuration = 10f;
 	static float HealingIncrease = 20f;
+
+	/// <summary>
+	/// Requirement: accumulate 16 seconds of nature HoT coverage across all targets.
+	/// Each active nature HoT on any party member contributes 1 second per real second.
+	/// Multiple simultaneous HoTs or targets all count independently.
+	/// </summary>
+	public override float Requirement => 16f;
+
+	public override string ActiveEffectId => "OneWithNature";
+
 	public OneWithNatureSpell()
 	{
 		Name = "One With Nature";
 		Description =
 			$"Become one with nature for {BuffDuration:F0}s, making all spells instant cast and increasing nature spell healing by {100 * HealingIncrease:F0}%. Directly healing a target causes all beneficial nature effects on that target to refresh their duration.";
+		ActivationDescription = "Accumulate a total of 16 seconds of nature healing-over-time duration across all targets.";
 		ManaCost = 10f;
-		CastTime = 2.0f;
+		CastTime = 0.0f;
 		Cooldown = 0f;
 		School = SpellSchool.Nature;
 		Tags = SpellTags.Healing;
@@ -38,8 +48,35 @@ public partial class OneWithNatureSpell : UltimateSpellResource
 		});
 	}
 
-	// TODO: Allow casting after having nature healing over time effects active on any targets for a total of 16 seconds (multiple instances count)
+	/// <summary>
+	/// Each frame: count active nature HoT effects on every living party member.
+	/// Each active HoT contributes delta seconds to Progress (multiple instances stack).
+	/// </summary>
+	public override void OnProcessTick(Character caster, float delta)
+	{
+		if (IsRequirementMet) return;
+
+		foreach (var node in caster.GetTree().GetNodesInGroup(GameConstants.PartyGroupName))
+		{
+			if (node is not Character c || !c.IsAlive) continue;
+			foreach (var effect in c.GetAllEffects())
+			{
+				// Count nature HoTs: beneficial, finite-duration, nature school.
+				// Excludes OneWithNature itself (infinite-adjacent) and enemy debuffs.
+				if (effect.School == SpellSchool.Nature
+				    && !effect.IsHarmful
+				    && effect.Duration < GameConstants.InfiniteDuration / 2f)
+				{
+					Progress += delta;
+				}
+			}
+		}
+
+		Progress = Mathf.Min(Progress, Requirement);
+	}
+
 	public override bool CanCast(SpellContext ctx)
 	{
+		return IsRequirementMet;
 	}
 }

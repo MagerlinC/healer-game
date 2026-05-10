@@ -114,6 +114,7 @@ public partial class World : Node2D
 
 		ui.RebuildActionBar(player.EquippedSpells);
 		ui.BuildGenericActionBar(player);
+		ui.BindUltimateSlot(player);
 
 		// ── Rune of Nature — vines manager ────────────────────────────────────
 		if (RunState.Instance.IsRuneActive(RuneIndex.Nature) && !RunState.Instance.IsDevTestFight)
