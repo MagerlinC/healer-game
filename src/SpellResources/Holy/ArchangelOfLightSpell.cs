@@ -1,10 +1,11 @@
 ﻿using Godot;
 using healerfantasy.Effects;
+using healerfantasy.SpellResources.Void;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources.Holy;
 
-public partial class ArchangelOfLightSpell : SpellResource
+public partial class ArchangelOfLightSpell : UltimateSpellResource
 {
 
 	static float BuffDuration = 10f;
@@ -13,7 +14,7 @@ public partial class ArchangelOfLightSpell : SpellResource
 	{
 		Name = "Archangel of Light";
 		Description =
-			$"Embody the ultimate form of light for {BuffDuration:F0}s, making all holy spells free and increasing their healing by {100 * HealingIncrease:F0}%. Overhealing a target causes the excess healing to heal all allies and damage all enemies.";
+			$"Embody the ultimate form of light for {BuffDuration:F0}s, making all spells free and increasing holy spell healing by {100 * HealingIncrease:F0}%. Overhealing a target causes the excess healing to heal all allies and damage all enemies.";
 		ManaCost = 10f;
 		CastTime = 2.0f;
 		Cooldown = 0f;
@@ -35,5 +36,10 @@ public partial class ArchangelOfLightSpell : SpellResource
 			Description =
 				$"Holy spells are free and do {100 * HealingIncrease:F0}% increased healing. Overhealing a target causes the excess healing to heal all allies and damage all enemies."
 		});
+	}
+
+	// TODO: Allow casting after having spent a total of 50 mana on holy spells 
+	public override bool CanCast(SpellContext ctx)
+	{
 	}
 }

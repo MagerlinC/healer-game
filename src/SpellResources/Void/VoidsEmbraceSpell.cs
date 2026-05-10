@@ -5,7 +5,7 @@ using healerfantasy.SpellSystem;
 namespace healerfantasy.SpellResources.Void;
 
 [GlobalClass]
-public partial class VoidsEmbraceSpell : SpellResource
+public partial class VoidsEmbraceSpell : UltimateSpellResource
 {
 	[Export] public float HealthDrainPerStack = 1f;
 	[Export] public float HastePerStack = 1f;
@@ -35,5 +35,10 @@ public partial class VoidsEmbraceSpell : SpellResource
 			AbilityName = Name,
 			Description = Description
 		});
+	}
+
+	// TODO: Allow casting after 5 void spells have been cast
+	public override bool CanCast(SpellContext ctx)
+	{
 	}
 }
