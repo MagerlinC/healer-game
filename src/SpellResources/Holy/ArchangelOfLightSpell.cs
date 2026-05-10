@@ -22,7 +22,7 @@ public partial class ArchangelOfLightSpell : UltimateSpellResource
 	{
 		Name = "Archangel of Light";
 		Description =
-			$"Embody the ultimate form of light for {BuffDuration:F0}s, making all spells free and increasing holy spell healing by {100 * HealingIncrease:F0}%. Overhealing a target causes the excess healing to heal all allies and damage all enemies.";
+			$"Embody the ultimate form of light for {BuffDuration:F0}s, making all spells free and increasing holy spell healing by {HealingIncrease:F0}%. Overhealing a target causes the excess healing to heal all allies and damage all enemies.";
 		ActivationDescription = "Spend a total of 50 mana on holy spells.";
 		ManaCost = 10f;
 		CastTime = 0.0f;

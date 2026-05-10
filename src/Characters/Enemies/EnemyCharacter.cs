@@ -30,14 +30,10 @@ public abstract partial class EnemyCharacter : Character
 	public EnemyCharacter()
 	{
 		IsFriendly = false;
-	}
-
-	public override void _Ready()
-	{
 		RemoveFromGroup("party");
 		AddToGroup(GameConstants.BossGroupName);
-		base._Ready();
 	}
+
 	// ── Targeting helpers ──────────────────────────────────────────────────────
 
 	/// <summary>

@@ -42,11 +42,7 @@ public partial class BossStructuralCrushSpell : SpellResource
 	/// <summary>Targets every alive party member.</summary>
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)
 	{
-		var targets = new List<Character>();
-		foreach (var node in caster.GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive)
-				targets.Add(c);
-		return targets;
+		return caster.CollectAlivePartyMembers();
 	}
 
 	public override void Apply(SpellContext ctx)

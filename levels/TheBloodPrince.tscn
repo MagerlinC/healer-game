@@ -1,16 +1,16 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://r4ntkchk38vb"]
 
-[ext_resource type="Script" path="res://src/Characters/Enemies/TheBloodPrince.cs" id="Script_the_blood_prince"]
+[ext_resource type="Script" uid="uid://clw7nd1h858cy" path="res://src/Characters/Enemies/TheBloodPrince.cs" id="Script_the_blood_prince"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
-radius = 16.0
+radius = 14.0
 height = 28.0
 
-[node name="TheBloodPrince" type="CharacterBody2D"]
+[node name="TheBloodPrince" type="CharacterBody2D" unique_id=546671394]
 script = ExtResource("Script_the_blood_prince")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=221046983]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1673660484]
 position = Vector2(0, 10)
 shape = SubResource("CapsuleShape2D_1")

@@ -204,7 +204,7 @@ public partial class ActionBar : HBoxContainer
 		SpellResource? spell, string actionName)
 	{
 		var panel = new PanelContainer();
-		panel.CustomMinimumSize = new Vector2(52, 52);
+		panel.CustomMinimumSize = new Vector2(58, 58);
 
 		var borderStyle = new StyleBoxFlat();
 		borderStyle.BgColor = new Color(0.12f, 0.10f, 0.10f, 0.95f);

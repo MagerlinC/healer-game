@@ -255,6 +255,7 @@ public partial class Player : Character
 			{
 				EquippedUltimate.OnRegularSpellCast(ctx);
 			}
+
 			EmitSignalUltimateProgressChanged(EquippedUltimate.Progress, EquippedUltimate.Requirement);
 		}
 
@@ -358,9 +359,9 @@ public partial class Player : Character
 				if (hoveredCharacter != null)
 				{
 					_castTarget = hoveredCharacter;
-					_castSpell  = ultimate;
+					_castSpell = ultimate;
 
-					var stats    = GetCharacterStats();
+					var stats = GetCharacterStats();
 					var isInstant = ultimate.CastTime == 0.0f
 					                || stats.NextCastIsInstant && ultimate.School != SpellSchool.Chronomancy;
 
@@ -372,8 +373,8 @@ public partial class Player : Character
 					{
 						var adjustedCastTime = ultimate.CastTime - ultimate.CastTime * stats.IncreasedHaste;
 						EmitSignalCastStarted(ultimate, adjustedCastTime);
-						_isCasting  = true;
-						_castTimer  = adjustedCastTime;
+						_isCasting = true;
+						_castTimer = adjustedCastTime;
 						_castingAudioPlayer.Play();
 						_sprite.SpeedScale = CastAnimBaseDuration / adjustedCastTime;
 						_sprite.Play("cast");
@@ -384,6 +385,7 @@ public partial class Player : Character
 					EmitSignalGlobalCooldownStarted(adjustedGcd);
 				}
 			}
+
 			return;
 		}
 

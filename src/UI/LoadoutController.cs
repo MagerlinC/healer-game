@@ -463,7 +463,7 @@ public abstract partial class LoadoutController : Node2D
 			header.Text = name;
 			header.HorizontalAlignment = HorizontalAlignment.Center;
 			header.AddThemeFontSizeOverride("font_size", 13);
-			header.AddThemeColorOverride("font_color", SpellSchoolColor(school));
+			header.AddThemeColorOverride("font_color", AssetConstants.SpellSchoolColor(school));
 			headerMarginContainer.AddChild(header);
 
 			wrapper.AddChild(headerMarginContainer);
@@ -692,7 +692,8 @@ public abstract partial class LoadoutController : Node2D
 				$"{spell.Description}\n\n🔒 Sanguimancy is locked.\nDefeat The Blood Prince in the Castle of Blood to unlock this school.");
 
 		var invested = RunState.Instance.SelectedTalentDefs.Count(d => d.School == spell.School);
-		return (spell.Name,
+		var ultIndicator = spell is UltimateSpellResource ? " (Ultimate)" : "";
+		return (spell.Name + ultIndicator,
 			$"{spell.Description}\n\nRequires {spell.RequiredSchoolPoints} {spell.School} talent" +
 			$"{(spell.RequiredSchoolPoints > 1 ? "s" : "")} acquired.\n" +
 			$"({invested} / {spell.RequiredSchoolPoints} acquired this run)");
@@ -1158,16 +1159,4 @@ public abstract partial class LoadoutController : Node2D
 		return actionName.StartsWith("spell_") ? actionName["spell_".Length..] : actionName;
 	}
 
-	public static Color SpellSchoolColor(SpellSchool school)
-	{
-		return school switch
-		{
-			SpellSchool.Holy => new Color(0.95f, 0.85f, 0.40f),
-			SpellSchool.Nature => new Color(0.40f, 0.80f, 0.35f),
-			SpellSchool.Void => new Color(0.65f, 0.35f, 0.85f),
-			SpellSchool.Chronomancy => new Color(0.35f, 0.75f, 0.90f),
-			SpellSchool.Sanguimancy => new Color(0.85f, 0.15f, 0.15f),
-			_ => new Color(0.70f, 0.65f, 0.60f)
-		};
-	}
 }

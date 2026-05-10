@@ -78,13 +78,15 @@ public partial class VictoryScreen : CanvasLayer
 
 	// ── talent offer state ────────────────────────────────────────────────────
 	Label _offerHeaderLabel = null!;
+
 	/// <summary>
 	/// One slot per offer row.  null = no talent chosen for that row yet.
 	/// A single-row offer (arena) has one slot; a dual-row offer (dungeon) has two.
 	/// The continue button is enabled only when every slot is non-null.
 	/// </summary>
 	readonly List<TalentDefinition?> _rowSelections = new();
-	Button? _activeBtn;   // the current continue button; disabled until all rows are selected
+
+	Button? _activeBtn; // the current continue button; disabled until all rows are selected
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -168,7 +170,7 @@ public partial class VictoryScreen : CanvasLayer
 		_audioPlayer.Play();
 		_titleLabel.Text = "DUNGEON CLEARED!";
 		_subLabel.Text = $"{defeatedBossName} has been defeated.\nHead to camp and prepare for the next dungeon.";
-		PopulateTalentOffers(selectionsRequired: 2);
+		PopulateTalentOffers(2);
 		PopulateItemsCard(droppedItem);
 		PopulateRunLogsCard();
 
@@ -214,7 +216,7 @@ public partial class VictoryScreen : CanvasLayer
 
 		_titleLabel.Text = "VICTORY!";
 		_subLabel.Text = "The Queen of the Frozen Wastes has fallen.\nAll dungeons conquered — the realm is saved!";
-		_offerSectionWrapper.Visible = false;   // no talent offer on final victory
+		_offerSectionWrapper.Visible = false; // no talent offer on final victory
 		_activeBtn = null;
 		PopulateItemsCard(droppedItem, runeDropped, runeDropName, runeIndex);
 		PopulateRunLogsCard();
@@ -240,7 +242,7 @@ public partial class VictoryScreen : CanvasLayer
 		_audioPlayer.Play();
 		_titleLabel.Text = "TEST COMPLETE";
 		_subLabel.Text = $"{defeatedBossName} defeated.\n[Dev mode — run state will be reset]";
-		_offerSectionWrapper.Visible = false;   // no talent offer in dev test
+		_offerSectionWrapper.Visible = false; // no talent offer in dev test
 		_activeBtn = null;
 		PopulateItemsCard(droppedItem);
 		PopulateRunLogsCard();
@@ -258,7 +260,8 @@ public partial class VictoryScreen : CanvasLayer
 	void OnArenaContinuePressed()
 	{
 		foreach (var sel in _rowSelections)
-			if (sel != null) RunState.Instance.AddTalent(sel);
+			if (sel != null)
+				RunState.Instance.AddTalent(sel);
 		GetTree().Paused = false;
 		RunState.Instance.AdvanceBossInDungeon();
 		GlobalAutoLoad.Reset();
@@ -268,7 +271,8 @@ public partial class VictoryScreen : CanvasLayer
 	void OnDungeonClearedContinuePressed()
 	{
 		foreach (var sel in _rowSelections)
-			if (sel != null) RunState.Instance.AddTalent(sel);
+			if (sel != null)
+				RunState.Instance.AddTalent(sel);
 		GetTree().Paused = false;
 		RunState.Instance.CompleteDungeon();
 		GlobalAutoLoad.Reset();
@@ -501,7 +505,7 @@ public partial class VictoryScreen : CanvasLayer
 		var allOffers = TalentRegistry.GetRandomOffers(
 			RunState.Instance.SelectedTalentDefs,
 			RunState.Instance.SchoolAffinity,
-			count: rowCount * CardsPerRow);
+			rowCount * CardsPerRow);
 
 		if (allOffers.Count == 0)
 		{
@@ -582,7 +586,7 @@ public partial class VictoryScreen : CanvasLayer
 	/// </summary>
 	PanelContainer BuildOfferCard(TalentDefinition def)
 	{
-		var schoolColor = LoadoutController.SpellSchoolColor(def.School);
+		var schoolColor = AssetConstants.SpellSchoolColor(def.School);
 		var idleBorderColor = schoolColor * 0.55f;
 		idleBorderColor.A = 1f;
 
@@ -625,9 +629,11 @@ public partial class VictoryScreen : CanvasLayer
 
 		// Tier banner pinned to the top-left corner of the icon area.
 		var banner = new TierBanner(schoolColor, def.TalentRow);
-		banner.SetAnchor(Side.Left, 0f);  banner.SetAnchor(Side.Right, 0f);
-		banner.SetAnchor(Side.Top,  0f);  banner.SetAnchor(Side.Bottom, 0f);
-		banner.OffsetRight  = TierBanner.W;
+		banner.SetAnchor(Side.Left, 0f);
+		banner.SetAnchor(Side.Right, 0f);
+		banner.SetAnchor(Side.Top, 0f);
+		banner.SetAnchor(Side.Bottom, 0f);
+		banner.OffsetRight = TierBanner.W;
 		banner.OffsetBottom = TierBanner.H;
 		iconArea.AddChild(banner);
 
@@ -698,7 +704,7 @@ public partial class VictoryScreen : CanvasLayer
 			}
 			else
 			{
-				var sc = LoadoutController.SpellSchoolColor(d.School);
+				var sc = AssetConstants.SpellSchoolColor(d.School);
 				borderColor = sc * 0.55f;
 				borderColor.A = 1f;
 				borderWidth = 2;
@@ -1224,7 +1230,7 @@ public partial class VictoryScreen : CanvasLayer
 		foreach (var child in _btnRow.GetChildren()) child.QueueFree();
 	}
 
-	static Button MakeButton(string text, Color bgColor, Color borderColor, System.Action onPressed)
+	static Button MakeButton(string text, Color bgColor, Color borderColor, Action onPressed)
 	{
 		var style = new StyleBoxFlat();
 		style.BgColor = bgColor;
@@ -1256,7 +1262,7 @@ public partial class VictoryScreen : CanvasLayer
 	/// pointing triangular notch at the bottom — coloured by spell school, with
 	/// a "T1"–"T4" tier label centred in the upper portion.
 	/// </summary>
-	private partial class TierBanner : Control
+	partial class TierBanner : Control
 	{
 		public const float W = 28f;
 		public const float H = 36f;
@@ -1281,7 +1287,7 @@ public partial class VictoryScreen : CanvasLayer
 
 			// Centre the label inside the rectangular body (above the point).
 			label.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-			label.OffsetBottom = -(PointDepth);
+			label.OffsetBottom = -PointDepth;
 			label.HorizontalAlignment = HorizontalAlignment.Center;
 			label.VerticalAlignment = VerticalAlignment.Center;
 			AddChild(label);
@@ -1298,11 +1304,11 @@ public partial class VictoryScreen : CanvasLayer
 			var body = H - PointDepth;
 			var points = new Vector2[]
 			{
-				new(0f,     0f),
-				new(W,      0f),
-				new(W,      body),
+				new(0f, 0f),
+				new(W, 0f),
+				new(W, body),
 				new(W / 2f, H),
-				new(0f,     body),
+				new(0f, body)
 			};
 
 			DrawPolygon(points, new[] { _color });

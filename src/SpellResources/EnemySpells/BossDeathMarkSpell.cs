@@ -1,3 +1,4 @@
+using System.Linq;
 using Godot;
 using healerfantasy.Effects;
 using healerfantasy.SpellSystem;
@@ -27,16 +28,13 @@ public partial class BossDeathMarkSpell : SpellResource
 
 	public override void Apply(SpellContext ctx)
 	{
-		foreach (var target in ctx.Targets)
+		ctx.Target.ApplyEffect(new DeathMarkEffect(_damageAmountPerTick)
 		{
-			target.ApplyEffect(new DeathMarkEffect(_damageAmountPerTick)
-			{
-				AbilityName = Name,
-				Description = Description,
-				SourceCharacterName = ctx.Caster?.CharacterName,
-				School = SpellSchool.Void,
-				Icon = Icon
-			});
-		}
+			AbilityName = Name,
+			Description = Description,
+			SourceCharacterName = ctx.Caster?.CharacterName,
+			School = SpellSchool.Void,
+			Icon = Icon
+		});
 	}
 }

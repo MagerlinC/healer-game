@@ -26,16 +26,13 @@ public partial class BossCrystalDecaySpell : SpellResource
 
 	public override void Apply(SpellContext ctx)
 	{
-		foreach (var target in ctx.Targets)
+		ctx.Target.ApplyEffect(new CrystalDecayEffect
 		{
-			target.ApplyEffect(new CrystalDecayEffect
-			{
-				AbilityName = Name,
-				Description = Description,
-				SourceCharacterName = ctx.Caster?.CharacterName,
-				School = SpellSchool.Void,
-				Icon = Icon
-			});
-		}
+			AbilityName = Name,
+			Description = Description,
+			SourceCharacterName = ctx.Caster?.CharacterName,
+			School = SpellSchool.Void,
+			Icon = Icon
+		});
 	}
 }

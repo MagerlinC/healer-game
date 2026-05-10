@@ -1,9 +1,23 @@
+using Godot;
 using healerfantasy.SpellResources;
 
 namespace healerfantasy;
 
 public static class AssetConstants
 {
+
+	public static Color SpellSchoolColor(SpellSchool school)
+	{
+		return school switch
+		{
+			SpellSchool.Holy => new Color(0.95f, 0.85f, 0.40f),
+			SpellSchool.Nature => new Color(0.40f, 0.80f, 0.35f),
+			SpellSchool.Void => new Color(0.65f, 0.35f, 0.85f),
+			SpellSchool.Chronomancy => new Color(0.35f, 0.75f, 0.90f),
+			SpellSchool.Sanguimancy => new Color(0.85f, 0.15f, 0.15f),
+			_ => new Color(0.70f, 0.65f, 0.60f)
+		};
+	}
 	public static readonly string EnemyAssets = "res://assets/enemies/";
 	public static readonly string SpellIconAssets = "res://assets/spell-icons/";
 	public static readonly string TalentIconAssets = "res://assets/talent-icons/";
@@ -61,10 +75,12 @@ public static class AssetConstants
 	/// Returns the correct talent board sprite path based on whether the player
 	/// has unlocked the Sanguimancy school (which adds a fifth tome icon to the board).
 	/// </summary>
-	public static string TalentBoardPath() =>
-		PlayerProgressStore.HasDefeatedCastleOfBlood
+	public static string TalentBoardPath()
+	{
+		return PlayerProgressStore.HasDefeatedCastleOfBlood
 			? TalentBoardFullInteractiblePath
 			: TalentBoardInteractiblePath;
+	}
 	public static readonly string RunScrollInteractiblePath = "res://assets/interactibles/run-history-scroll.png";
 	public static readonly string MapInteractiblePath = "res://assets/interactibles/map.png";
 	public static readonly string ArmoryInteractiblePath = "res://assets/interactibles/armory.png";
