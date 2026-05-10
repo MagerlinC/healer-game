@@ -97,10 +97,6 @@ public partial class CrystalKnight : EnemyCharacter
 	{
 		base._Ready();
 		CharacterName = GameConstants.Boss1Name;
-		// Character._Ready() adds every character to "party" — undo for enemies.
-		RemoveFromGroup("party");
-		AddToGroup(GameConstants.BossGroupName);
-		IsFriendly = false;
 
 		// Stagger first attacks so the player has a moment to react.
 		_meleeTimer = MeleeAttackInterval;
@@ -280,7 +276,6 @@ public partial class CrystalKnight : EnemyCharacter
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
 
-
 	// ── animation setup ───────────────────────────────────────────────────────
 
 	/// <summary>
@@ -300,7 +295,7 @@ public partial class CrystalKnight : EnemyCharacter
 		CrushInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-		void SetupAnimations()
+	void SetupAnimations()
 	{
 		var texture = GD.Load<Texture2D>(AssetConstants.EnemyAssets + "/crystal-knight/crystal_knight_sheet.png");
 		var frames = new SpriteFrames();

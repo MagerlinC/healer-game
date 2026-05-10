@@ -91,9 +91,6 @@ public partial class FlyingDemon : EnemyCharacter
 	{
 		base._Ready();
 		CharacterName = GameConstants.ForsakenBoss1Name;
-		RemoveFromGroup("party");
-		AddToGroup(GameConstants.BossGroupName);
-		IsFriendly = false;
 
 		_meleeTimer = MeleeInterval;
 		_boltTimer = BoltInterval;
@@ -240,7 +237,6 @@ public partial class FlyingDemon : EnemyCharacter
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
 
-
 	// ── animation setup ───────────────────────────────────────────────────────
 
 	/// <summary>
@@ -256,7 +252,7 @@ public partial class FlyingDemon : EnemyCharacter
 		EruptionInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-		void SetupAnimations()
+	void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

@@ -132,8 +132,6 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 	{
 		base._Ready();
 		CharacterName = GameConstants.SanctumBoss3Name;
-		RemoveFromGroup("party");
-		AddToGroup(GameConstants.BossGroupName);
 		IsFriendly = false;
 
 		// Stagger first attacks — give the player a brief moment before the onslaught.
@@ -513,7 +511,7 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 		MemoryGameInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-		void SetupAnimations()
+	void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

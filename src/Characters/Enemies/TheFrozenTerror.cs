@@ -122,9 +122,6 @@ public partial class TheFrozenTerror : EnemyCharacter
 	{
 		base._Ready();
 		CharacterName = GameConstants.FrozenTerrorName;
-		RemoveFromGroup("party");
-		AddToGroup(GameConstants.BossGroupName);
-		IsFriendly = false;
 
 		_meleeTimer = MeleeAttackInterval;
 		_chargeTimer = ChargeInterval;
@@ -378,9 +375,9 @@ public partial class TheFrozenTerror : EnemyCharacter
 			var dx = dir.X;
 			var dy = dir.Y;
 
-			var a    = dx * dx / (rx * rx) + dy * dy / (ry * ry);
+			var a = dx * dx / (rx * rx) + dy * dy / (ry * ry);
 			var bCoef = 2f * (ox * dx / (rx * rx) + oy * dy / (ry * ry));
-			var c    = ox * ox / (rx * rx) + oy * oy / (ry * ry) - 1f;
+			var c = ox * ox / (rx * rx) + oy * oy / (ry * ry) - 1f;
 
 			var disc = bCoef * bCoef - 4f * a * c;
 			if (disc >= 0f)
@@ -510,9 +507,6 @@ public partial class TheFrozenTerror : EnemyCharacter
 	}
 
 	// ── targeting helpers ──────────────────────────────────────────────────────
-
-
-
 
 
 	// ── public animation API (called by FrozenTerrorJumpInPhase) ─────────────

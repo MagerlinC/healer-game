@@ -602,4 +602,42 @@ public abstract partial class Character : CharacterBody2D
 		GlobalAutoLoad.UnregisterSignalEmitter(this);
 		base._ExitTree();
 	}
+
+	/// <summary>
+	/// Returns all alive party members in a randomised order.
+	/// Useful for abilities that need to visit every member 
+	/// </summary>
+	public List<Character> CollectAlivePartyMembers()
+	{
+		var members = new List<Character>();
+		foreach (var node in GetTree().GetNodesInGroup(GameConstants.PartyGroupName))
+			if (node is Character c && c.IsAlive)
+				members.Add(c);
+
+		// Fisher-Yates shuffle
+		for (var i = members.Count - 1; i > 0; i--)
+		{
+			var j = (int)(GD.Randi() % (uint)(i + 1));
+			(members[i], members[j]) = (members[j], members[i]);
+		}
+
+		return members;
+	}
+
+	public List<Character> CollectAliveEnemies()
+	{
+		var members = new List<Character>();
+		foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
+			if (node is Character c && c.IsAlive)
+				members.Add(c);
+
+		// Fisher-Yates shuffle
+		for (var i = members.Count - 1; i > 0; i--)
+		{
+			var j = (int)(GD.Randi() % (uint)(i + 1));
+			(members[i], members[j]) = (members[j], members[i]);
+		}
+
+		return members;
+	}
 }

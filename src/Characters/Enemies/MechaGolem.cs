@@ -94,8 +94,6 @@ public partial class MechaGolem : EnemyCharacter
 	{
 		base._Ready();
 		CharacterName = GameConstants.ForsakenBoss2Name;
-		RemoveFromGroup("party");
-		AddToGroup(GameConstants.BossGroupName);
 		IsFriendly = false;
 
 		_meleeTimer = MeleeInterval;
@@ -251,7 +249,6 @@ public partial class MechaGolem : EnemyCharacter
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
 
-
 	// ── animation setup ───────────────────────────────────────────────────────
 
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
@@ -263,7 +260,7 @@ public partial class MechaGolem : EnemyCharacter
 		OverloadInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-		void SetupAnimations()
+	void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

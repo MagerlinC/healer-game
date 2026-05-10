@@ -45,6 +45,7 @@ public static class GameConstants
 
 
 	public const string BossGroupName = "boss";
+	public const string PartyGroupName = "party";
 
 	public static Dictionary<int, List<int>> BossHealthBaseValuesByDungeonTier = new()
 	{

@@ -94,9 +94,6 @@ public partial class TheNightborne : EnemyCharacter
 	{
 		base._Ready();
 		CharacterName = GameConstants.SanctumBoss1Name;
-		RemoveFromGroup("party");
-		AddToGroup(GameConstants.BossGroupName);
-		IsFriendly = false;
 
 		// Stagger initial timers so attacks don't all fire simultaneously.
 		_shadowStrikeTimer = ShadowStrikeInterval;
@@ -250,7 +247,6 @@ public partial class TheNightborne : EnemyCharacter
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
 
-
 	// ── animation setup ───────────────────────────────────────────────────────
 
 	/// <summary>
@@ -266,7 +262,7 @@ public partial class TheNightborne : EnemyCharacter
 		UmbralEruptionInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-		void SetupAnimations()
+	void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

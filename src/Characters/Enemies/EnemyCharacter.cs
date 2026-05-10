@@ -31,6 +31,13 @@ public abstract partial class EnemyCharacter : Character
 	{
 		IsFriendly = false;
 	}
+
+	public override void _Ready()
+	{
+		RemoveFromGroup("party");
+		AddToGroup(GameConstants.BossGroupName);
+		base._Ready();
+	}
 	// ── Targeting helpers ──────────────────────────────────────────────────────
 
 	/// <summary>
@@ -69,26 +76,6 @@ public abstract partial class EnemyCharacter : Character
 		return alive[(int)(GD.Randi() % (uint)alive.Count)];
 	}
 
-	/// <summary>
-	/// Returns all alive party members in a randomised order.
-	/// Useful for abilities that need to visit every member (e.g. jump slams).
-	/// </summary>
-	protected List<Character> CollectAlivePartyMembers()
-	{
-		var members = new List<Character>();
-		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive)
-				members.Add(c);
-
-		// Fisher-Yates shuffle
-		for (var i = members.Count - 1; i > 0; i--)
-		{
-			var j = (int)(GD.Randi() % (uint)(i + 1));
-			(members[i], members[j]) = (members[j], members[i]);
-		}
-
-		return members;
-	}
 
 	// ── Animation helpers ──────────────────────────────────────────────────────
 

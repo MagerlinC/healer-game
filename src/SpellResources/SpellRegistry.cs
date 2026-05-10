@@ -2,6 +2,8 @@
 using System.Linq;
 using healerfantasy.SpellResources.Chronomancy;
 using healerfantasy.SpellResources.Generic;
+using healerfantasy.SpellResources.Holy;
+using healerfantasy.SpellResources.Nature;
 using healerfantasy.SpellResources.Sanguimancy;
 using healerfantasy.SpellResources.Void;
 
@@ -56,7 +58,8 @@ public static class SpellRegistry
 		new TouchOfLightSpell(),
 		new WaveOfIncandescenceSpell(),
 		new DivineAegisSpell(),
-		new HolyNovaSpell()
+		new HolyNovaSpell(),
+		new ArchangelOfLightSpell()
 	];
 
 	public static readonly List<SpellResource> SanguimancySpells =

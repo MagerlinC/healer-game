@@ -132,9 +132,6 @@ public partial class FlyingSkull : EnemyCharacter
 	{
 		base._Ready();
 		CharacterName = GameConstants.ForsakenBoss3Name;
-		RemoveFromGroup("party");
-		AddToGroup(GameConstants.BossGroupName);
-		IsFriendly = false;
 
 		_meleeTimer = MeleeInterval;
 		_screechTimer = ScreechInterval;
@@ -406,7 +403,6 @@ public partial class FlyingSkull : EnemyCharacter
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
-
 
 
 	// ── animation setup ───────────────────────────────────────────────────────

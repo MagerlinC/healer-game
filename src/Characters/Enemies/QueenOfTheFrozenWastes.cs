@@ -121,8 +121,6 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 	{
 		base._Ready();
 		CharacterName = GameConstants.FrozenPeakBossName;
-		RemoveFromGroup("party");
-		AddToGroup(GameConstants.BossGroupName);
 		IsFriendly = false;
 
 		// Stagger first casts so the fight has a brief breathing window.

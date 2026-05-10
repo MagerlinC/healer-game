@@ -15,7 +15,7 @@ using healerfantasy.SpellResources;
 /// <see cref="healerfantasy.UI.GameUI"/>).  Killing them removes them from the
 /// scene and clears the health bar.
 /// </summary>
-public partial class VinesEnemy : Character
+public partial class VinesEnemy : EnemyCharacter
 {
 	// ── public state ──────────────────────────────────────────────────────────
 
@@ -51,8 +51,6 @@ public partial class VinesEnemy : Character
 	public override void _Ready()
 	{
 		base._Ready();
-		RemoveFromGroup("party");
-		AddToGroup(GameConstants.BossGroupName);
 		AddToGroup(GameConstants.VinesGroupName);
 
 		// ── sprite (3-frame grow animation) ──────────────────────────────────
@@ -99,7 +97,7 @@ public partial class VinesEnemy : Character
 		// Remove the grasped effect whether the vine died normally (0.8s timer →
 		// QueueFree) or was force-freed by VinesManager when the boss died.
 		if (_graspedEffectId != "" && AttachedTarget != null
-		    && GodotObject.IsInstanceValid(AttachedTarget))
+		                           && IsInstanceValid(AttachedTarget))
 			AttachedTarget.RemoveEffect(_graspedEffectId);
 	}
 

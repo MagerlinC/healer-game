@@ -101,9 +101,6 @@ public partial class BloodKnight : EnemyCharacter
 	{
 		base._Ready();
 		CharacterName = GameConstants.CastleBoss1Name;
-		RemoveFromGroup("party");
-		AddToGroup(GameConstants.BossGroupName);
-		IsFriendly = false;
 
 		// Stagger first attacks so the player has a moment to react.
 		_meleeTimer = MeleeAttackInterval;
@@ -262,7 +259,6 @@ public partial class BloodKnight : EnemyCharacter
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
 
-
 	// ── animation setup ───────────────────────────────────────────────────────
 
 	/// <summary>
@@ -280,7 +276,7 @@ public partial class BloodKnight : EnemyCharacter
 		DrainInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-		void SetupAnimations()
+	void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

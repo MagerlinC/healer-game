@@ -27,7 +27,7 @@ using healerfantasy;
 /// ────────
 /// All incoming damage is ignored — <see cref="TakeDamage"/> is a no-op.
 /// </summary>
-public partial class CountessClone : Character
+public partial class CountessClone : EnemyCharacter
 {
 	// ── Construction ──────────────────────────────────────────────────────────
 
@@ -63,11 +63,6 @@ public partial class CountessClone : Character
 	{
 		base._Ready();
 
-		// Clones must not appear in the party group or the boss health bar.
-		RemoveFromGroup("party");
-		AddToGroup(GameConstants.BossGroupName);
-		IsFriendly = false;
-
 		// Give a name for debugging; the real boss uses the Countess's actual name
 		// so EffectApplied signal routing would still point at her health bar.
 		CharacterName = IsRealBoss
@@ -83,8 +78,8 @@ public partial class CountessClone : Character
 
 		// ── Body-entered detector (player walking into clone) ─────────────────
 		var bodyDetector = new Area2D();
-		bodyDetector.CollisionLayer = 0;   // doesn't occupy any layer itself
-		bodyDetector.CollisionMask  = 1;   // detects bodies on layer 1 (player/party layer)
+		bodyDetector.CollisionLayer = 0; // doesn't occupy any layer itself
+		bodyDetector.CollisionMask = 1; // detects bodies on layer 1 (player/party layer)
 
 		var shape = new CollisionShape2D();
 		var circle = new CircleShape2D { Radius = 28f };
@@ -104,7 +99,7 @@ public partial class CountessClone : Character
 
 		// ── Hover glow ────────────────────────────────────────────────────────
 		// Use world-space mouse position so there is no camera-transform mismatch.
-		var worldMouse  = GetGlobalMousePosition();
+		var worldMouse = GetGlobalMousePosition();
 		var worldCenter = GlobalPosition;
 
 		// Approximate world-space hit area for the sprite (tweak if scale differs).
@@ -133,7 +128,9 @@ public partial class CountessClone : Character
 	// ── Immunity & interaction ────────────────────────────────────────────────
 
 	/// <summary>Clones cannot take damage — they are purely interactive objects.</summary>
-	public override void TakeDamage(float amount) { }
+	public override void TakeDamage(float amount)
+	{
+	}
 
 	/// <summary>
 	/// Intercepts the Dispel spell (which calls <see cref="Character.RemoveHarmfulEffects"/>

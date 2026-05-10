@@ -92,9 +92,6 @@ public partial class DemonSlime : EnemyCharacter
 	{
 		base._Ready();
 		CharacterName = GameConstants.Boss3Name;
-		RemoveFromGroup("party");
-		AddToGroup(GameConstants.BossGroupName);
-		IsFriendly = false;
 
 		_meleeTimer = MeleeInterval;
 		_acidSpitTimer = AcidSpitInterval;
@@ -259,8 +256,6 @@ public partial class DemonSlime : EnemyCharacter
 	}
 
 
-
-
 	// ── animation setup ───────────────────────────────────────────────────────
 
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
@@ -273,7 +268,7 @@ public partial class DemonSlime : EnemyCharacter
 		DetonationZoneInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-		void SetupAnimations()
+	void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

@@ -121,9 +121,6 @@ public partial class AstralTwin : EnemyCharacter
 	public override void _Ready()
 	{
 		base._Ready();
-		RemoveFromGroup("party");
-		AddToGroup(GameConstants.BossGroupName);
-		IsFriendly = false;
 
 		_strikeTimer = StrikeInterval;
 		_starfallTimer = StarfallInterval;
@@ -415,7 +412,6 @@ public partial class AstralTwin : EnemyCharacter
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
 
-
 	// ── animation setup ───────────────────────────────────────────────────────
 
 	/// <summary>
@@ -430,7 +426,7 @@ public partial class AstralTwin : EnemyCharacter
 		ConvergenceInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-		void SetupAnimations()
+	void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

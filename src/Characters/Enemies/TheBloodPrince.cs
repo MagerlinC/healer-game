@@ -191,9 +191,6 @@ public partial class TheBloodPrince : EnemyCharacter
 	{
 		base._Ready();
 		CharacterName = GameConstants.CastleBoss3Name;
-		RemoveFromGroup("party");
-		AddToGroup(GameConstants.BossGroupName);
-		IsFriendly = false;
 
 		// Stagger first attacks.
 		_slashTimer = SlashInterval;
@@ -474,7 +471,6 @@ public partial class TheBloodPrince : EnemyCharacter
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
 
-
 	/// <summary>
 	/// Picks mark targets: one in Phase 1, two distinct members in Phase 2.
 	/// Shuffles the living party list and takes the first N.
@@ -517,7 +513,7 @@ public partial class TheBloodPrince : EnemyCharacter
 		VoidDrainInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-		void SetupAnimations()
+	void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");

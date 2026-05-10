@@ -162,9 +162,6 @@ public partial class TheCountess : EnemyCharacter
 	{
 		base._Ready();
 		CharacterName = GameConstants.CastleBoss2Name;
-		RemoveFromGroup("party");
-		AddToGroup(GameConstants.BossGroupName);
-		IsFriendly = false;
 
 		// Stagger first attacks.
 		_meleeTimer = MeleeAttackInterval;

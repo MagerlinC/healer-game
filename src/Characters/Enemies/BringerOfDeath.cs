@@ -91,9 +91,6 @@ public partial class BringerOfDeath : EnemyCharacter
 	{
 		base._Ready();
 		CharacterName = GameConstants.Boss2Name;
-		RemoveFromGroup("party");
-		AddToGroup(GameConstants.BossGroupName);
-		IsFriendly = false;
 
 		// Stagger first attacks so the player has a moment to react.
 		_meleeTimer = MeleeInterval;
@@ -242,7 +239,6 @@ public partial class BringerOfDeath : EnemyCharacter
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
 
-
 	// ── animation setup ───────────────────────────────────────────────────────
 
 	/// <summary>
@@ -258,7 +254,7 @@ public partial class BringerOfDeath : EnemyCharacter
 		EmbraceInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-		void SetupAnimations()
+	void SetupAnimations()
 	{
 		var frames = new SpriteFrames();
 		frames.RemoveAnimation("default");
