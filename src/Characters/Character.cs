@@ -70,8 +70,6 @@ public abstract partial class Character : CharacterBody2D
 	[Export] public float MaxMana = 100.0f;
 	[Export] public bool IsFriendly = true; // for conditional modifiers that check friend vs foe
 
-	[Export] public float ManaRegenPerSecond = 1.0f;
-
 	/// <summary>Base critical strike chance before talent modifiers are applied.</summary>
 	[Export] public float BaseCritChance = 0.05f; // 5% chance
 
@@ -153,7 +151,8 @@ public abstract partial class Character : CharacterBody2D
 
 		if (IsAlive)
 		{
-			RestoreMana(ManaRegenPerSecond * (float)delta);
+			var stats = GetCharacterStats();
+			RestoreMana(stats.ManaRegenPerSecond * (float)delta);
 		}
 
 		TickEffects((float)delta);
@@ -323,7 +322,9 @@ public abstract partial class Character : CharacterBody2D
 	/// Called by <see cref="ApplyRuneModifiers"/> at the end of each boss's
 	/// own <c>_Ready()</c>, AFTER interval fields have been initialised.
 	/// </summary>
-	protected virtual void OnApplyHasteRune() { }
+	protected virtual void OnApplyHasteRune()
+	{
+	}
 
 	/// <summary>
 	/// Call at the end of a boss character's <c>_Ready()</c> (after all timer
@@ -511,7 +512,9 @@ public abstract partial class Character : CharacterBody2D
 	/// <summary>Subtract mana, clamped at 0.</summary>
 	public void SpendMana(float amount)
 	{
-		CurrentMana = Mathf.Max(0f, CurrentMana - amount);
+		var stats = GetCharacterStats();
+		var adjustedAmount = amount * stats.ManaCostMultiplier;
+		CurrentMana = Mathf.Max(0f, CurrentMana - adjustedAmount);
 		EmitSignalManaChanged(CharacterName, CurrentMana, MaxMana);
 	}
 
@@ -577,7 +580,9 @@ public abstract partial class Character : CharacterBody2D
 	/// greyscale, lie-down rotation) when the character reaches 0 health.
 	/// Called immediately before the <see cref="Died"/> signal is emitted.
 	/// </summary>
-	protected virtual void ApplyDeathVisuals() { }
+	protected virtual void ApplyDeathVisuals()
+	{
+	}
 
 	public override void _ExitTree()
 	{

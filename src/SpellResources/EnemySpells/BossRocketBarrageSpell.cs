@@ -11,19 +11,22 @@ namespace healerfantasy.SpellResources;
 [Godot.GlobalClass]
 public partial class BossRocketBarrageSpell : SpellResource
 {
-	public float DamageAmount = 30f;
+	public float DamageAmount = 25f;
 
 	public BossRocketBarrageSpell()
 	{
-		Name        = "Rocket Barrage";
+		Name = "Rocket Barrage";
 		Description = "The Mecha Golem launches a volley of rockets that bombard all party members simultaneously.";
-		Tags        = SpellTags.Damage;
-		ManaCost    = 0f;
-		CastTime    = 0f;
-		EffectType  = EffectType.Harmful;
+		Tags = SpellTags.Damage;
+		ManaCost = 0f;
+		CastTime = 0f;
+		EffectType = EffectType.Harmful;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	/// <summary>Targets every alive party member.</summary>
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)

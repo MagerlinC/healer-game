@@ -29,12 +29,13 @@ public static class ItemRegistry
 	static readonly List<(string? BossName, Func<EquippableItem> Factory)> LootTable =
 	[
 		// Staves
-		(GameConstants.Boss1Name, () => new CrystalStaff()),
-		(GameConstants.Boss2Name, () => new DeathweaveStaff()),
-		(GameConstants.Boss3Name, () => new SlimewardenSceptre()),
-		(GameConstants.SanctumBoss1Name, () => new VoidWeaver()),
+		(null, () => new CrystalStaff()),
+		(null, () => new DeathweaveStaff()),
+		(null, () => new SlimewardenSceptre()),
+		(null, () => new VoidWeaver()),
 		(null, () => new ArcaneAccelerator()),
 		(null, () => new StaffOfEternalFlame()),
+		(null, () => new StaffOfTheArchmage()),
 
 		// Rings
 		(null, () => new RulersSignet()),
@@ -43,6 +44,7 @@ public static class ItemRegistry
 		(null, () => new SeersBand()),
 		(null, () => new RingOfTriage()),
 		(null, () => new PreciseRing()),
+		(null, () => new CrystalRing()),
 
 		// Amulets
 		(null, () => new TheHeartOfLight()),

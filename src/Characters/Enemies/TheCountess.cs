@@ -321,7 +321,6 @@ public partial class TheCountess : EnemyCharacter
 			{
 				c.ApplyEffect(new CourtOfReflectionsEffect(CourtDotBaseDamage, CourtDotRampPerTick)
 				{
-					Icon = null, // set an icon if one is available
 					SourceCharacterName = CharacterName
 				});
 			}

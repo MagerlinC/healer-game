@@ -13,6 +13,11 @@ public class CharacterStats
 	public float MaxHealth { get; set; }
 	public float MaxMana { get; set; }
 
+	public float ManaRegenPerSecond { get; set; } = 1f;
+
+	public float ManaCostMultiplier { get; set; } = 1f;
+
+
 	/// <summary>0.0 – 1.0. E.g. 0.2 = 20% crit chance.</summary>
 	public float CritChance { get; set; } = 0.05f;
 
