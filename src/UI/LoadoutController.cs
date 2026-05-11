@@ -76,6 +76,9 @@ public abstract partial class LoadoutController : Node2D
 	// ── runtime state ─────────────────────────────────────────────────────────
 	protected readonly SpellResource?[] _loadout = new SpellResource?[Player.MaxSpellSlots];
 
+	// Persist loadout to save file on disk
+	protected virtual bool PersistSpellLoadout => true;
+
 	readonly Dictionary<string, (PanelContainer Panel, StyleBoxFlat Border)> _libraryCards = new();
 	readonly Dictionary<string, List<(ColorRect Overlay, Label Icon)>> _spellLockOverlays = new();
 	(PanelContainer Panel, StyleBoxFlat Border, TextureRect Icon)[]? _loadoutSlots;
@@ -961,7 +964,10 @@ public abstract partial class LoadoutController : Node2D
 
 		RefreshSpellVisuals();
 		RunState.Instance.SetSpells(_loadout);
-		LoadoutPreferences.SaveSpells(_loadout);
+		if (PersistSpellLoadout)
+		{
+			LoadoutPreferences.SaveSpells(_loadout);
+		}
 	}
 
 	void ClearLoadoutSlot(int index)
@@ -969,7 +975,10 @@ public abstract partial class LoadoutController : Node2D
 		_loadout[index] = null;
 		RefreshSpellVisuals();
 		RunState.Instance.SetSpells(_loadout);
-		LoadoutPreferences.SaveSpells(_loadout);
+		if (PersistSpellLoadout)
+		{
+			LoadoutPreferences.SaveSpells(_loadout);
+		}
 	}
 
 	bool IsEquipped(SpellResource spell)

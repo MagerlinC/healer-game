@@ -24,6 +24,8 @@ public partial class CampController : LoadoutController
 	CanvasLayer? _armoryPanel;
 	EquipmentPane? _equipmentPane;
 
+	protected override bool PersistSpellLoadout => false;
+
 	protected override void SetupScene()
 	{
 		var (bgLeft, bgRight) = SetupBackground(AssetConstants.OverworldBackgroundPath);

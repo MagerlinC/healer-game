@@ -17,14 +17,14 @@ namespace healerfantasy.Items.Rings;
 /// Spell Apply methods read <c>ctx.EffectDurationBonus</c> and add it to
 /// their base effect duration.
 /// </summary>
-public class BandOfTheVoid : EquippableItem
+public class BandOfAffliction : EquippableItem
 {
 	readonly float _durationExtension = 0.5f;
-	public override string ItemId => "band_of_the_void";
+	public override string ItemId => "band_of_affliction";
 
-	public BandOfTheVoid()
+	public BandOfAffliction()
 	{
-		Name = "Band of the Void";
+		Name = "Band of Affliction";
 		Description = $"Damage over time effects last {_durationExtension}s longer";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Ring1;
@@ -43,7 +43,9 @@ public class BandOfTheVoid : EquippableItem
 
 		public ModifierPriority Priority { get; } = ModifierPriority.BASE;
 
-		public void OnBeforeCast(SpellContext context) { }
+		public void OnBeforeCast(SpellContext context)
+		{
+		}
 
 		public void OnCalculate(SpellContext context)
 		{
@@ -53,6 +55,8 @@ public class BandOfTheVoid : EquippableItem
 				context.EffectDurationBonus += _extension;
 		}
 
-		public void OnAfterCast(SpellContext context) { }
+		public void OnAfterCast(SpellContext context)
+		{
+		}
 	}
 }
