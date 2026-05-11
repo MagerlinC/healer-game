@@ -13,7 +13,7 @@ namespace healerfantasy.Items.Staves;
 public class StaffOfTheArchmage : EquippableItem
 {
 	static float MaxManaIncrease = 50f;
-	static float ManaRegenIncrease = 5f;
+	static float ManaRegenIncrease = 2f;
 	static float ManaCostIncreasePercent = 0.5f;
 	public override string ItemId => "staff_of_the_archmage";
 

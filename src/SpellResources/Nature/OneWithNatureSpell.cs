@@ -8,7 +8,7 @@ namespace healerfantasy.SpellResources.Nature;
 public partial class OneWithNatureSpell : UltimateSpellResource
 {
 	static float BuffDuration = 10f;
-	static float HealingIncrease = 30f;
+	static float HealingIncrease = 0.3f;
 
 	/// <summary>
 	/// Requirement: accumulate 16 seconds of nature HoT coverage across all targets.
@@ -23,7 +23,7 @@ public partial class OneWithNatureSpell : UltimateSpellResource
 	{
 		Name = "One With Nature";
 		Description =
-			$"Become one with nature for {BuffDuration:F0}s, making all spells instant cast and increasing nature spell healing by {HealingIncrease:F0}%. Directly healing a target causes all beneficial nature effects on that target to refresh their duration.";
+			$"Become one with nature for {BuffDuration:F0}s, making all spells instant cast and increasing nature spell healing by {100 * HealingIncrease:F0}%. Directly healing a target causes all beneficial nature effects on that target to refresh their duration.";
 		ActivationDescription = "Accumulate a total of 16 seconds of nature healing-over-time duration across all targets.";
 		ManaCost = 10f;
 		CastTime = 0.0f;
