@@ -15,6 +15,7 @@ public partial class OneWithNatureEffect : CharacterEffect, ISpellModifier, ICha
 	{
 		EffectId = "OneWithNature";
 		_healingIncrease = healingIncrease;
+		IsUltimateEffect = true;
 	}
 
 	public void Modify(CharacterStats stats)

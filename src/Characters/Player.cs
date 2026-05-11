@@ -116,6 +116,9 @@ public partial class Player : Character
 	// ── animation ─────────────────────────────────────────────────────────────
 	AnimatedSprite2D _sprite = null!;
 
+	// ── ultimate aura ─────────────────────────────────────────────────────────
+	CpuParticles2D? _ultimateParticles;
+
 	/// <summary>
 	/// Duration of the cast animation at SpeedScale 1.0.
 	/// Matches 4 frames at 4 FPS defined in the SpriteFrames resource.
@@ -151,6 +154,27 @@ public partial class Player : Character
 		EquippedUltimate?.ResetProgress();
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(UltimateProgressChanged));
+
+		// Particle aura shown on the player while the ultimate is active.
+		// Colour is driven by the equipped ultimate's spell school.
+		_ultimateParticles = new CpuParticles2D();
+		_ultimateParticles.Emitting = false;
+		_ultimateParticles.Amount = 22;
+		_ultimateParticles.Lifetime = 0.9f;
+		_ultimateParticles.Explosiveness = 0f;
+		_ultimateParticles.Randomness = 0.35f;
+		_ultimateParticles.Direction = new Vector2(0f, -1f);
+		_ultimateParticles.Spread = 65f;
+		_ultimateParticles.Gravity = new Vector2(0f, -25f);
+		_ultimateParticles.InitialVelocityMin = 12f;
+		_ultimateParticles.InitialVelocityMax = 28f;
+		_ultimateParticles.ScaleAmountMin = 2f;
+		_ultimateParticles.ScaleAmountMax = 5f;
+		_ultimateParticles.Color = EquippedUltimate != null
+			? new Color(AssetConstants.SpellSchoolColor(EquippedUltimate.School), 0.85f)
+			: new Color(1f, 1f, 1f, 0.85f);
+		_ultimateParticles.ZIndex = 2;
+		AddChild(_ultimateParticles);
 
 		// Apply talents chosen in the Overworld
 		if (RunState.Instance?.SelectedTalentDefs.Count > 0)
@@ -315,11 +339,17 @@ public partial class Player : Character
 		// ── Tick ultimate progress every frame while alive ────────────────────────
 		if (EquippedUltimate != null)
 		{
+			var ultimateActive = IsUltimateActive();
+
 			var prevProgress = EquippedUltimate.Progress;
-			if (!IsUltimateActive())
+			if (!ultimateActive)
 				EquippedUltimate.OnProcessTick(this, (float)delta);
 			if (!Mathf.IsEqualApprox(EquippedUltimate.Progress, prevProgress))
 				EmitSignalUltimateProgressChanged(EquippedUltimate.Progress, EquippedUltimate.Requirement);
+
+			// Drive the spell-school particle aura — emit only while the ultimate is active.
+			if (_ultimateParticles != null && _ultimateParticles.Emitting != ultimateActive)
+				_ultimateParticles.Emitting = ultimateActive;
 		}
 
 		// ── Generic spells (off-GCD, castable even while casting another spell) ──
@@ -361,7 +391,7 @@ public partial class Player : Character
 		{
 			var ultimate = EquippedUltimate;
 			var canPayCost = CurrentMana >= ultimate.ManaCost && CurrentHealth > ultimate.HealthCost;
-			if (canPayCost && !IsOnCooldown(ultimate) && ultimate.IsRequirementMet)
+			if (canPayCost && !IsOnCooldown(ultimate) && ultimate.IsRequirementMet && !IsUltimateActive())
 			{
 				var hoveredCharacter = ResolveTargetWithFallback(GameUI?.GetHoveredCharacter(), ultimate);
 				if (hoveredCharacter != null)

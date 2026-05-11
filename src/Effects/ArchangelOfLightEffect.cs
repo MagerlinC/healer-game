@@ -16,6 +16,7 @@ public partial class ArchangelOfLightEffect : CharacterEffect, ISpellModifier, I
 	{
 		EffectId = "ArchangelOfLightEffect";
 		_healingIncrease = healingIncrease;
+		IsUltimateEffect = true;
 	}
 
 	public void Modify(CharacterStats stats)

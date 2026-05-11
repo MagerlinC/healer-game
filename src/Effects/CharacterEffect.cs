@@ -35,6 +35,8 @@ public abstract partial class CharacterEffect : RefCounted
 	/// </summary>
 	public string EffectId { get; set; }
 
+	public bool IsUltimateEffect { get; set; }
+
 	/// <summary>Total duration of the effect in seconds.</summary>
 	public float Duration { get; protected set; }
 

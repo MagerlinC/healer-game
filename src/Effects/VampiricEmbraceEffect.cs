@@ -38,6 +38,7 @@ public partial class VampiricEmbraceEffect : CharacterEffect, ISpellModifier
 		_drainPerSecond = drainPerSecond;
 		_leechRate = leechRate;
 		_damageMultiplierOnExpire = damageMultiplierOnExpire;
+		IsUltimateEffect = true;
 	}
 
 	// ── Per-second tick: drain all party members ─────────────────────────────

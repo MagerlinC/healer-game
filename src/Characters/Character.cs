@@ -405,7 +405,10 @@ public abstract partial class Character : CharacterBody2D
 			? _effects.Values.Where(effect => effect.School == school.Value)
 			: _effects.Values;
 
-		foreach (var effect in effectsForSchool.Where(effect => effect.SourceCharacterName == GameConstants.HealerName))
+		var nonUltPlayerEffects = effectsForSchool.Where(effect =>
+			effect.SourceCharacterName != GameConstants.HealerName && !effect.IsUltimateEffect);
+
+		foreach (var effect in nonUltPlayerEffects)
 		{
 			switch (filter)
 			{

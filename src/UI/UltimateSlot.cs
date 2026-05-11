@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Godot;
 using healerfantasy;
 using healerfantasy.SpellResources.Void;
@@ -12,25 +11,21 @@ namespace healerfantasy.UI;
 /// Visual states
 /// ─────────────
 ///   Inactive — requirement not yet met.
-///             Dark border, slightly dimmed icon, arc showing current progress.
+///             Dim square border track, slightly dimmed icon, border fills
+///             clockwise from 12 o'clock as progress accumulates.
 ///   Ready    — requirement met, spell not on cooldown.
-///             Gold glowing border, full-brightness icon, no progress arc.
+///             Full bright gold square border, full-brightness icon.
 ///   Active   — ultimate's buff is currently running on the caster.
-///             Purple arcane border, bright icon, pulsing glow.
+///             Full pulsing arcane-purple square border, bright icon.
 ///
-/// The slot polls the Player reference each frame (no additional signals needed)
-/// to determine which state it is in and updates visuals accordingly.
+/// The border is drawn by a <see cref="BorderOverlay"/> child node added on top
+/// of the icon panel so it is always visible over the icon texture.
 /// </summary>
 public partial class UltimateSlot : Control
 {
 	// ── colours ──────────────────────────────────────────────────────────────
-	static readonly Color BorderInactive = new(0.20f, 0.14f, 0.28f);
-	static readonly Color BorderReady = new(0.95f, 0.80f, 0.10f); // gold
-	static readonly Color BorderActive = new(0.65f, 0.22f, 0.90f); // arcane purple
-
 	static readonly Color BgColor = new(0.10f, 0.07f, 0.14f, 0.95f);
-	static readonly Color ArcColor = new(0.65f, 0.22f, 0.90f, 0.55f); // progress arc
-	static readonly Color OverlayDim = new(0f, 0f, 0f, 0.42f); // inactive dim
+	static readonly Color OverlayDim = new(0f, 0f, 0f, 0.42f);
 
 	// ── child refs ───────────────────────────────────────────────────────────
 	PanelContainer _panel = null!;
@@ -39,6 +34,7 @@ public partial class UltimateSlot : Control
 	Control _inner = null!;
 	ColorRect? _dimOverlay = null;
 	CooldownOverlay? _cooldown = null;
+	BorderOverlay _borderOverlay = null!;
 
 	// ── state ─────────────────────────────────────────────────────────────────
 	Player? _player;
@@ -55,14 +51,112 @@ public partial class UltimateSlot : Control
 
 	SlotState _state = SlotState.Empty;
 
-	// Progress arc geometry
-	const int ArcSegments = 40;
+	// ── border overlay ────────────────────────────────────────────────────────
+	/// <summary>
+	/// Draws a rectangular progress border on top of the slot icon.
+	/// Added as a sibling of <c>_panel</c> so it renders above all icon content.
+	/// </summary>
+	sealed partial class BorderOverlay : Control
+	{
+		public UltimateSpellResource? Ultimate;
+		public SlotState State = SlotState.Empty;
+		public float PulseTimer = 0f;
+
+		static readonly Color TrackColor = new(0.20f, 0.14f, 0.28f, 0.5f); // dim track
+		static readonly Color FillColor = new(0.65f, 0.22f, 0.90f, 0.85f); // progress fill (purple)
+		static readonly Color ReadyColor = new(0.95f, 0.80f, 0.10f, 1.0f); // gold
+		static readonly Color ActiveColor = new(0.65f, 0.22f, 0.90f, 1.0f); // arcane purple
+
+		const float BW = 3.5f; // border stroke width
+
+		public override void _Draw()
+		{
+			if (Ultimate == null || State == SlotState.Empty) return;
+
+			float w = Size.X, h = Size.Y, half = BW / 2f;
+
+			// Perimeter waypoints going clockwise from top-centre back to top-centre.
+			// Segments: [0→1] right along top, [1→2] down right side,
+			//           [2→3] left along bottom, [3→4] up left side, [4→5] right to close.
+			var pts = new Vector2[]
+			{
+				new(w / 2f, half), // 0  top-centre (start)
+				new(w - half, half), // 1  top-right corner
+				new(w - half, h - half), // 2  bottom-right corner
+				new(half, h - half), // 3  bottom-left corner
+				new(half, half), // 4  top-left corner
+				new(w / 2f, half) // 5  top-centre (close)
+			};
+
+			switch (State)
+			{
+				case SlotState.Inactive:
+					// Full dim track so the "empty" border is always visible.
+					DrawBorder(pts, TrackColor, 1f);
+					// Bright fill sweeps clockwise as progress grows.
+					if (Ultimate.Requirement > 0f)
+					{
+						var fraction = Mathf.Clamp(Ultimate.Progress / Ultimate.Requirement, 0f, 1f);
+						if (fraction > 0f)
+							DrawBorder(pts, FillColor, fraction);
+					}
+
+					break;
+
+				case SlotState.Ready:
+					DrawBorder(pts, ReadyColor, 1f);
+					break;
+
+				case SlotState.Active:
+					var pulse = 0.75f + 0.25f * Mathf.Sin(PulseTimer * 4f);
+					DrawBorder(pts, ActiveColor * pulse, 1f);
+					break;
+			}
+		}
+
+		/// <summary>
+		/// Traces the perimeter waypoints with a thick line up to <paramref name="fraction"/>
+		/// of the total length. Corner joins are filled with a small circle so there are
+		/// no gaps where two perpendicular segments meet.
+		/// </summary>
+		void DrawBorder(Vector2[] pts, Color color, float fraction)
+		{
+			// Pre-compute total perimeter length.
+			var total = 0f;
+			for (var i = 0; i < pts.Length - 1; i++)
+				total += pts[i].DistanceTo(pts[i + 1]);
+
+			var target = fraction * total;
+			var traveled = 0f;
+
+			for (var i = 0; i < pts.Length - 1; i++)
+			{
+				if (traveled >= target) break;
+
+				var segLen = pts[i].DistanceTo(pts[i + 1]);
+				var remaining = target - traveled;
+				var segEnd = remaining >= segLen
+					? pts[i + 1]
+					: pts[i].Lerp(pts[i + 1], remaining / segLen);
+
+				DrawLine(pts[i], segEnd, color, BW, true);
+
+				// Fill the inner corner gap when we complete a full segment (except the
+				// closing segment that returns to the start point, which is mid-edge).
+				var completedSegment = remaining >= segLen;
+				var isCorner = completedSegment && i + 1 < pts.Length - 1;
+				if (isCorner)
+					DrawCircle(pts[i + 1], BW / 2f, color);
+
+				traveled += segLen;
+			}
+		}
+	}
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
 	public override void _Ready()
 	{
-		// Wrap everything in a fixed-size panel so the slot matches the action bar.
 		CustomMinimumSize = new Vector2(58, 58);
 		MouseFilter = MouseFilterEnum.Ignore;
 
@@ -72,14 +166,12 @@ public partial class UltimateSlot : Control
 		_border = new StyleBoxFlat();
 		_border.BgColor = BgColor;
 		_border.SetCornerRadiusAll(5);
-		_border.SetBorderWidthAll(2);
-		_border.BorderColor = BorderInactive;
+		_border.SetBorderWidthAll(0); // all border drawing is done by BorderOverlay
 		_border.ContentMarginLeft = 3f;
 		_border.ContentMarginRight = 3f;
 		_border.ContentMarginTop = 3f;
 		_border.ContentMarginBottom = 3f;
 		_panel.AddThemeStyleboxOverride("panel", _border);
-
 		AddChild(_panel);
 
 		_inner = new Control();
@@ -88,6 +180,13 @@ public partial class UltimateSlot : Control
 		_inner.SizeFlagsVertical = SizeFlags.ExpandFill;
 		_inner.ClipContents = true;
 		_panel.AddChild(_inner);
+
+		// BorderOverlay is added as a sibling of _panel AFTER it in UltimateSlot,
+		// so Godot renders it on top of the icon and all other panel content.
+		_borderOverlay = new BorderOverlay();
+		_borderOverlay.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+		_borderOverlay.MouseFilter = MouseFilterEnum.Ignore;
+		AddChild(_borderOverlay);
 	}
 
 	/// <summary>
@@ -99,17 +198,18 @@ public partial class UltimateSlot : Control
 		_player = player;
 		_ultimate = ultimate;
 
-		// Rebuild icon and overlays.
 		foreach (var child in _inner.GetChildren())
 			child.QueueFree();
 		_icon = null;
 		_dimOverlay = null;
 		_cooldown = null;
 
+		_borderOverlay.Ultimate = ultimate;
+
 		if (ultimate == null)
 		{
 			_state = SlotState.Empty;
-			_border.BorderColor = BorderInactive;
+			_borderOverlay.State = SlotState.Empty;
 			return;
 		}
 
@@ -166,7 +266,8 @@ public partial class UltimateSlot : Control
 		_panel.MouseFilter = MouseFilterEnum.Stop;
 
 		_state = SlotState.Inactive;
-		QueueRedraw();
+		_borderOverlay.State = SlotState.Inactive;
+		_borderOverlay.QueueRedraw();
 	}
 
 	// ── per-frame update ──────────────────────────────────────────────────────
@@ -179,7 +280,6 @@ public partial class UltimateSlot : Control
 
 		_pulseTimer += (float)delta;
 
-		// Determine state.
 		var newState = DetermineState();
 		if (newState != _state)
 		{
@@ -187,15 +287,10 @@ public partial class UltimateSlot : Control
 			ApplyVisualState();
 		}
 
-		// In Active state, pulse the border brightness.
-		if (_state == SlotState.Active)
-		{
-			var pulse = 0.75f + 0.25f * Mathf.Sin(_pulseTimer * 4f);
-			_border.BorderColor = BorderActive * pulse;
-			// QueueRedraw handled below for the arc.
-		}
-
-		QueueRedraw(); // redraws the progress arc each frame
+		// Push latest data to the overlay and request a redraw every frame so the
+		// progress fill and Active pulse stay smooth.
+		_borderOverlay.PulseTimer = _pulseTimer;
+		_borderOverlay.QueueRedraw();
 	}
 
 	SlotState DetermineState()
@@ -215,70 +310,11 @@ public partial class UltimateSlot : Control
 
 	void ApplyVisualState()
 	{
-		switch (_state)
-		{
-			case SlotState.Inactive:
-				_border.BorderColor = BorderInactive;
-				if (_dimOverlay != null) _dimOverlay.Visible = true;
-				break;
+		// Dim overlay is only shown in Inactive state; border colour is handled by BorderOverlay.
+		if (_dimOverlay != null)
+			_dimOverlay.Visible = _state == SlotState.Inactive;
 
-			case SlotState.Ready:
-				_border.BorderColor = BorderReady;
-				if (_dimOverlay != null) _dimOverlay.Visible = false;
-				break;
-
-			case SlotState.Active:
-				_border.BorderColor = BorderActive;
-				if (_dimOverlay != null) _dimOverlay.Visible = false;
-				break;
-
-			case SlotState.Empty:
-				_border.BorderColor = BorderInactive;
-				if (_dimOverlay != null) _dimOverlay.Visible = false;
-				break;
-		}
-	}
-
-	// ── progress arc drawing ──────────────────────────────────────────────────
-
-	public override void _Draw()
-	{
-		if (_ultimate == null || _state == SlotState.Active || _state == SlotState.Empty) return;
-
-		var progress = _ultimate.Progress;
-		var requirement = _ultimate.Requirement;
-		if (requirement <= 0f) return;
-
-		var fraction = Mathf.Clamp(progress / requirement, 0f, 1f);
-		if (fraction <= 0f) return;
-
-		// Draw a thin arc clockwise from 12 o'clock, filling as progress increases.
-		// The arc sits just inside the slot border.
-		var size = _panel.Size;
-		var center = size / 2f;
-		var radius = Mathf.Min(size.X, size.Y) / 2f - 4f;
-
-		var sweepAngle = fraction * Mathf.Tau;
-		var startAngle = -Mathf.Pi / 2f; // 12 o'clock
-
-		var points = new List<Vector2> { center };
-
-		var segments = Mathf.Max(3, Mathf.CeilToInt(ArcSegments * fraction));
-
-		for (var i = 0; i <= segments; i++)
-		{
-			var angle = startAngle + (float)i / segments * sweepAngle;
-			points.Add(center + new Vector2(
-				Mathf.Cos(angle),
-				Mathf.Sin(angle)
-			) * radius);
-		}
-
-// Remove duplicate end-point for full circle
-		if (fraction >= 1f)
-			points.RemoveAt(points.Count - 1);
-
-		DrawColoredPolygon(points.ToArray(), ArcColor);
+		_borderOverlay.State = _state;
 	}
 
 	// ── helpers ───────────────────────────────────────────────────────────────

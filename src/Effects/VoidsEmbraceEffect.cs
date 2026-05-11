@@ -35,6 +35,7 @@ public partial class VoidsEmbraceEffect : CharacterEffect, ISpellModifier
 		_healthDrainPerStack = healthDrainPerStack;
 		_hastePerStack = hastePerStack;
 		_voidDamageIncreasePerStack = voidDamageIncreasePerStack;
+		IsUltimateEffect = true;
 	}
 
 	// ── per-second tick: gain a stack then drain health ─────────────────────
