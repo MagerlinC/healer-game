@@ -154,7 +154,7 @@ public partial class GameTooltip : CanvasLayer
 		var mouse = GetViewport().GetMousePosition();
 		var pos = mouse + new Vector2(14f, 14f);
 		var vpSize = GetViewport().GetVisibleRect().Size;
-		var pSize = _panel.Size;
+		var pSize = _panel.GetCombinedMinimumSize();
 
 		// Nudge left/up if the panel would overflow the viewport edge.
 		if (pos.X + pSize.X > vpSize.X) pos.X = mouse.X - pSize.X - 6f;

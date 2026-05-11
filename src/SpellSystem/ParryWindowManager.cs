@@ -13,16 +13,23 @@ namespace healerfantasy.SpellSystem;
 ///    This fires <see cref="WindupStarted"/> so the DeflectOverlay and any other
 ///    subscribers are notified — exclusively for parryable casts.
 /// 2. Player casts Deflect, which calls <see cref="TryDeflect"/>.
+///    Deflect is only accepted during the final <see cref="ParryWindowDuration"/>
+///    seconds of the cast — earlier inputs are silently ignored.
 /// 3. When the wind-up timer expires the boss calls <see cref="ConsumeResult"/>
 ///    to learn the outcome — true = deflected, false = hit lands.
 ///    This fires <see cref="WindupEnded"/> to dismiss the overlay.
 /// </summary>
 public static class ParryWindowManager
 {
+	/// <summary>How many seconds before cast end the deflect window opens.</summary>
+	public const float ParryWindowDuration = 0.5f;
+
 	/// <summary>True while a parryable attack wind-up is active.</summary>
 	public static bool IsOpen { get; private set; }
 
 	static bool _wasDeflected;
+	/// <summary>Godot millisecond tick at which deflect inputs start being accepted.</summary>
+	static ulong _deflectWindowOpenAt;
 
 	// ── central parry-window events ───────────────────────────────────────────
 
@@ -46,22 +53,29 @@ public static class ParryWindowManager
 	/// <summary>
 	/// Opens a new parry window and fires <see cref="WindupStarted"/>.
 	/// Resets any leftover deflect state from a prior window.
+	/// Deflect inputs are only accepted during the final <see cref="ParryWindowDuration"/>
+	/// seconds of the cast; earlier inputs are rejected by <see cref="TryDeflect"/>.
 	/// </summary>
 	public static void OpenWindow(string spellName, Texture2D icon, float duration)
 	{
 		IsOpen = true;
 		_wasDeflected = false;
+		float delay = Math.Max(0f, duration - ParryWindowDuration);
+		_deflectWindowOpenAt = Godot.Time.GetTicksMsec() + (ulong)(delay * 1000f);
 		WindupStarted?.Invoke(spellName, icon, duration);
 	}
 
 	/// <summary>
 	/// Attempt to deflect the currently active parryable attack.
-	/// Returns <c>true</c> and marks the window as deflected when a wind-up
-	/// is in progress; returns <c>false</c> if no window is open.
+	/// Returns <c>true</c> only when a wind-up is in progress AND the cast is
+	/// within the final <see cref="ParryWindowDuration"/> seconds (i.e. the tight
+	/// parry window is open). Returns <c>false</c> if no window is active or the
+	/// player input was too early.
 	/// </summary>
 	public static bool TryDeflect()
 	{
 		if (!IsOpen) return false;
+		if (Godot.Time.GetTicksMsec() < _deflectWindowOpenAt) return false; // too early
 		_wasDeflected = true;
 		IsOpen = false; // close immediately — you can only deflect once
 		return true;
@@ -91,7 +105,8 @@ public static class ParryWindowManager
 	/// </summary>
 	public static void Reset()
 	{
-		IsOpen        = false;
-		_wasDeflected = false;
+		IsOpen               = false;
+		_wasDeflected        = false;
+		_deflectWindowOpenAt = 0;
 	}
 }

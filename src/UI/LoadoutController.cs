@@ -738,20 +738,59 @@ public abstract partial class LoadoutController : Node2D
 	{
 		_loadoutSlots = new (PanelContainer, StyleBoxFlat, TextureRect)[Player.MaxSpellSlots];
 
+		// ── Outer: center the whole loadout block horizontally ────────────────
+		var center = new CenterContainer();
+		center.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+
+		// ── Bordered panel (matches school-column style) ───────────────────────
+		var outerPanel = new PanelContainer();
+		var outerStyle = new StyleBoxFlat();
+		outerStyle.BgColor = new Color(0.08f, 0.07f, 0.05f, 0.92f);
+		outerStyle.SetCornerRadiusAll(8);
+		outerStyle.SetBorderWidthAll(1);
+		outerStyle.BorderColor = PanelBorder;
+		outerStyle.ShadowColor = new Color(0f, 0f, 0f, 0.4f);
+		outerStyle.ShadowSize = 6;
+		outerPanel.AddThemeStyleboxOverride("panel", outerStyle);
+		center.AddChild(outerPanel);
+
+		// ── Inner margin + vbox ───────────────────────────────────────────────
+		var innerMargin = new MarginContainer();
+		innerMargin.AddThemeConstantOverride("margin_left", 20);
+		innerMargin.AddThemeConstantOverride("margin_right", 20);
+		innerMargin.AddThemeConstantOverride("margin_top", 12);
+		innerMargin.AddThemeConstantOverride("margin_bottom", 12);
+		outerPanel.AddChild(innerMargin);
+
+		var vbox = new VBoxContainer();
+		vbox.AddThemeConstantOverride("separation", 8);
+		innerMargin.AddChild(vbox);
+
+		// Header row: "Equipped Spells" on the left, "Ultimate" aligned over the ultimate slot
+		var headerRow = new HBoxContainer();
+		headerRow.AddThemeConstantOverride("separation", 0);
+		vbox.AddChild(headerRow);
+
+		var header = new Label();
+		header.Text = "Equipped Spells";
+		header.HorizontalAlignment = HorizontalAlignment.Left;
+		header.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		header.AddThemeFontSizeOverride("font_size", 13);
+		header.AddThemeColorOverride("font_color", TitleColor);
+		headerRow.AddChild(header);
+
+		var ultHeader = new Label();
+		ultHeader.Text = "Ultimate";
+		ultHeader.HorizontalAlignment = HorizontalAlignment.Center;
+		ultHeader.CustomMinimumSize = new Vector2(64f, 0f);
+		ultHeader.AddThemeFontSizeOverride("font_size", 13);
+		ultHeader.AddThemeColorOverride("font_color", new Color(0.75f, 0.50f, 0.95f));
+		headerRow.AddChild(ultHeader);
+
+		// ── Slot row ──────────────────────────────────────────────────────────
 		var hbox = new HBoxContainer();
-		hbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		hbox.AddThemeConstantOverride("separation", 6);
-
-		var label = new Label();
-		label.Text = "Loadout";
-		label.VerticalAlignment = VerticalAlignment.Center;
-		label.AddThemeFontSizeOverride("font_size", 13);
-		label.AddThemeColorOverride("font_color", new Color(0.72f, 0.68f, 0.62f));
-		hbox.AddChild(label);
-
-		var spacer = new Control();
-		spacer.CustomMinimumSize = new Vector2(10f, 0f);
-		hbox.AddChild(spacer);
+		hbox.AddThemeConstantOverride("separation", 8);
+		vbox.AddChild(hbox);
 
 		for (var i = 0; i < Player.MaxSpellSlots; i++)
 		{
@@ -780,13 +819,14 @@ public abstract partial class LoadoutController : Node2D
 			hbox.AddChild(slotPanel);
 		}
 
-		var spacer2 = new Control();
-		spacer2.CustomMinimumSize = new Vector2(10f, 0f);
-		hbox.AddChild(spacer2);
+		// Fixed gap between regular slots and ultimate slot
+		var gap = new Control();
+		gap.CustomMinimumSize = new Vector2(20f, 0f);
+		hbox.AddChild(gap);
 
 		// ── Ultimate slot ─────────────────────────────────────────────────────
 		var ultimatePanel = new PanelContainer();
-		ultimatePanel.CustomMinimumSize = new Vector2(52f, 52f);
+		ultimatePanel.CustomMinimumSize = new Vector2(64f, 64f);
 		ultimatePanel.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
 
 		var ultimateBorder = new StyleBoxFlat();
@@ -852,13 +892,13 @@ public abstract partial class LoadoutController : Node2D
 
 		RefreshSpellVisuals();
 
-		return hbox;
+		return center;
 	}
 
 	(PanelContainer, StyleBoxFlat, TextureRect) BuildLoadoutSlot(int index)
 	{
 		var panel = new PanelContainer();
-		panel.CustomMinimumSize = new Vector2(52f, 52f);
+		panel.CustomMinimumSize = new Vector2(64f, 64f);
 		panel.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
 
 		var border = new StyleBoxFlat();

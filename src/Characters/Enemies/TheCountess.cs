@@ -312,15 +312,12 @@ public partial class TheCountess : EnemyCharacter
 		EmitSignalCourtOfReflectionsStarted();
 
 		// Apply ramping DoT to every living party member.
-		foreach (var node in GetTree().GetNodesInGroup("party"))
+		foreach (var c in CollectAlivePartyMembers())
 		{
-			if (node is Character c && c.IsAlive)
+			c.ApplyEffect(new CourtOfReflectionsEffect(CourtDotBaseDamage, CourtDotRampPerTick)
 			{
-				c.ApplyEffect(new CourtOfReflectionsEffect(CourtDotBaseDamage, CourtDotRampPerTick)
-				{
-					SourceCharacterName = CharacterName
-				});
-			}
+				SourceCharacterName = CharacterName
+			});
 		}
 
 		// Build the spawn position list — take only as many offsets as we need.

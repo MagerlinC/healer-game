@@ -13,7 +13,7 @@ public class CharacterStats
 	public float MaxHealth { get; set; }
 	public float MaxMana { get; set; }
 
-	public float ManaRegenPerSecond { get; set; } = 1f;
+	public float ManaRegenPerSecond { get; set; } = 2f;
 
 	public float ManaCostMultiplier { get; set; } = 1f;
 
