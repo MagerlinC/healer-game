@@ -146,7 +146,9 @@ public partial class Player : Character
 		}
 
 		// Load the ultimate spell (may be null if none was selected in the overworld).
+		// Reset progress so accumulated state from a previous boss fight doesn't carry over.
 		EquippedUltimate = RunState.Instance?.SelectedUltimate;
+		EquippedUltimate?.ResetProgress();
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(UltimateProgressChanged));
 
@@ -256,7 +258,7 @@ public partial class Player : Character
 			{
 				EquippedUltimate.ResetProgress();
 			}
-			else
+			else if (!IsUltimateActive())
 			{
 				EquippedUltimate.OnRegularSpellCast(ctx);
 			}
@@ -314,7 +316,8 @@ public partial class Player : Character
 		if (EquippedUltimate != null)
 		{
 			var prevProgress = EquippedUltimate.Progress;
-			EquippedUltimate.OnProcessTick(this, (float)delta);
+			if (!IsUltimateActive())
+				EquippedUltimate.OnProcessTick(this, (float)delta);
 			if (!Mathf.IsEqualApprox(EquippedUltimate.Progress, prevProgress))
 				EmitSignalUltimateProgressChanged(EquippedUltimate.Progress, EquippedUltimate.Requirement);
 		}
@@ -472,6 +475,17 @@ public partial class Player : Character
 	}
 
 	// ── private helpers ──────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Returns true when the equipped ultimate's persistent buff is currently active on the player.
+	/// False when no ultimate is equipped, the ultimate has no ActiveEffectId, or the buff is absent.
+	/// </summary>
+	bool IsUltimateActive()
+	{
+		if (EquippedUltimate == null) return false;
+		var id = EquippedUltimate.ActiveEffectId;
+		return !string.IsNullOrEmpty(id) && GetEffectById(id) != null;
+	}
 
 	/// <summary>Abort the current cast and notify listeners. No mana is refunded.</summary>
 	void CancelCast()
