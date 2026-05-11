@@ -23,7 +23,7 @@ public partial class BossCountessBloodShieldSpell : SpellResource
 		Tags = SpellTags.Healing;
 		ManaCost = 0f;
 		CastTime = 0f;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemies/the-countess/blood-shield.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/the-countess/blood-shield.png");
 		EffectType = EffectType.Helpful;
 	}
 

@@ -43,6 +43,8 @@ public abstract partial class LoadoutController : Node2D
 	static readonly Color CardBorderEquipped = new(0.98f, 0.82f, 0.15f);
 	static readonly Color SlotBorderEmpty = new(0.22f, 0.18f, 0.14f);
 	static readonly Color SlotBorderFilled = new(0.60f, 0.48f, 0.22f);
+	static readonly Color SlotBorderUltimateEmpty = new(0.20f, 0.14f, 0.28f);
+	static readonly Color SlotBorderUltimateFilled = new(0.65f, 0.22f, 0.90f);
 
 	// ── layout constants ──────────────────────────────────────────────────────
 	const float CardW = 95f;
@@ -77,6 +79,7 @@ public abstract partial class LoadoutController : Node2D
 	readonly Dictionary<string, (PanelContainer Panel, StyleBoxFlat Border)> _libraryCards = new();
 	readonly Dictionary<string, List<(ColorRect Overlay, Label Icon)>> _spellLockOverlays = new();
 	(PanelContainer Panel, StyleBoxFlat Border, TextureRect Icon)[]? _loadoutSlots;
+	(PanelContainer Panel, StyleBoxFlat Border, TextureRect Icon)? _ultimateLoadoutSlot;
 
 	/// <summary>Inner VBoxContainer for the read-only talent panel — repopulated on open.</summary>
 	VBoxContainer? _readOnlyTalentContent;
@@ -781,7 +784,74 @@ public abstract partial class LoadoutController : Node2D
 		fill.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		hbox.AddChild(fill);
 
+		// ── Ultimate slot ─────────────────────────────────────────────────────
+		var ultimatePanel = new PanelContainer();
+		ultimatePanel.CustomMinimumSize = new Vector2(52f, 52f);
+		ultimatePanel.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+
+		var ultimateBorder = new StyleBoxFlat();
+		ultimateBorder.BgColor = new Color(0.10f, 0.07f, 0.14f, 0.95f);
+		ultimateBorder.SetCornerRadiusAll(4);
+		ultimateBorder.SetBorderWidthAll(2);
+		ultimateBorder.BorderColor = SlotBorderUltimateEmpty;
+		ultimateBorder.ContentMarginLeft = ultimateBorder.ContentMarginRight = 3f;
+		ultimateBorder.ContentMarginTop = ultimateBorder.ContentMarginBottom = 3f;
+		ultimatePanel.AddThemeStyleboxOverride("panel", ultimateBorder);
+
+		var ultimateInner = new Control();
+		ultimateInner.MouseFilter = Control.MouseFilterEnum.Ignore;
+		ultimateInner.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		ultimateInner.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		ultimatePanel.AddChild(ultimateInner);
+
+		var ultimateIconRect = new TextureRect();
+		ultimateIconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+		ultimateIconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+		ultimateIconRect.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		ultimateIconRect.MouseFilter = Control.MouseFilterEnum.Ignore;
+		ultimateIconRect.Visible = false;
+		ultimateInner.AddChild(ultimateIconRect);
+
+		var ultKeyLabel = new Label();
+		ultKeyLabel.Text = GetKeybindLabel("ultimate");
+		ultKeyLabel.AddThemeFontSizeOverride("font_size", 11);
+		ultKeyLabel.AddThemeColorOverride("font_color", new Color(1f, 1f, 0.85f));
+		ultKeyLabel.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.9f));
+		ultKeyLabel.AddThemeConstantOverride("shadow_offset_x", 1);
+		ultKeyLabel.AddThemeConstantOverride("shadow_offset_y", 1);
+		ultKeyLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.BottomRight);
+		ultKeyLabel.GrowHorizontal = Control.GrowDirection.Begin;
+		ultKeyLabel.GrowVertical = Control.GrowDirection.Begin;
+		ultKeyLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+		ultimateInner.AddChild(ultKeyLabel);
+
+		_ultimateLoadoutSlot = (ultimatePanel, ultimateBorder, ultimateIconRect);
+
+		ultimatePanel.MouseEntered += () =>
+		{
+			var ult = RunState.Instance.SelectedUltimate;
+			if (ult != null)
+			{
+				var tooltip = GameTooltip.FormatSpellTooltip(ult);
+				GameTooltip.Show(tooltip.title, tooltip.desc);
+			}
+		};
+		ultimatePanel.MouseExited += () => GameTooltip.Hide();
+
+		ultimatePanel.GuiInput += (ev) =>
+		{
+			if (ev is InputEventMouseButton mb && mb.ButtonIndex == MouseButton.Left && mb.Pressed)
+			{
+				RunState.Instance.SetUltimate(null);
+				RefreshSpellVisuals();
+				ultimatePanel.AcceptEvent();
+			}
+		};
+
+		hbox.AddChild(ultimatePanel);
+
 		RefreshSpellVisuals();
+
 		return hbox;
 	}
 
@@ -869,20 +939,33 @@ public abstract partial class LoadoutController : Node2D
 
 	void RefreshSpellVisuals()
 	{
+		var selectedUlt = RunState.Instance.SelectedUltimate;
+
 		foreach (var (name, (_, border)) in _libraryCards)
 		{
-			var equipped = _loadout.Any(s => s?.Name == name);
+			var equipped = _loadout.Any(s => s?.Name == name)
+			            || selectedUlt?.Name == name;
 			border.BorderColor = equipped ? CardBorderEquipped : CardBorderIdle;
 		}
 
-		if (_loadoutSlots == null) return;
-		for (var i = 0; i < Player.MaxSpellSlots; i++)
+		if (_loadoutSlots != null)
 		{
-			var spell = _loadout[i];
-			var (_, border, iconRect) = _loadoutSlots[i];
-			iconRect.Texture = spell?.Icon;
-			iconRect.Visible = spell != null;
-			border.BorderColor = spell != null ? SlotBorderFilled : SlotBorderEmpty;
+			for (var i = 0; i < Player.MaxSpellSlots; i++)
+			{
+				var spell = _loadout[i];
+				var (_, border, iconRect) = _loadoutSlots[i];
+				iconRect.Texture = spell?.Icon;
+				iconRect.Visible = spell != null;
+				border.BorderColor = spell != null ? SlotBorderFilled : SlotBorderEmpty;
+			}
+		}
+
+		if (_ultimateLoadoutSlot.HasValue)
+		{
+			var (_, ultBorder, ultIcon) = _ultimateLoadoutSlot.Value;
+			ultIcon.Texture = selectedUlt?.Icon;
+			ultIcon.Visible = selectedUlt != null;
+			ultBorder.BorderColor = selectedUlt != null ? SlotBorderUltimateFilled : SlotBorderUltimateEmpty;
 		}
 	}
 

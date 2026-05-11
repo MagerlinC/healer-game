@@ -27,16 +27,15 @@ public partial class BossCorrosiveOozeSpell : SpellResource
 
 	public override void Apply(SpellContext ctx)
 	{
-		foreach (var target in ctx.Targets)
+
+		ctx.Target.ApplyEffect(new CorrosiveOozeEffect
 		{
-			target.ApplyEffect(new CorrosiveOozeEffect
-			{
-				AbilityName = Name,
-				Description = Description,
-				SourceCharacterName = ctx.Caster?.CharacterName,
-				School = SpellSchool.Nature,
-				Icon = Icon
-			});
-		}
+			AbilityName = Name,
+			Description = Description,
+			SourceCharacterName = ctx.Caster?.CharacterName,
+			School = SpellSchool.Nature,
+			Icon = Icon
+		});
+
 	}
 }

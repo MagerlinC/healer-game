@@ -541,7 +541,7 @@ public abstract partial class Character : CharacterBody2D
 	void TickEffects(float delta)
 	{
 		if (_effects.Count == 0) return;
-
+		// TODO: collection modified exception against countess here?
 		List<string> expired = null;
 		foreach (var (id, effect) in _effects)
 		{
