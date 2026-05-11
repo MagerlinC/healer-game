@@ -780,9 +780,9 @@ public abstract partial class LoadoutController : Node2D
 			hbox.AddChild(slotPanel);
 		}
 
-		var fill = new Control();
-		fill.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		hbox.AddChild(fill);
+		var spacer2 = new Control();
+		spacer2.CustomMinimumSize = new Vector2(10f, 0f);
+		hbox.AddChild(spacer2);
 
 		// ── Ultimate slot ─────────────────────────────────────────────────────
 		var ultimatePanel = new PanelContainer();
@@ -944,7 +944,7 @@ public abstract partial class LoadoutController : Node2D
 		foreach (var (name, (_, border)) in _libraryCards)
 		{
 			var equipped = _loadout.Any(s => s?.Name == name)
-			            || selectedUlt?.Name == name;
+			               || selectedUlt?.Name == name;
 			border.BorderColor = equipped ? CardBorderEquipped : CardBorderIdle;
 		}
 

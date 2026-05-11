@@ -14,6 +14,11 @@ using healerfantasy;
 public partial class PartyMember : Character
 {
 	// ── Shared targeting state ────────────────────────────────────────────────
+	public PartyMember()
+	{
+		AddToGroup(GameConstants.PartyGroupName);
+	}
+
 
 	// ── Knockback stun ────────────────────────────────────────────────────────
 
@@ -49,9 +54,9 @@ public partial class PartyMember : Character
 	/// </summary>
 	public void KnockbackTo(Vector2 destination, float stunDuration = 1.5f)
 	{
-		GlobalPosition         = destination;
-		Velocity               = Vector2.Zero;
-		_knockbackStunTimer    = stunDuration;
+		GlobalPosition = destination;
+		Velocity = Vector2.Zero;
+		_knockbackStunTimer = stunDuration;
 	}
 
 	/// <summary>
@@ -62,7 +67,7 @@ public partial class PartyMember : Character
 	/// </summary>
 	public void StunInPlace(float duration)
 	{
-		Velocity            = Vector2.Zero;
+		Velocity = Vector2.Zero;
 		_knockbackStunTimer = duration;
 	}
 
@@ -105,8 +110,8 @@ public partial class PartyMember : Character
 		if (ArenaBoundary is not { } bounds) return;
 
 		var delta = node.GlobalPosition - bounds.Center;
-		var ex    = delta.X / bounds.RadiusX;
-		var ey    = delta.Y / bounds.RadiusY;
+		var ex = delta.X / bounds.RadiusX;
+		var ey = delta.Y / bounds.RadiusY;
 		if (ex * ex + ey * ey <= 1f) return;
 
 		var len = Mathf.Sqrt(ex * ex + ey * ey);
@@ -114,8 +119,8 @@ public partial class PartyMember : Character
 		// node on the wrong side of the one-sided SegmentShape2D physics walls.
 		const float Inset = 4f;
 		node.GlobalPosition = bounds.Center + new Vector2(
-			(ex / len) * (bounds.RadiusX - Inset),
-			(ey / len) * (bounds.RadiusY - Inset));
+			ex / len * (bounds.RadiusX - Inset),
+			ey / len * (bounds.RadiusY - Inset));
 	}
 
 	/// <summary>
@@ -132,7 +137,7 @@ public partial class PartyMember : Character
 		// (dir.X*t / rx)² + (dir.Y*t / ry)² = 1  →  t = 1 / sqrt((dir.X/rx)² + (dir.Y/ry)²)
 		var ex = direction.X / bounds.RadiusX;
 		var ey = direction.Y / bounds.RadiusY;
-		var t  = 1f / Mathf.Sqrt(ex * ex + ey * ey);
+		var t = 1f / Mathf.Sqrt(ex * ex + ey * ey);
 
 		return bounds.Center + direction * (t - inset);
 	}
@@ -148,8 +153,8 @@ public partial class PartyMember : Character
 		if (ArenaBoundary is not { } bounds) return;
 
 		var delta = GlobalPosition - bounds.Center;
-		var ex    = delta.X / bounds.RadiusX;
-		var ey    = delta.Y / bounds.RadiusY;
+		var ex = delta.X / bounds.RadiusX;
+		var ey = delta.Y / bounds.RadiusY;
 
 		// Already inside — nothing to do.
 		if (ex * ex + ey * ey <= 1f) return;
@@ -159,8 +164,8 @@ public partial class PartyMember : Character
 		// multiplying by the radii converts it back to world space.
 		var len = Mathf.Sqrt(ex * ex + ey * ey);
 		GlobalPosition = bounds.Center + new Vector2(
-			(ex / len) * bounds.RadiusX,
-			(ey / len) * bounds.RadiusY);
+			ex / len * bounds.RadiusX,
+			ey / len * bounds.RadiusY);
 	}
 
 	// ── Shared targeting state ────────────────────────────────────────────────

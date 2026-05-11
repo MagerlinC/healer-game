@@ -143,7 +143,6 @@ public abstract partial class Character : CharacterBody2D
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(FloatingCombatText));
 		EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
 		EmitSignalManaChanged(CharacterName, CurrentMana, MaxMana);
-		AddToGroup("party");
 	}
 
 	public override void _Process(double delta)
@@ -541,19 +540,29 @@ public abstract partial class Character : CharacterBody2D
 	void TickEffects(float delta)
 	{
 		if (_effects.Count == 0) return;
-		// TODO: collection modified exception against countess here?
+
 		List<string> expired = null;
-		foreach (var (id, effect) in _effects)
+
+		foreach (var (id, effect) in _effects.ToArray())
 		{
+			// effect may already have been removed by another effect
+			if (!_effects.ContainsKey(id))
+				continue;
+
 			effect.Update(this, delta);
+
 			if (effect.IsExpired)
 				(expired ??= new List<string>()).Add(id);
 		}
 
 		if (expired == null) return;
+
 		foreach (var id in expired)
 		{
-			_effects[id].OnExpired(this);
+			if (!_effects.TryGetValue(id, out var effect))
+				continue;
+
+			effect.OnExpired(this);
 			_effects.Remove(id);
 			EmitSignalEffectRemoved(CharacterName, id);
 		}

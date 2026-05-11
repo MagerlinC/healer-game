@@ -30,7 +30,7 @@ public partial class TemporalWardSpell : SpellResource
 		Cooldown = 15f;
 		School = SpellSchool.Chronomancy;
 		Tags = SpellTags.Healing | SpellTags.Duration | SpellTags.GroupSpell;
-		RequiredSchoolPoints = 2;
+		RequiredSchoolPoints = 0;
 		EffectType = EffectType.Helpful;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "healer/healer5.png");
 	}

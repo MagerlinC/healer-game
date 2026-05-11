@@ -23,6 +23,11 @@ public partial class Player : Character
 	/// <summary>Maximum number of spells the player can have equipped at once.</summary>
 	public const int MaxSpellSlots = 6;
 
+	public Player()
+	{
+		AddToGroup("party");
+	}
+
 	/// <summary>
 	/// Always-available generic spells (Dispel, Deflect) sourced from
 	/// <see cref="SpellRegistry.GenericSpells"/>. These live in their own
