@@ -25,27 +25,34 @@ public partial class UltimateSlot : Control
 {
 	// ── colours ──────────────────────────────────────────────────────────────
 	static readonly Color BorderInactive = new(0.20f, 0.14f, 0.28f);
-	static readonly Color BorderReady    = new(0.95f, 0.80f, 0.10f);  // gold
-	static readonly Color BorderActive   = new(0.65f, 0.22f, 0.90f);  // arcane purple
+	static readonly Color BorderReady = new(0.95f, 0.80f, 0.10f); // gold
+	static readonly Color BorderActive = new(0.65f, 0.22f, 0.90f); // arcane purple
 
-	static readonly Color BgColor    = new(0.10f, 0.07f, 0.14f, 0.95f);
-	static readonly Color ArcColor   = new(0.65f, 0.22f, 0.90f, 0.55f);  // progress arc
-	static readonly Color OverlayDim = new(0f,    0f,    0f,    0.42f);  // inactive dim
+	static readonly Color BgColor = new(0.10f, 0.07f, 0.14f, 0.95f);
+	static readonly Color ArcColor = new(0.65f, 0.22f, 0.90f, 0.55f); // progress arc
+	static readonly Color OverlayDim = new(0f, 0f, 0f, 0.42f); // inactive dim
 
 	// ── child refs ───────────────────────────────────────────────────────────
-	PanelContainer _panel     = null!;
-	StyleBoxFlat   _border    = null!;
-	TextureRect?   _icon      = null;
-	Control        _inner     = null!;
-	ColorRect?     _dimOverlay = null;
+	PanelContainer _panel = null!;
+	StyleBoxFlat _border = null!;
+	TextureRect? _icon = null;
+	Control _inner = null!;
+	ColorRect? _dimOverlay = null;
 	CooldownOverlay? _cooldown = null;
 
 	// ── state ─────────────────────────────────────────────────────────────────
-	Player?                 _player;
-	UltimateSpellResource?  _ultimate;
-	float                   _pulseTimer = 0f;
+	Player? _player;
+	UltimateSpellResource? _ultimate;
+	float _pulseTimer = 0f;
 
-	enum SlotState { Empty, Inactive, Ready, Active }
+	enum SlotState
+	{
+		Empty,
+		Inactive,
+		Ready,
+		Active
+	}
+
 	SlotState _state = SlotState.Empty;
 
 	// Progress arc geometry
@@ -67,9 +74,9 @@ public partial class UltimateSlot : Control
 		_border.SetCornerRadiusAll(5);
 		_border.SetBorderWidthAll(2);
 		_border.BorderColor = BorderInactive;
-		_border.ContentMarginLeft   = 3f;
-		_border.ContentMarginRight  = 3f;
-		_border.ContentMarginTop    = 3f;
+		_border.ContentMarginLeft = 3f;
+		_border.ContentMarginRight = 3f;
+		_border.ContentMarginTop = 3f;
 		_border.ContentMarginBottom = 3f;
 		_panel.AddThemeStyleboxOverride("panel", _border);
 
@@ -78,7 +85,7 @@ public partial class UltimateSlot : Control
 		_inner = new Control();
 		_inner.MouseFilter = MouseFilterEnum.Ignore;
 		_inner.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		_inner.SizeFlagsVertical   = SizeFlags.ExpandFill;
+		_inner.SizeFlagsVertical = SizeFlags.ExpandFill;
 		_inner.ClipContents = true;
 		_panel.AddChild(_inner);
 	}
@@ -89,15 +96,15 @@ public partial class UltimateSlot : Control
 	/// </summary>
 	public void Bind(Player player, UltimateSpellResource? ultimate)
 	{
-		_player   = player;
+		_player = player;
 		_ultimate = ultimate;
 
 		// Rebuild icon and overlays.
 		foreach (var child in _inner.GetChildren())
 			child.QueueFree();
-		_icon       = null;
+		_icon = null;
 		_dimOverlay = null;
-		_cooldown   = null;
+		_cooldown = null;
 
 		if (ultimate == null)
 		{
@@ -110,7 +117,7 @@ public partial class UltimateSlot : Control
 		if (ultimate.Icon != null)
 		{
 			_icon = new TextureRect();
-			_icon.Texture    = ultimate.Icon;
+			_icon.Texture = ultimate.Icon;
 			_icon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 			_icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			_icon.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
@@ -134,13 +141,13 @@ public partial class UltimateSlot : Control
 		var label = new Label();
 		label.Text = GetKeybindLabel("ultimate");
 		label.AddThemeFontSizeOverride("font_size", 11);
-		label.AddThemeColorOverride("font_color",        new Color(1.00f, 1.00f, 0.85f));
+		label.AddThemeColorOverride("font_color", new Color(1.00f, 1.00f, 0.85f));
 		label.AddThemeColorOverride("font_shadow_color", new Color(0.00f, 0.00f, 0.00f, 0.9f));
 		label.AddThemeConstantOverride("shadow_offset_x", 1);
 		label.AddThemeConstantOverride("shadow_offset_y", 1);
 		label.SetAnchorsAndOffsetsPreset(LayoutPreset.BottomRight);
 		label.GrowHorizontal = GrowDirection.Begin;
-		label.GrowVertical   = GrowDirection.Begin;
+		label.GrowVertical = GrowDirection.Begin;
 		_inner.AddChild(label);
 
 		// Subscribe to the cooldown signal so the overlay animates correctly.
@@ -155,7 +162,7 @@ public partial class UltimateSlot : Control
 		// Tooltip
 		var tooltipText = GameTooltip.FormatSpellTooltip(ultimate);
 		_panel.MouseEntered += () => GameTooltip.Show(tooltipText.title, tooltipText.desc);
-		_panel.MouseExited  += () => GameTooltip.Hide();
+		_panel.MouseExited += () => GameTooltip.Hide();
 		_panel.MouseFilter = MouseFilterEnum.Stop;
 
 		_state = SlotState.Inactive;
@@ -238,7 +245,7 @@ public partial class UltimateSlot : Control
 	{
 		if (_ultimate == null || _state == SlotState.Active || _state == SlotState.Empty) return;
 
-		var progress    = _ultimate.Progress;
+		var progress = _ultimate.Progress;
 		var requirement = _ultimate.Requirement;
 		if (requirement <= 0f) return;
 
@@ -247,7 +254,7 @@ public partial class UltimateSlot : Control
 
 		// Draw a thin arc clockwise from 12 o'clock, filling as progress increases.
 		// The arc sits just inside the slot border.
-		var size   = _panel.Size;
+		var size = _panel.Size;
 		var center = size / 2f;
 		var radius = Mathf.Min(size.X, size.Y) / 2f - 4f;
 
@@ -255,14 +262,23 @@ public partial class UltimateSlot : Control
 		var startAngle = -Mathf.Pi / 2f; // 12 o'clock
 
 		var points = new List<Vector2> { center };
-		for (var i = 0; i <= ArcSegments; i++)
+
+		var segments = Mathf.Max(3, Mathf.CeilToInt(ArcSegments * fraction));
+
+		for (var i = 0; i <= segments; i++)
 		{
-			var angle = startAngle + (float)i / ArcSegments * sweepAngle;
-			points.Add(center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius);
+			var angle = startAngle + (float)i / segments * sweepAngle;
+			points.Add(center + new Vector2(
+				Mathf.Cos(angle),
+				Mathf.Sin(angle)
+			) * radius);
 		}
 
-		if (points.Count >= 3)
-			DrawColoredPolygon(points.ToArray(), ArcColor);
+// Remove duplicate end-point for full circle
+		if (fraction >= 1f)
+			points.RemoveAt(points.Count - 1);
+
+		DrawColoredPolygon(points.ToArray(), ArcColor);
 	}
 
 	// ── helpers ───────────────────────────────────────────────────────────────
