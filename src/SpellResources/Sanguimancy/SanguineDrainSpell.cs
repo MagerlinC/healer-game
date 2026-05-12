@@ -29,10 +29,10 @@ public partial class SanguineDrainSpell : SpellResource
 			$"Spend {HpCostAmount} health to siphon vitality from the enemy, dealing {DamageAmount} damage and healing all allies for {HealPerAlly} health.";
 		ManaCost = 0f;
 		HealthCost = HpCostAmount;
-		CastTime = 2f;
+		CastTime = 1.5f;
 		Cooldown = 8f;
 		School = SpellSchool.Sanguimancy;
-		Tags = SpellTags.Damage;
+		Tags = SpellTags.Damage | SpellTags.Healing;
 		RequiredSchoolPoints = 1;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/sanguine-drain.png");
 	}

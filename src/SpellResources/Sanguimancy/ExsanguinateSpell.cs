@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.CombatLog;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources.Sanguimancy;
@@ -36,7 +37,7 @@ public partial class ExsanguinateSpell : SpellResource
 		ManaCost = 0f;
 		CastTime = 2.5f;
 		HealthCost = 5f;
-		Cooldown = 30f;
+		Cooldown = 12f;
 		School = SpellSchool.Sanguimancy;
 		Tags = SpellTags.Damage;
 		RequiredSchoolPoints = 2;
@@ -80,6 +81,23 @@ public partial class ExsanguinateSpell : SpellResource
 
 		// All extracted life becomes a concentrated blow on the boss.
 		if (totalDrained > 0f)
-			ctx.Target?.TakeDamage(totalDrained * DamageMultiplier);
+		{
+			var damageDealt = totalDrained * DamageMultiplier;
+
+			ctx.Target?.TakeDamage(damageDealt);
+			ctx.Target?.RaiseFloatingCombatText(damageDealt, false, (int)School, false);
+
+			CombatLog.CombatLog.Record(new CombatEventRecord
+			{
+				Timestamp = Time.GetTicksMsec() / 1000.0,
+				SourceName = ctx.Caster.CharacterName,
+				TargetName = ctx.Target?.CharacterName,
+				AbilityName = "Exsanguinate",
+				Amount = damageDealt,
+				Description = Description,
+				Type = CombatEventType.Healing,
+				IsCrit = false
+			});
+		}
 	}
 }

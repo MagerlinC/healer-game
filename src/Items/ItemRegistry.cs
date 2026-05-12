@@ -36,6 +36,7 @@ public static class ItemRegistry
 		(null, () => new ArcaneAccelerator()),
 		(null, () => new StaffOfEternalFlame()),
 		(null, () => new StaffOfTheArchmage()),
+		(GameConstants.CastleBoss3Name, () => new TheBloodCane()),
 
 		// Rings
 		(null, () => new RulersSignet()),
@@ -55,10 +56,10 @@ public static class ItemRegistry
 		(null, () => new BulwarkOfOvergrowth())
 	];
 
-	const float NothingWeight = 0.3f;
+	const float NothingWeight = 0.25f;
 	const float RareWeight = 0.3f;
 	const float EpicWeight = 0.25f;
-	const float LegendaryWeight = 0.15f;
+	const float LegendaryWeight = 0.2f;
 
 	static ItemRarity? RollRarity()
 	{

@@ -7,13 +7,13 @@ namespace healerfantasy.SpellResources;
 [GlobalClass]
 public partial class TouchOfLightSpell : SpellResource
 {
-	[Export] public float HealAmount = 25f;
+	[Export] public float HealAmount = 30f;
 
 	public TouchOfLightSpell()
 	{
 		Name = "Touch of Light";
 		Description = $"Restores {HealAmount} health to the target.";
-		ManaCost = 5f;
+		ManaCost = 6f;
 		CastTime = 1.5f;
 		Tags = SpellTags.Healing;
 		School = SpellSchool.Holy;

@@ -61,7 +61,7 @@ public static class SpellRegistry
 		new RenewingBloomSpell(),
 		new WildGrowthSpell(),
 		new PoisonBoltSpell(),
-		new BarkskinSpell(),
+		new LeafShadeSpell(),
 		new BoonOfTheWildsSpell(),
 		new NourishSpell(),
 		new OneWithNatureSpell()

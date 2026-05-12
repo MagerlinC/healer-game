@@ -15,7 +15,7 @@ public partial class BurstOfLightSpell : SpellResource
 		Description = $"Deals {DamageAmount} light damage to target enemy.";
 		School = SpellSchool.Holy;
 		ManaCost = 5f;
-		CastTime = 1.5f;
+		CastTime = 1.2f;
 		Tags = SpellTags.Damage | SpellTags.Light;
 		School = SpellSchool.Holy;
 		EffectType = EffectType.Harmful;

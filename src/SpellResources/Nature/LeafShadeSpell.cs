@@ -4,23 +4,15 @@ using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;
 
-/// <summary>
-/// Infuses the target with nature's toughness, temporarily hardening their skin
-/// to reduce all incoming damage by 25% for the duration.
-///
-/// Barkskin is a pure defensive cooldown — cast it on a party member (or yourself)
-/// just before a heavy-hitting boss ability to dramatically reduce the incoming
-/// damage and take pressure off your healing spells.
-/// </summary>
 [GlobalClass]
-public partial class BarkskinSpell : SpellResource
+public partial class LeafShadeSpell : SpellResource
 {
 	[Export] public float DamageReduction = 0.25f;
 	[Export] public float BuffDuration = 8f;
 
-	public BarkskinSpell()
+	public LeafShadeSpell()
 	{
-		Name = "Barkskin";
+		Name = "Leaf shade";
 		Description =
 			$"Harden the target's skin with nature magic, reducing all damage they take by {(int)(DamageReduction * 100)}% for {BuffDuration}s.";
 		ManaCost = 7f;
@@ -35,7 +27,7 @@ public partial class BarkskinSpell : SpellResource
 
 	public override void Apply(SpellContext ctx)
 	{
-		ctx.Target?.ApplyEffect(new BarkskinEffect(BuffDuration, DamageReduction)
+		ctx.Target?.ApplyEffect(new LeafShadeEffect(BuffDuration, DamageReduction)
 		{
 			Icon = ctx.Spell.Icon,
 			School = School,

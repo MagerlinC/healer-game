@@ -126,15 +126,15 @@ public partial class TheBloodPrince : EnemyCharacter
 	[Export] public float VoidDrainInterval = 18.0f;
 
 	// Damage values
-	[Export] public float Phase1SlashDamage = 45f;
-	[Export] public float Phase2SlashDamage = 60f;
-	[Export] public float BloodBoltDamage = 48f;
+	[Export] public float Phase1SlashDamage = 40f;
+	[Export] public float Phase2SlashDamage = 50f;
+	[Export] public float BloodBoltDamage = 40f;
 
 	/// <summary>
 	/// Fraction of all healing applied to party members that is siphoned to
 	/// heal the Blood Prince during Phase 2. Default 40%.
 	/// </summary>
-	[Export] public float BloodCovenantSiphonFraction = 0.40f;
+	[Export] public float BloodCovenantSiphonFraction = 0.30f;
 
 	/// <summary>HP fraction (0–1) at which Phase 2 begins. Default 50%.</summary>
 	[Export] public float PhaseTwoThreshold = 0.50f;

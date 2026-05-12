@@ -55,7 +55,7 @@ public partial class MechaGolem : EnemyCharacter
 	[Export] public float OverloadInterval = 16.0f;
 	[Export] public float OverloadWindup = 3.5f;
 
-	[Export] public float MeleeDamage = 55f;
+	[Export] public float MeleeDamage = 50f;
 	[Export] public float BarrageDamage = 30f;
 	[Export] public float OverloadDamage = 70f;
 

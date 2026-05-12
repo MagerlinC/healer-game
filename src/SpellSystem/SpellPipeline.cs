@@ -66,8 +66,10 @@ public static class SpellPipeline
 			ctx.FinalValue *= 1.0f + totalIncreasedDamage;
 		}
 
+		var healingForSchool = ctx.CasterStats.SpellSchoolIncreasedHealing[spell.School];
+		var totalIncreasedHealing = ctx.CasterStats.IncreasedHealing + healingForSchool;
 		if (ctx.Tags.HasFlag(SpellTags.Healing))
-			ctx.FinalValue *= 1.0f + ctx.CasterStats.IncreasedHealing;
+			ctx.FinalValue *= 1.0f + totalIncreasedHealing;
 
 		foreach (var mod in modifiers)
 			mod.OnCalculate(ctx);
@@ -94,13 +96,13 @@ public static class SpellPipeline
 			{
 				CombatLog.CombatLog.Record(new CombatEventRecord
 				{
-					Timestamp  = ctx.Timestamp,
+					Timestamp = ctx.Timestamp,
 					SourceName = caster.CharacterName,
 					TargetName = target.CharacterName,
 					AbilityName = spell.Name,
-					Amount      = ctx.FinalValue,
-					Type        = CombatEventType.Healing,
-					IsCrit      = ctx.Tags.HasFlag(SpellTags.Critical),
+					Amount = ctx.FinalValue,
+					Type = CombatEventType.Healing,
+					IsCrit = ctx.Tags.HasFlag(SpellTags.Critical),
 					Description = spell.Description
 				});
 			}
@@ -108,13 +110,13 @@ public static class SpellPipeline
 			{
 				CombatLog.CombatLog.Record(new CombatEventRecord
 				{
-					Timestamp  = ctx.Timestamp,
+					Timestamp = ctx.Timestamp,
 					SourceName = caster.CharacterName,
 					TargetName = target.CharacterName,
 					AbilityName = spell.Name,
-					Amount      = ctx.FinalValue,
-					Type        = CombatEventType.Damage,
-					IsCrit      = ctx.Tags.HasFlag(SpellTags.Critical),
+					Amount = ctx.FinalValue,
+					Type = CombatEventType.Damage,
+					IsCrit = ctx.Tags.HasFlag(SpellTags.Critical),
 					Description = spell.Description
 				});
 			}
@@ -129,10 +131,10 @@ public static class SpellPipeline
 		// ── 10b. Floating combat text (direct hits only; DoT/HoT ticks emit their own) ─
 		if (isDirectSpell)
 		{
-			var isDamageSpell  = ctx.Tags.HasFlag(SpellTags.Damage);
+			var isDamageSpell = ctx.Tags.HasFlag(SpellTags.Damage);
 			var isHealingSpell = ctx.Tags.HasFlag(SpellTags.Healing) && !isDamageSpell;
-			var isCritSpell    = ctx.Tags.HasFlag(SpellTags.Critical);
-			var school         = (int)spell.School;
+			var isCritSpell = ctx.Tags.HasFlag(SpellTags.Critical);
+			var school = (int)spell.School;
 
 			foreach (var target in ctx.Targets)
 			{

@@ -16,6 +16,7 @@ public class CharacterStats
 	public float ManaRegenPerSecond { get; set; } = 2f;
 
 	public float ManaCostMultiplier { get; set; } = 1f;
+	public float LifeCostMultiplier { get; set; } = 1f;
 
 
 	/// <summary>0.0 – 1.0. E.g. 0.2 = 20% crit chance.</summary>
@@ -35,6 +36,16 @@ public class CharacterStats
 	public float IncreasedMovementSpeed { get; set; } = 0.0f;
 
 	public Dictionary<SpellSchool, float> SpellSchoolIncreasedDamage = new()
+	{
+		{ SpellSchool.Nature, 0.0f },
+		{ SpellSchool.Holy, 0.0f },
+		{ SpellSchool.Void, 0.0f },
+		{ SpellSchool.Chronomancy, 0.0f },
+		{ SpellSchool.Generic, 0.0f },
+		{ SpellSchool.Sanguimancy, 0.0f }
+	};
+
+	public Dictionary<SpellSchool, float> SpellSchoolIncreasedHealing = new()
 	{
 		{ SpellSchool.Nature, 0.0f },
 		{ SpellSchool.Holy, 0.0f },

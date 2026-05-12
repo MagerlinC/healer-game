@@ -519,9 +519,7 @@ public abstract partial class Character : CharacterBody2D
 	/// <summary>Subtract mana, clamped at 0.</summary>
 	public void SpendMana(float amount)
 	{
-		var stats = GetCharacterStats();
-		var adjustedAmount = amount * stats.ManaCostMultiplier;
-		CurrentMana = Mathf.Max(0f, CurrentMana - adjustedAmount);
+		CurrentMana = Mathf.Max(0f, CurrentMana - amount);
 		EmitSignalManaChanged(CharacterName, CurrentMana, MaxMana);
 	}
 

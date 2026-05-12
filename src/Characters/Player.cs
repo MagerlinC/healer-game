@@ -270,6 +270,9 @@ public partial class Player : Character
 		if (spell.EffectType == EffectType.Harmful && target != null && target.IsInGroup(GameConstants.BossGroupName))
 			PartyMember.NotifyPlayerAttackedBoss(target);
 
+		var stats = GetCharacterStats();
+		var adjustManaCost = stats.ManaCostMultiplier * spell.ManaCost;
+		var adjustLifeCost = stats.LifeCostMultiplier * spell.HealthCost;
 		SpendMana(spell.ManaCost);
 		SpendLife(spell.HealthCost);
 		var ctx = SpellPipeline.Cast(spell, this, target);
@@ -431,7 +434,11 @@ public partial class Player : Character
 
 		if (spellToCast is not null)
 		{
-			var canPayCost = CurrentMana >= spellToCast.ManaCost && CurrentHealth > spellToCast.HealthCost;
+
+			var stats = GetCharacterStats();
+			var adjustedManaCost = spellToCast.ManaCost * stats.ManaCostMultiplier;
+			var adjustedLifeCost = spellToCast.ManaCost * stats.ManaCostMultiplier;
+			var canPayCost = CurrentMana >= adjustedManaCost && CurrentHealth > adjustedLifeCost;
 			if (canPayCost && !IsOnCooldown(spellToCast))
 			{
 				// Lock in the target at cast-start: whichever party frame is under
@@ -444,7 +451,6 @@ public partial class Player : Character
 				_castTarget = hoveredCharacter;
 				_castSpell = spellToCast;
 
-				var stats = GetCharacterStats();
 				var isInstant = spellToCast.CastTime == 0.0f
 				                || stats.NextCastIsInstant && spellToCast.School != SpellSchool.Chronomancy;
 
