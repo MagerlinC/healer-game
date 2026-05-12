@@ -36,7 +36,7 @@ public static class ItemRegistry
 		(null, () => new ArcaneAccelerator()),
 		(null, () => new StaffOfEternalFlame()),
 		(null, () => new StaffOfTheArchmage()),
-		(GameConstants.CastleBoss3Name, () => new TheBloodCane()),
+		(null, () => new TheBloodCane()),
 
 		// Rings
 		(null, () => new RulersSignet()),
@@ -53,7 +53,9 @@ public static class ItemRegistry
 		(null, () => new ShadowboundChain()),
 		(null, () => new TheLifebindersCovenant()),
 		(null, () => new PendantOfTheVoidsEmbrace()),
-		(null, () => new BulwarkOfOvergrowth())
+		(null, () => new BulwarkOfOvergrowth()),
+		(null, () => new ChainOfReflection())
+
 	];
 
 	const float NothingWeight = 0.25f;

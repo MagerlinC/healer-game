@@ -32,7 +32,7 @@ public partial class SanguineDrainSpell : SpellResource
 		CastTime = 1.5f;
 		Cooldown = 8f;
 		School = SpellSchool.Sanguimancy;
-		Tags = SpellTags.Damage | SpellTags.Healing;
+		Tags = SpellTags.Damage | SpellTags.Healing | SpellTags.GroupSpell;
 		RequiredSchoolPoints = 1;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/sanguine-drain.png");
 	}
