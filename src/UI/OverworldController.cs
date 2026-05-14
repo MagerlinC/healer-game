@@ -1,6 +1,7 @@
 #nullable enable
 using Godot;
 using healerfantasy;
+using healerfantasy.SpellResources;
 using healerfantasy.UI;
 
 /// <summary>
@@ -22,6 +23,7 @@ using healerfantasy.UI;
 public partial class OverworldController : LoadoutController
 {
 	RuneTablePanel? _runeTablePanel;
+	InteractibleObject? _talentBoard;
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -29,6 +31,14 @@ public partial class OverworldController : LoadoutController
 	{
 		base._Ready();
 		AddChild(new TutorialPopup());
+	}
+
+	void RefreshTalentBoardSource(SpellSchool school)
+	{
+		_talentBoard = AddInteractible(new InteractibleObject(
+			AssetConstants.GetTalentBoardPathForAffinity(RunState.Instance.SchoolAffinity),
+			new Vector2(820f, FloorHeight - 10f), new Vector2(0.080f, 0.080f), 28f,
+			AssetConstants.TalentsSfxPath));
 	}
 
 	// ── SetupScene ────────────────────────────────────────────────────────────
@@ -58,7 +68,7 @@ public partial class OverworldController : LoadoutController
 			new Vector2(1110f, FloorHeight), new Vector2(0.085f, 0.085f), 36f,
 			AssetConstants.RuneSfxPath));
 
-		var talentBoard = AddInteractible(new InteractibleObject(
+		_talentBoard = AddInteractible(new InteractibleObject(
 			AssetConstants.GetTalentBoardPathForAffinity(RunState.Instance.SchoolAffinity),
 			new Vector2(820f, FloorHeight - 10f), new Vector2(0.080f, 0.080f), 28f,
 			AssetConstants.TalentsSfxPath));
@@ -100,8 +110,8 @@ public partial class OverworldController : LoadoutController
 		runeTable.Interacted += () => _runeTablePanel!.Open();
 		WireHints(runeTable, "Rune Table  •  Configure difficulty runes");
 
-		talentBoard.Interacted += () => OpenPanel(_talentPanel!);
-		WireHints(talentBoard, "School Affinity & Talents  •  Click to open");
+		_talentBoard.Interacted += () => OpenPanel(_talentPanel!);
+		WireHints(_talentBoard, "School Affinity & Talents  •  Click to open");
 
 		// ── Dev boss popup (Ctrl+Alt+O) — only available in debug builds ─────
 		if (OS.IsDebugBuild())

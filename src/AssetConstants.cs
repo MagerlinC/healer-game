@@ -71,7 +71,6 @@ public static class AssetConstants
 	public static readonly string TalentBoardInteractiblePath = "res://assets/interactibles/talent-board.png";
 	public static readonly string TalentBoardFullInteractiblePath = "res://assets/interactibles/talent-board-full.png";
 
-	// TOOD: Missing assets for non-full with affinity
 	public static string GetTalentBoardPathForAffinity(SpellSchool? affinity)
 	{
 		var affinityString = affinity == null ? "" : "-" + affinity.ToString()!.ToLower();

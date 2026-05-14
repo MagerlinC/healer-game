@@ -63,13 +63,14 @@ public abstract partial class LoadoutController : Node2D
 		(SpellSchool.Sanguimancy, "Sanguimancy")
 	};
 
+
 	protected static readonly (SpellSchool School, string Name, Color Accent)[] TalentSchoolOrder =
 	{
 		(SpellSchool.Generic, "General", new Color(0.70f, 0.65f, 0.60f)),
+		(SpellSchool.Chronomancy, "Chronomancy", new Color(0.35f, 0.75f, 0.90f)),
 		(SpellSchool.Holy, "Holy", new Color(0.95f, 0.85f, 0.40f)),
 		(SpellSchool.Nature, "Nature", new Color(0.40f, 0.80f, 0.35f)),
 		(SpellSchool.Void, "Void", new Color(0.65f, 0.35f, 0.85f)),
-		(SpellSchool.Chronomancy, "Chronomancy", new Color(0.35f, 0.75f, 0.90f)),
 		(SpellSchool.Sanguimancy, "Sanguimancy", new Color(0.85f, 0.15f, 0.15f))
 	};
 
@@ -1188,8 +1189,9 @@ public abstract partial class LoadoutController : Node2D
 		// re-creating all nodes (the whole pane is rebuilt on next open anyway).
 		var tomeSchoolsList = new List<SpellSchool>
 		{
+			SpellSchool.Chronomancy,
 			SpellSchool.Holy, SpellSchool.Nature,
-			SpellSchool.Void, SpellSchool.Chronomancy
+			SpellSchool.Void
 		};
 		if (PlayerProgressStore.HasDefeatedCastleOfBlood)
 			tomeSchoolsList.Add(SpellSchool.Sanguimancy);
