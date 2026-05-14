@@ -33,14 +33,6 @@ public partial class OverworldController : LoadoutController
 		AddChild(new TutorialPopup());
 	}
 
-	void RefreshTalentBoardSource(SpellSchool school)
-	{
-		_talentBoard = AddInteractible(new InteractibleObject(
-			AssetConstants.GetTalentBoardPathForAffinity(RunState.Instance.SchoolAffinity),
-			new Vector2(820f, FloorHeight - 10f), new Vector2(0.080f, 0.080f), 28f,
-			AssetConstants.TalentsSfxPath));
-	}
-
 	// ── SetupScene ────────────────────────────────────────────────────────────
 
 	protected override void SetupScene()
@@ -68,6 +60,7 @@ public partial class OverworldController : LoadoutController
 			new Vector2(1110f, FloorHeight), new Vector2(0.085f, 0.085f), 36f,
 			AssetConstants.RuneSfxPath));
 
+		// TODO: Refresh this on affinity selection
 		_talentBoard = AddInteractible(new InteractibleObject(
 			AssetConstants.GetTalentBoardPathForAffinity(RunState.Instance.SchoolAffinity),
 			new Vector2(820f, FloorHeight - 10f), new Vector2(0.080f, 0.080f), 28f,
@@ -116,6 +109,14 @@ public partial class OverworldController : LoadoutController
 		// ── Dev boss popup (Ctrl+Alt+O) — only available in debug builds ─────
 		if (OS.IsDebugBuild())
 			AddChild(new DevBossPopup());
+	}
+
+	// ── Affinity change ───────────────────────────────────────────────────────
+
+	protected override void OnAffinityChanged()
+	{
+		_talentBoard?.SetTexture(
+			AssetConstants.GetTalentBoardPathForAffinity(RunState.Instance.SchoolAffinity));
 	}
 
 	// ── Main Menu override (no run in progress from Overworld) ────────────────

@@ -23,6 +23,7 @@ public partial class CampController : LoadoutController
 {
 	CanvasLayer? _armoryPanel;
 	EquipmentPane? _equipmentPane;
+	InteractibleObject? _talentBoard;
 
 	protected override bool PersistSpellLoadout => false;
 
@@ -43,7 +44,7 @@ public partial class CampController : LoadoutController
 			new Vector2(996f, FloorHeight - 12f), new Vector2(0.080f, 0.080f), 28f,
 			AssetConstants.SpellbookSfxPath));
 
-		var talentBoard = AddInteractible(new InteractibleObject(
+		_talentBoard = AddInteractible(new InteractibleObject(
 			AssetConstants.GetTalentBoardPathForAffinity(RunState.Instance.SchoolAffinity),
 			new Vector2(796f, FloorHeight), new Vector2(0.080f, 0.080f), 50f,
 			AssetConstants.TalentsSfxPath));
@@ -77,14 +78,22 @@ public partial class CampController : LoadoutController
 		spellTome.Interacted += () => OpenPanel(_spellPanel!);
 		WireHints(spellTome, "Spellbook  •  Click to open");
 
-		talentBoard.Interacted += () => OpenPanel(_talentPanel!);
-		WireHints(talentBoard, "Talent Board  •  Click to open");
+		_talentBoard.Interacted += () => OpenPanel(_talentPanel!);
+		WireHints(_talentBoard, "Talent Board  •  Click to open");
 
 		armory.Interacted += OpenArmory;
 		WireHints(armory, "Armory  •  Manage your equipped items");
 
 		mapItem.Interacted += OnOpenMap;
 		WireHints(mapItem, "World Map  •  Continue your journey");
+	}
+
+	// ── Affinity change ───────────────────────────────────────────────────────
+
+	protected override void OnAffinityChanged()
+	{
+		_talentBoard?.SetTexture(
+			AssetConstants.GetTalentBoardPathForAffinity(RunState.Instance.SchoolAffinity));
 	}
 
 	// ── armory panel ──────────────────────────────────────────────────────────

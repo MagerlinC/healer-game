@@ -27,7 +27,12 @@ public partial class InteractibleObject : Area2D
     /// <summary>Raised when the player left-clicks this interactible.</summary>
     public event Action? Interacted;
 
+    readonly Sprite2D _sprite;
     readonly AudioStreamPlayer? _sfxPlayer;
+
+    /// <summary>Swaps the displayed texture at runtime (e.g. after an affinity change).</summary>
+    public void SetTexture(string texturePath) =>
+        _sprite.Texture = GD.Load<Texture2D>(texturePath);
 
     /// <param name="texturePath">res:// path to the sprite texture.</param>
     /// <param name="position">World-space position of the Area2D.</param>
@@ -49,12 +54,12 @@ public partial class InteractibleObject : Area2D
         Monitoring = false;
         Monitorable = false;
 
-        var sprite = new Sprite2D
+        _sprite = new Sprite2D
         {
             Texture = GD.Load<Texture2D>(texturePath),
             Scale = spriteScale
         };
-        AddChild(sprite);
+        AddChild(_sprite);
 
         var collision = new CollisionShape2D
         {

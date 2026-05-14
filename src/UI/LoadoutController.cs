@@ -1160,13 +1160,13 @@ public abstract partial class LoadoutController : Node2D
 	}
 
 	/// <summary>
-	/// Builds and appends the school affinity picker row into <paramref name="parent"/>.
+	/// Builds and appends the school affinity picker into <paramref name="parent"/> as a
+	/// horizontal row of large, background-free cards — one per choosable school.
 	///
-	/// Four tome icons (Holy / Nature / Void / Chronomancy) are displayed in a
-	/// horizontal row.  Clicking a tome sets <see cref="RunState.SchoolAffinity"/>
-	/// to that school (+50% weight bias on the victory screen).  Clicking the
-	/// currently selected tome clears the affinity.  The active tome shows a gold
-	/// border; inactive tomes show a dim border.
+	/// Clicking a card sets <see cref="RunState.SchoolAffinity"/> to that school
+	/// (+50% weight bias on the victory screen).  Clicking the already-selected card
+	/// clears the affinity.  The active card shows a gold border; unselected cards
+	/// have no border so they feel like floating art tiles.
 	/// </summary>
 	void BuildAffinityPicker(VBoxContainer parent)
 	{
@@ -1177,58 +1177,64 @@ public abstract partial class LoadoutController : Node2D
 		header.AddThemeColorOverride("font_color", TitleColor);
 		parent.AddChild(header);
 
+		// Center the card row horizontally.
+		var center = new CenterContainer();
+		center.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		parent.AddChild(center);
 
-		// Row of tomes — one per school that can have affinity.
-		// SpellSchool.Generic is excluded (it's a catch-all, not a real choice).
-		// Sanguimancy only appears after the Castle of Blood has been defeated.
-		var tomeRow = new HBoxContainer();
-		tomeRow.AddThemeConstantOverride("separation", 12);
-		parent.AddChild(tomeRow);
+		var cardRow = new HBoxContainer();
+		cardRow.AddThemeConstantOverride("separation", 16);
+		center.AddChild(cardRow);
 
-		// We'll keep references so we can rebuild borders after a click without
-		// re-creating all nodes (the whole pane is rebuilt on next open anyway).
-		var tomeSchoolsList = new List<SpellSchool>
+		// Schools eligible for affinity (Generic excluded; Sanguimancy gated on progress).
+		var schools = new List<SpellSchool>
 		{
 			SpellSchool.Chronomancy,
-			SpellSchool.Holy, SpellSchool.Nature,
+			SpellSchool.Holy,
+			SpellSchool.Nature,
 			SpellSchool.Void
 		};
 		if (PlayerProgressStore.HasDefeatedCastleOfBlood)
-			tomeSchoolsList.Add(SpellSchool.Sanguimancy);
-		var tomeSchools = tomeSchoolsList.ToArray();
+			schools.Add(SpellSchool.Sanguimancy);
 
-		var tomePanels = new List<(SpellSchool School, PanelContainer Panel, StyleBoxFlat Style)>();
+		// Keep references to update borders on click without rebuilding nodes.
+		var cardEntries = new List<(SpellSchool School, StyleBoxFlat Style)>();
 
-		foreach (var school in tomeSchools)
+		foreach (var school in schools)
 		{
 			var (_, schoolName, accent) = TalentSchoolOrder.First(e => e.School == school);
-
 			var isSelected = RunState.Instance.SchoolAffinity == school;
 
-			var tomeStyle = new StyleBoxFlat();
-			tomeStyle.BgColor = new Color(0.09f, 0.07f, 0.07f, 0.97f);
-			tomeStyle.SetCornerRadiusAll(6);
-			tomeStyle.SetBorderWidthAll(2);
-			tomeStyle.BorderColor = isSelected
-				? PanelBorder // gold
-				: new Color(0.28f, 0.24f, 0.16f); // dim
-			tomeStyle.ContentMarginLeft = tomeStyle.ContentMarginRight = 6f;
-			tomeStyle.ContentMarginTop = tomeStyle.ContentMarginBottom = 6f;
+			// Transparent background — only the gold border signals selection.
+			var cardStyle = new StyleBoxFlat();
+			cardStyle.BgColor = new Color(0f, 0f, 0f, 0f);
+			cardStyle.SetCornerRadiusAll(8);
+			cardStyle.ContentMarginLeft = cardStyle.ContentMarginRight = 10f;
+			cardStyle.ContentMarginTop = cardStyle.ContentMarginBottom = 10f;
+			if (isSelected)
+			{
+				cardStyle.SetBorderWidthAll(2);
+				cardStyle.BorderColor = PanelBorder; // gold
+			}
+			else
+			{
+				cardStyle.SetBorderWidthAll(0);
+			}
 
-			var tomePanel = new PanelContainer();
-			tomePanel.CustomMinimumSize = new Vector2(80f, 100f);
-			tomePanel.AddThemeStyleboxOverride("panel", tomeStyle);
-			tomePanel.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-			tomePanel.MouseFilter = Control.MouseFilterEnum.Stop;
+			var card = new PanelContainer();
+			card.CustomMinimumSize = new Vector2(120f, 150f);
+			card.AddThemeStyleboxOverride("panel", cardStyle);
+			card.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+			card.MouseFilter = Control.MouseFilterEnum.Stop;
 
 			var inner = new VBoxContainer();
-			inner.AddThemeConstantOverride("separation", 4);
+			inner.AddThemeConstantOverride("separation", 6);
 			inner.MouseFilter = Control.MouseFilterEnum.Ignore;
-			tomePanel.AddChild(inner);
+			card.AddChild(inner);
 
 			var tomeIcon = new TextureRect();
 			tomeIcon.Texture = GD.Load<Texture2D>(AssetConstants.TalentTomePath(school));
-			tomeIcon.CustomMinimumSize = new Vector2(64f, 64f);
+			tomeIcon.CustomMinimumSize = new Vector2(96f, 96f);
 			tomeIcon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 			tomeIcon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			tomeIcon.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
@@ -1238,43 +1244,51 @@ public abstract partial class LoadoutController : Node2D
 			var nameLabel = new Label();
 			nameLabel.Text = schoolName;
 			nameLabel.HorizontalAlignment = HorizontalAlignment.Center;
-			nameLabel.AddThemeFontSizeOverride("font_size", 11);
+			nameLabel.AddThemeFontSizeOverride("font_size", 12);
 			nameLabel.AddThemeColorOverride("font_color", accent);
 			nameLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
 			inner.AddChild(nameLabel);
 
-			tomePanels.Add((school, tomePanel, tomeStyle));
-			tomeRow.AddChild(tomePanel);
+			cardEntries.Add((school, cardStyle));
+			cardRow.AddChild(card);
 
-			// Hover tooltip
 			var capturedSchool = school;
 			var capturedName = schoolName;
-			tomePanel.MouseEntered += () =>
+			card.MouseEntered += () =>
 				GameTooltip.Show(capturedName + " Affinity",
 					$"Set your school affinity to {capturedName}.\nDouble the chance of at least one {capturedName} talent appearing in each offer.");
-			tomePanel.MouseExited += () => GameTooltip.Hide();
+			card.MouseExited += () => GameTooltip.Hide();
 
-			// Click: toggle affinity
-			tomePanel.GuiInput += ev =>
+			card.GuiInput += ev =>
 			{
 				if (ev is not InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left }) return;
 
 				var alreadySelected = RunState.Instance.SchoolAffinity == capturedSchool;
 				RunState.Instance.SetSchoolAffinity(alreadySelected ? null : capturedSchool);
+				OnAffinityChanged();
 
-				// Update all tome borders immediately without rebuilding the whole pane.
-				foreach (var (s, p, style) in tomePanels)
+				// Refresh borders immediately — no need to rebuild the whole pane.
+				foreach (var (s, style) in cardEntries)
 				{
-					var (_, _, a) = TalentSchoolOrder.First(e => e.School == s);
-					style.BorderColor = RunState.Instance.SchoolAffinity == s
-						? PanelBorder
-						: new Color(0.28f, 0.24f, 0.16f);
-					_ = p;
-					_ = a; // suppress unused-var warnings
+					if (RunState.Instance.SchoolAffinity == s)
+					{
+						style.SetBorderWidthAll(2);
+						style.BorderColor = PanelBorder;
+					}
+					else
+					{
+						style.SetBorderWidthAll(0);
+					}
 				}
 			};
 		}
 	}
+
+	/// <summary>
+	/// Called whenever the player changes their school affinity in the picker.
+	/// Override in subclasses to react (e.g. update world-space interactible textures).
+	/// </summary>
+	protected virtual void OnAffinityChanged() { }
 
 	// ── shared helpers ────────────────────────────────────────────────────────
 
