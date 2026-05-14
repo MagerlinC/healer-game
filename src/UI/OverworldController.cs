@@ -59,7 +59,7 @@ public partial class OverworldController : LoadoutController
 			AssetConstants.RuneSfxPath));
 
 		var talentBoard = AddInteractible(new InteractibleObject(
-			AssetConstants.TalentBoardPath(),
+			AssetConstants.GetTalentBoardPathForAffinity(RunState.Instance.SchoolAffinity),
 			new Vector2(820f, FloorHeight - 10f), new Vector2(0.080f, 0.080f), 28f,
 			AssetConstants.TalentsSfxPath));
 

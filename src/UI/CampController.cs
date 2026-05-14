@@ -44,7 +44,7 @@ public partial class CampController : LoadoutController
 			AssetConstants.SpellbookSfxPath));
 
 		var talentBoard = AddInteractible(new InteractibleObject(
-			AssetConstants.TalentBoardPath(),
+			AssetConstants.GetTalentBoardPathForAffinity(RunState.Instance.SchoolAffinity),
 			new Vector2(796f, FloorHeight), new Vector2(0.080f, 0.080f), 50f,
 			AssetConstants.TalentsSfxPath));
 

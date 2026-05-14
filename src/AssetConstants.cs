@@ -71,16 +71,15 @@ public static class AssetConstants
 	public static readonly string TalentBoardInteractiblePath = "res://assets/interactibles/talent-board.png";
 	public static readonly string TalentBoardFullInteractiblePath = "res://assets/interactibles/talent-board-full.png";
 
-	/// <summary>
-	/// Returns the correct talent board sprite path based on whether the player
-	/// has unlocked the Sanguimancy school (which adds a fifth tome icon to the board).
-	/// </summary>
-	public static string TalentBoardPath()
+	// TOOD: Missing assets for non-full with affinity
+	public static string GetTalentBoardPathForAffinity(SpellSchool? affinity)
 	{
+		var affinityString = affinity == null ? "" : "-" + affinity.ToString()!.ToLower();
 		return PlayerProgressStore.HasDefeatedCastleOfBlood
-			? TalentBoardFullInteractiblePath
-			: TalentBoardInteractiblePath;
+			? $"res://assets/interactibles/talent-board-full{affinityString}.png"
+			: $"res://assets/interactibles/talent-board{affinityString}.png";
 	}
+
 	public static readonly string RunScrollInteractiblePath = "res://assets/interactibles/run-history-scroll.png";
 	public static readonly string MapInteractiblePath = "res://assets/interactibles/map.png";
 	public static readonly string ArmoryInteractiblePath = "res://assets/interactibles/armory.png";
