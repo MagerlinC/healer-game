@@ -28,7 +28,7 @@ public partial class MirrorImage : UltimateSpellResource
 		CastTime = 0.0f;
 		Cooldown = 20f;
 		School = SpellSchool.Chronomancy;
-		RequiredSchoolPoints = 0;
+		RequiredSchoolPoints = 3;
 		EffectType = EffectType.Helpful;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/mirror-image.png");
 	}

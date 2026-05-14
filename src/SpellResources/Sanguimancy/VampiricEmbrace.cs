@@ -10,7 +10,7 @@ public partial class VampiricEmbrace : UltimateSpellResource
 	const float Duration = 10f;
 	const float DrainPerSecond = 5f;
 	const float LeechRate = 0.20f;
-	const float DamageMultiplierOnExpire = 5f;
+	const float DamageMultiplierOnExpire = 8f;
 
 	/// <summary>
 	/// Requirement: spend a total of 50 health on sanguimancy spells.

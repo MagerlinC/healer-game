@@ -1,3 +1,6 @@
+using Godot;
+using healerfantasy.CombatLog;
+
 namespace healerfantasy.Effects;
 
 /// <summary>
@@ -27,6 +30,20 @@ public partial class ShieldEffect : CharacterEffect
 	public override void OnApplied(Character target)
 	{
 		target.AddShield(_shieldAmount);
+
+		if (SourceCharacterName == null) return;
+
+		CombatLog.CombatLog.Record(new CombatEventRecord
+		{
+			Timestamp = Time.GetTicksMsec() / 1000.0,
+			SourceName = SourceCharacterName,
+			TargetName = target.CharacterName,
+			AbilityName = AbilityName ?? EffectId,
+			Amount = _shieldAmount,
+			Description = Description,
+			Type = CombatEventType.Healing,
+			IsCrit = false
+		});
 	}
 
 	public override void OnExpired(Character target)

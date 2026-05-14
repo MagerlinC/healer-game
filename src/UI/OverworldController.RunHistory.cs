@@ -85,15 +85,7 @@ public partial class OverworldController
 		}
 
 		for (var i = runs.Count - 1; i >= 0; i--)
-		{
 			_historyContent.AddChild(BuildRunEntry(i + 1, runs[i]));
-			if (i > 0)
-			{
-				var sep = new HSeparator();
-				sep.AddThemeColorOverride("color", SepColor);
-				_historyContent.AddChild(sep);
-			}
-		}
 	}
 
 	Control BuildRunEntry(int runNumber, RunHistoryStore.RunRecord run)
@@ -382,7 +374,21 @@ public partial class OverworldController
 			}
 		}
 
-		return vbox;
+		// Wrap the whole entry in a faintly-bordered card so each run is visually
+		// separated without needing a hard separator line between them.
+		var cardStyle = new StyleBoxFlat();
+		cardStyle.BgColor = new Color(0.11f, 0.09f, 0.08f, 1f);
+		cardStyle.SetCornerRadiusAll(5);
+		cardStyle.SetBorderWidthAll(1);
+		cardStyle.BorderColor = new Color(0.50f, 0.40f, 0.22f, 0.28f);
+		cardStyle.ContentMarginLeft = cardStyle.ContentMarginRight = 12f;
+		cardStyle.ContentMarginTop = cardStyle.ContentMarginBottom = 10f;
+
+		var card = new PanelContainer();
+		card.AddThemeStyleboxOverride("panel", cardStyle);
+		card.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		card.AddChild(vbox);
+		return card;
 	}
 
 	/// <summary>Maps a spell school name string to its display colour.</summary>

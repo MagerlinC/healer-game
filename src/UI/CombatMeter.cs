@@ -31,8 +31,6 @@ public partial class CombatMeter : PanelContainer
 	static readonly Color RowHoverBg = new(0.22f, 0.18f, 0.14f, 1f);
 	static readonly Color HealFill = new(0.25f, 0.68f, 0.30f, 0.75f);
 	static readonly Color DamageFill = new(0.80f, 0.22f, 0.18f, 0.75f);
-	static readonly Color TooltipBg = new(0.10f, 0.08f, 0.07f, 0.96f);
-	static readonly Color TooltipBorder = new(0.55f, 0.44f, 0.22f, 0.90f);
 
 	// ── config ────────────────────────────────────────────────────────────────
 	const double RefreshInterval = 0.5;
@@ -46,12 +44,6 @@ public partial class CombatMeter : PanelContainer
 
 	VBoxContainer _rowContainer;
 	double _refreshTimer;
-
-	// Tooltip
-	CanvasLayer _tooltipLayer;
-	PanelContainer _tooltipPanel;
-	Label _tooltipLabel;
-	string _hoveredName; // null when no row is hovered
 
 	// ── types ─────────────────────────────────────────────────────────────────
 	record RowRefs(Control Outer, ProgressBar Bar, Label NameLbl, Label ValueLbl, StyleBoxFlat BgStyle);
@@ -87,7 +79,6 @@ public partial class CombatMeter : PanelContainer
 	{
 		BuildPanel();
 		BuildRows();
-		BuildTooltip();
 	}
 
 	public override void _Process(double delta)
@@ -98,9 +89,6 @@ public partial class CombatMeter : PanelContainer
 			_refreshTimer = 0;
 			Refresh();
 		}
-
-		if (_hoveredName != null)
-			PositionTooltip();
 	}
 
 	// ── layout builders ───────────────────────────────────────────────────────
@@ -222,34 +210,6 @@ public partial class CombatMeter : PanelContainer
 		return new RowRefs(outer, bar, nameLabel, valueLabel, bgStyle);
 	}
 
-	void BuildTooltip()
-	{
-		_tooltipLayer = new CanvasLayer();
-		_tooltipLayer.Layer = 50;
-		AddChild(_tooltipLayer);
-
-		var panelStyle = new StyleBoxFlat();
-		panelStyle.BgColor = TooltipBg;
-		panelStyle.SetCornerRadiusAll(4);
-		panelStyle.SetBorderWidthAll(1);
-		panelStyle.BorderColor = TooltipBorder;
-		panelStyle.ContentMarginLeft = 8f;
-		panelStyle.ContentMarginRight = 8f;
-		panelStyle.ContentMarginTop = 5f;
-		panelStyle.ContentMarginBottom = 5f;
-
-		_tooltipPanel = new PanelContainer();
-		_tooltipPanel.AddThemeStyleboxOverride("panel", panelStyle);
-		_tooltipPanel.Visible = false;
-		_tooltipPanel.MouseFilter = MouseFilterEnum.Ignore;
-		_tooltipLayer.AddChild(_tooltipPanel);
-
-		_tooltipLabel = new Label();
-		_tooltipLabel.AddThemeFontSizeOverride("font_size", 11);
-		_tooltipLabel.AddThemeColorOverride("font_color", LabelColor);
-		_tooltipLabel.MouseFilter = MouseFilterEnum.Ignore;
-		_tooltipPanel.AddChild(_tooltipLabel);
-	}
 
 	// ── refresh ───────────────────────────────────────────────────────────────
 	void Refresh()
@@ -283,30 +243,26 @@ public partial class CombatMeter : PanelContainer
 	void OnRowEntered(string name, StyleBoxFlat bgStyle)
 	{
 		bgStyle.BgColor = RowHoverBg;
-		_hoveredName = name;
-		UpdateTooltipContent(name);
-		_tooltipPanel.Visible = true;
-		PositionTooltip();
+		var (title, desc) = BuildTooltipContent(name);
+		GameTooltip.Show(title, desc);
 	}
 
 	void OnRowExited(StyleBoxFlat bgStyle)
 	{
 		bgStyle.BgColor = RowBg;
-		_hoveredName = null;
-		_tooltipPanel.Visible = false;
+		GameTooltip.Hide();
 	}
 
-	void UpdateTooltipContent(string sourceName)
+	(string title, string desc) BuildTooltipContent(string sourceName)
 	{
 		var now = Time.GetTicksMsec() / 1000.0;
 		var type = _type == MeterType.Healing ? CombatEventType.Healing : CombatEventType.Damage;
 		var breakdown = CombatLog.GetBreakdown(sourceName, type, now);
+		var label = _type == MeterType.Healing ? "HPS" : "DPS";
+		var title = $"{sourceName}  ({label}, last {CombatLog.DefaultWindow:F0}s)";
 
 		if (breakdown.Count == 0)
-		{
-			_tooltipLabel.Text = $"{sourceName}\nNo data in last {CombatLog.DefaultWindow:F0}s";
-			return;
-		}
+			return (title, $"No data in last {CombatLog.DefaultWindow:F0}s");
 
 		// Sort abilities by total descending, compute grand total for %
 		var entries = breakdown
@@ -314,33 +270,14 @@ public partial class CombatMeter : PanelContainer
 			.ToArray();
 
 		var grandTotal = entries.Sum(kv => kv.Value);
-		var label = _type == MeterType.Healing ? "HPS" : "DPS";
 
-		var lines = new System.Text.StringBuilder();
-		lines.AppendLine($"{sourceName}  ({label}, last {CombatLog.DefaultWindow:F0}s)");
-		lines.AppendLine("──────────────────────");
-
+		var desc = new System.Text.StringBuilder();
 		foreach (var (ability, total) in entries)
 		{
 			var pct = grandTotal > 0f ? total / grandTotal * 100f : 0f;
-			lines.AppendLine($"{ability,-16} {total,6:F0}  ({pct:F0}%)");
+			desc.AppendLine($"{ability,-16} {total,6:F0}  ({pct:F0}%)");
 		}
 
-		_tooltipLabel.Text = lines.ToString().TrimEnd();
-	}
-
-	void PositionTooltip()
-	{
-		var mouse = GetViewport().GetMousePosition();
-		var tipSize = _tooltipPanel.Size;
-		var viewport = GetViewport().GetVisibleRect().Size;
-
-		var x = mouse.X + 14f;
-		var y = mouse.Y - 10f;
-
-		if (x + tipSize.X > viewport.X) x = mouse.X - tipSize.X - 10f;
-		if (y + tipSize.Y > viewport.Y) y = viewport.Y - tipSize.Y - 4f;
-
-		_tooltipPanel.Position = new Vector2(x, y);
+		return (title, desc.ToString().TrimEnd());
 	}
 }
