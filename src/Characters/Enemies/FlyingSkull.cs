@@ -207,12 +207,11 @@ public partial class FlyingSkull : EnemyCharacter
 		}
 		else if (_wavesTimer <= 0f && !_wavesActive)
 		{
-			// Waves only in pure form  
-			if (RunState.Instance.IsRuneActive(RuneIndex.Purity))
-			{
-				_wavesTimer = WavesInterval;
-				BeginNecroticWaves();
-			}
+
+
+			_wavesTimer = WavesInterval;
+			BeginNecroticWaves();
+
 		}
 	}
 

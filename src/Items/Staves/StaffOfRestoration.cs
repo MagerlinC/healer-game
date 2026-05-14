@@ -10,14 +10,15 @@ namespace healerfantasy.Items.Staves;
 ///
 /// Stat bonus: +15% healing multiplier.
 /// </summary>
-public class DeathweaveStaff : EquippableItem
+public class StaffOfRestoration : EquippableItem
 {
-	public override string ItemId => "deathweave_staff";
+	static float HealingIncrease = 0.15f;
+	public override string ItemId => "staff_of_restoration";
 
-	public DeathweaveStaff()
+	public StaffOfRestoration()
 	{
-		Name = "Deathweave Staff";
-		Description = "+15% healing multiplier.";
+		Name = "Staff of Restoration";
+		Description = $"{100 * HealingIncrease:F0}% increased healing";
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Staff;
 		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(2));
@@ -28,7 +29,7 @@ public class DeathweaveStaff : EquippableItem
 	{
 		public void Modify(CharacterStats stats)
 		{
-			stats.IncreasedHealing *= 1.15f;
+			stats.IncreasedHealing += 0.15f;
 		}
 	}
 }

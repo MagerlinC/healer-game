@@ -30,7 +30,7 @@ public static class ItemRegistry
 	[
 		// Staves
 		(null, () => new CrystalStaff()),
-		(null, () => new DeathweaveStaff()),
+		(null, () => new StaffOfRestoration()),
 		(null, () => new SlimewardenSceptre()),
 		(null, () => new VoidWeaver()),
 		(null, () => new ArcaneAccelerator()),

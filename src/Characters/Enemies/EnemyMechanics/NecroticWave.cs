@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy;
 using healerfantasy.CombatLog;
+using healerfantasy.Runes;
 using healerfantasy.SpellResources;
 
 /// <summary>
@@ -51,10 +53,10 @@ public partial class NecroticWave : Node2D
 	public float GapCenter { get; set; }
 
 	/// <summary>Total pixel size of the safe gap. Set by the spawner.</summary>
-	public float GapSize { get; set; } = 120f;
+	public float GapSize { get; set; } = 130f;
 
 	/// <summary>Wave travel speed in pixels/second.</summary>
-	public float Speed { get; set; } = 100f;
+	public float Speed { get; set; } = 80f;
 
 	/// <summary>Void damage dealt to each party member caught outside the gap.</summary>
 	public float DamageAmount { get; set; } = 45f;
@@ -96,6 +98,14 @@ public partial class NecroticWave : Node2D
 
 	public override void _Ready()
 	{
+
+		// Scale speed if rune of purity is active
+		if (RunState.Instance.IsRuneActive(RuneIndex.Purity))
+		{
+			Speed = 115f;
+			GapSize = 110f;
+		}
+
 		// GetViewportRect() returns screen-pixel coordinates (always 0,0 → w,h).
 		// Multiplying by the inverse canvas transform converts those corners into
 		// actual world-space coordinates, correctly accounting for camera position
@@ -256,7 +266,7 @@ public partial class NecroticWave : Node2D
 
 			// NPC party members (Templar, Assassin, Wizard) cannot dodge, so
 			// they are immune to Necrotic Waves — only the player takes damage.
-			if (target.CharacterName != healerfantasy.GameConstants.HealerName) continue;
+			if (target.CharacterName != GameConstants.HealerName) continue;
 
 			// Coordinate of this character on the travel axis and the perp axis.
 			var travelCoord = _isHorizontal ? target.GlobalPosition.X : target.GlobalPosition.Y;
@@ -283,7 +293,7 @@ public partial class NecroticWave : Node2D
 			CombatLog.Record(new CombatEventRecord
 			{
 				Timestamp = Time.GetTicksMsec() / 1000.0,
-				SourceName = healerfantasy.GameConstants.ForsakenBoss3Name,
+				SourceName = GameConstants.ForsakenBoss3Name,
 				TargetName = target.CharacterName,
 				AbilityName = "Necrotic Waves",
 				Amount = DamageAmount,

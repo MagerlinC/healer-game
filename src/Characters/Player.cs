@@ -118,11 +118,11 @@ public partial class Player : Character
 
 	// ── float lift (mirrors OverworldPlayer) ──────────────────────────────────
 	float _liftOffset = 0f;
-	float _bobPhase   = 0f;
-	const float FloatHeight   = 6f;
-	const float BobAmplitude  = 2f;
-	const float BobSpeed      = 0.7f;
-	const float LiftSpeed     = 2.5f;
+	float _bobPhase = 0f;
+	const float FloatHeight = 6f;
+	const float BobAmplitude = 2f;
+	const float BobSpeed = 0.7f;
+	const float LiftSpeed = 2.5f;
 
 	// ── ultimate aura ─────────────────────────────────────────────────────────
 	CpuParticles2D? _ultimateParticles;
@@ -184,6 +184,7 @@ public partial class Player : Character
 				candidate = null;
 			}
 		}
+
 		EquippedUltimate = candidate;
 		EquippedUltimate?.ResetProgress();
 
@@ -306,10 +307,10 @@ public partial class Player : Character
 			PartyMember.NotifyPlayerAttackedBoss(target);
 
 		var stats = GetCharacterStats();
-		var adjustManaCost = stats.ManaCostMultiplier * spell.ManaCost;
-		var adjustLifeCost = stats.LifeCostMultiplier * spell.HealthCost;
-		SpendMana(spell.ManaCost);
-		SpendLife(spell.HealthCost);
+		var adjustedManaCost = stats.ManaCostMultiplier * spell.ManaCost;
+		var adjustedLifeCost = stats.LifeCostMultiplier * spell.HealthCost;
+		SpendMana(adjustedManaCost);
+		SpendLife(adjustedLifeCost);
 		var ctx = SpellPipeline.Cast(spell, this, target);
 
 		// Notify the ultimate spell about this cast so it can track progress.
@@ -604,7 +605,7 @@ public partial class Player : Character
 	{
 		if (!IsAlive) return;
 
-		var dt  = (float)delta;
+		var dt = (float)delta;
 		var dir = Input.GetVector("move_left", "move_right", "move_up", "move_down");
 
 		if (dir != Vector2.Zero)
@@ -620,7 +621,7 @@ public partial class Player : Character
 
 			// Slowly ascend.
 			_liftOffset = Mathf.Lerp(_liftOffset, -FloatHeight, LiftSpeed * dt);
-			_bobPhase  += BobSpeed * Mathf.Tau * dt;
+			_bobPhase += BobSpeed * Mathf.Tau * dt;
 			_sprite.Position = new Vector2(0f, _liftOffset + Mathf.Sin(_bobPhase) * BobAmplitude);
 		}
 		else
