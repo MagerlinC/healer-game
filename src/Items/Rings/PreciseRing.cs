@@ -12,7 +12,8 @@ public class PreciseRing : EquippableItem
 	public PreciseRing()
 	{
 		Name = "Precise Ring";
-		Description = $"+{_critChance:F0}% to critical strike chance";
+		Description = $"+{100 * _critChance:F0}% to critical strike chance";
+
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Ring1;
 		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(5));

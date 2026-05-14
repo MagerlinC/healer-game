@@ -32,6 +32,8 @@ using healerfantasy.SpellSystem;
 ///   "hurt"   — 5 frames,  one-shot → idle
 ///   "death"  — 23 frames, one-shot, no return
 /// </summary>
+
+// TODO: make more interesting
 public partial class TheNightborne : EnemyCharacter
 {
 	public TheNightborne()

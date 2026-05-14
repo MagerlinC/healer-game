@@ -136,6 +136,7 @@ public static class AssetConstants
 	public static readonly string RuneSfxPath = "res://assets/sound-effects/rune.wav";
 	public static readonly string SpellbookSfxPath = "res://assets/sound-effects/book.wav";
 	public static readonly string TalentsSfxPath = "res://assets/sound-effects/choir-hit.wav";
+	public static readonly string WalkSfxPath = "res://assets/sound-effects/movement/walk.wav";
 
 	/// <summary>Returns the icon path for rune N (1-based).</summary>
 	public static string RuneIconPath(int runeIndex)

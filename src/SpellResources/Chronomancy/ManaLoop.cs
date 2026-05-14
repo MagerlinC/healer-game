@@ -19,9 +19,11 @@ public partial class ManaLoopSpell : SpellResource
 	[Export] public float ManaAmount = 50f;
 	[Export] public float Delay = 4f;
 
+	// TODO: Make the 2 loop spells more interesting
+
 	public ManaLoopSpell()
 	{
-		Name = "Time Loop";
+		Name = "Mana Loop";
 		Description =
 			$"Traps an ally in a temporal loop. After {Delay}s, the loop resolves and restores {ManaAmount} mana.";
 		ManaCost = 8f;

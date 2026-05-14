@@ -116,6 +116,14 @@ public partial class Player : Character
 	// ── animation ─────────────────────────────────────────────────────────────
 	AnimatedSprite2D _sprite = null!;
 
+	// ── float lift (mirrors OverworldPlayer) ──────────────────────────────────
+	float _liftOffset = 0f;
+	float _bobPhase   = 0f;
+	const float FloatHeight   = 6f;
+	const float BobAmplitude  = 2f;
+	const float BobSpeed      = 0.7f;
+	const float LiftSpeed     = 2.5f;
+
 	// ── ultimate aura ─────────────────────────────────────────────────────────
 	CpuParticles2D? _ultimateParticles;
 
@@ -134,6 +142,20 @@ public partial class Player : Character
 	{
 		base._Ready();
 		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+		_sprite.Scale = new Vector2(GameConstants.HealerSpriteScale, GameConstants.HealerSpriteScale);
+
+		// Add the float animation to the existing SpriteFrames (which already
+		// contains "idle" and "cast" from the scene file).
+		var frames = _sprite.SpriteFrames;
+		if (!frames.HasAnimation("walk"))
+		{
+			frames.AddAnimation("walk");
+			frames.SetAnimationSpeed("walk", 4.0);
+			frames.SetAnimationLoop("walk", true);
+			foreach (var i in new[] { 1, 2, 3 })
+				frames.AddFrame("walk", GD.Load<Texture2D>($"res://assets/characters/healer/float{i}.png"));
+		}
+
 		_sprite.Play("idle");
 		CharacterName = GameConstants.HealerName;
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastStarted));
@@ -265,6 +287,7 @@ public partial class Player : Character
 		_castFinishedAudioPlayer.Play();
 		_sprite.SpeedScale = 1.0f;
 		_sprite.Play("idle");
+		_sprite.Position = new Vector2(0f, _liftOffset); // keep lift smooth; _PhysicsProcess descends it
 
 		// Tell party members which boss to focus when the player attacks one directly.
 		if (spell.EffectType == EffectType.Harmful && target != null && target.IsInGroup(GameConstants.BossGroupName))
@@ -532,6 +555,7 @@ public partial class Player : Character
 		EmitSignalCastCancelled();
 		_sprite.SpeedScale = 1.0f;
 		_sprite.Play("idle");
+		_sprite.Position = new Vector2(0f, _liftOffset); // keep lift smooth; _PhysicsProcess descends it
 		_castSpell = null;
 		_castTarget = null;
 		_castTimer = 0f;
@@ -567,8 +591,36 @@ public partial class Player : Character
 	public override void _PhysicsProcess(double delta)
 	{
 		if (!IsAlive) return;
+
+		var dt  = (float)delta;
 		var dir = Input.GetVector("move_left", "move_right", "move_up", "move_down");
-		// TODO: Flip sprite when moving left/right
+
+		if (dir != Vector2.Zero)
+		{
+			// Flip sprite to face horizontal movement direction.
+			// The healer sprite is drawn facing left, so FlipH=true → right.
+			if (dir.X != 0f)
+				_sprite.FlipH = dir.X > 0f;
+
+			// Switch to float animation while moving, but don't interrupt a cast.
+			if (!_isCasting && _sprite.Animation != "walk")
+				_sprite.Play("walk");
+
+			// Slowly ascend.
+			_liftOffset = Mathf.Lerp(_liftOffset, -FloatHeight, LiftSpeed * dt);
+			_bobPhase  += BobSpeed * Mathf.Tau * dt;
+			_sprite.Position = new Vector2(0f, _liftOffset + Mathf.Sin(_bobPhase) * BobAmplitude);
+		}
+		else
+		{
+			// Return to idle only when not casting (cast animation takes priority).
+			if (!_isCasting && _sprite.Animation != "idle")
+				_sprite.Play("idle");
+
+			// Slowly descend back to the ground.
+			_liftOffset = Mathf.Lerp(_liftOffset, 0f, LiftSpeed * dt);
+			_sprite.Position = new Vector2(0f, _liftOffset);
+		}
 
 		var stats = GetCharacterStats();
 		var effectiveSpeed = Speed * (1f + stats.IncreasedMovementSpeed);

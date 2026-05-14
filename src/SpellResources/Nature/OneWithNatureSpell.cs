@@ -56,16 +56,15 @@ public partial class OneWithNatureSpell : UltimateSpellResource
 	{
 		if (IsRequirementMet) return;
 
-		foreach (var node in caster.GetTree().GetNodesInGroup(GameConstants.PartyGroupName))
+		foreach (var character in caster.CollectAlivePartyMembers())
 		{
-			if (node is not Character c || !c.IsAlive) continue;
-			foreach (var effect in c.GetAllEffects())
+			foreach (var effect in character.GetAllEffects())
 			{
 				// Count nature HoTs: beneficial, finite-duration, nature school.
 				// Excludes OneWithNature itself (infinite-adjacent) and enemy debuffs.
 				if (effect.School == SpellSchool.Nature
 				    && !effect.IsHarmful
-				    && effect.Duration < GameConstants.InfiniteDuration / 2f)
+				    && effect.Duration < GameConstants.InfiniteDuration)
 				{
 					Progress += delta;
 				}

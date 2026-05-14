@@ -39,24 +39,42 @@ public partial class EffectIndicator : PanelContainer
 	// Bright orange color for dispellable harmful effects
 	static readonly Color HarmfulDispellableBadgeBorder = new(0.90f, 0.40f, 0.10f, 0.95f);
 
+	// Mirror Image clone effect — matches the ghostly blue-cyan tint on MirrorImageClone
+	static readonly Color MirrorBadgeBorder = new(0.35f, 0.72f, 1.00f, 0.90f);
+	static readonly Color MirrorBgColor     = new(0.07f, 0.11f, 0.20f, 0.90f);
+
+	const string MirrorSuffix = "_Mirror";
+
 	// ── constructor ──────────────────────────────────────────────────────────
 	public EffectIndicator(CharacterEffect effect, int indicatorSize = 34)
 	{
 		CharacterEffect = effect;
-		_displayName = FormatDisplayName(effect.EffectId);
+
+		var isMirror = effect.EffectId.EndsWith(MirrorSuffix);
+
+		// Strip the internal "_Mirror" suffix so the tooltip reads cleanly,
+		// then annotate with "(Mirror)" so the player knows it's the clone's copy.
+		var baseId = isMirror ? effect.EffectId[..^MirrorSuffix.Length] : effect.EffectId;
+		_displayName = isMirror
+			? FormatDisplayName(baseId) + " (Mirror)"
+			: FormatDisplayName(baseId);
 
 		CustomMinimumSize = new Vector2(indicatorSize, indicatorSize);
 		MouseFilter = MouseFilterEnum.Stop;
 
 		// ── badge style ──────────────────────────────────────────────────────
 		_style = new StyleBoxFlat();
-		_style.BgColor = new Color(0.10f, 0.10f, 0.10f, 0.85f);
+		_style.BgColor = isMirror
+			? MirrorBgColor
+			: new Color(0.10f, 0.10f, 0.10f, 0.85f);
 		_style.SetCornerRadiusAll(3);
 		_style.SetBorderWidthAll(2);
 
-		var borderColor = effect.IsHarmful
-			? effect.IsDispellable ? HarmfulDispellableBadgeBorder : HarmfulBadgeBorder
-			: HelpfulBadgeBorder;
+		var borderColor = isMirror
+			? MirrorBadgeBorder
+			: effect.IsHarmful
+				? effect.IsDispellable ? HarmfulDispellableBadgeBorder : HarmfulBadgeBorder
+				: HelpfulBadgeBorder;
 
 		_style.BorderColor = borderColor;
 		_style.ContentMarginLeft = 1f;
@@ -65,7 +83,8 @@ public partial class EffectIndicator : PanelContainer
 		_style.ContentMarginBottom = 1f;
 
 		AddThemeStyleboxOverride("panel", _style);
-		SetupGlow(borderColor, effect.IsHarmful && effect.IsDispellable);
+		// Mirror effects always pulse gently — they're ephemeral and belong to the clone.
+		SetupGlow(borderColor, isMirror || (effect.IsHarmful && effect.IsDispellable));
 
 		// Stacking layer for icon + labels
 		var inner = new Control();
@@ -81,6 +100,24 @@ public partial class EffectIndicator : PanelContainer
 			iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			iconRect.MouseFilter = MouseFilterEnum.Ignore;
 			iconRect.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+
+			// Apply the same ghostly blue shader used on MirrorImageClone so the
+			// icon is visually consistent with the clone standing beside the player.
+			if (isMirror)
+			{
+				var shader = new Shader();
+				shader.Code = """
+				              shader_type canvas_item;
+				              void fragment() {
+				              	vec4 col = texture(TEXTURE, UV);
+				              	col.rgb = mix(col.rgb, vec3(0.35, 0.72, 1.0), 0.45 * col.a);
+				              	col.a *= 0.80;
+				              	COLOR = col;
+				              }
+				              """;
+				iconRect.Material = new ShaderMaterial { Shader = shader };
+			}
+
 			inner.AddChild(iconRect);
 		}
 
@@ -180,9 +217,13 @@ public partial class EffectIndicator : PanelContainer
 	/// <summary>
 	/// Converts a PascalCase effect ID into a space-separated display name.
 	/// "ShieldingReinvigoration" → "Shielding Reinvigoration"
+	/// The <c>_Mirror</c> suffix is stripped before formatting; callers that
+	/// want "(Mirror)" in the display string append it themselves.
 	/// </summary>
 	static string FormatDisplayName(string id)
 	{
+		if (id.EndsWith(MirrorSuffix))
+			id = id[..^MirrorSuffix.Length];
 		return Regex.Replace(id, @"(?<=[a-z])(?=[A-Z])", " ");
 	}
 

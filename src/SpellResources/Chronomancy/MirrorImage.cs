@@ -28,7 +28,7 @@ public partial class MirrorImage : UltimateSpellResource
 		CastTime = 0.0f;
 		Cooldown = 20f;
 		School = SpellSchool.Chronomancy;
-		RequiredSchoolPoints = 3;
+		RequiredSchoolPoints = 0;
 		EffectType = EffectType.Helpful;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/mirror-image.png");
 	}
@@ -59,15 +59,14 @@ public partial class MirrorImage : UltimateSpellResource
 	{
 		if (IsRequirementMet) return;
 
-		foreach (var node in caster.GetTree().GetNodesInGroup(GameConstants.PartyGroupName))
+		foreach (var character in caster.CollectAlivePartyMembers())
 		{
-			if (node is not Character c || !c.IsAlive) continue;
-			foreach (var effect in c.GetAllEffects())
+			foreach (var effect in character.GetAllEffects())
 			{
 				// Count chronomancy buffs: beneficial, finite-duration, chronomancy school.
 				if (effect.School == SpellSchool.Chronomancy
 				    && !effect.IsHarmful
-				    && effect.Duration < GameConstants.InfiniteDuration / 2f)
+				    && effect.Duration < GameConstants.InfiniteDuration)
 				{
 					Progress += delta;
 				}

@@ -343,8 +343,22 @@ public abstract partial class Character : CharacterBody2D
 	/// <see cref="CharacterEffect.EffectId"/> is already active it is
 	/// replaced (refreshed), not stacked.
 	/// </summary>
+	/// <summary>
+	/// When set, <see cref="ApplyEffect"/> appends this string to every incoming
+	/// effect's <see cref="CharacterEffect.EffectId"/> before storing it.
+	/// Used by <see cref="Effects.MirrorImageEffect"/> so the clone's copy of a
+	/// spell's effect never clobbers the player's original on the same target.
+	/// Always reset to <c>null</c> in a <c>finally</c> block after use.
+	/// </summary>
+	internal static string? MirrorEffectIdSuffix { get; set; } = null;
+
 	public void ApplyEffect(CharacterEffect effect)
 	{
+		// If a mirror-echo is being applied, stamp the effect ID so it lives
+		// alongside the player's original rather than replacing it.
+		if (MirrorEffectIdSuffix != null && !effect.EffectId.EndsWith(MirrorEffectIdSuffix))
+			effect.EffectId += MirrorEffectIdSuffix;
+
 		if (_effects.TryGetValue(effect.EffectId, out var existing))
 		{
 			// Let the existing instance handle the re-application (refresh or stack).

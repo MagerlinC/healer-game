@@ -44,6 +44,7 @@ public partial class TimeWarpSpell : SpellResource
 			target.ApplyEffect(new Effects.TimeWarpEffect(BuffDuration, CastSpeedBonus)
 			{
 				Icon = Icon,
+				School = SpellSchool.Chronomancy,
 				SourceCharacterName = ctx.Caster.CharacterName,
 				AbilityName = Name,
 				Description = Description

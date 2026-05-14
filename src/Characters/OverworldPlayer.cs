@@ -1,12 +1,15 @@
-using System;
 using Godot;
 
 namespace healerfantasy;
 
 /// <summary>
-/// Minimal player character used only in the Overworld scene.
+/// Minimal player character used only in the Overworld and Camp scenes.
 /// Handles WASD / arrow-key movement and carries a Camera2D so the
 /// library background scrolls as the player explores.
+///
+/// Animation and audio are managed entirely here so both
+/// <see cref="OverworldController"/> and CampController get identical
+/// behaviour from <see cref="LoadoutController.SetupPlayer"/>.
 ///
 /// No spell-casting logic — the Player.cs NullReferenceException that
 /// occurs when no boss group exists is avoided by using this lighter class.
@@ -15,27 +18,50 @@ public partial class OverworldPlayer : CharacterBody2D
 {
 	[Export] public float Speed = 80f;
 
-	/// <summary>World-space X bounds set by <see cref="OverworldController"/> to keep
+	/// <summary>World-space X bounds set by <see cref="LoadoutController"/> to keep
 	/// the player within the background image edges.</summary>
 	public float XMin = float.NegativeInfinity;
-
 	public float XMax = float.PositiveInfinity;
 
 	AnimatedSprite2D _sprite = null!;
 
+	// ── Float lift parameters ─────────────────────────────────────────────────
+	// The CharacterBody2D stays on the ground for correct collision; only the
+	// sprite's local Y position is offset to create the soaring illusion.
+
+	/// <summary>How many pixels above ground the sprite hovers while moving.</summary>
+	const float FloatHeight = 6f;
+	/// <summary>Additional ±pixels of slow sine-wave bob layered on top of the lift.</summary>
+	const float BobAmplitude = 2f;
+	/// <summary>Sine oscillations per second while floating.</summary>
+	const float BobSpeed = 0.7f;
+	/// <summary>Lerp factor controlling how quickly the sprite ascends / descends.</summary>
+	const float LiftSpeed = 2.5f;
+
+	/// <summary>Current lerped base lift offset (0 = ground, -FloatHeight = fully airborne).</summary>
+	float _liftOffset = 0f;
+	/// <summary>Phase accumulator for the sine bob (advances only while moving).</summary>
+	float _bobPhase = 0f;
+
 	public override void _Ready()
 	{
-		// ── Sprite ────────────────────────────────────────────────────────────
+		// ── Sprite frames ─────────────────────────────────────────────────────
 		var frames = new SpriteFrames();
+
 		frames.AddAnimation("idle");
 		frames.SetAnimationSpeed("idle", 4.0);
 		frames.SetAnimationLoop("idle", true);
 		foreach (var i in new[] { 1, 2, 3 })
 			frames.AddFrame("idle", GD.Load<Texture2D>($"res://assets/characters/healer/idle{i}.png"));
 
+		frames.AddAnimation("walk");
+		frames.SetAnimationSpeed("walk", 4.0); // slowed from 8 → 4 fps for a dreamier float
+		frames.SetAnimationLoop("walk", true);
+		foreach (var i in new[] { 1, 2, 3 })
+			frames.AddFrame("walk", GD.Load<Texture2D>($"res://assets/characters/healer/float{i}.png"));
+
 		_sprite = new AnimatedSprite2D();
-		// quarter size
-		_sprite.Scale = new Vector2(0.15f, 0.15f);
+		_sprite.Scale = new Vector2(GameConstants.HealerSpriteScale, GameConstants.HealerSpriteScale);
 		_sprite.SpriteFrames = frames;
 		_sprite.Play("idle");
 		AddChild(_sprite);
@@ -49,18 +75,40 @@ public partial class OverworldPlayer : CharacterBody2D
 
 	public override void _PhysicsProcess(double delta)
 	{
+		var dt = (float)delta;
 		var dir = Vector2.Zero;
 
 		if (Input.IsKeyPressed(Key.D) || Input.IsKeyPressed(Key.Right)) dir.X += 1f;
 		if (Input.IsKeyPressed(Key.A) || Input.IsKeyPressed(Key.Left)) dir.X -= 1f;
-		// if (Input.IsKeyPressed(Key.S) || Input.IsKeyPressed(Key.Down))  dir.Y += 1f;
-		// if (Input.IsKeyPressed(Key.W) || Input.IsKeyPressed(Key.Up))    dir.Y -= 1f;
 
 		if (dir != Vector2.Zero)
 		{
-			// Flip sprite to face horizontal movement direction
-			if (dir.X != 0f) _sprite.FlipH = -1 * dir.X < 0f;
+			// Flip the sprite to face the direction of travel.
+			// The healer sprite is drawn facing left, so FlipH=false → left,
+			// FlipH=true → right.
+			if (dir.X != 0f)
+				_sprite.FlipH = dir.X > 0f;
+
 			dir = dir.Normalized();
+
+			if (_sprite.Animation != "walk")
+				_sprite.Play("walk");
+
+			// Slowly ascend toward FloatHeight.
+			_liftOffset = Mathf.Lerp(_liftOffset, -FloatHeight, LiftSpeed * dt);
+
+			// Advance the sine bob only while airborne.
+			_bobPhase += BobSpeed * Mathf.Tau * dt;
+			_sprite.Position = new Vector2(0f, _liftOffset + Mathf.Sin(_bobPhase) * BobAmplitude);
+		}
+		else
+		{
+			if (_sprite.Animation != "idle")
+				_sprite.Play("idle");
+
+			// Slowly descend back to the ground.
+			_liftOffset = Mathf.Lerp(_liftOffset, 0f, LiftSpeed * dt);
+			_sprite.Position = new Vector2(0f, _liftOffset);
 		}
 
 		Velocity = dir * Speed;
