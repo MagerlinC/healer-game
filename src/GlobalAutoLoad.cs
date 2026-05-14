@@ -81,14 +81,22 @@ public partial class GlobalAutoLoad : Node
 	/// </summary>
 	public static void SubscribeToSignal(string signalName, Callable callback)
 	{
+		var staleEmitters = new List<Node>();
 		foreach (var kvp in SignalMap)
 		{
+			if (!IsInstanceValid(kvp.Key))
+			{
+				staleEmitters.Add(kvp.Key);
+				continue;
+			}
 			if (kvp.Value.Contains(signalName))
 			{
 				if (!kvp.Key.IsConnected(signalName, callback))
 					kvp.Key.Connect(signalName, callback);
 			}
 		}
+		foreach (var stale in staleEmitters)
+			SignalMap.Remove(stale);
 
 		// Also store for future emitters registered after this subscription.
 		if (!PendingSubscriptions.ContainsKey(signalName))

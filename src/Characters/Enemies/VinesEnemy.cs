@@ -39,7 +39,7 @@ public partial class VinesEnemy : EnemyCharacter
 
 	public VinesEnemy(Character target, string instanceName)
 	{
-		MaxHealth = GameConstants.RuneNatureVinesMaxHealth;
+		MaxHealth = (RunState.Instance.CurrentDungeonIndex + 1) * GameConstants.RuneNatureVinesMaxHealthPerDungeonTier;
 		IsFriendly = false;
 		CharacterName = instanceName;
 		DisplayName = $"Vine ({target.CharacterName})";
@@ -99,6 +99,8 @@ public partial class VinesEnemy : EnemyCharacter
 		if (_graspedEffectId != "" && AttachedTarget != null
 		                           && IsInstanceValid(AttachedTarget))
 			AttachedTarget.RemoveEffect(_graspedEffectId);
+
+		base._ExitTree(); // Unregisters this node from GlobalAutoLoad.SignalMap.
 	}
 
 	public override void _Process(double delta)

@@ -10,7 +10,7 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 	[Signal]
 	public delegate void CompletedEventHandler();
 
-	public float DamageAmount { get; set; } = 120f;
+	public float DamageAmount { get; set; } = 95f;
 	public string BossName { get; set; } = GameConstants.SanctumBoss3Name;
 
 	readonly Texture2D[] _safeTextures =
@@ -41,6 +41,7 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 	const float RecallDelayDuration = 2.0f;
 	const float ReplayDuration = 1.0f;
 	const float ReplayGapDuration = 1.00f;
+
 	enum State
 	{
 		Preview,

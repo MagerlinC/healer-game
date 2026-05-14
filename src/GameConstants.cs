@@ -13,6 +13,7 @@ public static class GameConstants
 	/// 0.165 = original 0.15 × 1.10 (10 % size increase).
 	/// </summary>
 	public const float HealerSpriteScale = 0.165f;
+
 	public const string TemplarName = "Templar";
 	public const string AssassinName = "Assassin";
 	public const string WizardName = "Wizard";
@@ -148,8 +149,7 @@ public static class GameConstants
 	/// <summary>Rune 2 (Nature): damage the vines deal to their target per second.</summary>
 	public const float RuneNatureVinesDamagePerSecond = 10f;
 
-	/// <summary>Rune 2 (Nature): maximum health of each vines entity.</summary>
-	public const float RuneNatureVinesMaxHealth = 250f;
+	public const float RuneNatureVinesMaxHealthPerDungeonTier = 50f;
 
 	/// <summary>Group name used for Vines enemies so they can be found by the UI.</summary>
 	public const string VinesGroupName = "vines";

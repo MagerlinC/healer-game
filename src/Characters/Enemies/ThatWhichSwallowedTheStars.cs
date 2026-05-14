@@ -77,7 +77,7 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 	[Export] public float PhaseTransitionDuration = 6.0f;
 	[Export] public float MemoryGameInitialDelay = 6.0f;
 	[Export] public float MemoryGameInterval = 18.0f;
-	[Export] public float MemoryGameDamage = 120f;
+	[Export] public float MemoryGameDamage = 95f;
 
 	// ── internal state ────────────────────────────────────────────────────────
 
