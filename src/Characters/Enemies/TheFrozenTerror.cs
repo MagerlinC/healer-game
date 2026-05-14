@@ -37,7 +37,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 {
 	public TheFrozenTerror()
 	{
-		MaxHealth = 3000f; // purposely lower than the Queen — a dangerous add, not a full mirror
+		MaxHealth = 2500f; // purposely lower than the Queen — a dangerous add, not a full mirror
 	}
 
 	// ── signals ───────────────────────────────────────────────────────────────
@@ -53,7 +53,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 	[Export] public float MoveSpeed = 70f;
 	[Export] public float MeleeRange = 55f;
 	[Export] public float MeleeAttackInterval = 2.8f;
-	[Export] public float MeleeDamage = 35f;
+	[Export] public float MeleeDamage = 30f;
 
 	[Export] public float ChargeInterval = 14f;
 	[Export] public float ChargeWindupDuration = 1.2f; // red line shown before each charge
@@ -62,7 +62,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 	[Export] public float ChargeHitWidth = 28f; // half-width of the danger strip
 
 	[Export] public float JumpSlamInterval = 20f;
-	[Export] public float JumpSlamDamage = 55f;
+	[Export] public float JumpSlamDamage = 45f;
 	[Export] public float JumpTakeoffDuration = 0.5f; // time playing jump1–3
 	[Export] public float JumpHangDuration = 0.6f; // time on jump4 while flying to target
 	[Export] public float JumpLandDuration = 0.4f; // land1–2 before returning to idle

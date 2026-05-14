@@ -572,7 +572,7 @@ public partial class OverworldController
 		var isHealing = section == DetailSection.Healing;
 		var filtered = section switch
 		{
-			DetailSection.DamageTaken => events.Where(e => PartyMemberNames.Contains(e.TargetName)).ToList(),
+			DetailSection.DamageTaken => events.Where(e => e.Type == CombatEventType.Damage && PartyMemberNames.Contains(e.TargetName)).ToList(),
 			DetailSection.Healing => events.Where(e => e.Type == CombatEventType.Healing).ToList(),
 			DetailSection.DamageDealt => events
 				.Where(e => e.Type == CombatEventType.Damage && !PartyMemberNames.Contains(e.TargetName))

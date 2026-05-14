@@ -18,8 +18,8 @@ namespace healerfantasy.Items.Rings;
 /// </summary>
 public class RingOfTriage : EquippableItem
 {
-	static readonly float _hpThreshold = 0.30f; // below 30% HP
-	static readonly float _bonusMultiplier = 0.50f; // +50% healing
+	static readonly float _hpThreshold = 0.50f; // below 50% HP
+	static readonly float _bonusMultiplier = 0.30f; // +30% healing
 
 	public override string ItemId => "ring_of_triage";
 
@@ -27,7 +27,7 @@ public class RingOfTriage : EquippableItem
 	{
 		Name = "Ring of Triage";
 		Description =
-			$"Single-target heals on targets below {Math.Round(_hpThreshold * 100)}% health deal {Math.Round(_bonusMultiplier * 100)}% more.";
+			$"Single-target heals on targets below {Math.Round(_hpThreshold * 100)}% health do {Math.Round(_bonusMultiplier * 100)}% increased healing.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Ring1;
 		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(4));

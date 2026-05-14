@@ -41,7 +41,7 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 
 	[Export] public float SnowstormDamagePerTick = 20f;
 	[Export] public float IcicleDamagePerTick = 15f;
-	[Export] public float BurstOfWinterDamage = 50f;
+	[Export] public float BurstOfWinterDamage = 40f;
 	[Export] public float IceBlockShieldAmount = 500f;
 	[Export] public float AbsoluteZeroDuration = 8f;
 

@@ -352,6 +352,10 @@ public partial class RunState : Node
 		// school-point requirement. Clear it so the player must re-equip it in the
 		// Overworld once they have earned the required talents again.
 		SelectedUltimate = null;
+
+		// Restore the player's preferred spell loadout from disk so a new run always
+		// starts from their saved baseline, not from whatever mid-run state was left over.
+		InitSpellsFromPreferences();
 	}
 
 	// ── Private ───────────────────────────────────────────────────────────────
