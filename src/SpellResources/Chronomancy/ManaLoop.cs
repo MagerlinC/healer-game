@@ -25,7 +25,7 @@ public partial class ManaLoopSpell : SpellResource
 	{
 		Name = "Mana Loop";
 		Description =
-			$"Traps an ally in a temporal loop. After {Delay}s, the loop resolves and restores {ManaAmount} mana.";
+			$"Traps an ally in an arcane temporal loop. After {Delay}s, the loop resolves and restores {ManaAmount} mana.";
 		ManaCost = 8f;
 		CastTime = 0.0f;
 		Cooldown = 4f;
@@ -49,7 +49,7 @@ public partial class ManaLoopSpell : SpellResource
 
 	public override void Apply(SpellContext ctx)
 	{
-		ctx.Target?.ApplyEffect(new Effects.TimeLoopEffect(Delay, ctx.FinalValue)
+		ctx.Target?.ApplyEffect(new Effects.ManaLoopEffect(Delay, ctx.FinalValue)
 		{
 			Icon = Icon,
 			SourceCharacterName = ctx.Caster.CharacterName,
