@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 using healerfantasy;
+using healerfantasy.Runes;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
@@ -85,6 +86,7 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 	float _beamTimer;
 	float _consumeTimer;
 	float _cataclysmTimer;
+	bool _isPureRuneActive = false;
 
 	BossTwstsMeleeAttackSpell _meleeSpell;
 	BossTwstsBeamSpell _beamSpell;
@@ -131,6 +133,7 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 	public override void _Ready()
 	{
 		base._Ready();
+		_isPureRuneActive = RunState.Instance.IsRuneActive(RuneIndex.Purity);
 		CharacterName = GameConstants.SanctumBoss3Name;
 		IsFriendly = false;
 
@@ -398,8 +401,8 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 		if (_phaseTransitionActive || _phaseTwoStarted)
 			return;
 
-		// Up target count to 4 for phase 2
-		_consumeSpell = new BossTwstsConsumeSpell(4);
+		// Up target count for phase 2
+		_consumeSpell = new BossTwstsConsumeSpell(_isPureRuneActive ? 4 : 3);
 
 		_phaseTransitionActive = true;
 		_phaseTransitionTimer = PhaseTransitionDuration;

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dsq3vnfsui18h"
-path="res://.godot/imported/run_4.png-5d06dc992d09633db53fe524ce29e90a.ctex"
+uid="uid://c40b2swttwp4c"
+path="res://.godot/imported/stardust.png-3f874b96348b91446538cc79b5142bf0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/enemies/the-nightborne/frames/run/run_4.png"
-dest_files=["res://.godot/imported/run_4.png-5d06dc992d09633db53fe524ce29e90a.ctex"]
+source_file="res://assets/enemies/the-nightborne/stardust.png"
+dest_files=["res://.godot/imported/stardust.png-3f874b96348b91446538cc79b5142bf0.ctex"]
 
 [params]
 

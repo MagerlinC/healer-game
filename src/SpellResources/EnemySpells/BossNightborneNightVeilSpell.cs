@@ -35,6 +35,7 @@ public partial class BossNightborneNightVeilSpell : SpellResource
 			target.ApplyEffect(new DamageOverTimeEffect(DamagePerSecond, Duration, 1f, true)
 			{
 				EffectId = "NightVeil",
+				Icon = Icon,
 				AbilityName = Name,
 				Description = Description,
 				SourceCharacterName = ctx.Caster?.CharacterName,

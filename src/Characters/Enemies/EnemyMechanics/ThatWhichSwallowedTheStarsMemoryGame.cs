@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Godot;
 using healerfantasy;
 using healerfantasy.CombatLog;
+using healerfantasy.Runes;
 using healerfantasy.SpellResources;
 
 public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
@@ -52,14 +53,17 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 		Finished
 	}
 
+	bool _isPureRuneActive = false;
 	public override void _Ready()
 	{
+		_isPureRuneActive = RunState.Instance.IsRuneActive(RuneIndex.Purity);
 		_rng.Randomize();
 		_arenaRect = BuildArenaRect();
 		BuildTiles();
 
+		var roundCount = _isPureRuneActive ? 5 : 3;
 		_safeQuadrants.Add(_rng.RandiRange(0, 3));
-		for (var i = 1; i < 3; i++)
+		for (var i = 1; i < roundCount; i++)
 		{
 			var previousQuadrant = _safeQuadrants[i - 1];
 			var adjacentQuadrants = GetAdjacentQuadrants(previousQuadrant);
@@ -171,7 +175,7 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 		_stepIndex = stepIndex;
 		_state = State.Preview;
 		_stateTimer = PreviewDuration;
-		ShowPreviewPattern(_safeQuadrants[stepIndex], _safeTextures[stepIndex]);
+		ShowPreviewPattern(_safeQuadrants[stepIndex], _safeTextures[stepIndex % _safeTextures.Length]);
 	}
 
 	void StartReplayStep(int stepIndex)

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 using healerfantasy;
+using healerfantasy.CombatLog;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
@@ -24,6 +25,14 @@ using healerfantasy.SpellSystem;
 ///   (the "run" animation plays as a visual charge), then erupts for 90 AoE
 ///   damage to the whole party — deflectable.
 ///
+/// • Every <see cref="NightsAdvanceInterval"/> seconds — Night's Advance:
+///   a 2-second cast bar gives the player time to pre-shield. On completion the
+///   boss vanishes and blinks behind each party member in sequence, appearing in
+///   a burst of star-dust and striking each target for 60 damage, before
+///   snapping back to its origin. Not deflectable — the intended counter-play is
+///   shielding or healing targets above the strike threshold before the cast
+///   completes.
+///
 /// Animations loaded from individual PNGs extracted from the source GIFs:
 ///   res://assets/enemies/the-nightborne/frames/{anim}/{anim}_{n}.png
 ///   "idle"   — 9 frames,  looping
@@ -32,8 +41,6 @@ using healerfantasy.SpellSystem;
 ///   "hurt"   — 5 frames,  one-shot → idle
 ///   "death"  — 23 frames, one-shot, no return
 /// </summary>
-
-// TODO: make more interesting
 public partial class TheNightborne : EnemyCharacter
 {
 	public TheNightborne()
@@ -57,9 +64,12 @@ public partial class TheNightborne : EnemyCharacter
 	[Export] public float UmbralEruptionInterval = 16.0f;
 	[Export] public float UmbralWindupDuration = 3.5f;
 
-	[Export] public float ShadowStrikeDamage = 60f;
-	[Export] public float VoidLanceDamage = 45f;
+	[Export] public float NightsAdvanceInterval = 20.0f;
+
+	[Export] public float ShadowStrikeDamage = 50f;
+	[Export] public float VoidLanceDamage = 40f;
 	[Export] public float UmbralDamage = 90f;
+	[Export] public float NightsAdvanceDamage = 60f;
 
 	// ── internal state ────────────────────────────────────────────────────────
 
@@ -68,6 +78,14 @@ public partial class TheNightborne : EnemyCharacter
 	float _nightVeilTimer;
 	float _umbralTimer;
 	float _umbralWindupTimer;
+	float _nightsAdvanceTimer;
+
+	// ── Night's Advance state ─────────────────────────────────────────────────
+	NightsAdvancePhase _nightsAdvancePhase;
+	float _nightsAdvancePhaseTimer;
+	readonly List<Character> _nightsAdvanceTargets = new();
+	int _nightsAdvanceTargetIndex;
+	Vector2 _nightsAdvanceOrigin;
 
 	BossNightborneShadowStrikeSpell _shadowStrikeSpell;
 	BossNightborneVoidLanceSpell _voidLanceSpell;
@@ -84,6 +102,19 @@ public partial class TheNightborne : EnemyCharacter
 		VoidLance,
 		NightVeil
 	}
+
+	enum NightsAdvancePhase
+	{
+		None,
+		Windup, // 2-second cast bar; player window to pre-shield
+		Striking // sequentially blinking to each target
+	}
+
+	const float NightsAdvanceWindupDuration = 2.0f;
+
+	// Time allocated per target — long enough for the attack animation (~1 s) plus a beat.
+	const float NightsAdvanceStrikeDelay = 1.3f;
+	const string StarDustTexturePath = "res://assets/enemies/the-nightborne/stardust.png";
 
 	PendingAttack _pendingAttack;
 	Character _pendingTarget;
@@ -102,6 +133,7 @@ public partial class TheNightborne : EnemyCharacter
 		_voidLanceTimer = VoidLanceInterval;
 		_nightVeilTimer = NightVeilInterval;
 		_umbralTimer = UmbralEruptionInterval;
+		_nightsAdvanceTimer = 8f;
 
 		_shadowStrikeSpell = new BossNightborneShadowStrikeSpell { DamageAmount = ShadowStrikeDamage };
 		_voidLanceSpell = new BossNightborneVoidLanceSpell { DamageAmount = VoidLanceDamage };
@@ -127,6 +159,13 @@ public partial class TheNightborne : EnemyCharacter
 		base._Process(delta);
 		if (!IsAlive) return;
 
+		// ── Night's Advance state machine — blocks all other attacks while active ──
+		if (_nightsAdvancePhase != NightsAdvancePhase.None)
+		{
+			UpdateNightsAdvance((float)delta);
+			return;
+		}
+
 		// ── Umbral Eruption wind-up countdown ─────────────────────────────────
 		if (_umbralWindupTimer > 0f)
 		{
@@ -141,10 +180,16 @@ public partial class TheNightborne : EnemyCharacter
 		_voidLanceTimer -= (float)delta;
 		_nightVeilTimer -= (float)delta;
 		_umbralTimer -= (float)delta;
+		_nightsAdvanceTimer -= (float)delta;
 
 		if (_pendingAttack != PendingAttack.None) return;
 
-		if (_shadowStrikeTimer <= 0f)
+		if (_nightsAdvanceTimer <= 0f)
+		{
+			_nightsAdvanceTimer = NightsAdvanceInterval;
+			BeginNightsAdvance();
+		}
+		else if (_shadowStrikeTimer <= 0f)
 		{
 			_shadowStrikeTimer = ShadowStrikeInterval;
 			PerformShadowStrike();
@@ -241,13 +286,148 @@ public partial class TheNightborne : EnemyCharacter
 		_pendingTarget = null;
 		_pendingAttack = PendingAttack.None;
 
-		// Don't return to idle during the death animation.
-		if (IsAlive)
+		// Don't return to idle during the death animation or Night's Advance strikes.
+		if (IsAlive && _nightsAdvancePhase == NightsAdvancePhase.None)
 			_sprite.Play("idle");
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
+	// ── Night's Advance ───────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Kicks off Night's Advance — collects targets, shows a 2-second cast bar,
+	/// then blinks to each party member in sequence.
+	/// </summary>
+	void BeginNightsAdvance()
+	{
+		// Snapshot alive party members now so the player knows who will be hit
+		// and can pre-shield them during the 2-second cast window.
+		_nightsAdvanceTargets.Clear();
+		foreach (var node in GetTree().GetNodesInGroup("party"))
+			if (node is Character c && c.IsAlive)
+				_nightsAdvanceTargets.Add(c);
+
+		if (_nightsAdvanceTargets.Count == 0) return;
+
+		_nightsAdvanceTargetIndex = 0;
+		_nightsAdvanceOrigin = GlobalPosition;
+		_nightsAdvancePhase = NightsAdvancePhase.Windup;
+		_nightsAdvancePhaseTimer = NightsAdvanceWindupDuration;
+
+		// Notify the UI so the cast bar is displayed (not parryable — the player
+		// counter-play is shielding or healing targets before the cast ends).
+		EmitSignalCastWindupStarted("Night's Advance", null, NightsAdvanceWindupDuration);
+		_sprite.Play("idle"); // no dedicated cast animation — boss broods in place
+	}
+
+	/// <summary>Called every frame while Night's Advance is active.</summary>
+	void UpdateNightsAdvance(float delta)
+	{
+		_nightsAdvancePhaseTimer -= delta;
+		if (_nightsAdvancePhaseTimer > 0f) return;
+
+		switch (_nightsAdvancePhase)
+		{
+			case NightsAdvancePhase.Windup:
+				EmitSignalCastWindupEnded();
+				ExecuteNightsAdvanceStrike();
+				break;
+
+			case NightsAdvancePhase.Striking:
+				_nightsAdvanceTargetIndex++;
+				if (_nightsAdvanceTargetIndex < _nightsAdvanceTargets.Count)
+					ExecuteNightsAdvanceStrike();
+				else
+					FinishNightsAdvance();
+				break;
+		}
+	}
+
+	/// <summary>
+	/// Teleports to the current target, spawns the star-dust burst, deals damage,
+	/// then waits <see cref="NightsAdvanceStrikeDelay"/> before the next strike.
+	/// </summary>
+	void ExecuteNightsAdvanceStrike()
+	{
+		var target = _nightsAdvanceTargets[_nightsAdvanceTargetIndex];
+
+		// Teleport the boss to the target's position, slightly behind them.
+		GlobalPosition = target.GlobalPosition + new Vector2(-40f, 0f);
+		SpawnStarDust(target.GlobalPosition);
+		_sprite.Play("attack");
+
+		if (target.IsAlive)
+		{
+			target.TakeDamage(NightsAdvanceDamage);
+			target.RaiseFloatingCombatText(NightsAdvanceDamage, false, (int)SpellSchool.Void, false);
+			CombatLog.Record(new CombatEventRecord
+			{
+				Timestamp = Time.GetTicksMsec() / 1000.0,
+				SourceName = CharacterName,
+				TargetName = target.CharacterName,
+				AbilityName = "Night's Advance",
+				Amount = NightsAdvanceDamage,
+				Type = CombatEventType.Damage,
+				IsCrit = false,
+				Description =
+					"The Nightborne blinks behind its target in a burst of star-dust, striking from the shadows."
+			});
+		}
+
+		_nightsAdvancePhase = NightsAdvancePhase.Striking;
+		_nightsAdvancePhaseTimer = NightsAdvanceStrikeDelay;
+	}
+
+	/// <summary>Boss snaps back to its original position and resumes idle.</summary>
+	void FinishNightsAdvance()
+	{
+		_nightsAdvanceTargets.Clear();
+		_nightsAdvancePhase = NightsAdvancePhase.None;
+		GlobalPosition = _nightsAdvanceOrigin;
+		_sprite.Play("idle");
+	}
+
+	/// <summary>
+	/// Spawns a star-dust Sprite2D at <paramref name="worldPosition"/> that fades
+	/// out over the strike delay window then removes itself.
+	/// A circular radial shader masks the hard square edges of the texture.
+	/// </summary>
+	void SpawnStarDust(Vector2 worldPosition)
+	{
+		var texture = GD.Load<Texture2D>(StarDustTexturePath);
+
+		// Circular soft-edge shader: fades the texture to transparent from 35 % radius
+		// outward, so it reads as a cloud burst rather than a square decal.
+		var shader = new Shader();
+		shader.Code =
+			"shader_type canvas_item;\n" +
+			"void fragment() {\n" +
+			"    float dist = length(UV - vec2(0.5));\n" +
+			"    float mask = 1.0 - smoothstep(0.25, 0.5, dist);\n" +
+			"    COLOR = texture(TEXTURE, UV) * vec4(1.0, 1.0, 1.0, mask);\n" +
+			"}\n";
+		var mat = new ShaderMaterial { Shader = shader };
+
+		var dust = new Sprite2D
+		{
+			Texture = texture,
+			GlobalPosition = worldPosition,
+			ZIndex = ZIndex - 1,
+			// 0.35 is a reasonable character-sized burst — tune if needed.
+			Scale = new Vector2(0.35f, 0.35f),
+			// Start semi-transparent so it blends rather than blasts.
+			Modulate = new Color(1f, 1f, 1f, 0.80f),
+			Material = mat
+		};
+		GetParent().AddChild(dust);
+
+		// Stay briefly, then fade out over the rest of the window.
+		var tween = dust.CreateTween();
+		tween.TweenInterval(NightsAdvanceStrikeDelay * 0.25f);
+		tween.TweenProperty(dust, "modulate:a", 0f, NightsAdvanceStrikeDelay * 0.75f);
+		tween.TweenCallback(Callable.From(dust.QueueFree));
+	}
 
 	// ── animation setup ───────────────────────────────────────────────────────
 
@@ -262,6 +442,7 @@ public partial class TheNightborne : EnemyCharacter
 		VoidLanceInterval /= GameConstants.RuneTimeHasteMultiplier;
 		NightVeilInterval /= GameConstants.RuneTimeHasteMultiplier;
 		UmbralEruptionInterval /= GameConstants.RuneTimeHasteMultiplier;
+		NightsAdvanceInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
 	void SetupAnimations()
