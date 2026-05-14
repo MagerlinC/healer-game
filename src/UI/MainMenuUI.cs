@@ -60,6 +60,7 @@ public partial class MainMenuUI : Node2D
 	string? _actionToRebind;
 	Label? _rebindPromptLabel;
 	OptionButton? _resolutionOptionBtn;
+	OptionButton? _windowModeBtn;
 	Label? _volumeValueLabel;
 	readonly Dictionary<string, Label> _keybindLabels = new();
 
@@ -303,6 +304,47 @@ public partial class MainMenuUI : Node2D
 		resRow.AddChild(_resolutionOptionBtn);
 		vbox.AddChild(resRow);
 
+		// ── Window Mode row ───────────────────────────────────────────────────
+		var wmRow = new HBoxContainer();
+		wmRow.AddThemeConstantOverride("separation", 12);
+
+		var wmLabel = new Label();
+		wmLabel.Text = "Window Mode";
+		wmLabel.VerticalAlignment = VerticalAlignment.Center;
+		wmLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		wmLabel.AddThemeFontSizeOverride("font_size", 13);
+		wmLabel.AddThemeColorOverride("font_color", new Color(0.80f, 0.76f, 0.70f));
+		wmRow.AddChild(wmLabel);
+
+		_windowModeBtn = new OptionButton();
+		_windowModeBtn.CustomMinimumSize = new Vector2(180, 32);
+		_windowModeBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+		_windowModeBtn.AddThemeFontSizeOverride("font_size", 13);
+		_windowModeBtn.AddItem("Windowed",            0);
+		_windowModeBtn.AddItem("Windowed Fullscreen", 1);
+		_windowModeBtn.AddItem("Fullscreen",          2);
+
+		_windowModeBtn.Selected = DisplayServer.WindowGetMode() switch
+		{
+			DisplayServer.WindowMode.Fullscreen          => 1,
+			DisplayServer.WindowMode.ExclusiveFullscreen => 2,
+			_                                            => 0
+		};
+
+		_windowModeBtn.ItemSelected += (index) =>
+		{
+			var mode = index switch
+			{
+				1 => DisplayServer.WindowMode.Fullscreen,
+				2 => DisplayServer.WindowMode.ExclusiveFullscreen,
+				_ => DisplayServer.WindowMode.Windowed
+			};
+			ApplyWindowMode(mode);
+			SaveDisplaySettings();
+		};
+		wmRow.AddChild(_windowModeBtn);
+		vbox.AddChild(wmRow);
+
 		var displaySep = new HSeparator();
 		displaySep.AddThemeColorOverride("color", SepColor);
 		vbox.AddChild(displaySep);
@@ -400,6 +442,11 @@ public partial class MainMenuUI : Node2D
 		grid.AddChild(deflectLabel);
 		grid.AddChild(deflectKeybindLabel);
 		grid.AddChild(deflectBtn);
+
+		var (ultimateLabel, ultimateKeybindLabel, ultimateBtn) = BuildKeybindRow("Ultimate", "ultimate");
+		grid.AddChild(ultimateLabel);
+		grid.AddChild(ultimateKeybindLabel);
+		grid.AddChild(ultimateBtn);
 
 		vbox.AddChild(grid);
 		vbox.AddChild(_rebindPromptLabel);
@@ -591,9 +638,18 @@ public partial class MainMenuUI : Node2D
 	{
 		var cfg = new ConfigFile();
 		cfg.Load(SettingsSavePath); // preserve existing keys (e.g. audio)
-		var size = DisplayServer.WindowGetSize();
-		cfg.SetValue(DisplaySection, "width", size.X);
-		cfg.SetValue(DisplaySection, "height", size.Y);
+
+		// Only update the saved size in windowed mode so fullscreen doesn't
+		// overwrite the user's preferred windowed resolution.
+		var currentMode = DisplayServer.WindowGetMode();
+		if (currentMode == DisplayServer.WindowMode.Windowed)
+		{
+			var size = DisplayServer.WindowGetSize();
+			cfg.SetValue(DisplaySection, "width",  size.X);
+			cfg.SetValue(DisplaySection, "height", size.Y);
+		}
+
+		cfg.SetValue(DisplaySection, "window_mode", (int)currentMode);
 		cfg.Save(SettingsSavePath);
 	}
 
@@ -601,13 +657,27 @@ public partial class MainMenuUI : Node2D
 	{
 		var cfg = new ConfigFile();
 		if (cfg.Load(SettingsSavePath) != Error.Ok) return;
-		if (!cfg.HasSectionKey(DisplaySection, "width") ||
-			!cfg.HasSectionKey(DisplaySection, "height")) return;
 
-		var w = (int)cfg.GetValue(DisplaySection, "width");
-		var h = (int)cfg.GetValue(DisplaySection, "height");
-		if (w > 0 && h > 0)
-			ApplyResolution(new Vector2I(w, h));
+		// Apply window mode before size so that windowed resolution isn't
+		// ignored when the saved mode is Fullscreen / ExclusiveFullscreen.
+		if (cfg.HasSectionKey(DisplaySection, "window_mode"))
+		{
+			var mode = (DisplayServer.WindowMode)(int)cfg.GetValue(DisplaySection, "window_mode");
+			ApplyWindowMode(mode);
+		}
+
+		// Only restore the saved resolution in windowed mode.
+		if (DisplayServer.WindowGetMode() == DisplayServer.WindowMode.Windowed)
+		{
+			if (cfg.HasSectionKey(DisplaySection, "width") &&
+				cfg.HasSectionKey(DisplaySection, "height"))
+			{
+				var w = (int)cfg.GetValue(DisplaySection, "width");
+				var h = (int)cfg.GetValue(DisplaySection, "height");
+				if (w > 0 && h > 0)
+					ApplyResolution(new Vector2I(w, h));
+			}
+		}
 	}
 
 	// ── audio settings persistence ────────────────────────────────────────────
@@ -646,6 +716,11 @@ public partial class MainMenuUI : Node2D
 		var centred = (screenSize - size) / 2;
 		if (centred.X >= 0 && centred.Y >= 0)
 			DisplayServer.WindowSetPosition(centred);
+	}
+
+	static void ApplyWindowMode(DisplayServer.WindowMode mode)
+	{
+		DisplayServer.WindowSetMode(mode);
 	}
 
 	// ── helpers ───────────────────────────────────────────────────────────────

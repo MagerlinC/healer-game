@@ -55,7 +55,7 @@ public partial class CampController : LoadoutController
 
 		var mapItem = AddInteractible(new InteractibleObject(
 			AssetConstants.MapInteractiblePath,
-			new Vector2(525f, FloorHeight - 10f), new Vector2(0.125f, 0.125f), 28f));
+			new Vector2(525f, FloorHeight - 8f), new Vector2(0.125f, 0.125f), 28f));
 		mapItem.Scale = new Vector2(1.5f, 1.5f);
 
 		// ── Player ────────────────────────────────────────────────────────────
