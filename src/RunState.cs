@@ -343,6 +343,11 @@ public partial class RunState : Node
 		InitRunesFromPreferences();
 		ItemStore.Clear();
 		RunDungeons = BuildRunDungeons();
+
+		// Talents are wiped above, so any equipped ultimate may no longer meet its
+		// school-point requirement. Clear it so the player must re-equip it in the
+		// Overworld once they have earned the required talents again.
+		SelectedUltimate = null;
 	}
 
 	// ── Private ───────────────────────────────────────────────────────────────

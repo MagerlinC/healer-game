@@ -172,7 +172,19 @@ public partial class Player : Character
 
 		// Load the ultimate spell (may be null if none was selected in the overworld).
 		// Reset progress so accumulated state from a previous boss fight doesn't carry over.
-		EquippedUltimate = RunState.Instance?.SelectedUltimate;
+		// Guard: if the loaded ultimate requires more school-point talents than the player
+		// currently has (e.g. stale state from a previous run), treat it as unequipped.
+		var candidate = RunState.Instance?.SelectedUltimate;
+		if (candidate != null)
+		{
+			var invested = RunState.Instance!.SelectedTalentDefs.Count(d => d.School == candidate.School);
+			if (invested < candidate.RequiredSchoolPoints)
+			{
+				RunState.Instance.SetUltimate(null);
+				candidate = null;
+			}
+		}
+		EquippedUltimate = candidate;
 		EquippedUltimate?.ResetProgress();
 
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(UltimateProgressChanged));

@@ -52,15 +52,14 @@ public partial class OverworldController : LoadoutController
 
 		var mapItem = AddInteractible(new InteractibleObject(
 			AssetConstants.MapInteractiblePath,
-			new Vector2(525f, FloorHeight), new Vector2(0.100f, 0.100f), 28f));
-		mapItem.Scale = new Vector2(1.2f, 1.2f);
+			new Vector2(525f, FloorHeight - 10f), new Vector2(0.100f, 0.100f), 28f));
+		mapItem.Scale = new Vector2(1.5f, 1.5f);
 
 		var runeTable = AddInteractible(new InteractibleObject(
 			AssetConstants.RuneTableInteractiblePath,
 			new Vector2(1110f, FloorHeight), new Vector2(0.085f, 0.085f), 36f,
 			AssetConstants.RuneSfxPath));
 
-		// TODO: Refresh this on affinity selection
 		_talentBoard = AddInteractible(new InteractibleObject(
 			AssetConstants.GetTalentBoardPathForAffinity(RunState.Instance.SchoolAffinity),
 			new Vector2(820f, FloorHeight - 10f), new Vector2(0.080f, 0.080f), 28f,
