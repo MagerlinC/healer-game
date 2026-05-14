@@ -57,8 +57,12 @@ public partial class RunState : Node
 	/// </summary>
 	public void AddTalent(TalentDefinition def)
 	{
-		if (!SelectedTalentDefs.Exists(d => d.Name == def.Name))
-			SelectedTalentDefs.Add(def);
+		if (SelectedTalentDefs.Exists(d => d.Name == def.Name)) return;
+		SelectedTalentDefs.Add(def);
+
+		// If any school now has ≥3 talents, reveal the Ultimate Abilities news entry.
+		if (SelectedTalentDefs.Count(d => d.School == def.School) >= 3)
+			PlayerProgressStore.UnlockUltimateEntry();
 	}
 
 	public bool HasLoadout => SelectedSpells.Any(s => s != null);

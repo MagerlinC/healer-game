@@ -24,6 +24,8 @@ public partial class OverworldController : LoadoutController
 {
 	RuneTablePanel? _runeTablePanel;
 	InteractibleObject? _talentBoard;
+	NewsBoardPane? _newsBoardPane;
+	CanvasLayer? _newsBoardPanel;
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -65,6 +67,22 @@ public partial class OverworldController : LoadoutController
 			new Vector2(820f, FloorHeight - 10f), new Vector2(0.080f, 0.080f), 28f,
 			AssetConstants.TalentsSfxPath));
 
+		const float NewsBoardX = 585f;
+		var newsBoard = AddInteractible(new InteractibleObject(
+			AssetConstants.NewsBoardInteractiblePath,
+			new Vector2(NewsBoardX, FloorHeight - 18f), new Vector2(0.090f, 0.090f), 32f,
+			AssetConstants.SpellbookSfxPath));
+
+		// Exclamation sprite — shown above the board when there are unread entries.
+		var exclamation = new Sprite2D
+		{
+			Texture = GD.Load<Texture2D>(AssetConstants.ExclamationInteractiblePath),
+			Scale = new Vector2(0.045f, 0.045f),
+			Position = new Vector2(NewsBoardX + 26f, FloorHeight - 52f),
+			Visible = PlayerProgressStore.HasUnreadBoardEntries
+		};
+		AddChild(exclamation);
+
 		// ── Run History panel (see OverworldController.RunHistory.cs) ─────────
 		(_historyPanel, _) = BuildOverlayPanel("Run History", BuildRunHistoryPane());
 		_panels.Add(_historyPanel);
@@ -74,6 +92,12 @@ public partial class OverworldController : LoadoutController
 		_runeTablePanel = new RuneTablePanel();
 		_panels.Add(_runeTablePanel);
 		AddChild(_runeTablePanel);
+
+		// ── News Board panel ──────────────────────────────────────────────────
+		_newsBoardPane = new NewsBoardPane { ExclamationSprite = exclamation };
+		(_newsBoardPanel, _) = BuildOverlayPanel("News Board", _newsBoardPane);
+		_panels.Add(_newsBoardPanel);
+		AddChild(_newsBoardPanel);
 
 		// ── Encounter detail modal (layer 15 — above the history panel) ───────
 		_detailModalLayer = BuildDetailModal();
@@ -104,6 +128,13 @@ public partial class OverworldController : LoadoutController
 
 		_talentBoard.Interacted += () => OpenPanel(_talentPanel!);
 		WireHints(_talentBoard, "School Affinity & Talents  •  Click to open");
+
+		newsBoard.Interacted += () =>
+		{
+			_newsBoardPane!.ResetToTopicList();
+			OpenPanel(_newsBoardPanel!);
+		};
+		WireHints(newsBoard, "News Board  •  Discoveries & tips");
 
 		// ── Dev boss popup (Ctrl+Alt+O) — only available in debug builds ─────
 		if (OS.IsDebugBuild())

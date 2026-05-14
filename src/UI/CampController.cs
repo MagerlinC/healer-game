@@ -24,6 +24,8 @@ public partial class CampController : LoadoutController
 	CanvasLayer? _armoryPanel;
 	EquipmentPane? _equipmentPane;
 	InteractibleObject? _talentBoard;
+	NewsBoardPane? _newsBoardPane;
+	CanvasLayer? _newsBoardPanel;
 
 	protected override bool PersistSpellLoadout => false;
 
@@ -58,6 +60,27 @@ public partial class CampController : LoadoutController
 			new Vector2(525f, FloorHeight - 8f), new Vector2(0.125f, 0.125f), 28f));
 		mapItem.Scale = new Vector2(1.5f, 1.5f);
 
+		const float NewsBoardX = 585f;
+		var newsBoard = AddInteractible(new InteractibleObject(
+			AssetConstants.NewsBoardInteractiblePath,
+			new Vector2(NewsBoardX, FloorHeight - 18f), new Vector2(0.090f, 0.090f), 32f,
+			AssetConstants.SpellbookSfxPath));
+
+		var exclamation = new Sprite2D
+		{
+			Texture = GD.Load<Texture2D>(AssetConstants.ExclamationInteractiblePath),
+			Scale = new Vector2(0.045f, 0.045f),
+			Position = new Vector2(NewsBoardX + 26f, FloorHeight - 52f),
+			Visible = PlayerProgressStore.HasUnreadBoardEntries
+		};
+		AddChild(exclamation);
+
+		// ── News Board panel ──────────────────────────────────────────────────
+		_newsBoardPane = new NewsBoardPane { ExclamationSprite = exclamation };
+		(_newsBoardPanel, _) = BuildOverlayPanel("News Board", _newsBoardPane);
+		_panels.Add(_newsBoardPanel);
+		AddChild(_newsBoardPanel);
+
 		// ── Player ────────────────────────────────────────────────────────────
 		SetupPlayer(660f, bgLeft, bgRight);
 
@@ -87,6 +110,13 @@ public partial class CampController : LoadoutController
 
 		mapItem.Interacted += OnOpenMap;
 		WireHints(mapItem, "World Map  •  Continue your journey");
+
+		newsBoard.Interacted += () =>
+		{
+			_newsBoardPane!.ResetToTopicList();
+			OpenPanel(_newsBoardPanel!);
+		};
+		WireHints(newsBoard, "News Board  •  Discoveries & tips");
 	}
 
 	// ── Affinity change ───────────────────────────────────────────────────────

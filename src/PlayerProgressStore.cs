@@ -25,6 +25,26 @@ public static class PlayerProgressStore
 
 		/// <summary>True once the player has opened the Spellbook at least once.</summary>
 		public bool HasOpenedSpellbook { get; set; } = false;
+
+		// ── News Board entries ────────────────────────────────────────────────────
+
+		/// <summary>
+		/// Unlocked the first time the player accumulates ≥3 talent points in any
+		/// single school during a run — reveals the Ultimate Abilities board entry.
+		/// </summary>
+		public bool HasUnlockedUltimateEntry { get; set; } = false;
+
+		/// <summary>True once the player has read the Ultimate Abilities board entry.</summary>
+		public bool HasSeenUltimateEntry { get; set; } = false;
+
+		/// <summary>
+		/// Unlocked the first time the player defeats the Queen of the Frozen Wastes
+		/// (completes a full run) — reveals the Runes board entry.
+		/// </summary>
+		public bool HasUnlockedRuneEntry { get; set; } = false;
+
+		/// <summary>True once the player has read the Runes board entry.</summary>
+		public bool HasSeenRuneEntry { get; set; } = false;
 	}
 
 	/// <summary>
@@ -48,6 +68,28 @@ public static class PlayerProgressStore
 	/// <summary>True once the player has opened the Spellbook at least once.</summary>
 	public static bool HasOpenedSpellbook => _data.HasOpenedSpellbook;
 
+	// ── News Board properties ─────────────────────────────────────────────────
+
+	/// <summary>True once the Ultimate Abilities news entry has been unlocked.</summary>
+	public static bool HasUnlockedUltimateEntry => _data.HasUnlockedUltimateEntry;
+
+	/// <summary>True once the player has read the Ultimate Abilities news entry.</summary>
+	public static bool HasSeenUltimateEntry => _data.HasSeenUltimateEntry;
+
+	/// <summary>True once the Runes news entry has been unlocked.</summary>
+	public static bool HasUnlockedRuneEntry => _data.HasUnlockedRuneEntry;
+
+	/// <summary>True once the player has read the Runes news entry.</summary>
+	public static bool HasSeenRuneEntry => _data.HasSeenRuneEntry;
+
+	/// <summary>
+	/// True if there is at least one unlocked news board entry the player has not yet read.
+	/// Used to show the exclamation mark above the News Board interactible.
+	/// </summary>
+	public static bool HasUnreadBoardEntries =>
+		(HasUnlockedUltimateEntry && !HasSeenUltimateEntry) ||
+		(HasUnlockedRuneEntry     && !HasSeenRuneEntry);
+
 	// ── public API ────────────────────────────────────────────────────────────
 
 	/// <summary>Marks the tutorial as seen and saves to disk (idempotent).</summary>
@@ -63,6 +105,48 @@ public static class PlayerProgressStore
 	{
 		if (_data.HasOpenedSpellbook) return;
 		_data.HasOpenedSpellbook = true;
+		SaveToDisk();
+	}
+
+	// ── News Board API ────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Unlocks the Ultimate Abilities news board entry.
+	/// Called when the player first allocates ≥3 talent points in any school during a run.
+	/// Idempotent.
+	/// </summary>
+	public static void UnlockUltimateEntry()
+	{
+		if (_data.HasUnlockedUltimateEntry) return;
+		_data.HasUnlockedUltimateEntry = true;
+		SaveToDisk();
+	}
+
+	/// <summary>Marks the Ultimate Abilities news entry as read. Idempotent.</summary>
+	public static void MarkUltimateEntrySeen()
+	{
+		if (_data.HasSeenUltimateEntry) return;
+		_data.HasSeenUltimateEntry = true;
+		SaveToDisk();
+	}
+
+	/// <summary>
+	/// Unlocks the Runes news board entry.
+	/// Called when the player defeats the Queen of the Frozen Wastes for the first time.
+	/// Idempotent.
+	/// </summary>
+	public static void UnlockRuneEntry()
+	{
+		if (_data.HasUnlockedRuneEntry) return;
+		_data.HasUnlockedRuneEntry = true;
+		SaveToDisk();
+	}
+
+	/// <summary>Marks the Runes news entry as read. Idempotent.</summary>
+	public static void MarkRuneEntrySeen()
+	{
+		if (_data.HasSeenRuneEntry) return;
+		_data.HasSeenRuneEntry = true;
 		SaveToDisk();
 	}
 

@@ -214,6 +214,9 @@ public partial class VictoryScreen : CanvasLayer
 			};
 		}
 
+		// Unlock the Runes news board entry the first time the Queen is defeated.
+		PlayerProgressStore.UnlockRuneEntry();
+
 		_titleLabel.Text = "VICTORY!";
 		_subLabel.Text = "The Queen of the Frozen Wastes has fallen.\nAll dungeons conquered — the realm is saved!";
 		_offerSectionWrapper.Visible = false; // no talent offer on final victory

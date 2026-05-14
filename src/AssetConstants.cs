@@ -83,6 +83,8 @@ public static class AssetConstants
 	public static readonly string MapInteractiblePath = "res://assets/interactibles/map.png";
 	public static readonly string ArmoryInteractiblePath = "res://assets/interactibles/armory.png";
 	public static readonly string RuneTableInteractiblePath = "res://assets/interactibles/rune-table.png";
+	public static readonly string NewsBoardInteractiblePath = "res://assets/interactibles/news-board.png";
+	public static readonly string ExclamationInteractiblePath = "res://assets/interactibles/exclamation.png";
 
 	// ── Talent tome assets (school affinity selector) ────────────────────────
 
