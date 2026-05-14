@@ -48,7 +48,7 @@ public partial class CampController : LoadoutController
 
 		_talentBoard = AddInteractible(new InteractibleObject(
 			AssetConstants.GetTalentBoardPathForAffinity(RunState.Instance.SchoolAffinity),
-			new Vector2(796f, FloorHeight), new Vector2(0.080f, 0.080f), 50f,
+			new Vector2(796f, FloorHeight - 12f), new Vector2(0.080f, 0.080f), 50f,
 			AssetConstants.TalentsSfxPath));
 
 		var armory = AddInteractible(new InteractibleObject(
