@@ -10,14 +10,14 @@ namespace healerfantasy.Items.Rings;
 ///
 /// Stat bonus: +10% healing output.
 /// </summary>
-public class RingOfTheMendingFire : EquippableItem
+public class RingOfMending : EquippableItem
 {
 	static readonly float _healingBonus = 0.10f;
-	public override string ItemId => "ring_of_the_mending_fire";
+	public override string ItemId => "ring_of_mending";
 
-	public RingOfTheMendingFire()
+	public RingOfMending()
 	{
-		Name = "Ring of the Mending Fire";
+		Name = "Ring of Mending";
 		Description = $"+{_healingBonus:F0}% healing";
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Ring1;

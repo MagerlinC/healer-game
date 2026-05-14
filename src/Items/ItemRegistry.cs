@@ -41,11 +41,12 @@ public static class ItemRegistry
 		// Rings
 		(null, () => new RulersSignet()),
 		(null, () => new BandOfAffliction()),
-		(null, () => new RingOfTheMendingFire()),
+		(null, () => new RingOfMending()),
 		(null, () => new SeersBand()),
 		(null, () => new RingOfTriage()),
 		(null, () => new PreciseRing()),
 		(null, () => new CrystalRing()),
+		(null, () => new BandOfArcaneRecovery()),
 
 		// Amulets
 		(null, () => new TheHeartOfLight()),
