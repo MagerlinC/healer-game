@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 using healerfantasy.CombatLog;
+using healerfantasy.Items;
 using healerfantasy.SpellResources;
 
 namespace healerfantasy.SpellSystem;
@@ -57,6 +58,19 @@ public static class SpellPipeline
 
 		// ── 4. Collect + sort modifiers ─────────────────────────────────────
 		var modifiers = new List<ISpellModifier>(caster.GetSpellModifiers());
+
+		// When an NPC party member casts, also inject any IPartySpellModifier
+		// instances from the player's equipped items (e.g. Chains of Command).
+		// These aura-style modifiers are registered on the item's SpellModifiers
+		// list but only reach NPC pipelines through this injection path.
+		if (caster is PartyMember)
+		{
+			foreach (var item in ItemStore.GetEquippedItems())
+				foreach (var mod in item.SpellModifiers)
+					if (mod is IPartySpellModifier)
+						modifiers.Add(mod);
+		}
+
 		modifiers.Sort((a, b) => a.Priority.CompareTo(b.Priority));
 
 		// ── 5. OnBeforeCast ─────────────────────────────────────────────────

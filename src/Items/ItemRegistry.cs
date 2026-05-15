@@ -57,7 +57,9 @@ public static class ItemRegistry
 		(null, () => new TheLifebindersCovenant()),
 		(null, () => new PendantOfTheVoidsEmbrace()),
 		(null, () => new BulwarkOfOvergrowth()),
-		(null, () => new ChainOfReflection())
+		(null, () => new ChainOfReflection()),
+		(null, () => new CrimsonAmulet()),
+		(null, () => new ChainsOfCommand())
 
 	];
 
