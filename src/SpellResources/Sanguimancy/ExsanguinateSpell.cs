@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Godot;
-using healerfantasy.CombatLog;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources.Sanguimancy;
@@ -55,49 +54,45 @@ public partial class ExsanguinateSpell : SpellResource
 		return [explicitTarget];
 	}
 
-	// GetBaseValue returns 0: the actual damage is computed dynamically in Apply
-	// based on party composition, bypassing the standard pipeline value.
 	public override float GetBaseValue()
 	{
 		return 0f;
 	}
 
-	public override void Apply(SpellContext ctx)
+	/// <summary>
+	/// Pre-compute how much health the party can contribute (non-lethal) and set
+	/// <see cref="SpellContext.BaseValue"/> to the resulting damage so the full
+	/// value flows through multipliers, crit, and the central combat-log correctly.
+	/// Previously GetBaseValue returned 0, causing the pipeline to log 0 damage
+	/// and Apply to log its own value with the wrong CombatEventType.
+	/// </summary>
+	public override void OnAfterTargetsResolved(SpellContext ctx)
 	{
 		var totalDrained = 0f;
-
-		// Collect living party members.
 		foreach (var node in ctx.Caster.GetTree().GetNodesInGroup("party"))
 		{
 			if (node is not Character { IsAlive: true } member) continue;
-
-			// Drain is non-lethal: leave at least 1 HP.
 			var drain = Math.Min(DrainPerMember, member.CurrentHealth - 1f);
-			if (drain <= 0f) continue;
-
-			member.SpendLife(drain);
-			totalDrained += drain;
+			if (drain > 0f)
+				totalDrained += drain;
 		}
+		ctx.BaseValue = totalDrained * DamageMultiplier;
+	}
 
-		// All extracted life becomes a concentrated blow on the boss.
-		if (totalDrained > 0f)
+	public override void Apply(SpellContext ctx)
+	{
+		// Drain each party member. ctx.FinalValue (set via OnAfterTargetsResolved)
+		// already carries the correct damage amount including modifiers and crit;
+		// the pipeline handles logging and floating combat text centrally.
+		foreach (var node in ctx.Caster.GetTree().GetNodesInGroup("party"))
 		{
-			var damageDealt = totalDrained * DamageMultiplier;
-
-			ctx.Target?.TakeDamage(damageDealt);
-			ctx.Target?.RaiseFloatingCombatText(damageDealt, false, (int)School, false);
-
-			CombatLog.CombatLog.Record(new CombatEventRecord
-			{
-				Timestamp = Time.GetTicksMsec() / 1000.0,
-				SourceName = ctx.Caster.CharacterName,
-				TargetName = ctx.Target?.CharacterName,
-				AbilityName = "Exsanguinate",
-				Amount = damageDealt,
-				Description = Description,
-				Type = CombatEventType.Healing,
-				IsCrit = false
-			});
+			if (node is not Character { IsAlive: true } member) continue;
+			var drain = Math.Min(DrainPerMember, member.CurrentHealth - 1f);
+			if (drain > 0f)
+				member.SpendLife(drain);
 		}
+
+		if (ctx.FinalValue > 0f)
+			ctx.Target?.TakeDamage(ctx.FinalValue);
 	}
 }

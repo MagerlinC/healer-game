@@ -27,7 +27,9 @@ public partial class ReinvigorateSpell : SpellResource
 
 	public override void Apply(SpellContext ctx)
 	{
-		ctx.Target.Heal(HealAmount);
+		// Use ctx.FinalValue (not the raw HealAmount field) so that healing
+		// multipliers and crit from the modifier pipeline are honoured.
+		ctx.Target.Heal(ctx.FinalValue);
 		ctx.Target.RefreshAllPlayerEffects(Character.EffectFilter.FriendlyOnly);
 	}
 }

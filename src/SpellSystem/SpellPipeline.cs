@@ -48,6 +48,13 @@ public static class SpellPipeline
 		// ── 3. Resolve targets ──────────────────────────────────────────────
 		ctx.Targets = spell.ResolveTargets(caster, explicitTarget);
 
+		// ── 3b. Dynamic base-value adjustment ───────────────────────────────
+		// Spells whose damage/healing depends on world state (e.g. ConsumingVoid,
+		// TouchOfAffliction) override OnAfterTargetsResolved to update ctx.BaseValue
+		// here, so that all multipliers, crit, and the combat log all see the
+		// correct final value. The default implementation is a no-op.
+		spell.OnAfterTargetsResolved(ctx);
+
 		// ── 4. Collect + sort modifiers ─────────────────────────────────────
 		var modifiers = new List<ISpellModifier>(caster.GetSpellModifiers());
 		modifiers.Sort((a, b) => a.Priority.CompareTo(b.Priority));

@@ -1,5 +1,6 @@
 using Godot;
 using healerfantasy;
+using healerfantasy.CombatLog;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;
@@ -36,7 +37,34 @@ public partial class PoisonBoltSpell : SpellResource
 
 	public override void Apply(SpellContext ctx)
 	{
-		ctx.Target?.TakeDamage(InstantDamage);
+		// Scale the instant hit by the same modifier ratio the pipeline applied to
+		// the DoT tick (ctx.FinalValue / DamagePerTick), so both parts benefit from
+		// IncreasedDamage, school bonuses, and crit equally.
+		// The Duration tag suppresses central logging and FCT for this spell, so
+		// we handle them here for the instant portion only.
+		var scale = DamagePerTick > 0f ? ctx.FinalValue / DamagePerTick : 1f;
+		var scaledInstantDamage = InstantDamage * scale;
+		var isCrit = ctx.Tags.HasFlag(SpellTags.Critical);
+
+		ctx.Target?.TakeDamage(scaledInstantDamage);
+
+		if (ctx.Target != null)
+		{
+			ctx.Target.RaiseFloatingCombatText(scaledInstantDamage, false, (int)School, isCrit);
+
+			CombatLog.CombatLog.Record(new CombatEventRecord
+			{
+				Timestamp = ctx.Timestamp,
+				SourceName = ctx.Caster.CharacterName,
+				TargetName = ctx.Target.CharacterName,
+				AbilityName = Name,
+				Amount = scaledInstantDamage,
+				Type = CombatEventType.Damage,
+				IsCrit = isCrit,
+				Description = Description
+			});
+		}
+
 		ctx.Target?.ApplyEffect(new Effects.DamageOverTimeEffect(ctx.FinalValue, EffectDuration, TickInterval)
 		{
 			EffectId = Name, // "Poison Bolt" — unique per spell, not per class

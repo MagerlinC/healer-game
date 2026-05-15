@@ -47,22 +47,23 @@ public partial class NourishSpell : SpellResource
 		return HealAmount;
 	}
 
-	public override void Apply(SpellContext ctx)
+	/// <summary>
+	/// Check for an active nature HoT on the target and, if present, apply the
+	/// bonus multiplier to <see cref="SpellContext.BaseValue"/> before the modifier
+	/// pipeline runs. This ensures the full amplified value flows through healing
+	/// multipliers, crit, and the central combat-log correctly.
+	/// </summary>
+	public override void OnAfterTargetsResolved(SpellContext ctx)
 	{
 		if (ctx.Target == null) return;
 
 		var hasHot = ctx.Target.GetAllEffects().Any(e => e.School == SpellSchool.Nature && e is HealOverTimeEffect);
-		var finalHeal = hasHot ? ctx.FinalValue * HotBonusMultiplier : ctx.FinalValue;
-
-		ctx.Target.Heal(finalHeal);
-
-		// Emit extra FCT if the bonus triggered, since the pipeline will already
-		// have emitted FCT for ctx.FinalValue — show the bonus portion separately.
 		if (hasHot)
-		{
-			var bonusAmount = finalHeal - ctx.FinalValue;
-			var isCrit = ctx.Tags.HasFlag(SpellTags.Critical);
-			ctx.Target.RaiseFloatingCombatText(bonusAmount, true, (int)School, isCrit);
-		}
+			ctx.BaseValue = HealAmount * HotBonusMultiplier;
+	}
+
+	public override void Apply(SpellContext ctx)
+	{
+		ctx.Target?.Heal(ctx.FinalValue);
 	}
 }

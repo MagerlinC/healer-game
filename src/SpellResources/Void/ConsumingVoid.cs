@@ -31,21 +31,34 @@ public partial class ConsumingVoid : SpellResource
 		return BaseDamage;
 	}
 
-	public override void Apply(SpellContext ctx)
+	/// <summary>
+	/// Count all HoT effects currently on the party and fold their bonus into
+	/// <see cref="SpellContext.BaseValue"/> so that the full damage (including the
+	/// per-HoT bonus) flows through the modifier pipeline, crit roll, and central
+	/// combat-log recording correctly.
+	/// </summary>
+	public override void OnAfterTargetsResolved(SpellContext ctx)
 	{
 		var party = ctx.Caster.CollectAlivePartyMembers();
-		var totalPartyHots = 0;
+		var hotCount = 0;
+		foreach (var character in party)
+			hotCount += character.GetAllEffects().Count(e => e is HealOverTimeEffect);
+
+		ctx.BaseValue = BaseDamage + hotCount * AddedDamagePerConsumedHoT;
+	}
+
+	public override void Apply(SpellContext ctx)
+	{
+		// Remove all party HoTs (counted in OnAfterTargetsResolved).
+		// ctx.FinalValue already includes BaseDamage + per-HoT bonus,
+		// scaled by damage multipliers and crit — no manual arithmetic needed.
+		var party = ctx.Caster.CollectAlivePartyMembers();
 		foreach (var character in party)
 		{
-			var hotEffects = character.GetAllEffects().Where(e => e is HealOverTimeEffect);
-			foreach (var hotEffect in hotEffects)
-			{
+			foreach (var hotEffect in character.GetAllEffects().Where(e => e is HealOverTimeEffect).ToList())
 				character.RemoveEffect(hotEffect.EffectId);
-				totalPartyHots++;
-			}
 		}
 
-		var totalDamage = ctx.FinalValue + totalPartyHots * AddedDamagePerConsumedHoT;
-		ctx.Target?.TakeDamage(totalDamage);
+		ctx.Target?.TakeDamage(ctx.FinalValue);
 	}
 }

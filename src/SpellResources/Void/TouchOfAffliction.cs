@@ -30,9 +30,21 @@ public partial class TouchOfAffliction : SpellResource
 		return BaseDamage;
 	}
 
+	/// <summary>
+	/// Count active DoT effects on the target and fold the per-DoT bonus into
+	/// <see cref="SpellContext.BaseValue"/> so that the full damage flows through
+	/// the modifier pipeline, crit roll, and central combat-log recording correctly.
+	/// </summary>
+	public override void OnAfterTargetsResolved(SpellContext ctx)
+	{
+		var dotCount = ctx.Target?.GetAllEffects().Count(e => e is DamageOverTimeEffect) ?? 0;
+		ctx.BaseValue = BaseDamage + dotCount * AddedDamagePerDoT;
+	}
+
 	public override void Apply(SpellContext ctx)
 	{
-		var dotsOnTarget = ctx.Target.GetAllEffects().Count(e => e is DamageOverTimeEffect);
-		ctx.Target?.TakeDamage(ctx.FinalValue + dotsOnTarget * AddedDamagePerDoT);
+		// ctx.FinalValue already includes BaseDamage + per-DoT bonus,
+		// scaled by damage multipliers and crit.
+		ctx.Target?.TakeDamage(ctx.FinalValue);
 	}
 }

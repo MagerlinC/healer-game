@@ -79,6 +79,16 @@ public partial class SpellResource : Resource
 	}
 
 	/// <summary>
+	/// Called by <see cref="SpellSystem.SpellPipeline"/> immediately after
+	/// <see cref="ResolveTargets"/> and before the modifier pipeline runs.
+	/// Override when <see cref="SpellContext.BaseValue"/> must be set dynamically
+	/// from world state (e.g. the number of active HoT/DoT effects), so that
+	/// multipliers, crit, and combat-log recording all see the correct value.
+	/// The default implementation does nothing.
+	/// </summary>
+	public virtual void OnAfterTargetsResolved(SpellContext ctx) { }
+
+	/// <summary>
 	/// Execute the spell using the fully-processed <see cref="SpellContext"/>.
 	/// Override in subclasses to read <see cref="SpellContext.FinalValue"/>
 	/// and <see cref="SpellContext.Targets"/> so that modifier pipeline output
