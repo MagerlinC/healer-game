@@ -163,7 +163,7 @@ public partial class FlyingDemon : EnemyCharacter
 
 	void PerformFelStrike()
 	{
-		var target = FindTank() ?? PickRandomPartyMember();
+		var target = SelectCurrentMeleeTarget();
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Melee;

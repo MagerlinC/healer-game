@@ -4,6 +4,7 @@ using System.Linq;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 using healerfantasy.Talents.Chronomancy;
+using healerfantasy.Talents.Generic;
 using healerfantasy.Talents.Holy;
 using healerfantasy.Talents.Nature;
 using healerfantasy.Talents.Sanguimancy;
@@ -273,6 +274,17 @@ public static class TalentRegistry
 			TalentRow = 0,
 			Configure = (t, icon) =>
 				t.SpellModifiers.Add(new CriticalRechargeTalent())
+		},
+		new()
+		{
+			Name = "Mana Recovery",
+			Description =
+				"Regenerate 2 additional mana per second.",
+			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_29.png",
+			School = SpellSchool.Generic,
+			TalentRow = 0,
+			Configure = (t, icon) =>
+				t.CharacterModifiers.Add(new ManaRecoveryTalent())
 		},
 		new()
 		{

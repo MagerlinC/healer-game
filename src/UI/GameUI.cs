@@ -211,6 +211,12 @@ public partial class GameUI : CanvasLayer
 		_damageMeter?.RegisterCharacter(character.CharacterName);
 	}
 
+	/// <summary>
+	/// Returns the player's currently locked default healing target (set by
+	/// left-clicking a party frame), or <c>null</c> if no frame is locked.
+	/// </summary>
+	public Character? GetDefaultTarget() => _partyFrames.GetDefaultTarget();
+
 	/// <summary>Returns the Character whose party frame or boss health bar the cursor is over, or null.</summary>
 	public Character? GetHoveredCharacter()
 	{

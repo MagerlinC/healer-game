@@ -30,7 +30,7 @@ public partial class VoidsEmbraceSpell : UltimateSpellResource
 		Cooldown = 20f;
 		School = SpellSchool.Void;
 		RequiredSchoolPoints = 3;
-		TargetingType = TargetingType.Ally;
+		TargetingType = TargetingType.Self;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/voids-embrace.png");
 	}
 

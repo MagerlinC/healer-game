@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 using healerfantasy;
+using healerfantasy.Runes;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
@@ -66,6 +67,8 @@ public partial class CrystalKnight : EnemyCharacter
 	float _crushTimer;
 	float _crushWindupTimer; // counts down during the Structural Crush wind-up
 
+	bool _runeOfPurityActive = false;
+
 	BossMeleeAttackSpell _meleeSpell;
 	BossCrystalBlastSpell _blastSpell;
 	BossCrystalDecaySpell _decaySpell;
@@ -97,6 +100,7 @@ public partial class CrystalKnight : EnemyCharacter
 	{
 		base._Ready();
 		CharacterName = GameConstants.Boss1Name;
+		_runeOfPurityActive = RunState.Instance.IsRuneActive(RuneIndex.Purity);
 
 		// Stagger first attacks so the player has a moment to react.
 		_meleeTimer = MeleeAttackInterval;
@@ -174,7 +178,7 @@ public partial class CrystalKnight : EnemyCharacter
 			_decayTimer = DecayInterval;
 			CastCrystalDecay();
 		}
-		else if (_crushTimer <= 0f)
+		else if (_crushTimer <= 0f && _runeOfPurityActive)
 		{
 			_crushTimer = CrushInterval;
 			BeginStructuralCrush();
@@ -185,7 +189,7 @@ public partial class CrystalKnight : EnemyCharacter
 
 	void PerformMeleeAttack()
 	{
-		var target = FindTank() ?? PickRandomPartyMember();
+		var target = SelectCurrentMeleeTarget();
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Melee;

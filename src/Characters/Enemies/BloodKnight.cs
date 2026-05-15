@@ -174,7 +174,7 @@ public partial class BloodKnight : EnemyCharacter
 
 	void PerformMeleeAttack()
 	{
-		var target = FindTank() ?? PickRandomPartyMember();
+		var target = SelectCurrentMeleeTarget();
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Melee;
@@ -184,7 +184,7 @@ public partial class BloodKnight : EnemyCharacter
 	void PerformCleave()
 	{
 		// Cleave's ResolveTargets handles finding the frontline — pass any target.
-		var target = FindTank() ?? PickRandomPartyMember();
+		var target = SelectCurrentMeleeTarget();
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Cleave;

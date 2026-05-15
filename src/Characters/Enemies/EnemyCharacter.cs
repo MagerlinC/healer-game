@@ -72,6 +72,17 @@ public abstract partial class EnemyCharacter : Character
 		return alive[(int)(GD.Randi() % (uint)alive.Count)];
 	}
 
+	/// <summary>
+	/// Returns the exact party member this boss is currently choosing for a
+	/// melee-targeted attack, and broadcasts that choice so the UI can follow it.
+	/// </summary>
+	protected Character SelectCurrentMeleeTarget()
+	{
+		var target = FindTank() ?? PickRandomPartyMember();
+		RaiseBossMeleeTargetChanged(target);
+		return target;
+	}
+
 
 	// ── Animation helpers ──────────────────────────────────────────────────────
 

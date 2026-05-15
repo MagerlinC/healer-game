@@ -65,6 +65,14 @@ public abstract partial class Character : CharacterBody2D
 	[Signal]
 	public delegate void FloatingCombatTextEventHandler(float amount, bool isHealing, int school, bool isCrit);
 
+	/// <summary>
+	/// Emitted by bosses whenever they choose a party member as their current
+	/// melee target. Carries the target character name, or an empty string when
+	/// no valid melee target exists.
+	/// </summary>
+	[Signal]
+	public delegate void BossMeleeTargetChangedEventHandler(string characterName);
+
 	// ── exports ──────────────────────────────────────────────────────────────
 	[Export] public string CharacterName = "Character";
 	[Export] public float MaxHealth = 100.0f;
@@ -141,6 +149,7 @@ public abstract partial class Character : CharacterBody2D
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(EffectRemoved));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(Died));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(FloatingCombatText));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(BossMeleeTargetChanged));
 		EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
 		EmitSignalManaChanged(CharacterName, CurrentMana, MaxMana);
 	}
@@ -528,6 +537,12 @@ public abstract partial class Character : CharacterBody2D
 	{
 		if (IsBeingRemoved || IsQueuedForDeletion()) return;
 		EmitSignalFloatingCombatText(amount, isHealing, school, isCrit);
+	}
+
+	protected void RaiseBossMeleeTargetChanged(Character? target)
+	{
+		if (IsBeingRemoved || IsQueuedForDeletion()) return;
+		EmitSignalBossMeleeTargetChanged(target?.CharacterName ?? string.Empty);
 	}
 
 	/// <summary>Subtract mana, clamped at 0.</summary>

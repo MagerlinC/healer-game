@@ -191,7 +191,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 		}
 
 		// ── Movement: walk toward Templar ──────────────────────────────────
-		var target = FindTank() ?? PickRandomPartyMember();
+		var target = SelectCurrentMeleeTarget();
 		if (target != null)
 		{
 			var dist = GlobalPosition.DistanceTo(target.GlobalPosition);
@@ -219,7 +219,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 
 	void PerformMeleeAttack()
 	{
-		var target = FindTank() ?? PickRandomPartyMember();
+		var target = SelectCurrentMeleeTarget();
 		if (target == null) return;
 		_state = BossState.Melee;
 		_sprite.Play("attack");

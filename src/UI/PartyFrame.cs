@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using Godot;
 using healerfantasy;
 
@@ -18,6 +19,7 @@ public partial class PartyFrame : CharacterFrame
 	// ── constants ─────────────────────────────────────────────────────────────
 	static readonly Color BorderDefault = new(0.32f, 0.26f, 0.26f);
 	static readonly Color BorderHovered = new(0.90f, 0.80f, 0.20f);
+	static readonly Color BorderBossTargeted = new(0.90f, 0.12f, 0.12f);
 	static readonly Color FrameTextColor = new(0.90f, 0.87f, 0.83f);
 
 
@@ -30,12 +32,29 @@ public partial class PartyFrame : CharacterFrame
 	protected override string FrameCharacterName => _name;
 
 	// ── node refs ─────────────────────────────────────────────────────────────
+	Control _frameWrapper = null!;
 	PanelContainer _panel = null!;
 	ProgressBar _healthBar = null!;
 	Label _currentHealthLabel = null!;
 	ProgressBar _shieldBar = null!;
 	ProgressBar _absorbBar = null!;
 	StyleBoxFlat _panelStyle = null!;
+
+	// ── overlay refs ──────────────────────────────────────────────────────────
+	TextureRect _selectionFrame = null!;
+	Panel _targetingRing = null!;
+	StyleBoxFlat _targetingRingStyle = null!;
+
+	// ── targeting / selection state ────────────────────────────────────────────
+	bool _isBossTargeted;
+	bool _isHovered;
+	bool _isDefaultTarget;
+
+	/// <summary>
+	/// Invoked when the player left-clicks this frame to lock it as their
+	/// default healing target.  Set by <see cref="PartyFrames"/> after construction.
+	/// </summary>
+	public Action<Character?>? OnDefaultTargetClicked;
 
 	/// <param name="showItemEffects">
 	/// When <c>true</c>, an <see cref="ItemEffectBar"/> is added below the
@@ -59,8 +78,12 @@ public partial class PartyFrame : CharacterFrame
 		AddChild(EffectBar);
 
 		// ── outer panel ───────────────────────────────────────────────────────
+		_frameWrapper = new Control();
+		_frameWrapper.CustomMinimumSize = new Vector2(160, 75);
+		_frameWrapper.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+
 		_panel = new PanelContainer();
-		_panel.CustomMinimumSize = new Vector2(160, 75);
+		_panel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 
 		_panelStyle = new StyleBoxFlat();
 		_panelStyle.BgColor = new Color(0.11f, 0.09f, 0.09f, 0.95f);
@@ -141,7 +164,39 @@ public partial class PartyFrame : CharacterFrame
 		_absorbBar.AddThemeStyleboxOverride("fill", new StyleBoxFlat { BgColor = new Color(0.38f, 0.10f, 0.55f, 0.65f) });
 		_panel.AddChild(_absorbBar);
 
-		AddChild(_panel);
+		// ── default-target selection frame ────────────────────────────────────
+		// Rendered last (highest z-order inside the panel content area) so it sits
+		// on top of the health/shield/absorb bars.  The PNG has a transparent
+		// interior so the underlying bars show through.
+		// Because PanelContainer places children inside its content margins (8 px
+		// sides, 5 px top/bottom), this texture is naturally inset from the panel's
+		// outer edge — leaving the StyleBoxFlat border fully unobscured.
+
+		_selectionFrame = new TextureRect();
+		_selectionFrame.Texture = GD.Load<Texture2D>("res://assets/frames/healer-targeting-frame.png");
+		_selectionFrame.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+		_selectionFrame.StretchMode = TextureRect.StretchModeEnum.Scale;
+		_selectionFrame.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		_selectionFrame.MouseFilter = MouseFilterEnum.Ignore;
+		_selectionFrame.Visible = false;
+
+		_targetingRing = new Panel();
+		_targetingRing.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		_targetingRing.MouseFilter = MouseFilterEnum.Ignore;
+		_targetingRing.Visible = false;
+
+		_targetingRingStyle = new StyleBoxFlat();
+		_targetingRingStyle.BgColor = new Color(0f, 0f, 0f, 0f);
+		_targetingRingStyle.SetCornerRadiusAll(6);
+		_targetingRingStyle.SetBorderWidthAll(2);
+		_targetingRingStyle.BorderColor = BorderBossTargeted;
+		_targetingRing.AddThemeStyleboxOverride("panel", _targetingRingStyle);
+
+		_frameWrapper.AddChild(_panel);
+		_frameWrapper.AddChild(_selectionFrame);
+		_frameWrapper.AddChild(_targetingRing);
+
+		AddChild(_frameWrapper);
 
 		// ── item-effect row (below the health panel, healer only) ─────────────
 		// The overlay is a zero-height Control so it contributes nothing to the
@@ -170,8 +225,24 @@ public partial class PartyFrame : CharacterFrame
 		}
 
 		// ── hover border highlight ────────────────────────────────────────────
-		_panel.MouseEntered += () => _panelStyle.BorderColor = BorderHovered;
-		_panel.MouseExited += () => _panelStyle.BorderColor = BorderDefault;
+		_panel.MouseEntered += () =>
+		{
+			_isHovered = true;
+			UpdateHighlight();
+		};
+		_panel.MouseExited += () =>
+		{
+			_isHovered = false;
+			UpdateHighlight();
+		};
+
+		// ── default-target click ──────────────────────────────────────────────
+		// Left-clicking the frame locks or unlocks it as the default heal target.
+		_panel.GuiInput += evt =>
+		{
+			if (evt is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true })
+				OnDefaultTargetClicked?.Invoke(BoundCharacter);
+		};
 
 		// ── health / shield signal subscriptions ──────────────────────────────
 		GlobalAutoLoad.SubscribeToSignal(
@@ -196,6 +267,35 @@ public partial class PartyFrame : CharacterFrame
 			}));
 
 		base._Ready(); // subscribe effect-badge signals last
+	}
+
+	/// <summary>
+	/// Lights the frame border red while a boss ability is targeting this member.
+	/// Called by <see cref="PartyFrames"/> when a boss cast windup starts or ends.
+	/// </summary>
+	public void SetBossTargeted(bool targeted)
+	{
+		_isBossTargeted = targeted;
+		UpdateHighlight();
+	}
+
+	/// <summary>
+	/// Marks this frame as the player's locked default healing target, showing a
+	/// subtle brightening overlay so it stands out without clashing with the red
+	/// boss-targeting border.
+	/// </summary>
+	public void SetIsDefaultTarget(bool isDefault)
+	{
+		_isDefaultTarget = isDefault;
+		_selectionFrame.Visible = isDefault;
+	}
+
+	// Applies border colour priority: boss targeting > hover > default.
+	void UpdateHighlight()
+	{
+		_panelStyle.BorderColor = _isHovered ? BorderHovered
+			: BorderDefault;
+		_targetingRing.Visible = _isBossTargeted;
 	}
 
 	/// <summary>

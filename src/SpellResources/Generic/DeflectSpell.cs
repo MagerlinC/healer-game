@@ -22,7 +22,8 @@ public partial class DeflectSpell : SpellResource
 	public DeflectSpell()
 	{
 		Name = "Deflect";
-		Description = "Parries an incoming telegraphed attack, reducing its damage to zero. Must be cast during the attack wind-up.";
+		Description =
+			"Deflects an incoming telegraphed attack, reducing its damage to zero. Must be cast just before the incoming spell goes off (deflect window lasts 0.5s).";
 		ManaCost = 0f;
 		CastTime = 0f;
 		Cooldown = 1f;

@@ -371,7 +371,7 @@ public partial class Player : Character
 
 	public override void _Process(double delta)
 	{
-		base._Process(delta); // runs health drain from Character
+		base._Process(delta);
 		if (_globalCooldownTimer > 0f)
 			_globalCooldownTimer = Mathf.Max(_globalCooldownTimer - (float)delta, 0.0f);
 
@@ -382,6 +382,7 @@ public partial class Player : Character
 
 		if (!IsAlive) return;
 
+		var isMoving = Input.GetVector("move_left", "move_right", "move_up", "move_down") != Vector2.Zero;
 		// ── Tick ultimate progress every frame while alive ────────────────────────
 		if (EquippedUltimate != null)
 		{
@@ -415,7 +416,7 @@ public partial class Player : Character
 		// Tick cast timer — any movement input interrupts the cast
 		if (_isCasting)
 		{
-			if (Input.GetVector("move_left", "move_right", "move_up", "move_down") != Vector2.Zero)
+			if (isMoving)
 			{
 				CancelCast();
 			}
@@ -429,7 +430,7 @@ public partial class Player : Character
 			return;
 		}
 
-		var canCast = IsAlive && _globalCooldownTimer == 0f;
+		var canCast = IsAlive && _globalCooldownTimer == 0f && !isMoving;
 		if (!canCast) return;
 
 		// ── Ultimate spell (bound to "ultimate", default key R) ───────────────────
@@ -437,39 +438,35 @@ public partial class Player : Character
 		{
 			var ultimate = EquippedUltimate;
 			var canPayCost = CurrentMana >= ultimate.ManaCost && CurrentHealth > ultimate.HealthCost;
-			if (canPayCost && !IsOnCooldown(ultimate) && ultimate.IsRequirementMet && !IsUltimateActive())
+			if (!canPayCost || IsOnCooldown(ultimate) || !ultimate.IsRequirementMet || IsUltimateActive()) return;
+
+			var hoveredCharacter = ResolveTargetWithFallback(GameUI?.GetHoveredCharacter(), ultimate);
+
+			_castTarget = hoveredCharacter;
+			_castSpell = ultimate;
+
+			var stats = GetCharacterStats();
+			var isInstant = ultimate.CastTime == 0.0f
+			                || stats.NextCastIsInstant && ultimate.School != SpellSchool.Chronomancy;
+
+			if (isInstant)
 			{
-				var hoveredCharacter = ResolveTargetWithFallback(GameUI?.GetHoveredCharacter(), ultimate);
-				if (hoveredCharacter != null)
-				{
-					_castTarget = hoveredCharacter;
-					_castSpell = ultimate;
-
-					var stats = GetCharacterStats();
-					var isInstant = ultimate.CastTime == 0.0f
-					                || stats.NextCastIsInstant && ultimate.School != SpellSchool.Chronomancy;
-
-					if (isInstant)
-					{
-						FireSpell(ultimate, hoveredCharacter);
-					}
-					else
-					{
-						var adjustedCastTime = ultimate.CastTime - ultimate.CastTime * stats.IncreasedHaste;
-						EmitSignalCastStarted(ultimate, adjustedCastTime);
-						_isCasting = true;
-						_castTimer = adjustedCastTime;
-						_castingAudioPlayer.Play();
-						_sprite.SpeedScale = CastAnimBaseDuration / adjustedCastTime;
-						_sprite.Play("cast");
-					}
-
-					var adjustedGcd = Mathf.Max(GlobalCooldown * (1f - stats.IncreasedHaste), 0.1f);
-					_globalCooldownTimer = adjustedGcd;
-					EmitSignalGlobalCooldownStarted(adjustedGcd);
-				}
+				FireSpell(ultimate, hoveredCharacter);
+			}
+			else
+			{
+				var adjustedCastTime = ultimate.CastTime - ultimate.CastTime * stats.IncreasedHaste;
+				EmitSignalCastStarted(ultimate, adjustedCastTime);
+				_isCasting = true;
+				_castTimer = adjustedCastTime;
+				_castingAudioPlayer.Play();
+				_sprite.SpeedScale = CastAnimBaseDuration / adjustedCastTime;
+				_sprite.Play("cast");
 			}
 
+			var adjustedGcd = Mathf.Max(GlobalCooldown * (1f - stats.IncreasedHaste), 0.1f);
+			_globalCooldownTimer = adjustedGcd;
+			EmitSignalGlobalCooldownStarted(adjustedGcd);
 			return;
 		}
 
@@ -524,31 +521,24 @@ public partial class Player : Character
 		}
 	}
 
-	Character? ResolveTargetWithFallback(Character? target, SpellResource spell)
+	Character ResolveTargetWithFallback(Character? hoveredTarget, SpellResource spell)
 	{
-		if (target == null)
+		var availableEnemyTargets = CollectAliveEnemies();
+		var defaultEnemy = availableEnemyTargets[0];
+
+		var currentDefaultTarget = GameUI?.GetDefaultTarget();
+		var validDefaultTargetSelected = currentDefaultTarget is { IsAlive: true };
+		var currentDefaultTargetToUse = validDefaultTargetSelected ? currentDefaultTarget : null;
+		var fallbackTarget = spell.TargetingType == TargetingType.Enemy ? defaultEnemy : this;
+
+		var target = hoveredTarget ?? currentDefaultTargetToUse ?? fallbackTarget;
+
+		var targetTypeMismatch = !target.IsFriendly && spell.TargetingType == TargetingType.Ally ||
+		                         target.IsFriendly && spell.TargetingType == TargetingType.Enemy;
+
+		if (targetTypeMismatch)
 		{
-			if (spell.TargetingType == TargetingType.Self || spell.TargetingType == TargetingType.Ally ||
-			    spell.TargetingType == TargetingType.None)
-				return this;
-
-			// Return the first *alive* boss — GetFirstNodeInGroup gives an arbitrary
-			// ordering and may return a dead character in multi-boss encounters.
-			foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
-				if (node is Character c && c.IsAlive)
-					return c;
-
-			return null;
-		}
-
-		// If the resolved target is a dead boss (e.g. player had the dead twin's
-		// health bar hovered), fall back to any alive boss.
-		if (!target.IsAlive && target.IsInGroup(GameConstants.BossGroupName))
-		{
-			foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
-				if (node is Character c && c.IsAlive)
-					return c;
-			return null;
+			return spell.TargetingType == TargetingType.Ally ? this : defaultEnemy;
 		}
 
 		return target;

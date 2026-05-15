@@ -173,7 +173,7 @@ public partial class DemonSlime : EnemyCharacter
 
 	void PerformSlam()
 	{
-		var target = FindTank() ?? PickRandomPartyMember();
+		var target = SelectCurrentMeleeTarget();
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Melee;

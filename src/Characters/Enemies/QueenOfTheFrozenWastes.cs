@@ -407,7 +407,7 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 		{
 			case PendingCast.Melee:
 				// No cast bar to clear — melee auto-attacks are unannounced.
-				var meleeTarget = FindTank() ?? PickRandomPartyMember();
+				var meleeTarget = SelectCurrentMeleeTarget();
 				if (meleeTarget != null)
 					SpellPipeline.Cast(_meleeSpell, this, meleeTarget);
 				break;

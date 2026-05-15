@@ -1,0 +1,149 @@
+name: Build and Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # Redeploy whenever main is updated
+  workflow_dispatch:  # Allow manual runs from the Actions tab
+
+# Required for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only allow one deployment at a time; don't cancel in-progress runs
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    env:
+      GODOT_VERSION: "4.6.2"
+      GODOT_RELEASE: "stable"
+      EXPORT_PRESET: "Web"  # Must match the name in export_presets.cfg exactly
+      BUILD_DIR: "build/web"
+      DOTNET_NOLOGO: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      # ── .NET SDK ────────────────────────────────────────────────────────────
+      - name: Set up .NET SDK 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      # ── Cache NuGet packages ─────────────────────────────────────────────────
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # ── Install Godot (Mono / headless) ──────────────────────────────────────
+      - name: Download and install Godot ${{ env.GODOT_VERSION }} (Mono headless)
+        run: |
+          GODOT_FILENAME="Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_mono_linux_x86_64"
+          echo "Downloading Godot ${GODOT_VERSION} Mono headless..."
+
+          wget -q \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/${GODOT_FILENAME}.zip" \
+            -O godot.zip
+
+          unzip -q godot.zip
+          mv "${GODOT_FILENAME}" godot-bin
+
+          GODOT_BIN=$(find godot-bin -maxdepth 1 -type f ! -name "*.so" | sort | head -1)
+          chmod +x "${GODOT_BIN}"
+          sudo ln -sf "$(pwd)/${GODOT_BIN}" /usr/local/bin/godot
+
+          echo "Godot version:"
+          godot --version
+
+      # ── Install export templates ─────────────────────────────────────────────
+      - name: Download and install Godot export templates
+        run: |
+          TEMPLATES_FILENAME="Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_mono_export_templates.tpz"
+          echo "Downloading export templates..."
+
+          wget -q \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/${TEMPLATES_FILENAME}" \
+            -O templates.tpz
+
+          TEMPLATES_DIR="${HOME}/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}.mono"
+          mkdir -p "${TEMPLATES_DIR}"
+
+          unzip -q templates.tpz -d /tmp/godot-templates
+          mv /tmp/godot-templates/templates/* "${TEMPLATES_DIR}/"
+
+          echo "Templates installed to: ${TEMPLATES_DIR}"
+
+      # ── Build C# solution ────────────────────────────────────────────────────
+      - name: Restore .NET dependencies
+        run: dotnet restore
+
+      - name: Build C# solution (ExportRelease)
+        run: |
+          dotnet build \
+            --configuration ExportRelease \
+            --no-restore
+
+      # ── Export for Web ───────────────────────────────────────────────────────
+      - name: Create export output directory
+        run: mkdir -p "${{ env.BUILD_DIR }}"
+
+      - name: Export project for Web
+        run: |
+          echo "--- Godot web export starting ---"
+          echo "Preset : ${{ env.EXPORT_PRESET }}"
+          echo "Output : $(pwd)/${{ env.BUILD_DIR }}/index.html"
+
+          godot \
+            --headless \
+            --verbose \
+            --export-release "${{ env.EXPORT_PRESET }}" \
+            "$(pwd)/${{ env.BUILD_DIR }}/index.html" \
+            2>&1 | tee godot-export.log
+
+          echo "--- Godot web export finished ---"
+
+      - name: Verify export output
+        run: |
+          echo "Contents of ${{ env.BUILD_DIR }}:"
+          ls -lh "${{ env.BUILD_DIR }}/"
+
+          if [ ! -f "${{ env.BUILD_DIR }}/index.html" ]; then
+            echo "::error::Export failed — index.html was not produced."
+            echo "--- Last 60 lines of Godot export log ---"
+            tail -60 godot-export.log
+            exit 1
+          fi
+
+          echo "Export verified successfully."
+
+      # ── GitHub Pages ─────────────────────────────────────────────────────────
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ env.BUILD_DIR }}
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

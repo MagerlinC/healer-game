@@ -1,5 +1,6 @@
 using Godot;
 using healerfantasy;
+using healerfantasy.SpellResources;
 
 /// <summary>
 /// The four party health frames rendered at the bottom of the screen.
@@ -24,8 +25,21 @@ public partial class PartyFrames : Control
 		(GameConstants.WizardName, new Color(0.20f, 0.50f, 0.95f), 80f) // sapphire-blue
 	};
 
+	// Slot indices (must match MemberDefs order)
+	const int TemplarSlot = 0;
+
 	// ── node refs ─────────────────────────────────────────────────────────────
 	readonly PartyFrame[] _frames = new PartyFrame[4];
+
+	// True while a boss cast windup is in progress (suppresses tank-only highlight).
+	bool _specialCastActive;
+
+	// The party member the player has locked as their default healing target.
+	// Null = no lock; spells fall back to the caster when nothing is hovered.
+	Character? _defaultTarget;
+
+	// The exact party member currently selected by the boss for melee attacks.
+	string? _currentBossMeleeTargetName = GameConstants.TemplarName;
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 	public override void _Ready()
@@ -53,9 +67,132 @@ public partial class PartyFrames : Control
 			_frames[i].SizeFlagsVertical = SizeFlags.ShrinkEnd;
 			hbox.AddChild(_frames[i]);
 		}
+
+		// ── default-target click wiring ──────────────────────────────────────
+		foreach (var frame in _frames)
+			frame.OnDefaultTargetClicked = HandleDefaultTargetClicked;
+
+		// ── default targeting state ───────────────────────────────────────────
+		// Keep the exact current boss melee target outlined in red between
+		// special boss casts.
+		UpdateMeleeHighlight();
+
+		// ── Templar death tracking ───────────────────────────────────────────
+		// Re-evaluate the default melee highlight whenever a party member dies so
+		// the UI never keeps a dead frame marked as the boss's target.
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(Character.Died),
+			Callable.From((Character dead) =>
+			{
+				if (dead.IsFriendly && dead.CharacterName == _currentBossMeleeTargetName)
+				{
+					_currentBossMeleeTargetName = null;
+					UpdateMeleeHighlight();
+				}
+			}));
+
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(Character.BossMeleeTargetChanged),
+			Callable.From((string targetName) =>
+			{
+				_currentBossMeleeTargetName = string.IsNullOrEmpty(targetName)
+					? null
+					: targetName;
+				UpdateMeleeHighlight();
+			}));
+
+		// ── boss cast-windup targeting ────────────────────────────────────────
+		// Re-use the existing CastWindupStarted / CastWindupEnded signal pair that
+		// every boss already emits.  When a windup begins we highlight the whole
+		// party (the target is often random or AoE); when it ends we restore the
+		// tank-only default.
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(CrystalKnight.CastWindupStarted),
+			Callable.From((string _n, Texture2D _t, float _d) => OnCastWindupStarted()));
+
+		GlobalAutoLoad.SubscribeToSignal(
+			nameof(CrystalKnight.CastWindupEnded),
+			Callable.From(OnCastWindupEnded));
+	}
+
+	// ── private ───────────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Recomputes which frame should show the default melee-target outline.
+	/// Suppressed during special-cast windups because those temporarily light up
+	/// every party member instead.
+	/// </summary>
+	void UpdateMeleeHighlight()
+	{
+		if (_specialCastActive)
+			return;
+
+		var meleeTargetIndex = GetCurrentMeleeTargetIndex();
+		for (var i = 0; i < _frames.Length; i++)
+			_frames[i].SetBossTargeted(i == meleeTargetIndex);
+	}
+
+	int GetCurrentMeleeTargetIndex()
+	{
+		for (var i = 0; i < _frames.Length; i++)
+			if (_frames[i].BoundCharacter?.IsAlive == true &&
+			    _frames[i].BoundCharacter.CharacterName == _currentBossMeleeTargetName)
+				return i;
+
+		return -1;
+	}
+
+	/// <summary>
+	/// Invoked when the player left-clicks a party frame.
+	/// Clicking the already-locked frame clears the lock; clicking any other frame
+	/// moves the lock to that frame.
+	/// </summary>
+	void HandleDefaultTargetClicked(Character? clicked)
+	{
+		// Toggle off when clicking the currently-locked frame.
+		var isSameTarget = _defaultTarget != null
+		                   && clicked?.CharacterName == _defaultTarget.CharacterName;
+
+		_defaultTarget = isSameTarget ? null : clicked;
+
+		foreach (var frame in _frames)
+			frame.SetIsDefaultTarget(
+				_defaultTarget != null &&
+				frame.BoundCharacter?.CharacterName == _defaultTarget.CharacterName);
+	}
+
+	/// <summary>
+	/// Called when any boss begins a telegraphed cast wind-up.
+	/// Highlights every party frame to warn the player that a special ability
+	/// is incoming and the target is not yet known (or is the whole party).
+	/// </summary>
+	void OnCastWindupStarted()
+	{
+		_specialCastActive = true;
+		foreach (var frame in _frames)
+			frame.SetBossTargeted(true);
+	}
+
+	/// <summary>
+	/// Called when the boss cast wind-up ends (ability fires or is cancelled).
+	/// Restores the default melee-target highlight.
+	/// </summary>
+	void OnCastWindupEnded()
+	{
+		_specialCastActive = false;
+		// Restore the tank-only default — but only if the Templar is still alive.
+		// If the tank has died, the boss auto-attacks random members and there is no
+		// reliable single frame to keep highlighted.
+		UpdateMeleeHighlight();
 	}
 
 	// ── public API ────────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Returns the player's currently locked default healing target, or <c>null</c>
+	/// if no frame has been clicked to lock it in.
+	/// </summary>
+	public Character? GetDefaultTarget() => _defaultTarget;
 
 	/// <summary>
 	/// Register a <see cref="Character"/> node with a UI slot so that hovering
@@ -65,6 +202,7 @@ public partial class PartyFrames : Control
 	{
 		if (slot < 0 || slot >= _frames.Length) return;
 		_frames[slot].BindCharacter(character);
+		UpdateMeleeHighlight();
 	}
 
 	/// <summary>

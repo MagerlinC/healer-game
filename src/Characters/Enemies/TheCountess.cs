@@ -405,7 +405,7 @@ public partial class TheCountess : EnemyCharacter
 
 	void PerformMeleeAttack()
 	{
-		var target = FindTank() ?? PickRandomPartyMember();
+		var target = SelectCurrentMeleeTarget();
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Melee;
