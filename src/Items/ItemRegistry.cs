@@ -41,12 +41,14 @@ public static class ItemRegistry
 		// Rings
 		(null, () => new RulersSignet()),
 		(null, () => new BandOfAffliction()),
+		(null, () => new BandOfRejuvenation()),
 		(null, () => new RingOfMending()),
 		(null, () => new SeersBand()),
 		(null, () => new RingOfTriage()),
 		(null, () => new PreciseRing()),
 		(null, () => new CrystalRing()),
 		(null, () => new BandOfArcaneRecovery()),
+		(null, () => new SignetOfTheOak()),
 
 		// Amulets
 		(null, () => new TheHeartOfLight()),
@@ -58,6 +60,14 @@ public static class ItemRegistry
 		(null, () => new ChainOfReflection())
 
 	];
+
+	/// <summary>
+	/// Dev-only: one factory delegate per unique item in the loot table.
+	/// Each call to the delegate returns a fresh item instance.
+	/// Used by <see cref="healerfantasy.UI.DevBossPopup"/> to populate the item picker.
+	/// </summary>
+	public static IReadOnlyList<Func<EquippableItem>> AllItemFactories { get; } =
+		LootTable.Select(e => e.Factory).ToList();
 
 	const float NothingWeight = 0.25f;
 	const float RareWeight = 0.3f;

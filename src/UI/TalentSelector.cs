@@ -38,17 +38,22 @@ public partial class TalentSelector : CanvasLayer
 	/// <summary>School display order and per-school accent colours.</summary>
 	static readonly (SpellSchool School, string Name, Color Accent)[] SchoolOrder =
 	{
-		(SpellSchool.Generic, "General", new Color(0.70f, 0.65f, 0.60f)),
-		(SpellSchool.Holy, "Holy", new Color(0.95f, 0.85f, 0.40f)),
-		(SpellSchool.Nature, "Nature", new Color(0.40f, 0.80f, 0.35f)),
-		(SpellSchool.Void, "Void", new Color(0.65f, 0.35f, 0.85f)),
-		(SpellSchool.Chronomancy, "Chronomancy", new Color(0.35f, 0.75f, 0.90f))
+		(SpellSchool.Generic,     "General",     new Color(0.70f, 0.65f, 0.60f)),
+		(SpellSchool.Holy,        "Holy",        new Color(0.95f, 0.85f, 0.40f)),
+		(SpellSchool.Nature,      "Nature",      new Color(0.40f, 0.80f, 0.35f)),
+		(SpellSchool.Void,        "Void",        new Color(0.65f, 0.35f, 0.85f)),
+		(SpellSchool.Chronomancy, "Chronomancy", new Color(0.35f, 0.75f, 0.90f)),
+		(SpellSchool.Sanguimancy, "Sanguimancy", new Color(0.85f, 0.15f, 0.15f)),
 	};
 
 	// ── state ─────────────────────────────────────────────────────────────────
 	Player _player;
 	Control _overlay;
 	bool _isOpen;
+	bool _devMode;
+
+	/// <summary>Whether the talent selector is currently open (used by DevBossPopup).</summary>
+	public bool IsOpen => _isOpen;
 
 	/// <summary>Flat list of every slot — used for sync and apply passes.</summary>
 	readonly List<TalentSlot> _slots = new();
@@ -101,28 +106,51 @@ public partial class TalentSelector : CanvasLayer
 
 	void Open()
 	{
-		if (_player == null) return;
-		if (GetTree().Paused) return; // another panel is already open
+		if (_player == null && !_devMode) return;
+		if (!_devMode && GetTree().Paused) return; // another panel is already open
 		SyncSlotsFromPlayer();
 		_isOpen = true;
 		_overlay.Visible = true;
-		GetTree().Paused = true;
+		if (!_devMode) GetTree().Paused = true;
 	}
 
-	void Close()
+	/// <summary>
+	/// Opens the talent selector in dev mode: no Player required, no tree pause.
+	/// Reads current selections from <see cref="RunState.Instance.SelectedTalentDefs"/>
+	/// and writes back to it on close.
+	/// Only call this from debug-gated code paths (e.g. DevBossPopup).
+	/// </summary>
+	public void OpenDev()
+	{
+		if (_isOpen) return;
+		_devMode = true;
+		Open();
+	}
+
+	/// <summary>Closes the talent selector and applies the current selection.</summary>
+	public void Close()
 	{
 		_isOpen = false;
 		_overlay.Visible = false;
-		GetTree().Paused = false;
-		ApplyTalentsToPlayer();
+		if (!_devMode) GetTree().Paused = false;
+		ApplyTalentsToPlayer(); // must run while _devMode is still set
+		_devMode = false;
 	}
 
 	// ── talent synchronisation ─────────────────────────────────────────────────
 	void SyncSlotsFromPlayer()
 	{
 		var active = new HashSet<string>();
-		foreach (var t in _player.Talents)
-			active.Add(t.Name);
+		if (_devMode)
+		{
+			foreach (var def in RunState.Instance.SelectedTalentDefs)
+				active.Add(def.Name);
+		}
+		else
+		{
+			foreach (var t in _player.Talents)
+				active.Add(t.Name);
+		}
 
 		foreach (var slot in _slots)
 			slot.SetSelected(active.Contains(slot.Definition.Name));
@@ -133,9 +161,17 @@ public partial class TalentSelector : CanvasLayer
 
 	void ApplyTalentsToPlayer()
 	{
+		if (_devMode)
+		{
+			// Write directly to RunState — the Player will pick it up when World loads.
+			RunState.Instance.SelectedTalentDefs.Clear();
+			foreach (var def in _slots.Where(s => s.IsSelected).Select(s => s.Definition))
+				RunState.Instance.SelectedTalentDefs.Add(def);
+			return;
+		}
+
 		_player.Talents.Clear();
 		var selectedTalentDefs = _slots.Where(s => s.IsSelected).Select(s => s.Definition).ToList();
-
 		_player.Talents = selectedTalentDefs.Select(s => s.CreateTalent()).ToList();
 	}
 

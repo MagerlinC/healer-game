@@ -75,7 +75,7 @@ public partial class ManaOrb : Control
 	void OnManaChanged(float current, float max)
 	{
 		_currentMana = Mathf.Max(current, 0f);
-		_maxMana = Mathf.Max(max, 1f);
+		_maxMana = max;
 		UpdateValueLabel();
 		QueueRedraw();
 	}

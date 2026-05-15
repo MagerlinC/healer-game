@@ -533,8 +533,9 @@ public abstract partial class Character : CharacterBody2D
 	/// <summary>Subtract mana, clamped at 0.</summary>
 	public void SpendMana(float amount)
 	{
+		var effectiveMax = GetCharacterStats().MaxMana;
 		CurrentMana = Mathf.Max(0f, CurrentMana - amount);
-		EmitSignalManaChanged(CharacterName, CurrentMana, MaxMana);
+		EmitSignalManaChanged(CharacterName, CurrentMana, effectiveMax);
 	}
 
 	public void SpendLife(float amount)
@@ -543,12 +544,24 @@ public abstract partial class Character : CharacterBody2D
 		EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
 	}
 
-
-	/// <summary>Restore mana, clamped at MaxMana.</summary>
+	/// <summary>Restore mana, clamped at the effective MaxMana (including item/spell bonuses).</summary>
 	public void RestoreMana(float amount)
 	{
-		CurrentMana = Mathf.Min(CurrentMana + amount, MaxMana);
-		EmitSignalManaChanged(CharacterName, CurrentMana, MaxMana);
+		var effectiveMax = GetCharacterStats().MaxMana;
+		CurrentMana = Mathf.Min(CurrentMana + amount, effectiveMax);
+		EmitSignalManaChanged(CharacterName, CurrentMana, effectiveMax);
+	}
+
+	/// <summary>
+	/// Re-initializes <see cref="CurrentMana"/> to the current effective maximum,
+	/// accounting for all item and talent bonuses. Call after equipping items or
+	/// applying any permanent stat changes that affect MaxMana.
+	/// </summary>
+	protected void ReinitializeMana()
+	{
+		var effectiveMax = GetCharacterStats().MaxMana;
+		CurrentMana = effectiveMax;
+		EmitSignalManaChanged(CharacterName, CurrentMana, effectiveMax);
 	}
 
 	// ── private helpers ──────────────────────────────────────────────────────

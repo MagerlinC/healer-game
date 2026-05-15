@@ -1,4 +1,5 @@
 using Godot;
+using healerfantasy.Runes;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;
@@ -27,7 +28,7 @@ public partial class BossQueenSnowstormSpell : SpellResource
 	public float DamagePerTick = 20f;
 
 	/// <summary>How long the channel persists after the cast completes.</summary>
-	public float ChannelDuration = 8f;
+	public float ChannelDuration = 6f;
 
 	/// <summary>Reference to the Queen — must be set before SpellPipeline.Cast is called.</summary>
 	public Character Boss { get; set; }
@@ -59,7 +60,8 @@ public partial class BossQueenSnowstormSpell : SpellResource
 			return;
 		}
 
-		var channel = new SnowstormChannelNode(Boss, ChannelDuration, DamagePerTick)
+		var purityRuneActive = RunState.Instance.IsRuneActive(RuneIndex.Purity);
+		var channel = new SnowstormChannelNode(Boss, purityRuneActive ? ChannelDuration + 2f : ChannelDuration, DamagePerTick)
 		{
 			OnChannelFinished = () => (Boss as QueenOfTheFrozenWastes)?.OnSnowstormChannelEnded()
 		};

@@ -9,7 +9,7 @@ public partial class VoidsEmbraceSpell : UltimateSpellResource
 {
 	[Export] public float HealthDrainPerStack = 1f;
 	[Export] public float HastePerStack = 1f;
-	[Export] public float VoidDamageIncreasePerStack = 1f;
+	[Export] public float VoidDamageIncreasePerStack = 2f;
 
 	/// <summary>
 	/// Requirement: cast 5 void spells.
@@ -55,5 +55,8 @@ public partial class VoidsEmbraceSpell : UltimateSpellResource
 		Progress = Mathf.Min(Progress + 1f, Requirement);
 	}
 
-	public override bool CanCast(SpellContext ctx) => IsRequirementMet;
+	public override bool CanCast(SpellContext ctx)
+	{
+		return IsRequirementMet;
+	}
 }

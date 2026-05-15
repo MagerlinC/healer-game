@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 using healerfantasy;
+using healerfantasy.CombatLog;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
@@ -59,7 +60,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 	[Export] public float ChargeWindupDuration = 1.2f; // red line shown before each charge
 	[Export] public float ChargeSpeed = 900f;
 	[Export] public float ChargeDamage = 50f;
-	[Export] public float ChargeHitWidth = 28f; // half-width of the danger strip
+	[Export] public float ChargeHitWidth = 56f; // width of the danger strip
 
 	[Export] public float JumpSlamInterval = 20f;
 	[Export] public float JumpSlamDamage = 45f;
@@ -329,6 +330,17 @@ public partial class TheFrozenTerror : EnemyCharacter
 		// Hit!
 		healer.TakeDamage(ChargeDamage);
 		healer.RaiseFloatingCombatText(ChargeDamage, false, (int)SpellSchool.Generic, false);
+		CombatLog.Record(new CombatEventRecord
+		{
+			Timestamp = Time.GetTicksMsec() / 1000.0,
+			SourceName = CharacterName,
+			TargetName = healer.CharacterName,
+			AbilityName = "Glacial Charge",
+			Amount = ChargeDamage,
+			Description = "The Frozen Terror charges from wall to wall, trampling anyone caught in its path.",
+			Type = CombatEventType.Damage,
+			IsCrit = false
+		});
 		GD.Print($"[FrozenTerror] Charge hit healer for {ChargeDamage} damage.");
 	}
 
@@ -464,6 +476,17 @@ public partial class TheFrozenTerror : EnemyCharacter
 		if (!target.IsAlive) return;
 		target.TakeDamage(JumpSlamDamage);
 		target.RaiseFloatingCombatText(JumpSlamDamage, false, (int)SpellSchool.Generic, false);
+		CombatLog.Record(new CombatEventRecord
+		{
+			Timestamp = Time.GetTicksMsec() / 1000.0,
+			SourceName = CharacterName,
+			TargetName = target.CharacterName,
+			AbilityName = "Glacial Slam",
+			Amount = JumpSlamDamage,
+			Description = "The Frozen Terror leaps from target to target, slamming down on them for heavy damage.",
+			Type = CombatEventType.Damage,
+			IsCrit = false
+		});
 		GD.Print($"[FrozenTerror] Glacial Slam hit {target.CharacterName} for {JumpSlamDamage} damage.");
 	}
 
@@ -490,6 +513,17 @@ public partial class TheFrozenTerror : EnemyCharacter
 				{
 					_meleeTarget.TakeDamage(MeleeDamage);
 					_meleeTarget.RaiseFloatingCombatText(MeleeDamage, false, (int)SpellSchool.Generic, false);
+					CombatLog.Record(new CombatEventRecord
+					{
+						Timestamp = Time.GetTicksMsec() / 1000.0,
+						SourceName = CharacterName,
+						TargetName = _meleeTarget.CharacterName,
+						AbilityName = "Melee Attack",
+						Amount = MeleeDamage,
+						Description = "The Frozen Terror strikes the target.",
+						Type = CombatEventType.Damage,
+						IsCrit = false
+					});
 					GD.Print($"[FrozenTerror] Melee hit {_meleeTarget.CharacterName} for {MeleeDamage}.");
 				}
 

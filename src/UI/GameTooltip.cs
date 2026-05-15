@@ -44,7 +44,7 @@ public partial class GameTooltip : CanvasLayer
 	public override void _Ready()
 	{
 		Instance = this;
-		Layer = 50; // above all game/UI layers
+		Layer = 200; // above all game/UI layers, including dev sub-panels (Layer 51)
 		ProcessMode = ProcessModeEnum.Always; // works while game is paused
 
 		var style = new StyleBoxFlat();

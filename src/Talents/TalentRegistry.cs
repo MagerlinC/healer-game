@@ -193,7 +193,7 @@ public static class TalentRegistry
 			Name = "Acceleration",
 			Description =
 				"Casting a chronomancy spell increases haste for 10%. Stacks up to 3 times.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_17.png",
+			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_15.png",
 			School = SpellSchool.Chronomancy,
 			TalentRow = 0,
 			Configure = (t, icon) =>
@@ -303,7 +303,7 @@ public static class TalentRegistry
 		{
 			Name = "Crimson Rebound",
 			Description = "After casting a Sanguimancy spell, recover 40% of its health cost as healing over 5 seconds.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_17.png",
+			IconPath = AssetConstants.TalentIconAssets + "sanguimancy/crimson-rebound.png",
 			School = SpellSchool.Sanguimancy,
 			TalentRow = 0,
 			Configure = (t, icon) =>

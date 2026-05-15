@@ -18,7 +18,7 @@ public class RingOfMending : EquippableItem
 	public RingOfMending()
 	{
 		Name = "Ring of Mending";
-		Description = $"+{_healingBonus:F0}% healing";
+		Description = $"+{100 * _healingBonus:F0}% healing";
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Ring1;
 		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(2));

@@ -224,6 +224,13 @@ public partial class Player : Character
 		foreach (var item in ItemStore.GetEquippedItems())
 			EquippedItems.Add(item);
 
+		// Re-initialize mana now that items are equipped. Character._Ready() set
+		// CurrentMana to the base MaxMana before items were added, so any item
+		// that raises MaxMana (e.g. Crystal Staff, Staff of the Archmage, Crystal Ring)
+		// would otherwise leave the player starting a scene with mana capped below
+		// their actual effective maximum.
+		ReinitializeMana();
+
 		// Casting SFX — looping player restarts itself while _isCasting is true.
 		_castingAudioPlayer = new AudioStreamPlayer();
 		_castingAudioPlayer.Stream = GD.Load<AudioStream>(AssetConstants.CastingSfx);

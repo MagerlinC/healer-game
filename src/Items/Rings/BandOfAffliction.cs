@@ -19,7 +19,7 @@ namespace healerfantasy.Items.Rings;
 /// </summary>
 public class BandOfAffliction : EquippableItem
 {
-	readonly float _durationExtension = 0.5f;
+	readonly float _durationExtension = 5f;
 	public override string ItemId => "band_of_affliction";
 
 	public BandOfAffliction()
