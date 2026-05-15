@@ -9,7 +9,7 @@ namespace healerfantasy.SpellResources;
 [Godot.GlobalClass]
 public partial class BossAcidSpitSpell : SpellResource
 {
-	public float DamageAmount = 45f;
+	public float DamageAmount = 40f;
 
 	public BossAcidSpitSpell()
 	{

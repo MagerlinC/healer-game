@@ -430,7 +430,8 @@ public partial class Player : Character
 			return;
 		}
 
-		var canCast = IsAlive && _globalCooldownTimer == 0f && !isMoving;
+
+		var canCast = IsAlive && _globalCooldownTimer == 0f;
 		if (!canCast) return;
 
 		// ── Ultimate spell (bound to "ultimate", default key R) ───────────────────
@@ -471,6 +472,7 @@ public partial class Player : Character
 		}
 
 		var spellToCast = GetSpellForInput();
+		if (spellToCast?.CastTime > 0f && isMoving) return;
 
 		if (spellToCast is not null)
 		{

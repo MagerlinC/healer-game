@@ -35,6 +35,7 @@ public partial class HolyProtectionEffect : CharacterEffect, IConditionalCharact
 		: base(GameConstants.InfiniteDuration, 0f) // Permanent — managed by combat lifetime, not a timer.
 	{
 		EffectId = "HolyProtection";
+		Description = $"Damage taken reduced by {damageReductionAmount}% if under the effect of a holy spell";
 		DamageReductionAmount = damageReductionAmount;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(2));
 	}
