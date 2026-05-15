@@ -324,6 +324,8 @@ public abstract partial class LoadoutController : Node2D
 	/// <summary>
 	/// Scales and positions a full-screen background sprite, then returns the
 	/// world-space left and right edges of the visible area for player clamping.
+	/// The sprite keeps its bottom edge aligned with the camera so wider/taller
+	/// aspect ratios crop from the top instead of hiding the floor.
 	/// </summary>
 	protected (float BgLeft, float BgRight) SetupBackground(string texturePath)
 	{
@@ -340,6 +342,12 @@ public abstract partial class LoadoutController : Node2D
 		};
 		var bgScale = Mathf.Max(worldW / bg.Texture.GetWidth(), worldH / bg.Texture.GetHeight());
 		bg.Scale = new Vector2(bgScale, bgScale);
+
+		var scaledHeight = bg.Texture.GetHeight() * bgScale;
+		bg.Position = new Vector2(
+			camera.Position.X,
+			camera.Position.Y - (scaledHeight - worldH) / 2f);
+
 		AddChild(bg);
 
 		return (camera.Position.X - worldW / 2f, camera.Position.X + worldW / 2f);

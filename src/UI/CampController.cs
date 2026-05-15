@@ -31,7 +31,7 @@ public partial class CampController : LoadoutController
 
 	protected override void SetupScene()
 	{
-		var (bgLeft, bgRight) = SetupBackground(AssetConstants.OverworldBackgroundPath);
+		var (bgLeft, bgRight) = SetupBackground(AssetConstants.CampBackgroundPath);
 
 		// ── Armory overlay panel ──────────────────────────────────────────────
 		// Built before the interactibles so the panel reference is ready to wire.
