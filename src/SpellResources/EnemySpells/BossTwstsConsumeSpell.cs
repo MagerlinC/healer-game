@@ -34,7 +34,7 @@ public partial class BossTwstsConsumeSpell : SpellResource
 		CastTime = 0f;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets +
 		                          "enemy/that-which-swallowed-the-stars/consume.png");
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 		_targetCount = targetCount;
 	}
 

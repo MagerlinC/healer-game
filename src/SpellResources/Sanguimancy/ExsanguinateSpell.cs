@@ -38,6 +38,7 @@ public partial class ExsanguinateSpell : SpellResource
 		HealthCost = 5f;
 		Cooldown = 12f;
 		School = SpellSchool.Sanguimancy;
+		TargetingType = TargetingType.None;
 		Tags = SpellTags.Damage;
 		RequiredSchoolPoints = 2;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/exsanguinate.png");
@@ -76,6 +77,7 @@ public partial class ExsanguinateSpell : SpellResource
 			if (drain > 0f)
 				totalDrained += drain;
 		}
+
 		ctx.BaseValue = totalDrained * DamageMultiplier;
 	}
 

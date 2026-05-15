@@ -21,7 +21,7 @@ public partial class TouchOfAffliction : SpellResource
 		School = SpellSchool.Void;
 		Tags = SpellTags.Damage;
 		RequiredSchoolPoints = 1;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/touch-of-affliction.png");
 	}
 

@@ -30,7 +30,7 @@ public partial class ManaLoopSpell : SpellResource
 		School = SpellSchool.Chronomancy;
 		Tags = SpellTags.Healing | SpellTags.Duration;
 		RequiredSchoolPoints = 1;
-		EffectType = EffectType.Helpful;
+		TargetingType = TargetingType.Self;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/mana-loop.png");
 	}
 

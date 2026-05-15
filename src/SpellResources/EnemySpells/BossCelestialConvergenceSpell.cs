@@ -24,7 +24,7 @@ public partial class BossCelestialConvergenceSpell : SpellResource
 		ManaCost = 0f;
 		CastTime = 0f;
 		Parryable = true;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	public override float GetBaseValue()

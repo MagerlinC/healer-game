@@ -29,7 +29,7 @@ public partial class BossTwstsVoidCataclysmSpell : SpellResource
 		CastTime = 0f;
 		Parryable = true;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/that-which-swallowed-the-stars/void-cataclysm.png");
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	public override float GetBaseValue()

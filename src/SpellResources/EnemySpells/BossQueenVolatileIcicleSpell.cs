@@ -39,7 +39,7 @@ public partial class BossQueenVolatileIcicleSpell : SpellResource
 		Tags = SpellTags.Damage;
 		ManaCost = 0f;
 		CastTime = 1.5f;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	public override void Apply(SpellContext ctx)

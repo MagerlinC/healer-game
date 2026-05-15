@@ -71,7 +71,7 @@ public partial class BossBloodPrinceSanguineSiphonSpell : SpellResource
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/the-blood-prince/sanguine-siphon.png");
 		ManaCost = 0f;
 		CastTime = 1.0f;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	// ── pipeline overrides ────────────────────────────────────────────────────

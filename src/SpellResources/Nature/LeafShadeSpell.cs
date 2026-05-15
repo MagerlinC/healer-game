@@ -21,7 +21,7 @@ public partial class LeafShadeSpell : SpellResource
 		School = SpellSchool.Nature;
 		Tags = SpellTags.Healing;
 		RequiredSchoolPoints = 2;
-		EffectType = EffectType.Helpful;
+		TargetingType = TargetingType.Ally;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "nature/seeds-of-spring.png");
 	}
 

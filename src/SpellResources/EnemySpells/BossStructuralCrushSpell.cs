@@ -31,7 +31,7 @@ public partial class BossStructuralCrushSpell : SpellResource
 		CastTime = 0f;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/crystal-knight/structural-crush.png");
 		Parryable = true;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	public override float GetBaseValue()

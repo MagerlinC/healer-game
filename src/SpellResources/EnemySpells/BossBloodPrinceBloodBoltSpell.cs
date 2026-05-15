@@ -19,7 +19,7 @@ public partial class BossBloodPrinceBloodBoltSpell : SpellResource
 		School = SpellSchool.Void;
 		ManaCost = 0f;
 		CastTime = 0f;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	public override float GetBaseValue()

@@ -30,7 +30,7 @@ public partial class HolyNovaSpell : SpellResource
 		School = SpellSchool.Holy;
 		Tags = SpellTags.Healing | SpellTags.Light | SpellTags.GroupSpell;
 		RequiredSchoolPoints = 2;
-		EffectType = EffectType.Helpful;
+		TargetingType = TargetingType.Ally;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "holy/holy-nova.png");
 	}
 

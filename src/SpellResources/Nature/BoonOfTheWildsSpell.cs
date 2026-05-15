@@ -29,7 +29,7 @@ public partial class BoonOfTheWildsSpell : SpellResource
 		School = SpellSchool.Nature;
 		Tags = SpellTags.Healing;
 		RequiredSchoolPoints = 2;
-		EffectType = EffectType.Helpful;
+		TargetingType = TargetingType.Ally;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "healer/healer6.png");
 	}
 

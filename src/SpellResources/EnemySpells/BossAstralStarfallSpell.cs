@@ -14,15 +14,18 @@ public partial class BossAstralStarfallSpell : SpellResource
 
 	public BossAstralStarfallSpell()
 	{
-		Name        = "Starfall";
+		Name = "Starfall";
 		Description = "A condensed bolt of starlight streaks toward a random party member.";
-		Tags        = SpellTags.Damage;
-		ManaCost    = 0f;
-		CastTime    = 0f;
-		EffectType  = EffectType.Harmful;
+		Tags = SpellTags.Damage;
+		ManaCost = 0f;
+		CastTime = 0f;
+		TargetingType = TargetingType.Enemy;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	public override void Apply(SpellContext ctx)
 	{

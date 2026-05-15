@@ -27,7 +27,7 @@ public partial class DivineAegisSpell : SpellResource
 		School = SpellSchool.Holy;
 		RequiredSchoolPoints = 1;
 		Tags = SpellTags.Healing;
-		EffectType = EffectType.Helpful;
+		TargetingType = TargetingType.Ally;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "holy/aura-of-radiance.png");
 	}
 

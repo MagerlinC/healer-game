@@ -34,7 +34,7 @@ public partial class BossBloodPrinceVoidDrainSpell : SpellResource
 		School = SpellSchool.Void;
 		ManaCost = 0f;
 		CastTime = 0f;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	/// <summary>Targets every living party member.</summary>

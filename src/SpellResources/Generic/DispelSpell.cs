@@ -21,7 +21,7 @@ public partial class DispelSpell : SpellResource
 		CastTime = 0f;
 		Cooldown = 8f;
 		School = SpellSchool.Generic;
-		EffectType = EffectType.Helpful;
+		TargetingType = TargetingType.Ally;
 		Tags = SpellTags.None;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "generic/dispel.png");
 	}

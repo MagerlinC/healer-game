@@ -22,7 +22,7 @@ public partial class ConsumingVoid : SpellResource
 		School = SpellSchool.Void;
 		Tags = SpellTags.Damage;
 		RequiredSchoolPoints = 2;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/consuming-void.png");
 	}
 

@@ -38,7 +38,7 @@ public partial class NourishSpell : SpellResource
 		School = SpellSchool.Nature;
 		Tags = SpellTags.Healing;
 		RequiredSchoolPoints = 1;
-		EffectType = EffectType.Helpful;
+		TargetingType = TargetingType.Ally;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "nature/swarm-of-locusts.png");
 	}
 

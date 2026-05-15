@@ -22,10 +22,13 @@ public partial class BossBloodKnightCleaveSpell : SpellResource
 		Tags = SpellTags.Damage;
 		ManaCost = 0f;
 		CastTime = 0f;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	/// <summary>
 	/// Targets the Templar and Assassin by name. Falls back to the full living

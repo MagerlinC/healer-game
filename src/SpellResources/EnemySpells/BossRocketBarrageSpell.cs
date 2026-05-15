@@ -20,7 +20,7 @@ public partial class BossRocketBarrageSpell : SpellResource
 		Tags = SpellTags.Damage;
 		ManaCost = 0f;
 		CastTime = 0f;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	public override float GetBaseValue()

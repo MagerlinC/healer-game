@@ -23,7 +23,7 @@ public partial class BossFelBurnSpell : SpellResource
 		School = SpellSchool.Nature;
 		ManaCost = 0f;
 		CastTime = 0f;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/flying-demon/fel-burn.png");
 	}
 

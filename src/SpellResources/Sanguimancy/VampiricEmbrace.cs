@@ -31,7 +31,7 @@ public partial class VampiricEmbrace : UltimateSpellResource
 		Cooldown = 20f;
 		School = SpellSchool.Sanguimancy;
 		RequiredSchoolPoints = 3;
-		EffectType = EffectType.Helpful;
+		TargetingType = TargetingType.Self;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/vampiric-embrace.png");
 	}
 

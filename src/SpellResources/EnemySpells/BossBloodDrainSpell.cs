@@ -31,7 +31,7 @@ public partial class BossBloodDrainSpell : SpellResource
 		CastTime = 0f;
 		Parryable = true;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/blood-knight/blood-drain.png");
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	public override float GetBaseValue()

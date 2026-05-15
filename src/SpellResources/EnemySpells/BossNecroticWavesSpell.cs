@@ -29,7 +29,7 @@ public partial class BossNecroticWavesSpell : SpellResource
 		CastTime = 0f;
 		Parryable = false;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/flying-skull/banshee-wail.png");
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	public override float GetBaseValue()

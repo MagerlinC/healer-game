@@ -23,7 +23,7 @@ public partial class BossCrushedSpell : SpellResource
 		Tags = SpellTags.Damage | SpellTags.Duration;
 		ManaCost = 0f;
 		CastTime = 0f;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/mecha-golem/crushed.png");
 	}
 

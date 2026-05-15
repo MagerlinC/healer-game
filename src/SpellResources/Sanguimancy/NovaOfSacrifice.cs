@@ -19,6 +19,7 @@ public partial class NovaOfSacrifice : SpellResource
 		CastTime = 2.0f;
 		Cooldown = 8f;
 		School = SpellSchool.Sanguimancy;
+		TargetingType = TargetingType.None;
 		Tags = SpellTags.Healing;
 		RequiredSchoolPoints = 2;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/nova-of-sacrifice.png");

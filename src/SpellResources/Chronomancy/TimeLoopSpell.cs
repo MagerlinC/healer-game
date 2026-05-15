@@ -29,7 +29,7 @@ public partial class TimeLoopSpell : SpellResource
 		School = SpellSchool.Chronomancy;
 		Tags = SpellTags.Damage | SpellTags.Duration;
 		RequiredSchoolPoints = 1;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/time-loop.png");
 	}
 

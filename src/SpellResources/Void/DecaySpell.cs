@@ -20,7 +20,7 @@ public partial class DecaySpellResource : SpellResource
 		CastTime = 0.0f;
 		// HealOverTime implies Healing; the per-tick value is what gets modified.
 		Tags = SpellTags.Damage | SpellTags.Duration;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 		School = SpellSchool.Void;
 		RequiredSchoolPoints = 1;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/decay.png");

@@ -30,7 +30,7 @@ public partial class ArchangelOfLightSpell : UltimateSpellResource
 		School = SpellSchool.Holy;
 		Tags = SpellTags.Healing;
 		RequiredSchoolPoints = 3;
-		EffectType = EffectType.Helpful;
+		TargetingType = TargetingType.Ally;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "holy/archangel-of-light.png");
 	}
 

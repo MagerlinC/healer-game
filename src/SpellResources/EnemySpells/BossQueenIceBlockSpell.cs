@@ -38,7 +38,7 @@ public partial class BossQueenIceBlockSpell : SpellResource
 		Tags = SpellTags.None;
 		ManaCost = 0f;
 		CastTime = 0f;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	public override void Apply(SpellContext ctx)

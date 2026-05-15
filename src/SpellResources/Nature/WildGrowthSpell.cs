@@ -25,6 +25,7 @@ public partial class WildGrowthSpell : SpellResource
 		Cooldown = 8f;
 		School = SpellSchool.Nature;
 		RequiredSchoolPoints = 1;
+		TargetingType = TargetingType.None;
 		Tags = SpellTags.Healing | SpellTags.Duration | SpellTags.GroupSpell;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "nature/wild-growth.png");
 	}

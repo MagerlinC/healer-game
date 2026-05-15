@@ -26,7 +26,7 @@ public partial class PoisonBoltSpell : SpellResource
 		CastTime = 0.0f;
 		School = SpellSchool.Nature;
 		Tags = SpellTags.Damage | SpellTags.Duration;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "nature/poison-bolt.png");
 	}
 

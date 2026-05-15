@@ -30,7 +30,7 @@ public partial class BossCountessCrimsonCurseSpell : SpellResource
 		ManaCost = 0f;
 		CastTime = 0f;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/the-countess/crimson-curse.png");
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	public override void Apply(SpellContext ctx)

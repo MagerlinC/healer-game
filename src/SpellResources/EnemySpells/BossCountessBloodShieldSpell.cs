@@ -24,7 +24,7 @@ public partial class BossCountessBloodShieldSpell : SpellResource
 		ManaCost = 0f;
 		CastTime = 0f;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/the-countess/blood-shield.png");
-		EffectType = EffectType.Helpful;
+		TargetingType = TargetingType.Ally;
 	}
 
 	public override void Apply(SpellContext ctx)

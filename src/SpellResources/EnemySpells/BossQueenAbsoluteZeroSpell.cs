@@ -34,7 +34,7 @@ public partial class BossQueenAbsoluteZeroSpell : SpellResource
 		ManaCost = 0f;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/queen-of-the-frozen-wastes/absolute-zero.png");
 		CastTime = 0f; // resolved manually, not through the pipeline cast time
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	/// <summary>

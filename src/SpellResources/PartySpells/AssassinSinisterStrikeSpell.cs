@@ -9,24 +9,27 @@ namespace healerfantasy.SpellResources;
 [Godot.GlobalClass]
 public partial class AssassinSinisterStrikeSpell : SpellResource
 {
-    public float DamageAmount = 12f;
+	public float DamageAmount = 12f;
 
-    public AssassinSinisterStrikeSpell()
-    {
-        Name        = "Sinister Strike";
-        Description = "A quick, precise strike from the Assassin's blade.";
-        Tags        = SpellTags.Damage | SpellTags.Attack;
-        ManaCost    = 0f;
-        CastTime    = 0f;
-        School      = SpellSchool.Generic;
-        EffectType  = EffectType.Harmful;
-    }
+	public AssassinSinisterStrikeSpell()
+	{
+		Name = "Sinister Strike";
+		Description = "A quick, precise strike from the Assassin's blade.";
+		Tags = SpellTags.Damage | SpellTags.Attack;
+		ManaCost = 0f;
+		CastTime = 0f;
+		School = SpellSchool.Generic;
+		TargetingType = TargetingType.Enemy;
+	}
 
-    public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
-    public override void Apply(SpellContext ctx)
-    {
-        foreach (var target in ctx.Targets)
-            target.TakeDamage(ctx.FinalValue);
-    }
+	public override void Apply(SpellContext ctx)
+	{
+		foreach (var target in ctx.Targets)
+			target.TakeDamage(ctx.FinalValue);
+	}
 }

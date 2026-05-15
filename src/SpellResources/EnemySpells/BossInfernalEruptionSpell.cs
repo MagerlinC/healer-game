@@ -27,7 +27,7 @@ public partial class BossInfernalEruptionSpell : SpellResource
 		ManaCost = 0f;
 		CastTime = 0f;
 		Parryable = true;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/flying-demon/infernal-eruption.png");
 	}
 

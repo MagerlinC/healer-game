@@ -23,7 +23,7 @@ public partial class BossDeathMarkSpell : SpellResource
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/bringer-of-death/death-mark.png");
 		ManaCost = 0f;
 		CastTime = 0f;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	public override void Apply(SpellContext ctx)

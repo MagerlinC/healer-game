@@ -5,10 +5,12 @@ using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;
 
-public enum EffectType
+public enum TargetingType
 {
-	Helpful,
-	Harmful
+	Ally,
+	Enemy,
+	Self,
+	None // AoE spells etc.
 }
 
 public enum SpellSchool
@@ -31,7 +33,7 @@ public partial class SpellResource : Resource
 	[Export] public float CastTime;
 	[Export] public float Cooldown;
 	[Export] public bool Parryable = false;
-	[Export] public EffectType EffectType = EffectType.Helpful;
+	[Export] public TargetingType TargetingType = TargetingType.Ally;
 	[Export] public SpellSchool School;
 
 	[Export] public Texture2D Icon;
@@ -86,7 +88,9 @@ public partial class SpellResource : Resource
 	/// multipliers, crit, and combat-log recording all see the correct value.
 	/// The default implementation does nothing.
 	/// </summary>
-	public virtual void OnAfterTargetsResolved(SpellContext ctx) { }
+	public virtual void OnAfterTargetsResolved(SpellContext ctx)
+	{
+	}
 
 	/// <summary>
 	/// Execute the spell using the fully-processed <see cref="SpellContext"/>.

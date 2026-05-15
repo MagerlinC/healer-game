@@ -42,7 +42,7 @@ public partial class BossQueenSnowstormSpell : SpellResource
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/queen-of-the-frozen-wastes/snowstorm.png");
 		ManaCost = 0f;
 		CastTime = 1.0f;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	public override void Apply(SpellContext ctx)

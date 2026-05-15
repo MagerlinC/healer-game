@@ -30,7 +30,7 @@ public partial class SoulShatterSpell : SpellResource
 		School = SpellSchool.Void;
 		Tags = SpellTags.Damage;
 		RequiredSchoolPoints = 2;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/void-burst.png");
 	}
 

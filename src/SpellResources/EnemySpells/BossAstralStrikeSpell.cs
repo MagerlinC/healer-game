@@ -14,15 +14,18 @@ public partial class BossAstralStrikeSpell : SpellResource
 
 	public BossAstralStrikeSpell()
 	{
-		Name        = "Astral Strike";
+		Name = "Astral Strike";
 		Description = "A razor-sharp strike of condensed starlight aimed at the frontline defender.";
-		Tags        = SpellTags.Damage | SpellTags.Attack;
-		ManaCost    = 0f;
-		CastTime    = 0f;
-		EffectType  = EffectType.Harmful;
+		Tags = SpellTags.Damage | SpellTags.Attack;
+		ManaCost = 0f;
+		CastTime = 0f;
+		TargetingType = TargetingType.Enemy;
 	}
 
-	public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
 	public override void Apply(SpellContext ctx)
 	{

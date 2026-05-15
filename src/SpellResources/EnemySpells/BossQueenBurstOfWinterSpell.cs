@@ -45,7 +45,7 @@ public partial class BossQueenBurstOfWinterSpell : SpellResource
 		ManaCost = 0f;
 		CastTime = 1.5f;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/queen-of-the-frozen-wastes/burst-of-winter.png");
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	// ── Apply ─────────────────────────────────────────────────────────────────

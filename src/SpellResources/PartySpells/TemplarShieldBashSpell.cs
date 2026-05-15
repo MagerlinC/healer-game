@@ -9,24 +9,27 @@ namespace healerfantasy.SpellResources;
 [Godot.GlobalClass]
 public partial class TemplarShieldBashSpell : SpellResource
 {
-    public float DamageAmount = 20f;
+	public float DamageAmount = 20f;
 
-    public TemplarShieldBashSpell()
-    {
-        Name        = "Shield Bash";
-        Description = "The Templar crashes their shield into the enemy with full force.";
-        Tags        = SpellTags.Damage | SpellTags.Attack;
-        ManaCost    = 0f;
-        CastTime    = 0f;
-        School      = SpellSchool.Generic;
-        EffectType  = EffectType.Harmful;
-    }
+	public TemplarShieldBashSpell()
+	{
+		Name = "Shield Bash";
+		Description = "The Templar crashes their shield into the enemy with full force.";
+		Tags = SpellTags.Damage | SpellTags.Attack;
+		ManaCost = 0f;
+		CastTime = 0f;
+		School = SpellSchool.Generic;
+		TargetingType = TargetingType.Enemy;
+	}
 
-    public override float GetBaseValue() => DamageAmount;
+	public override float GetBaseValue()
+	{
+		return DamageAmount;
+	}
 
-    public override void Apply(SpellContext ctx)
-    {
-        foreach (var target in ctx.Targets)
-            target.TakeDamage(ctx.FinalValue);
-    }
+	public override void Apply(SpellContext ctx)
+	{
+		foreach (var target in ctx.Targets)
+			target.TakeDamage(ctx.FinalValue);
+	}
 }

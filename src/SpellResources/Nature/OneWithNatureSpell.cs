@@ -31,7 +31,7 @@ public partial class OneWithNatureSpell : UltimateSpellResource
 		School = SpellSchool.Nature;
 		Tags = SpellTags.Healing;
 		RequiredSchoolPoints = 3;
-		EffectType = EffectType.Helpful;
+		TargetingType = TargetingType.Ally;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "nature/one-with-nature.png");
 	}
 

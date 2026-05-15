@@ -310,7 +310,7 @@ public partial class Player : Character
 		_sprite.Position = new Vector2(0f, _liftOffset); // keep lift smooth; _PhysicsProcess descends it
 
 		// Tell party members which boss to focus when the player attacks one directly.
-		if (spell.EffectType == EffectType.Harmful && target != null && target.IsInGroup(GameConstants.BossGroupName))
+		if (spell.Tags.HasFlag(SpellTags.Damage) && target != null && target.IsInGroup(GameConstants.BossGroupName))
 			PartyMember.NotifyPlayerAttackedBoss(target);
 
 		var stats = GetCharacterStats();
@@ -488,7 +488,7 @@ public partial class Player : Character
 				// the cursor, or self if the cursor is not over any frame.
 				var hoveredCharacter = ResolveTargetWithFallback(GameUI?.GetHoveredCharacter(), spellToCast);
 				if (hoveredCharacter == null) return; // no valid target (all bosses dead, etc.)
-				if (spellToCast.EffectType == EffectType.Harmful && hoveredCharacter.IsFriendly)
+				if (spellToCast.TargetingType == TargetingType.Enemy && hoveredCharacter.IsFriendly)
 					return;
 
 				_castTarget = hoveredCharacter;
@@ -528,7 +528,8 @@ public partial class Player : Character
 	{
 		if (target == null)
 		{
-			if (spell.EffectType == EffectType.Helpful)
+			if (spell.TargetingType == TargetingType.Self || spell.TargetingType == TargetingType.Ally ||
+			    spell.TargetingType == TargetingType.None)
 				return this;
 
 			// Return the first *alive* boss — GetFirstNodeInGroup gives an arbitrary

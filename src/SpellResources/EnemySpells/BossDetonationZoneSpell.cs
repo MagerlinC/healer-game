@@ -33,7 +33,7 @@ public partial class BossDetonationZoneSpell : SpellResource
 		ManaCost = 0f;
 		CastTime = 0f;
 		Parryable = false;
-		EffectType = EffectType.Harmful;
+		TargetingType = TargetingType.Enemy;
 	}
 
 	public override float GetBaseValue()

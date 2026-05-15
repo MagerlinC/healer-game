@@ -32,6 +32,7 @@ public partial class SanguineDrainSpell : SpellResource
 		CastTime = 1.5f;
 		Cooldown = 8f;
 		School = SpellSchool.Sanguimancy;
+		TargetingType = TargetingType.Enemy;
 		Tags = SpellTags.Damage | SpellTags.Healing | SpellTags.GroupSpell;
 		RequiredSchoolPoints = 1;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/sanguine-drain.png");
@@ -43,10 +44,11 @@ public partial class SanguineDrainSpell : SpellResource
 	/// </summary>
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)
 	{
-		foreach (var node in caster.GetTree().GetNodesInGroup(GameConstants.BossGroupName))
+		if (explicitTarget is EnemyCharacter) return [explicitTarget];
+		foreach (var node in caster.CollectAliveEnemies())
 			if (node is Character { IsAlive: true } boss)
 				return [boss];
-		return [explicitTarget];
+		return [];
 	}
 
 	public override float GetBaseValue()

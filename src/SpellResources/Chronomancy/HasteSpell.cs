@@ -30,7 +30,7 @@ public partial class HasteSpell : SpellResource
 		School = SpellSchool.Chronomancy;
 		Tags = SpellTags.Duration;
 		RequiredSchoolPoints = 0;
-		EffectType = EffectType.Helpful;
+		TargetingType = TargetingType.Self;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "healer/healer2.png");
 	}
 
