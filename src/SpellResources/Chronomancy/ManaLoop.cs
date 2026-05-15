@@ -16,19 +16,17 @@ namespace healerfantasy.SpellResources.Chronomancy;
 [GlobalClass]
 public partial class ManaLoopSpell : SpellResource
 {
-	[Export] public float ManaAmount = 50f;
+	[Export] public float ManaAmount = 35f;
 	[Export] public float Delay = 4f;
-
-	// TODO: Make the 2 loop spells more interesting
 
 	public ManaLoopSpell()
 	{
 		Name = "Mana Loop";
 		Description =
-			$"Traps an ally in an arcane temporal loop. After {Delay}s, the loop resolves and restores {ManaAmount} mana.";
+			$"Traps an ally in an arcane temporal loop. After {Delay}s, the loop resolves, restoring {ManaAmount} mana.";
 		ManaCost = 8f;
 		CastTime = 0.0f;
-		Cooldown = 4f;
+		Cooldown = 8f;
 		School = SpellSchool.Chronomancy;
 		Tags = SpellTags.Healing | SpellTags.Duration;
 		RequiredSchoolPoints = 1;

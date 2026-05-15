@@ -25,9 +25,9 @@ public partial class TemporalWardSpell : SpellResource
 		Name = "Temporal Ward";
 		Description =
 			$"Surround all party members in a time-locked barrier, absorbing up to {ShieldAmount} damage each for {ShieldDuration}s.";
-		ManaCost = 18f;
+		ManaCost = 15f;
 		CastTime = 1.5f;
-		Cooldown = 15f;
+		Cooldown = 8f;
 		School = SpellSchool.Chronomancy;
 		Tags = SpellTags.Healing | SpellTags.Duration | SpellTags.GroupSpell;
 		RequiredSchoolPoints = 0;

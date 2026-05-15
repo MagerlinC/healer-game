@@ -23,13 +23,13 @@ public partial class SoulShatterSpell : SpellResource
 	{
 		Name = "Soul Shatter";
 		Description =
-			$"Deal {DamageAmount} void damage and apply Vulnerable for {VulnerableDuration}s, causing the target to take {(int)(VulnerableAmplification * 100)}% more damage from all sources.";
+			$"Deal {DamageAmount} void damage and apply Vulnerable for {VulnerableDuration}s, causing the target to take {100 * VulnerableAmplification:F0}% more damage from all sources.";
 		ManaCost = 9f;
 		CastTime = 1.5f;
 		Cooldown = 6f;
 		School = SpellSchool.Void;
 		Tags = SpellTags.Damage;
-		RequiredSchoolPoints = 1;
+		RequiredSchoolPoints = 2;
 		EffectType = EffectType.Harmful;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/void-burst.png");
 	}

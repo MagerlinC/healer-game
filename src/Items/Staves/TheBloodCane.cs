@@ -21,7 +21,7 @@ public class TheBloodCane : EquippableItem
 	{
 		Name = "The Blood Cane";
 		Description =
-			$"Sanguimancy spells cost {100 * LifeCostMultiplier:F0} more life, but also do {100 * LifeCostMultiplier:F0}% more damage and healing";
+			$"Sanguimancy spells have {100 * LifeCostMultiplier:F0}% increased life cost, but also do {100 * LifeCostMultiplier:F0}% more damage and healing";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Staff;
 		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(8));

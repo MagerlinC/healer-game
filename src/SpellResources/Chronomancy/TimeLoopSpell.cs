@@ -15,27 +15,27 @@ namespace healerfantasy.SpellResources.Chronomancy;
 [GlobalClass]
 public partial class TimeLoopSpell : SpellResource
 {
-	[Export] public float HealAmount = 50f;
+	[Export] public float DamageFraction = 0.50f;
 	[Export] public float Delay = 4f;
 
 	public TimeLoopSpell()
 	{
 		Name = "Time Loop";
 		Description =
-			$"Traps an ally in a temporal loop. After {Delay}s, the loop resolves and restores {HealAmount} health.";
+			$"Traps an enemy in a temporal loop, tracking all damage dealt to them. After {Delay}s, the loop resolves, exploding for {100 * DamageFraction:F0}% of the total damage dealt within that time.";
 		ManaCost = 8f;
 		CastTime = 0.0f;
-		Cooldown = 4f;
+		Cooldown = 8f;
 		School = SpellSchool.Chronomancy;
-		Tags = SpellTags.Healing | SpellTags.Duration;
+		Tags = SpellTags.Damage | SpellTags.Duration;
 		RequiredSchoolPoints = 1;
-		EffectType = EffectType.Helpful;
+		EffectType = EffectType.Harmful;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/time-loop.png");
 	}
 
 	public override float GetBaseValue()
 	{
-		return HealAmount;
+		return DamageFraction;
 	}
 
 	public override void Apply(SpellContext ctx)

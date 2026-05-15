@@ -8,7 +8,7 @@ namespace healerfantasy.Items.Amulets;
 public class ChainOfReflection : EquippableItem
 {
 	static readonly float _damageBonus = 0.25f;
-	static readonly float _damageReflected = 0.25f;
+	static readonly float _damageReflected = 0.10f;
 	public override string ItemId => "chain_of_reflection";
 
 	public ChainOfReflection()

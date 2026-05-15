@@ -38,10 +38,12 @@ public static class SpellRegistry
 
 	public static readonly List<SpellResource> VoidSpells =
 	[
-		new DecaySpellResource(),
 		new ShadowBoltSpell(),
 		new VoidDrainSpell(),
+		new TouchOfAffliction(),
+		new DecaySpellResource(),
 		new SoulShatterSpell(),
+		new ConsumingVoid(),
 		new VoidsEmbraceSpell()
 	];
 
