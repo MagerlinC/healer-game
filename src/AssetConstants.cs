@@ -108,6 +108,10 @@ public static class AssetConstants
 		};
 	}
 
+	// ── Merchant assets ───────────────────────────────────────────────────────
+	public static readonly string MerchantInteractiblePath = "res://assets/characters/merchant/merchant.png";
+	public static readonly string StoneOfRebirthIconPath = "res://assets/characters/merchant/stone-of-rebirth.png";
+
 	// ── Rune assets ───────────────────────────────────────────────────────────
 
 	static readonly string RuneBasePath = "res://assets/interactibles/";
@@ -184,5 +188,5 @@ public static class AssetConstants
 
 	public static readonly string OverworldBackgroundPath = BackgroundBasePath + "overworld/background.png";
 	public static readonly string MapBackgroundPath = BackgroundBasePath + "map/world-map.png";
-	public static readonly string CampBackgroundPath = BackgroundBasePath + "camp/camp.png";
+	public static readonly string CampBackgroundPath = OverworldBackgroundPath; // IDK, maybe same for now
 }

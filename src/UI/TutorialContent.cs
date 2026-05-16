@@ -14,7 +14,7 @@ namespace healerfantasy.UI;
 public static class TutorialContent
 {
 	static readonly Color TitleColor = new(0.95f, 0.84f, 0.50f);
-	static readonly Color BodyColor  = new(0.82f, 0.78f, 0.72f);
+	static readonly Color BodyColor = new(0.82f, 0.78f, 0.72f);
 
 	/// <summary>
 	/// Builds and returns a <see cref="ScrollContainer"/> containing all tutorial
@@ -26,7 +26,7 @@ public static class TutorialContent
 	{
 		var scroll = new ScrollContainer();
 		scroll.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		scroll.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
+		scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 		scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
 
 		var vbox = new VBoxContainer();
@@ -69,8 +69,8 @@ public static class TutorialContent
 
 		vbox.AddChild(MakeSection(
 			"🛡  Deflect",
-			"Bosses sometimes telegraph powerful attacks with a visible wind-up. " +
-			"Activate Deflect at the right moment to parry the attack and reduce its damage to zero. " +
+			"Bosses sometimes telegraph powerful abilities with a visible wind-up. " +
+			"Activate Deflect just before it goes off to deflect the ability and reduce its damage to zero. " +
 			"Timing is everything — too early or too late and it won't work!"));
 
 		return scroll;

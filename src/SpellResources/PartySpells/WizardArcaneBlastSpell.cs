@@ -1,3 +1,4 @@
+using Godot.Collections;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;
@@ -26,6 +27,7 @@ public partial class WizardArcaneBlastSpell : SpellResource
 	{
 		return DamageAmount;
 	}
+
 
 	public override void Apply(SpellContext ctx)
 	{

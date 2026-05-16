@@ -5,6 +5,7 @@ using Godot;
 using healerfantasy;
 using healerfantasy.Effects;
 using healerfantasy.Items;
+using healerfantasy.Merchant;
 using healerfantasy.Runes;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
@@ -630,6 +631,10 @@ public abstract partial class Character : CharacterBody2D
 
 	void OnDeath()
 	{
+		// Give the Stone of Rebirth a chance to intercept death for party members.
+		if (MerchantStore.TryRevive(this))
+			return;
+
 		IsBeingRemoved = true;
 		ClearHealAbsorption();
 		foreach (var effect in _effects.Values)

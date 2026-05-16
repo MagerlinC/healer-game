@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.Runes;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;
@@ -44,7 +45,7 @@ public partial class BossBloodPrinceSanguineSiphonSpell : SpellResource
 	public float LifeLeechedPerTick = 15f;
 
 	/// <summary>How long the channel lasts before ending naturally.</summary>
-	public float ChannelDuration = 8f;
+	public float ChannelDuration = 6f;
 
 	// ── wiring ────────────────────────────────────────────────────────────────
 
@@ -100,11 +101,12 @@ public partial class BossBloodPrinceSanguineSiphonSpell : SpellResource
 			return;
 		}
 
+		var purityRuneActive = RunState.Instance.IsRuneActive(RuneIndex.Purity);
 		// ── spawn the channel node on the World (boss's parent) ───────────────
 		var channelNode = new SanguineSiphonChannelNode(
 			Boss,
 			targets,
-			ChannelDuration,
+			purityRuneActive ? ChannelDuration : ChannelDuration + 2f,
 			LifeLeechedPerTick);
 
 		channelNode.OnChannelFinished = () =>

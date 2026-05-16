@@ -18,13 +18,14 @@ public partial class Player : Character
 {
 	// ── movement ─────────────────────────────────────────────────────────────
 	[Export] public float Speed = 80.0f;
-	[Export] public float GlobalCooldown = 0.5f;
+	[Export] public float GlobalCooldown = 1f;
 
 	/// <summary>Maximum number of spells the player can have equipped at once.</summary>
 	public const int MaxSpellSlots = 6;
 
 	public Player()
 	{
+		MaxHealth = 120f;
 		AddToGroup("party");
 	}
 
@@ -450,6 +451,8 @@ public partial class Player : Character
 			var isInstant = ultimate.CastTime == 0.0f
 			                || stats.NextCastIsInstant && ultimate.School != SpellSchool.Chronomancy;
 
+			if (!isInstant && isMoving) return;
+
 			if (isInstant)
 			{
 				FireSpell(ultimate, hoveredCharacter);
@@ -472,7 +475,6 @@ public partial class Player : Character
 		}
 
 		var spellToCast = GetSpellForInput();
-		if (spellToCast?.CastTime > 0f && isMoving) return;
 
 		if (spellToCast is not null)
 		{
@@ -495,6 +497,8 @@ public partial class Player : Character
 
 				var isInstant = spellToCast.CastTime == 0.0f
 				                || stats.NextCastIsInstant && spellToCast.School != SpellSchool.Chronomancy;
+
+				if (!isInstant && isMoving) return;
 
 				if (isInstant)
 				{
@@ -534,6 +538,13 @@ public partial class Player : Character
 		var fallbackTarget = spell.TargetingType == TargetingType.Enemy ? defaultEnemy : this;
 
 		var target = hoveredTarget ?? currentDefaultTargetToUse ?? fallbackTarget;
+
+		// Court-of-Reflections clones are enemies, but Dispel must reach them so
+		// their RemoveHarmfulEffects override can resolve the mechanic. Skip the
+		// type-mismatch correction for any target the player explicitly hovered via
+		// the world-space registry — their intent is unambiguous.
+		if (hoveredTarget != null && hoveredTarget == CourtOfReflectionsRegistry.HoveredTarget)
+			return target;
 
 		var targetTypeMismatch = !target.IsFriendly && spell.TargetingType == TargetingType.Ally ||
 		                         target.IsFriendly && spell.TargetingType == TargetingType.Enemy;

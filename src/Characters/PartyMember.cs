@@ -201,6 +201,13 @@ public partial class PartyMember : Character
 	/// </summary>
 	protected Character FindPreferredBoss()
 	{
+		// Clear the cached target if the underlying Godot node has been freed
+		// (e.g. a CountessClone that was QueueFree'd when the mechanic ended).
+		// IsAlive is a C# field and won't throw on a disposed object, so we must
+		// validate the instance explicitly before accessing any engine properties.
+		if (LastKnownBossTarget != null && !GodotObject.IsInstanceValid(LastKnownBossTarget))
+			LastKnownBossTarget = null;
+
 		if (LastKnownBossTarget != null && LastKnownBossTarget.IsAlive)
 			return LastKnownBossTarget;
 

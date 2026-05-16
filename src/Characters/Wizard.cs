@@ -18,6 +18,11 @@ public partial class Wizard : PartyMember
 	WizardArcaneBlastSpell _arcaneBlast;
 	AnimatedSprite2D _sprite = null!;
 
+	public Wizard()
+	{
+		MaxHealth = 100f;
+	}
+
 	public override void _Ready()
 	{
 		base._Ready();

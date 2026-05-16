@@ -26,7 +26,7 @@ public partial class RewindSpell : SpellResource
 	public override void Apply(SpellContext ctx)
 	{
 
-		foreach (var target in ctx.Targets)
+		foreach (var target in ctx.Caster.CollectAlivePartyMembers())
 			target?.ApplyEffect(new Effects.RewindEffect(EffectDuration)
 			{
 				Icon = Icon,

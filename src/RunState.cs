@@ -252,6 +252,28 @@ public partial class RunState : Node
 		LoadoutPreferences.SaveSchoolAffinity(school);
 	}
 
+	// ── Gold (Merchant currency) ──────────────────────────────────────────────
+
+	/// <summary>Gold earned by selling items to the Merchant. Resets each run.</summary>
+	public int Gold { get; private set; } = 0;
+
+	/// <summary>Add gold to the player's purse.</summary>
+	public void AddGold(int amount)
+	{
+		Gold += Math.Max(0, amount);
+	}
+
+	/// <summary>
+	/// Deduct gold if the player can afford it.
+	/// Returns true on success, false if insufficient funds.
+	/// </summary>
+	public bool SpendGold(int amount)
+	{
+		if (Gold < amount) return false;
+		Gold -= amount;
+		return true;
+	}
+
 	// ── Dev test mode ─────────────────────────────────────────────────────────
 
 	/// <summary>
@@ -341,6 +363,8 @@ public partial class RunState : Node
 		CurrentBossIndexInDungeon = 0;
 		IsDevTestFight = false;
 		RuneSelectionLocked = false;
+		Gold = 0;
+		Merchant.MerchantStore.Clear();
 		InitSchoolAffinityFromPreferences(); // restore persisted affinity rather than clearing it
 		SelectedTalentDefs.Clear();
 		_activeRunes.Clear();

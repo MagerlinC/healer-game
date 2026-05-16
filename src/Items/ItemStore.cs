@@ -45,6 +45,16 @@ public static class ItemStore
 	}
 
 	/// <summary>
+	/// Remove <paramref name="item"/> from the unequipped inventory without equipping it.
+	/// Used by the Merchant when the player sells an item.
+	/// Does nothing if the item is not in the inventory.
+	/// </summary>
+	public static void RemoveFromInventory(EquippableItem item)
+	{
+		_inventory.Remove(item);
+	}
+
+	/// <summary>
 	/// Equip <paramref name="item"/> into <paramref name="targetSlot"/>, or into
 	/// <c>item.Slot</c> when no override is given.
 	///

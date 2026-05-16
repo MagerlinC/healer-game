@@ -22,7 +22,7 @@ public partial class RewindEffect : CharacterEffect
 	public override void OnExpired(Character target)
 	{
 		var missingHealth = _healthWhenCast - target.CurrentHealth;
-		if (!(missingHealth > 0)) return;
+		if (missingHealth <= 0) return;
 
 		target.Heal(missingHealth);
 		CombatLog.CombatLog.Record(new CombatEventRecord

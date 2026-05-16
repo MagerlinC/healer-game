@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy;
 using healerfantasy.CombatLog;
 using healerfantasy.Items;
 using healerfantasy.SpellResources;
@@ -85,6 +86,14 @@ public static class SpellPipeline
 		if (ctx.Tags.HasFlag(SpellTags.Damage))
 		{
 			ctx.FinalValue *= 1.0f + totalIncreasedDamage;
+
+			// Party members gain +20% damage per completed dungeon.
+			// e.g. dungeon 0 = 1×, dungeon 1 = 1.2×, dungeon 2 = 1.4×, etc.
+			if (caster is PartyMember)
+			{
+				var dungeonScalar = 1.0f + 0.2f * RunState.Instance.CurrentDungeonIndex;
+				ctx.FinalValue *= dungeonScalar;
+			}
 		}
 
 		var healingForSchool = ctx.CasterStats.SpellSchoolIncreasedHealing[spell.School];

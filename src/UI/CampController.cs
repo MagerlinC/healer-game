@@ -26,6 +26,8 @@ public partial class CampController : LoadoutController
 	InteractibleObject? _talentBoard;
 	NewsBoardPane? _newsBoardPane;
 	CanvasLayer? _newsBoardPanel;
+	CanvasLayer? _merchantPanel;
+	MerchantPane? _merchantPane;
 
 	protected override bool PersistSpellLoadout => false;
 
@@ -39,6 +41,12 @@ public partial class CampController : LoadoutController
 		(_armoryPanel, _) = BuildOverlayPanel("Armory", _equipmentPane);
 		_panels.Add(_armoryPanel);
 		AddChild(_armoryPanel);
+
+		// ── Merchant overlay panel ────────────────────────────────────────────
+		_merchantPane = new MerchantPane();
+		(_merchantPanel, _) = BuildOverlayPanel("The Merchant", _merchantPane);
+		_panels.Add(_merchantPanel);
+		AddChild(_merchantPanel);
 
 		// ── Interactibles ─────────────────────────────────────────────────────
 		var spellTome = AddInteractible(new InteractibleObject(
@@ -54,6 +62,11 @@ public partial class CampController : LoadoutController
 		var armory = AddInteractible(new InteractibleObject(
 			AssetConstants.ArmoryInteractiblePath,
 			new Vector2(696f, FloorHeight - 12f), new Vector2(0.125f, 0.125f), 36f));
+
+		var merchant = AddInteractible(new InteractibleObject(
+			AssetConstants.MerchantInteractiblePath,
+			new Vector2(1400f, FloorHeight - 30f), new Vector2(0.090f, 0.090f), 36f));
+		merchant.Scale = new Vector2(-1f, 1f);
 
 		var mapItem = AddInteractible(new InteractibleObject(
 			AssetConstants.MapInteractiblePath,
@@ -108,6 +121,9 @@ public partial class CampController : LoadoutController
 		armory.Interacted += OpenArmory;
 		WireHints(armory, "Armory  •  Manage your equipped items");
 
+		merchant.Interacted += OpenMerchant;
+		WireHints(merchant, "Merchant  •  Buy and sell items for gold");
+
 		mapItem.Interacted += OnOpenMap;
 		WireHints(mapItem, "World Map  •  Continue your journey");
 
@@ -134,6 +150,14 @@ public partial class CampController : LoadoutController
 		// Refresh EquipmentPane from ItemStore each time the panel is opened.
 		_equipmentPane!.Refresh();
 		OpenPanel(_armoryPanel!);
+	}
+
+	// ── merchant panel ────────────────────────────────────────────────────────
+
+	void OpenMerchant()
+	{
+		_merchantPane!.Refresh();
+		OpenPanel(_merchantPanel!);
 	}
 
 	// ── helpers ───────────────────────────────────────────────────────────────

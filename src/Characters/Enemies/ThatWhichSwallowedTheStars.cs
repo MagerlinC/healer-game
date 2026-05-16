@@ -426,6 +426,7 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 			_worldMusicPlayer.ProcessMode = ProcessModeEnum.Always;
 			_worldMusicPlayer.Stop();
 			_worldMusicPlayer.Stream = _phaseTwoMusic;
+			_worldMusicPlayer.VolumeDb = -3f;
 			_worldMusicPlayer.Play();
 		}
 

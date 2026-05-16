@@ -130,6 +130,7 @@ public partial class GlobalAutoLoad : Node
 		PartySubscriptions.Clear();
 		PendingSubscriptions.Clear();
 		healerfantasy.Items.ItemEffectBus.Reset();
+		healerfantasy.Merchant.MerchantStore.Clear();
 		healerfantasy.SpellSystem.ParryWindowManager.Reset();
 		PartyMember.ResetTarget();
 	}

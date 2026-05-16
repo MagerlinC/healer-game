@@ -120,7 +120,7 @@ public partial class TheBloodPrince : EnemyCharacter
 	// Phase 1 intervals
 	[Export] public float SlashInterval = 2.5f;
 	[Export] public float BloodBoltInterval = 5.0f;
-	[Export] public float SiphonInterval = 14.0f;
+	[Export] public float SiphonInterval = 16.0f;
 
 	// Phase 2 additional intervals
 	[Export] public float VoidDrainInterval = 18.0f;

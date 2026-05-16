@@ -16,17 +16,20 @@ zoom = Vector2(3, 3)
 
 [node name="Templar" parent="." unique_id=1231423954 instance=ExtResource("Scene_templar")]
 position = Vector2(-168, 1)
+MaxHealth = 180.0
 
 [node name="Assassin" parent="." unique_id=613426860 instance=ExtResource("Scene_assassin")]
 position = Vector2(93, -67)
+MaxHealth = 100.0
 
 [node name="Wizard" parent="." unique_id=2015225033 instance=ExtResource("Scene_wizard")]
 position = Vector2(128, 3)
-MaxHealth = 80.0
+MaxHealth = 100.0
 
 [node name="Healer" parent="." unique_id=1338505269 instance=ExtResource("Scene_player")]
 position = Vector2(35, 36)
 CharacterName = "Healer"
+MaxHealth = 120.0
 
 [node name="PartyUI" parent="." unique_id=955504976 instance=ExtResource("Scene_partyui")]
 
