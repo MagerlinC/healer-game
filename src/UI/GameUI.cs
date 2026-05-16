@@ -56,12 +56,15 @@ public partial class GameUI : CanvasLayer
 	CombatMeter _healingMeter;
 	CombatMeter _damageMeter;
 	Control _anchor = null!;
+	const float VinesBarWidth = 220f;
+	const float VinesBarHeight = 112f;
+	const float VinesBarTopOffset = 86f;
 
 	/// <summary>Badge shown to the right of the mana orb when Stone of Rebirth is active.</summary>
 	ItemEffectIndicator? _stoneOfRebirthBadge;
 
-	/// <summary>Container for Rune-of-Nature vines health bars, below the boss bar.</summary>
-	VBoxContainer? _vinesSection;
+	/// <summary>Positioned screen-space wrapper for each active vines health bar.</summary>
+	readonly Dictionary<string, Control> _vinesBarAnchors = new();
 
 	/// <summary>
 	/// CharacterName → BossHealthBar for each active VinesEnemy.
@@ -268,6 +271,12 @@ public partial class GameUI : CanvasLayer
 	/// Associate a Character with a UI slot for hover-targeting and combat meters.
 	/// Slot order must match PartyFrames.MemberDefs: 0=Templar, 1=Healer, 2=Assassin, 3=Wizard.
 	/// </summary>
+	public override void _Process(double delta)
+	{
+		base._Process(delta);
+		UpdateVinesBarPositions();
+	}
+
 	public void BindCharacter(int slot, Character character)
 	{
 		_partyFrames.BindCharacter(slot, character);
@@ -390,33 +399,25 @@ public partial class GameUI : CanvasLayer
 
 	/// <summary>
 	/// Creates a compact health bar for <paramref name="vines"/> and adds it to
-	/// the vines section below the boss bar.
+	/// a floating screen-space anchor above the attached target.
 	/// Also registers <paramref name="vines"/> for hover-targeting via
 	/// <see cref="GetHoveredCharacter"/>.
 	/// Called by <see cref="VinesManager"/> when new vines spawn.
 	/// </summary>
 	public void AddVinesHealthBar(VinesEnemy vines)
 	{
-		// Lazily create the vines section container the first time a vine spawns.
-		if (_vinesSection == null)
-		{
-			// Left-side column so vines bars don't overlap the boss bar or cast bar.
-			// Anchored to the top-left corner; width is fixed and height grows with content.
-			_vinesSection = new VBoxContainer();
-			_vinesSection.AddThemeConstantOverride("separation", 4);
-			_vinesSection.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
-			_vinesSection.OffsetLeft = 18f;
-			_vinesSection.OffsetRight = 228f; // 220 px wide column
-			_vinesSection.OffsetTop = 170f; // clear of taller boss bar + cast bar
-			_vinesSection.SizeFlagsVertical = Control.SizeFlags.ShrinkBegin;
-			_anchor.AddChild(_vinesSection);
-		}
+		// Free-positioned wrapper so the bar can follow the vine's world position.
+		var anchor = new Control();
+		anchor.CustomMinimumSize = new Vector2(VinesBarWidth, VinesBarHeight);
+		anchor.Size = new Vector2(VinesBarWidth, VinesBarHeight);
+		anchor.MouseFilter = Control.MouseFilterEnum.Pass;
+		_anchor.AddChild(anchor);
 
-		// Compact BossHealthBar with a tight side margin to fit the narrow column.
-		// Inherits hover-highlighting, effect badges, and all the same styling.
+		// Compact BossHealthBar sized to fit above the attached party member.
 		var bar = new BossHealthBar(vines.CharacterName, 6);
-		bar.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		_vinesSection.AddChild(bar);
+		bar.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		bar.MouseFilter = Control.MouseFilterEnum.Pass;
+		anchor.AddChild(bar);
 
 		// Initialise immediately — the vines _Ready() has already fired so the
 		// initial HealthChanged signal has already been missed.
@@ -424,8 +425,10 @@ public partial class GameUI : CanvasLayer
 		// already baked into the BossHealthBar constructor for signal routing.
 		bar.Init(vines.DisplayName, vines.CurrentHealth, vines.MaxHealth);
 
+		_vinesBarAnchors[vines.CharacterName] = anchor;
 		_vinesBars[vines.CharacterName] = bar;
 		_vinesCharacters[vines.CharacterName] = vines;
+		UpdateSingleVinesBarPosition(vines.CharacterName, vines);
 	}
 
 	/// <summary>
@@ -442,5 +445,35 @@ public partial class GameUI : CanvasLayer
 			_vinesBars.Remove(vinesCharacterName);
 			bar.QueueFree();
 		}
+
+		if (_vinesBarAnchors.TryGetValue(vinesCharacterName, out var anchor))
+		{
+			_vinesBarAnchors.Remove(vinesCharacterName);
+			anchor.QueueFree();
+		}
+	}
+
+	void UpdateVinesBarPositions()
+	{
+		if (_vinesCharacters.Count == 0) return;
+
+		foreach (var (characterName, vines) in _vinesCharacters)
+			UpdateSingleVinesBarPosition(characterName, vines);
+	}
+
+	void UpdateSingleVinesBarPosition(string characterName, Character vinesCharacter)
+	{
+		if (!_vinesBarAnchors.TryGetValue(characterName, out var anchor)
+		    || !IsInstanceValid(anchor)
+		    || !IsInstanceValid(vinesCharacter))
+			return;
+
+		// Convert the vine's world position into screen-space pixels so the
+		// bar follows the same on-screen point as the animated sprite.
+		var canvasTransform = vinesCharacter.GetViewport().GetCanvasTransform();
+		var screenPos = canvasTransform * vinesCharacter.GlobalPosition;
+		anchor.Position = new Vector2(
+			screenPos.X - VinesBarWidth / 2f,
+			screenPos.Y - VinesBarTopOffset);
 	}
 }
