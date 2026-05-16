@@ -73,6 +73,7 @@ public partial class PoisonBoltSpell : SpellResource
 			AbilityName = Name,
 			Description = Description,
 			School = School,
+			IsDispellable = false,
 			HasteMultiplier = 1f + ctx.CasterStats.IncreasedHaste
 		});
 	}

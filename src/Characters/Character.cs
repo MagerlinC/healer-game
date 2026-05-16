@@ -222,6 +222,7 @@ public abstract partial class Character : CharacterBody2D
 	public void Heal(float amount)
 	{
 		if (!IsAlive) return;
+
 		var stats = GetCharacterStats();
 		amount *= Mathf.Max(0f, stats.HealingReceivedMultiplier);
 		if (amount <= 0f) return;
@@ -238,6 +239,17 @@ public abstract partial class Character : CharacterBody2D
 
 		CurrentHealth = Mathf.Min(CurrentHealth + amount, MaxHealth);
 		EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
+	}
+
+	/// <summary>
+	/// Bring a dead character back to life at the given health amount.
+	/// Unlike <see cref="Heal"/>, this bypasses the <c>IsAlive</c> guard and
+	/// sets health directly — intended only for resurrection effects such as the
+	/// Stone of Rebirth.  Emits <see cref="HealthChanged"/> so the UI updates.
+	/// </summary>
+	public void Revive(float amount)
+	{
+		SetCurrentHealthDirect(Mathf.Clamp(amount, 1f, MaxHealth));
 	}
 
 	/// <summary>

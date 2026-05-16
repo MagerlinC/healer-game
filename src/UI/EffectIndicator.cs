@@ -14,6 +14,10 @@ using healerfantasy;
 ///
 /// Hovering the badge shows the shared <see cref="GameTooltip"/> with the
 /// effect's display name and a live remaining-duration countdown.
+///
+/// Dispellable harmful effects get an enhanced treatment: a larger soft glow
+/// halo (via a canvas-item shader), a faster border pulse, and a repeating
+/// scale-bounce animation so they stand out clearly from regular buffs.
 /// </summary>
 public partial class EffectIndicator : PanelContainer
 {
@@ -29,6 +33,7 @@ public partial class EffectIndicator : PanelContainer
 	StyleBoxFlat _style;
 	ColorRect _glowRect;
 	Tween _pulseTween;
+	Tween _bounceTween;
 
 	// Helpful buff color
 	static readonly Color HelpfulBadgeBorder = new(0.25f, 0.70f, 0.35f, 0.90f);
@@ -51,6 +56,7 @@ public partial class EffectIndicator : PanelContainer
 		CharacterEffect = effect;
 
 		var isMirror = effect.EffectId.EndsWith(MirrorSuffix);
+		var isDispellableHarmful = effect.IsHarmful && effect.IsDispellable;
 
 		// Strip the internal "_Mirror" suffix so the tooltip reads cleanly,
 		// then annotate with "(Mirror)" so the player knows it's the clone's copy.
@@ -60,6 +66,8 @@ public partial class EffectIndicator : PanelContainer
 			: FormatDisplayName(baseId);
 
 		CustomMinimumSize = new Vector2(indicatorSize, indicatorSize);
+		// Centre the pivot so the bounce scale animation grows from the middle of the badge.
+		PivotOffset = new Vector2(indicatorSize / 2f, indicatorSize / 2f);
 		MouseFilter = MouseFilterEnum.Stop;
 
 		// ── badge style ──────────────────────────────────────────────────────
@@ -83,8 +91,11 @@ public partial class EffectIndicator : PanelContainer
 		_style.ContentMarginBottom = 1f;
 
 		AddThemeStyleboxOverride("panel", _style);
-		// Mirror effects always pulse gently — they're ephemeral and belong to the clone.
-		SetupGlow(borderColor, isMirror || (effect.IsHarmful && effect.IsDispellable));
+		SetupGlow(borderColor, isMirror, isDispellableHarmful);
+
+		// Dispellable harmful effects bounce to demand the player's attention.
+		if (isDispellableHarmful)
+			StartBounce();
 
 		// Stacking layer for icon + labels
 		var inner = new Control();
@@ -227,14 +238,22 @@ public partial class EffectIndicator : PanelContainer
 		return Regex.Replace(id, @"(?<=[a-z])(?=[A-Z])", " ");
 	}
 
-	void SetupGlow(Color color, bool shouldPulse)
+	/// <summary>
+	/// Creates the glow halo behind the badge.
+	///
+	/// Dispellable harmful effects use a larger halo (±8 px instead of ±3 px)
+	/// with a soft-edge shader so the colour radiates outward rather than appearing
+	/// as a hard-edged rectangle.  Mirror effects keep the smaller, subtler halo.
+	/// </summary>
+	void SetupGlow(Color color, bool isMirror, bool isDispellableHarmful)
 	{
+		bool shouldPulse = isMirror || isDispellableHarmful;
+
 		if (_glowRect == null)
 		{
 			_glowRect = new ColorRect();
 			AddChild(_glowRect);
 			MoveChild(_glowRect, 0); // behind everything
-
 			_glowRect.MouseFilter = MouseFilterEnum.Ignore;
 		}
 
@@ -243,40 +262,83 @@ public partial class EffectIndicator : PanelContainer
 		_glowRect.AnchorRight  = 1;
 		_glowRect.AnchorBottom = 1;
 
-		_glowRect.OffsetLeft   = -3;
-		_glowRect.OffsetTop    = -3;
-		_glowRect.OffsetRight  =  3;
-		_glowRect.OffsetBottom =  3;
+		// Dispellable effects get a bigger halo so it's clearly visible.
+		float expand = isDispellableHarmful ? 8f : 3f;
+		_glowRect.OffsetLeft   = -expand;
+		_glowRect.OffsetTop    = -expand;
+		_glowRect.OffsetRight  =  expand;
+		_glowRect.OffsetBottom =  expand;
 
-		_glowRect.Color = new Color(color.R, color.G, color.B, 0.25f);
+		// Dispellable effects start at a higher base opacity.
+		float baseAlpha = isDispellableHarmful ? 0.70f : 0.25f;
+		_glowRect.Color = new Color(color.R, color.G, color.B, baseAlpha);
+
+		// Soft-edge shader: alpha is highest at the outermost rim of the glow
+		// rect (the halo region beyond the badge border) and fades to zero as it
+		// approaches the badge itself — creating a bloom-style outward glow.
+		if (isDispellableHarmful && _glowRect.Material == null)
+		{
+			var glowShader = new Shader();
+			glowShader.Code = """
+				shader_type canvas_item;
+				void fragment() {
+					float dx = min(UV.x, 1.0 - UV.x);
+					float dy = min(UV.y, 1.0 - UV.y);
+					float d = min(dx, dy);
+					// Full alpha at the outer edge (d = 0), fades to transparent
+					// by the time it reaches the badge border (~22 % in from edge).
+					float glow = 1.0 - smoothstep(0.0, 0.22, d);
+					COLOR.a *= glow;
+				}
+				""";
+			_glowRect.Material = new ShaderMaterial { Shader = glowShader };
+		}
 
 		if (shouldPulse)
-			StartPulse(color);
+			StartPulse(color, isDispellableHarmful);
 		else
 			StopPulse();
 	}
 
-	void StartPulse(Color baseColor)
+	/// <summary>
+	/// Looping tween that pulses the border colour between the base colour and a
+	/// lightened variant, with the glow alpha breathing in sync.
+	///
+	/// Dispellable effects use a faster cycle and a wider alpha swing so they
+	/// feel more urgent than the gentle mirror-image pulse.
+	/// </summary>
+	void StartPulse(Color baseColor, bool isDispellable)
 	{
 		StopPulse();
 
-		var bright = baseColor.Lightened(0.5f);
+		var bright   = baseColor.Lightened(isDispellable ? 0.65f : 0.50f);
+		float speed  = isDispellable ? 0.35f : 0.60f;
+		float glowHi = isDispellable ? 0.90f : 0.50f;
+		float glowLo = isDispellable ? 0.25f : 0.20f;
 
 		_pulseTween = CreateTween().SetLoops();
 
+		// Phase A — brighten: border lightens, glow intensifies.
 		_pulseTween.TweenMethod(
 				Callable.From<float>(t => { _style.BorderColor = baseColor.Lerp(bright, t); }),
-				0f, 1f, 0.6f
+				0f, 1f, speed
 			).SetTrans(Tween.TransitionType.Sine)
 			.SetEase(Tween.EaseType.InOut);
+		_pulseTween.Parallel()
+			.TweenProperty(_glowRect, "modulate:a", glowHi, speed)
+			.SetTrans(Tween.TransitionType.Sine)
+			.SetEase(Tween.EaseType.InOut);
 
+		// Phase B — dim: border returns to base, glow fades.
 		_pulseTween.TweenMethod(
-			Callable.From<float>(t => { _style.BorderColor = baseColor.Lerp(bright, 1f - t); }),
-			0f, 1f, 0.6f
-		);
-
-		_pulseTween.Parallel().TweenProperty(_glowRect, "modulate:a", 0.5f, 0.6f);
-		_pulseTween.Parallel().TweenProperty(_glowRect, "modulate:a", 0.2f, 0.6f);
+				Callable.From<float>(t => { _style.BorderColor = baseColor.Lerp(bright, 1f - t); }),
+				0f, 1f, speed
+			).SetTrans(Tween.TransitionType.Sine)
+			.SetEase(Tween.EaseType.InOut);
+		_pulseTween.Parallel()
+			.TweenProperty(_glowRect, "modulate:a", glowLo, speed)
+			.SetTrans(Tween.TransitionType.Sine)
+			.SetEase(Tween.EaseType.InOut);
 	}
 
 	void StopPulse()
@@ -285,6 +347,44 @@ public partial class EffectIndicator : PanelContainer
 		{
 			_pulseTween.Kill();
 			_pulseTween = null;
+		}
+	}
+
+	/// <summary>
+	/// Looping scale-bounce animation for dispellable harmful effects.
+	/// The badge pops up to 110 % of its size and springs back, repeating
+	/// every ~1.1 s to catch the player's eye without being distracting.
+	/// Scale is centred on <see cref="Control.PivotOffset"/> which is set
+	/// to the badge's midpoint in the constructor.
+	/// </summary>
+	void StartBounce()
+	{
+		_bounceTween?.Kill();
+		_bounceTween = CreateTween().SetLoops();
+
+		// Pop outward quickly.
+		_bounceTween
+			.TweenProperty(this, "scale", new Vector2(1.10f, 1.10f), 0.28f)
+			.SetTrans(Tween.TransitionType.Sine)
+			.SetEase(Tween.EaseType.In);
+
+		// Spring back with a slight overshoot for a bouncy feel.
+		_bounceTween
+			.TweenProperty(this, "scale", Vector2.One, 0.45f)
+			.SetTrans(Tween.TransitionType.Bounce)
+			.SetEase(Tween.EaseType.Out);
+
+		// Brief rest at normal size before the next pop.
+		_bounceTween.TweenInterval(0.35f);
+	}
+
+	void StopBounce()
+	{
+		if (_bounceTween != null)
+		{
+			_bounceTween.Kill();
+			_bounceTween = null;
+			Scale = Vector2.One;
 		}
 	}
 }

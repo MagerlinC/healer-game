@@ -84,17 +84,17 @@ public partial class BossHealthBar : CharacterFrame
 	/// effect-badge row.  Defaults to 48 (full-width boss bar style); pass a
 	/// smaller value for compact bars in a narrow column.
 	/// </param>
-	public BossHealthBar(string? bossNameOverride = null, int sideMargin = 48)
+	public BossHealthBar(string? bossNameOverride = null, int sideMargin = 64)
 	{
-		_bossNameOverride    = bossNameOverride;
-		_sideMargin          = sideMargin;
+		_bossNameOverride = bossNameOverride;
+		_sideMargin = sideMargin;
 		_effectIndicatorSize = 40;
 	}
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 	public override void _Ready()
 	{
 		Visible = false; // hidden until the boss first emits HealthChanged
-		AddThemeConstantOverride("separation", 4);
+		AddThemeConstantOverride("separation", 8);
 
 		// ── health panel (top slot in the VBox) ───────────────────────────────
 		BuildHealthPanel();
@@ -114,7 +114,7 @@ public partial class BossHealthBar : CharacterFrame
 			nameof(Character.HealthChanged),
 			Callable.From((string charName, float current, float max) =>
 			{
-				if (!GodotObject.IsInstanceValid(this) || IsQueuedForDeletion()) return;
+				if (!IsInstanceValid(this) || IsQueuedForDeletion()) return;
 				var expected = _bossNameOverride ?? (RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name);
 				if (charName == expected)
 					UpdateProgress(charName, current, max);
@@ -125,7 +125,7 @@ public partial class BossHealthBar : CharacterFrame
 			nameof(Character.ShieldChanged),
 			Callable.From((string charName, float shield, float maxHealth) =>
 			{
-				if (!GodotObject.IsInstanceValid(this) || IsQueuedForDeletion()) return;
+				if (!IsInstanceValid(this) || IsQueuedForDeletion()) return;
 				var expected = _bossNameOverride ?? (RunState.Instance?.CurrentBossName ?? GameConstants.Boss1Name);
 				if (charName == expected)
 					UpdateShieldBar(shield, maxHealth);
@@ -237,9 +237,9 @@ public partial class BossHealthBar : CharacterFrame
 		// full health) and naturally shrinks left-to-right as the shield is absorbed.
 		var shieldFrac = Mathf.Clamp(_trackedShield / _trackedMaxHealth, 0f, 1f);
 
-		_shieldBar.AnchorLeft  = Mathf.Max(0f, 1f - shieldFrac);
+		_shieldBar.AnchorLeft = Mathf.Max(0f, 1f - shieldFrac);
 		_shieldBar.AnchorRight = 1f;
-		_shieldBar.Visible     = shieldFrac > 0f;
+		_shieldBar.Visible = shieldFrac > 0f;
 	}
 
 	// ── Sanguine Siphon health-target marker ─────────────────────────────────
@@ -305,7 +305,7 @@ public partial class BossHealthBar : CharacterFrame
 		var overlay = new Control();
 		overlay.MouseFilter = MouseFilterEnum.Ignore;
 		overlay.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		overlay.CustomMinimumSize = new Vector2(0f, 24f);
+		overlay.CustomMinimumSize = new Vector2(0f, 32f);
 		row.AddChild(overlay);
 
 		// ── progress bar (fills the entire overlay) ───────────────────────────
@@ -355,16 +355,16 @@ public partial class BossHealthBar : CharacterFrame
 		// shield changes via RefreshShieldBar().
 		_shieldBar = new ColorRect();
 		_shieldBar.Color = new Color(0.40f, 0.72f, 1.0f, 0.80f); // icy blue
-		_shieldBar.AnchorTop    = 0f;
+		_shieldBar.AnchorTop = 0f;
 		_shieldBar.AnchorBottom = 1f;
-		_shieldBar.AnchorLeft   = 0f;
-		_shieldBar.AnchorRight  = 0f;
-		_shieldBar.OffsetTop    = 0f;
+		_shieldBar.AnchorLeft = 0f;
+		_shieldBar.AnchorRight = 0f;
+		_shieldBar.OffsetTop = 0f;
 		_shieldBar.OffsetBottom = 0f;
-		_shieldBar.OffsetLeft   = 0f;
-		_shieldBar.OffsetRight  = 0f;
-		_shieldBar.MouseFilter  = MouseFilterEnum.Ignore;
-		_shieldBar.Visible      = false;
+		_shieldBar.OffsetLeft = 0f;
+		_shieldBar.OffsetRight = 0f;
+		_shieldBar.MouseFilter = MouseFilterEnum.Ignore;
+		_shieldBar.Visible = false;
 		overlay.AddChild(_shieldBar);
 
 		// ── name label (left-aligned, over the bar) ───────────────────────────
@@ -376,8 +376,12 @@ public partial class BossHealthBar : CharacterFrame
 		_nameLabel.OffsetLeft = 8;
 		_nameLabel.OffsetRight = -40;
 		_nameLabel.VerticalAlignment = VerticalAlignment.Center;
-		_nameLabel.AddThemeFontSizeOverride("font_size", 14);
+		_nameLabel.AddThemeFontSizeOverride("font_size", 18);
 		_nameLabel.AddThemeColorOverride("font_color", BarTextColor);
+		// Use the system bold variant so the name stands out clearly over the fill.
+		var boldFont = new SystemFont();
+		boldFont.FontWeight = 700;
+		_nameLabel.AddThemeFontOverride("font", boldFont);
 		_nameLabel.MouseFilter = MouseFilterEnum.Ignore;
 		overlay.AddChild(_nameLabel);
 

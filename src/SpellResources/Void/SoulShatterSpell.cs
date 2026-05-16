@@ -49,6 +49,7 @@ public partial class SoulShatterSpell : SpellResource
 			School = School,
 			SourceCharacterName = ctx.Caster.CharacterName,
 			AbilityName = Name,
+			IsDispellable = false,
 			Description = Description
 		});
 	}

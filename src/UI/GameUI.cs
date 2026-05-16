@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using healerfantasy;
+using healerfantasy.Items;
 using healerfantasy.SpellResources.Void;
 using healerfantasy.UI;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
@@ -53,6 +54,9 @@ public partial class GameUI : CanvasLayer
 	CombatMeter _healingMeter;
 	CombatMeter _damageMeter;
 	Control _anchor = null!;
+
+	/// <summary>Badge shown to the right of the mana orb when Stone of Rebirth is active.</summary>
+	ItemEffectIndicator? _stoneOfRebirthBadge;
 
 	/// <summary>Container for Rune-of-Nature vines health bars, below the boss bar.</summary>
 	VBoxContainer? _vinesSection;
@@ -113,12 +117,55 @@ public partial class GameUI : CanvasLayer
 		manaBar.OffsetBottom = 70f;
 		anchor.AddChild(manaBar);
 
+		// ── Stone of Rebirth badge ────────────────────────────────────────────
+		// Positioned to the right of the mana orb (orb right-edge = anchor 0.2 + 70px).
+		// Subscribes to ItemEffectBus so it appears when the stone is active and
+		// disappears when it triggers.  Uses the same 44px ItemEffectIndicator badge
+		// style as other item-proc indicators.
+		var stoneContainer = new Control();
+		stoneContainer.AnchorLeft  = stoneContainer.AnchorRight  = 0.2f;
+		stoneContainer.AnchorTop   = stoneContainer.AnchorBottom = 0.8f;
+		stoneContainer.GrowHorizontal = Control.GrowDirection.End;
+		stoneContainer.GrowVertical   = Control.GrowDirection.Both;
+		stoneContainer.OffsetLeft  = 80f;   // 10px gap after orb right edge (70px)
+		stoneContainer.OffsetRight = 124f;  // 44px wide
+		stoneContainer.OffsetTop   = -22f;  // vertically centred with orb
+		stoneContainer.OffsetBottom = 22f;
+		stoneContainer.MouseFilter = Control.MouseFilterEnum.Pass;
+		anchor.AddChild(stoneContainer);
+
+		ItemEffectBus.ItemEffectActivated += (id, icon, name, desc) =>
+		{
+			if (id != "stone_of_rebirth") return;
+			_stoneOfRebirthBadge?.QueueFree();
+			_stoneOfRebirthBadge = new ItemEffectIndicator(id, icon, name, desc, 44);
+			_stoneOfRebirthBadge.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+			stoneContainer.AddChild(_stoneOfRebirthBadge);
+		};
+
+		ItemEffectBus.ItemEffectDeactivated += id =>
+		{
+			if (id != "stone_of_rebirth") return;
+			_stoneOfRebirthBadge?.QueueFree();
+			_stoneOfRebirthBadge = null;
+		};
+
+		// Replay in case stone was purchased before this scene loaded (e.g. returning
+		// from camp into a dungeon mid-run).
+		ItemEffectBus.ReplayCurrentState((id, icon, name, desc) =>
+		{
+			if (id != "stone_of_rebirth") return;
+			_stoneOfRebirthBadge = new ItemEffectIndicator(id, icon, name, desc, 44);
+			_stoneOfRebirthBadge.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+			stoneContainer.AddChild(_stoneOfRebirthBadge);
+		});
+
 		// ── Boss health bar ───────────────────────────────────────────────────
 		_bossHealthBar = new BossHealthBar();
 		_bossHealthBar.CustomMinimumSize = new Vector2(400f, 0f);
 		_bossHealthBar.SetAnchorsPreset(Control.LayoutPreset.TopWide);
 		_bossHealthBar.OffsetTop = 10f;
-		_bossHealthBar.OffsetBottom = 90f; // extra room for effect-badge row below the bar
+		_bossHealthBar.OffsetBottom = 115f; // room for taller bar + effect-badge row below
 		anchor.AddChild(_bossHealthBar);
 
 		// ── Boss cast bar (shown during telegraphed wind-ups e.g. Structural Crush)
@@ -130,8 +177,8 @@ public partial class GameUI : CanvasLayer
 		bossCastBar.GrowHorizontal = Control.GrowDirection.Both;
 		bossCastBar.OffsetLeft = -140f;
 		bossCastBar.OffsetRight = 140f;
-		bossCastBar.OffsetTop = 100f; // just below the boss health bar + effects row
-		bossCastBar.OffsetBottom = 140f;
+		bossCastBar.OffsetTop = 122f; // just below the boss health bar + effects row
+		bossCastBar.OffsetBottom = 162f;
 		anchor.AddChild(bossCastBar);
 
 		// ── Party frames ──────────────────────────────────────────────────────
@@ -321,17 +368,17 @@ public partial class GameUI : CanvasLayer
 		_secondaryBossHealthBar = new BossHealthBar(secondBoss.CharacterName);
 		_secondaryBossHealthBar.CustomMinimumSize = new Vector2(400f, 0f);
 		_secondaryBossHealthBar.SetAnchorsPreset(Control.LayoutPreset.TopWide);
-		_secondaryBossHealthBar.OffsetTop = 80f; // below the primary bar
-		_secondaryBossHealthBar.OffsetBottom = 160f;
+		_secondaryBossHealthBar.OffsetTop = 118f; // below the primary bar + its effects row
+		_secondaryBossHealthBar.OffsetBottom = 230f;
 		_anchor.AddChild(_secondaryBossHealthBar);
 
 		// Initialise immediately — the character's _Ready() already fired so the
 		// initial HealthChanged signal has already been missed.
 		_secondaryBossHealthBar.Init(secondBoss.CharacterName, secondBoss.CurrentHealth, secondBoss.MaxHealth);
 
-		// Push the boss cast bar down so it clears both health bars.
-		_bossCastBar.OffsetTop = 170f;
-		_bossCastBar.OffsetBottom = 210f;
+		// Push the boss cast bar down so it clears both health bars + their effect rows.
+		_bossCastBar.OffsetTop = 238f;
+		_bossCastBar.OffsetBottom = 278f;
 	}
 
 	// ── Vines health bars (Rune of Nature) ────────────────────────────────────
@@ -355,7 +402,7 @@ public partial class GameUI : CanvasLayer
 			_vinesSection.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
 			_vinesSection.OffsetLeft   = 8f;
 			_vinesSection.OffsetRight  = 228f;  // 220 px wide column
-			_vinesSection.OffsetTop    = 130f;  // clear of boss bar + cast bar
+			_vinesSection.OffsetTop    = 170f;  // clear of taller boss bar + cast bar
 			_vinesSection.SizeFlagsVertical = Control.SizeFlags.ShrinkBegin;
 			_anchor.AddChild(_vinesSection);
 		}

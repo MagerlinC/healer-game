@@ -65,8 +65,7 @@ public partial class CampController : LoadoutController
 
 		var merchant = AddInteractible(new InteractibleObject(
 			AssetConstants.MerchantInteractiblePath,
-			new Vector2(1400f, FloorHeight - 30f), new Vector2(0.090f, 0.090f), 36f));
-		merchant.Scale = new Vector2(-1f, 1f);
+			new Vector2(1400f, FloorHeight - 30f), new Vector2(0.20f, 0.20f), 36f));
 
 		var mapItem = AddInteractible(new InteractibleObject(
 			AssetConstants.MapInteractiblePath,

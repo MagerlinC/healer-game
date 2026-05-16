@@ -48,6 +48,7 @@ public partial class VoidDrainSpell : SpellResource
 			SourceCharacterName = ctx.Caster?.CharacterName,
 			Caster = ctx.Caster,
 			School = SpellSchool.Void,
+			IsDispellable = false,
 			Icon = Icon
 		});
 	}
