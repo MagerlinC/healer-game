@@ -28,6 +28,7 @@ public partial class CampController : LoadoutController
 	CanvasLayer? _newsBoardPanel;
 	CanvasLayer? _merchantPanel;
 	MerchantPane? _merchantPane;
+	InteractibleObject? _merchantInteractible;
 
 	protected override bool PersistSpellLoadout => false;
 
@@ -67,9 +68,10 @@ public partial class CampController : LoadoutController
 			AssetConstants.ArmoryInteractiblePath,
 			new Vector2(696f, FloorHeight - 12f), new Vector2(0.125f, 0.125f), 36f));
 
-		var merchant = AddInteractible(new InteractibleObject(
+		_merchantInteractible = AddInteractible(new InteractibleObject(
 			AssetConstants.MerchantInteractiblePath,
 			new Vector2(1400f, FloorHeight - 30f), new Vector2(0.20f, 0.20f), 36f));
+		var merchant = _merchantInteractible;
 
 		var mapItem = AddInteractible(new InteractibleObject(
 			AssetConstants.MapInteractiblePath,
@@ -136,6 +138,11 @@ public partial class CampController : LoadoutController
 			OpenPanel(_newsBoardPanel!);
 		};
 		WireHints(newsBoard, "News Board  •  Discoveries & tips");
+
+		// Show the camp merchant tutorial the first time the player visits camp.
+		// Deferred so the scene is fully laid out before we query node positions.
+		if (!PlayerProgressStore.HasSeenCampMerchantTutorial)
+			Callable.From(ShowCampMerchantTutorial).CallDeferred();
 	}
 
 	// ── Affinity change ───────────────────────────────────────────────────────
@@ -161,6 +168,35 @@ public partial class CampController : LoadoutController
 	{
 		_merchantPane!.Refresh();
 		OpenPanel(_merchantPanel!);
+	}
+
+	// ── camp merchant tutorial ────────────────────────────────────────────────
+
+	void ShowCampMerchantTutorial()
+	{
+		if (PlayerProgressStore.HasSeenCampMerchantTutorial) return;
+
+		// Build a spotlight rect from the merchant's world position.
+		// The merchant is a Node2D sprite, so we approximate a bounding box
+		// centred on its global position.
+		var spotlight = new Rect2();
+		if (_merchantInteractible != null)
+		{
+			var centre = _merchantInteractible.GlobalPosition;
+			var size = new Vector2(130f, 170f);
+			spotlight = new Rect2(centre - size * 0.5f, size);
+		}
+
+		TutorialHighlightOverlay.Show(
+			GetTree(),
+			"The Merchant",
+			"The Merchant sells useful items between dungeons.\n\n" +
+			"Click an item to buy it with gold. You can also sell items you no longer need to free up inventory space.\n\n" +
+			"Stock is refreshed each time you rest at camp.",
+			spotlight,
+			null,
+			PlayerProgressStore.MarkCampMerchantTutorialSeen
+		);
 	}
 
 	// ── helpers ───────────────────────────────────────────────────────────────

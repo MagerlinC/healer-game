@@ -24,6 +24,7 @@ public partial class CombatTutorialManager : Node
 	GameUI? _ui;
 
 	// Per-session guards.
+	bool _targetingShown;
 	bool _deflectShown;
 	bool _dispelShown;
 	bool _detonationShown;
@@ -31,9 +32,9 @@ public partial class CombatTutorialManager : Node
 	// Deflect tutorial timing — we wait until the parry window actually opens
 	// (ParryWindowDuration seconds before cast end) rather than showing at the
 	// very start of the wind-up.
-	bool  _deflectPending;   // a windup is in progress and the tutorial hasn't shown yet
-	float _windupDuration;   // total windup duration (seconds)
-	float _windupElapsed;    // time elapsed since WindupStarted fired
+	bool _deflectPending; // a windup is in progress and the tutorial hasn't shown yet
+	float _windupDuration; // total windup duration (seconds)
+	float _windupElapsed; // time elapsed since WindupStarted fired
 
 	// ── public API ────────────────────────────────────────────────────────────
 
@@ -41,24 +42,32 @@ public partial class CombatTutorialManager : Node
 	/// Provide the GameUI reference used to locate spell-slot screen positions.
 	/// Call this from World._Ready() before adding the node to the tree.
 	/// </summary>
-	public void Init(GameUI ui) => _ui = ui;
+	public void Init(GameUI ui)
+	{
+		_ui = ui;
+	}
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
 	public override void _Ready()
 	{
-		ParryWindowManager.WindupStarted           += OnWindupStarted;
-		ParryWindowManager.WindupEnded             += OnWindupEnded;
-		CombatTutorialEvents.HarmfulEffectApplied  += OnHarmfulEffectApplied;
-		CombatTutorialEvents.DetonationZoneCast    += OnDetonationZoneCast;
+		ParryWindowManager.WindupStarted += OnWindupStarted;
+		ParryWindowManager.WindupEnded += OnWindupEnded;
+		CombatTutorialEvents.HarmfulEffectApplied += OnHarmfulEffectApplied;
+		CombatTutorialEvents.DetonationZoneCast += OnDetonationZoneCast;
+
+		// Show the targeting tutorial at the very start of the player's first combat.
+		// Deferred so the GameUI layout is fully resolved before we query any rects.
+		if (!PlayerProgressStore.HasSeenTargetingTutorial)
+			Callable.From(ShowTargetingTutorial).CallDeferred();
 	}
 
 	public override void _ExitTree()
 	{
-		ParryWindowManager.WindupStarted           -= OnWindupStarted;
-		ParryWindowManager.WindupEnded             -= OnWindupEnded;
-		CombatTutorialEvents.HarmfulEffectApplied  -= OnHarmfulEffectApplied;
-		CombatTutorialEvents.DetonationZoneCast    -= OnDetonationZoneCast;
+		ParryWindowManager.WindupStarted -= OnWindupStarted;
+		ParryWindowManager.WindupEnded -= OnWindupEnded;
+		CombatTutorialEvents.HarmfulEffectApplied -= OnHarmfulEffectApplied;
+		CombatTutorialEvents.DetonationZoneCast -= OnDetonationZoneCast;
 
 		_deflectPending = false;
 	}
@@ -86,9 +95,9 @@ public partial class CombatTutorialManager : Node
 		if (_deflectShown || PlayerProgressStore.HasSeenDeflectTutorial) return;
 
 		// Don't show the overlay yet — start the countdown to the parry window.
-		_deflectPending  = true;
-		_windupDuration  = duration;
-		_windupElapsed   = 0f;
+		_deflectPending = true;
+		_windupDuration = duration;
+		_windupElapsed = 0f;
 	}
 
 	/// <summary>
@@ -100,6 +109,23 @@ public partial class CombatTutorialManager : Node
 		_deflectPending = false;
 	}
 
+	void ShowTargetingTutorial()
+	{
+		if (_targetingShown || PlayerProgressStore.HasSeenTargetingTutorial) return;
+		_targetingShown = true;
+
+		TutorialHighlightOverlay.Show(
+			GetTree(),
+			"Combat Tutorial - Targeting",
+			"Cast a spell while hovering over a character to target them directly.\n\n" +
+			"With no target hovered, harmful spells target the boss and helpful spells target yourself.\n\n" +
+			"Click a party frame to lock in a default target - spells will target them if no other target is being hovered.",
+			new Rect2(),
+			null,
+			PlayerProgressStore.MarkTargetingTutorialSeen
+		);
+	}
+
 	void ShowDeflectTutorial()
 	{
 		// Double-check the guard in case WindupEnded and the timer fired on the
@@ -108,7 +134,7 @@ public partial class CombatTutorialManager : Node
 		_deflectShown = true;
 
 		var spotlight = GetSpotlightRect(_ui?.GenericBar?.DeflectPanel);
-		var key       = GetKeybindLabel("deflect");
+		var key = GetKeybindLabel("deflect");
 
 		TutorialHighlightOverlay.Show(
 			GetTree(),
@@ -127,9 +153,9 @@ public partial class CombatTutorialManager : Node
 		if (_dispelShown || PlayerProgressStore.HasSeenDispelTutorial) return;
 		_dispelShown = true;
 
-		var spotlight      = GetSpotlightRect(_ui?.GenericBar?.DispelPanel);
+		var spotlight = GetSpotlightRect(_ui?.GenericBar?.DispelPanel);
 		var frameSpotlight = _ui?.GetPartyFrameRect(characterName) ?? new Rect2();
-		var key            = GetKeybindLabel("dispel");
+		var key = GetKeybindLabel("dispel");
 
 		TutorialHighlightOverlay.Show(
 			GetTree(),
@@ -166,7 +192,9 @@ public partial class CombatTutorialManager : Node
 	// ── helpers ───────────────────────────────────────────────────────────────
 
 	static Rect2 GetSpotlightRect(Control? panel)
-		=> panel != null ? panel.GetGlobalRect() : new Rect2();
+	{
+		return panel != null ? panel.GetGlobalRect() : new Rect2();
+	}
 
 	static string GetKeybindLabel(string actionName)
 	{

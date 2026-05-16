@@ -65,6 +65,18 @@ public static class PlayerProgressStore
 		/// Shown the first time a Detonation Zone is placed by the Demon Slime.
 		/// </summary>
 		public bool HasSeenDetonationTutorial { get; set; } = false;
+
+		/// <summary>
+		/// True once the player has seen (and dismissed) the targeting tutorial overlay.
+		/// Shown at the start of the player's very first combat encounter.
+		/// </summary>
+		public bool HasSeenTargetingTutorial { get; set; } = false;
+
+		/// <summary>
+		/// True once the player has seen (and dismissed) the camp merchant tutorial overlay.
+		/// Shown the first time the player visits a camp rest stop.
+		/// </summary>
+		public bool HasSeenCampMerchantTutorial { get; set; } = false;
 	}
 
 	/// <summary>
@@ -112,6 +124,12 @@ public static class PlayerProgressStore
 
 	/// <summary>True once the Detonation Zone in-combat tutorial overlay has been dismissed.</summary>
 	public static bool HasSeenDetonationTutorial => _data.HasSeenDetonationTutorial;
+
+	/// <summary>True once the targeting tutorial overlay has been dismissed.</summary>
+	public static bool HasSeenTargetingTutorial => _data.HasSeenTargetingTutorial;
+
+	/// <summary>True once the camp merchant tutorial overlay has been dismissed.</summary>
+	public static bool HasSeenCampMerchantTutorial => _data.HasSeenCampMerchantTutorial;
 
 	/// <summary>
 	/// True if there is at least one unlocked news board entry the player has not yet read.
@@ -204,6 +222,22 @@ public static class PlayerProgressStore
 	{
 		if (_data.HasSeenDetonationTutorial) return;
 		_data.HasSeenDetonationTutorial = true;
+		SaveToDisk();
+	}
+
+	/// <summary>Marks the targeting tutorial overlay as seen and saves to disk. Idempotent.</summary>
+	public static void MarkTargetingTutorialSeen()
+	{
+		if (_data.HasSeenTargetingTutorial) return;
+		_data.HasSeenTargetingTutorial = true;
+		SaveToDisk();
+	}
+
+	/// <summary>Marks the camp merchant tutorial overlay as seen and saves to disk. Idempotent.</summary>
+	public static void MarkCampMerchantTutorialSeen()
+	{
+		if (_data.HasSeenCampMerchantTutorial) return;
+		_data.HasSeenCampMerchantTutorial = true;
 		SaveToDisk();
 	}
 
