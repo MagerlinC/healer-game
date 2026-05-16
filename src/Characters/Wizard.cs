@@ -12,7 +12,7 @@ public partial class Wizard : PartyMember
 {
 
 	/// <summary>Seconds between each Arcane Blast.</summary>
-	[Export] public float CastInterval = 3.0f;
+	[Export] public float CastInterval = 2.5f;
 
 	float _castTimer;
 	WizardArcaneBlastSpell _arcaneBlast;

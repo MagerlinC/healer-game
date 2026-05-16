@@ -116,6 +116,12 @@ public partial class World : Node2D
 		ui.BuildGenericActionBar(player);
 		ui.BindUltimateSlot(player);
 
+		// ── In-combat tutorial manager ────────────────────────────────────────
+		// Must be created after BuildGenericActionBar so the slot panel refs exist.
+		var tutorialManager = new CombatTutorialManager();
+		tutorialManager.Init(ui);
+		AddChild(tutorialManager);
+
 		// ── Rune of Nature — vines manager ────────────────────────────────────
 		if (RunState.Instance.IsRuneActive(RuneIndex.Nature) && !RunState.Instance.IsDevTestFight)
 		{

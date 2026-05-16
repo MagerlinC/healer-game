@@ -45,6 +45,26 @@ public static class PlayerProgressStore
 
 		/// <summary>True once the player has read the Runes board entry.</summary>
 		public bool HasSeenRuneEntry { get; set; } = false;
+
+		// ── In-combat tutorial overlays ───────────────────────────────────────────
+
+		/// <summary>
+		/// True once the player has seen (and dismissed) the Deflect tutorial overlay.
+		/// Shown the first time a parryable boss spell begins winding up.
+		/// </summary>
+		public bool HasSeenDeflectTutorial { get; set; } = false;
+
+		/// <summary>
+		/// True once the player has seen (and dismissed) the Dispel tutorial overlay.
+		/// Shown the first time a harmful, dispellable effect is applied to the party.
+		/// </summary>
+		public bool HasSeenDispelTutorial { get; set; } = false;
+
+		/// <summary>
+		/// True once the player has seen (and dismissed) the Detonation Zone tutorial overlay.
+		/// Shown the first time a Detonation Zone is placed by the Demon Slime.
+		/// </summary>
+		public bool HasSeenDetonationTutorial { get; set; } = false;
 	}
 
 	/// <summary>
@@ -81,6 +101,17 @@ public static class PlayerProgressStore
 
 	/// <summary>True once the player has read the Runes news entry.</summary>
 	public static bool HasSeenRuneEntry => _data.HasSeenRuneEntry;
+
+	// ── In-combat tutorial overlay properties ─────────────────────────────────
+
+	/// <summary>True once the Deflect in-combat tutorial overlay has been dismissed.</summary>
+	public static bool HasSeenDeflectTutorial => _data.HasSeenDeflectTutorial;
+
+	/// <summary>True once the Dispel in-combat tutorial overlay has been dismissed.</summary>
+	public static bool HasSeenDispelTutorial => _data.HasSeenDispelTutorial;
+
+	/// <summary>True once the Detonation Zone in-combat tutorial overlay has been dismissed.</summary>
+	public static bool HasSeenDetonationTutorial => _data.HasSeenDetonationTutorial;
 
 	/// <summary>
 	/// True if there is at least one unlocked news board entry the player has not yet read.
@@ -147,6 +178,32 @@ public static class PlayerProgressStore
 	{
 		if (_data.HasSeenRuneEntry) return;
 		_data.HasSeenRuneEntry = true;
+		SaveToDisk();
+	}
+
+	// ── In-combat tutorial overlay API ────────────────────────────────────────
+
+	/// <summary>Marks the Deflect tutorial overlay as seen and saves to disk. Idempotent.</summary>
+	public static void MarkDeflectTutorialSeen()
+	{
+		if (_data.HasSeenDeflectTutorial) return;
+		_data.HasSeenDeflectTutorial = true;
+		SaveToDisk();
+	}
+
+	/// <summary>Marks the Dispel tutorial overlay as seen and saves to disk. Idempotent.</summary>
+	public static void MarkDispelTutorialSeen()
+	{
+		if (_data.HasSeenDispelTutorial) return;
+		_data.HasSeenDispelTutorial = true;
+		SaveToDisk();
+	}
+
+	/// <summary>Marks the Detonation Zone tutorial overlay as seen and saves to disk. Idempotent.</summary>
+	public static void MarkDetonationTutorialSeen()
+	{
+		if (_data.HasSeenDetonationTutorial) return;
+		_data.HasSeenDetonationTutorial = true;
 		SaveToDisk();
 	}
 

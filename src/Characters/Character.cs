@@ -382,6 +382,11 @@ public abstract partial class Character : CharacterBody2D
 		_effects[effect.EffectId] = effect;
 		effect.OnApplied(this);
 		EmitSignalEffectApplied(CharacterName, effect);
+
+		// Trigger the dispel tutorial the first time a harmful, dispellable debuff
+		// lands on a friendly character (e.g. Corrosive Ooze from the Demon Slime).
+		if (effect.IsHarmful && effect.IsDispellable && IsFriendly)
+			CombatTutorialEvents.FireHarmfulEffectApplied(CharacterName);
 	}
 
 	/// <summary>

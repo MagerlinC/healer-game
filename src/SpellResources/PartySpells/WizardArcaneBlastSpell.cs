@@ -10,7 +10,7 @@ namespace healerfantasy.SpellResources;
 [Godot.GlobalClass]
 public partial class WizardArcaneBlastSpell : SpellResource
 {
-	public float DamageAmount = 28f;
+	public float DamageAmount = 35f;
 
 	public WizardArcaneBlastSpell()
 	{

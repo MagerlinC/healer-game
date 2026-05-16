@@ -22,6 +22,18 @@ public partial class GenericActionBar : HBoxContainer
 	// Slightly purple-tinged border to visually distinguish from the regular bar.
 	static readonly Color BorderDefault = new(0.32f, 0.24f, 0.36f);
 
+	/// <summary>
+	/// The Dispel slot panel — used by <see cref="healerfantasy.UI.CombatTutorialManager"/>
+	/// to compute the screen-space highlight rect. Null until <see cref="Build"/> is called.
+	/// </summary>
+	public Control? DispelPanel { get; private set; }
+
+	/// <summary>
+	/// The Deflect slot panel — used by <see cref="healerfantasy.UI.CombatTutorialManager"/>
+	/// to compute the screen-space highlight rect. Null until <see cref="Build"/> is called.
+	/// </summary>
+	public Control? DeflectPanel { get; private set; }
+
 	// ── lifecycle ────────────────────────────────────────────────────────────
 	public override void _Ready()
 	{
@@ -45,6 +57,10 @@ public partial class GenericActionBar : HBoxContainer
 			var (panel, border, overlay) = BuildSlot(spell, actions[i]);
 			_slots.Add(new SlotInfo(spell, border, overlay));
 			AddChild(panel);
+
+			// Expose panels for tutorial highlighting.
+			if (actions[i] == "dispel")  DispelPanel  = panel;
+			if (actions[i] == "deflect") DeflectPanel = panel;
 		}
 
 		// Listen for cooldown events so the overlays animate correctly.

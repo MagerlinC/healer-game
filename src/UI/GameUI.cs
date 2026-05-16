@@ -33,6 +33,22 @@ public partial class GameUI : CanvasLayer
 	BossCastBar _bossCastBar = null!;
 	ActionBar _actionBar;
 	GenericActionBar _genericActionBar;
+
+	/// <summary>
+	/// Exposes the generic action bar (Dispel / Deflect slots) so that
+	/// <see cref="CombatTutorialManager"/> can read slot screen positions for
+	/// tutorial highlight overlays.
+	/// </summary>
+	public GenericActionBar GenericBar => _genericActionBar;
+
+	/// <summary>
+	/// Returns the screen-space rect of the inner health panel for the party
+	/// member named <paramref name="characterName"/>, or <c>Rect2.Zero</c> if
+	/// the character is not found. Used by <see cref="CombatTutorialManager"/>
+	/// to spotlight the afflicted frame in the Dispel tutorial.
+	/// </summary>
+	public Rect2 GetPartyFrameRect(string characterName)
+		=> _partyFrames.GetFrameRect(characterName);
 	UltimateSlot _ultimateSlot = null!;
 	CombatMeter _healingMeter;
 	CombatMeter _damageMeter;

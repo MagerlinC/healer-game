@@ -21,10 +21,12 @@ MaxHealth = 180.0
 [node name="Assassin" parent="." unique_id=613426860 instance=ExtResource("Scene_assassin")]
 position = Vector2(93, -67)
 MaxHealth = 100.0
+BaseCritChance = 0.1
 
 [node name="Wizard" parent="." unique_id=2015225033 instance=ExtResource("Scene_wizard")]
 position = Vector2(128, 3)
 MaxHealth = 100.0
+BaseCritChance = 0.1
 
 [node name="Healer" parent="." unique_id=1338505269 instance=ExtResource("Scene_player")]
 position = Vector2(35, 36)

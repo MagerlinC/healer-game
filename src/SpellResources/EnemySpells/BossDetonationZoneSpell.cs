@@ -71,5 +71,9 @@ public partial class BossDetonationZoneSpell : SpellResource
 
 		// Add as a sibling of the boss so it lives in the same scene layer.
 		ctx.Caster.GetParent().AddChild(zone);
+
+		// Fire tutorial event so CombatTutorialManager can show the overlay
+		// the first time the player encounters this mechanic.
+		CombatTutorialEvents.FireDetonationZoneCast();
 	}
 }

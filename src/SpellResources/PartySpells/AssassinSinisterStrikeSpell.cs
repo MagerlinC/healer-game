@@ -9,7 +9,7 @@ namespace healerfantasy.SpellResources;
 [Godot.GlobalClass]
 public partial class AssassinSinisterStrikeSpell : SpellResource
 {
-	public float DamageAmount = 12f;
+	public float DamageAmount = 15f;
 
 	public AssassinSinisterStrikeSpell()
 	{

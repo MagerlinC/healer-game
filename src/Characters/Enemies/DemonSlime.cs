@@ -50,10 +50,10 @@ public partial class DemonSlime : EnemyCharacter
 	[Export] public float NovaWindupDuration = 3.0f;
 	[Export] public float DetonationZoneInterval = 10.0f;
 
-	[Export] public float MeleeDamage = 30f;
-	[Export] public float AcidSpitDamage = 40f;
+	[Export] public float MeleeDamage = 25f;
+	[Export] public float AcidSpitDamage = 35f;
 	[Export] public float NovaDamage = 75f;
-	[Export] public float DetonationZoneDamage = 80f;
+	[Export] public float DetonationZoneDamage = 65f;
 
 	// ── internal state ────────────────────────────────────────────────────────
 	float _meleeTimer;

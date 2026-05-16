@@ -17,7 +17,7 @@ public partial class Assassin : PartyMember
 	}
 
 	/// <summary>Seconds between each Sinister Strike.</summary>
-	[Export] public float AttackInterval = 1.5f;
+	[Export] public float AttackInterval = 1.2f;
 
 	/// <summary>Movement speed in pixels per second while closing to melee range.</summary>
 	[Export] public float MoveSpeed = 100f;

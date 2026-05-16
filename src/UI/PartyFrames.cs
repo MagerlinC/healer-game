@@ -192,7 +192,10 @@ public partial class PartyFrames : Control
 	/// Returns the player's currently locked default healing target, or <c>null</c>
 	/// if no frame has been clicked to lock it in.
 	/// </summary>
-	public Character? GetDefaultTarget() => _defaultTarget;
+	public Character? GetDefaultTarget()
+	{
+		return _defaultTarget;
+	}
 
 	/// <summary>
 	/// Register a <see cref="Character"/> node with a UI slot so that hovering
@@ -215,5 +218,19 @@ public partial class PartyFrames : Control
 			if (frame.IsHovered())
 				return frame.BoundCharacter;
 		return null;
+	}
+
+	/// <summary>
+	/// Returns the screen-space rect of the health panel for the party member
+	/// named <paramref name="characterName"/>, or <c>Rect2.Zero</c> if not found.
+	/// Used by <see cref="healerfantasy.UI.CombatTutorialManager"/> to spotlight
+	/// the afflicted frame during the Dispel tutorial.
+	/// </summary>
+	public Rect2 GetFrameRect(string characterName)
+	{
+		for (var i = 0; i < MemberDefs.Length; i++)
+			if (MemberDefs[i].Name == characterName)
+				return _frames[i].GetPanelGlobalRect();
+		return new Rect2();
 	}
 }

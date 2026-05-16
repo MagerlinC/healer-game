@@ -83,7 +83,7 @@ public partial class PartyFrame : CharacterFrame
 		_frameWrapper.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 
 		_panel = new PanelContainer();
-		_panel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		_panel.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
 
 		_panelStyle = new StyleBoxFlat();
 		_panelStyle.BgColor = new Color(0.11f, 0.09f, 0.09f, 0.95f);
@@ -176,12 +176,12 @@ public partial class PartyFrame : CharacterFrame
 		_selectionFrame.Texture = GD.Load<Texture2D>("res://assets/frames/healer-targeting-frame.png");
 		_selectionFrame.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 		_selectionFrame.StretchMode = TextureRect.StretchModeEnum.Scale;
-		_selectionFrame.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		_selectionFrame.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
 		_selectionFrame.MouseFilter = MouseFilterEnum.Ignore;
 		_selectionFrame.Visible = false;
 
 		_targetingRing = new Panel();
-		_targetingRing.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		_targetingRing.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
 		_targetingRing.MouseFilter = MouseFilterEnum.Ignore;
 		_targetingRing.Visible = false;
 
@@ -293,7 +293,8 @@ public partial class PartyFrame : CharacterFrame
 	// Applies border colour priority: boss targeting > hover > default.
 	void UpdateHighlight()
 	{
-		_panelStyle.BorderColor = _isHovered ? BorderHovered
+		_panelStyle.BorderColor = _isHovered
+			? BorderHovered
 			: BorderDefault;
 		_targetingRing.Visible = _isBossTargeted;
 	}
@@ -307,6 +308,16 @@ public partial class PartyFrame : CharacterFrame
 	{
 		var mousePos = GetViewport().GetMousePosition();
 		return _panel?.GetGlobalRect().HasPoint(mousePos) ?? false;
+	}
+
+	/// <summary>
+	/// Returns the screen-space <see cref="Rect2"/> of the inner health panel.
+	/// Used by <see cref="healerfantasy.UI.CombatTutorialManager"/> to compute the
+	/// spotlight highlight rect for the Dispel tutorial overlay.
+	/// </summary>
+	public Rect2 GetPanelGlobalRect()
+	{
+		return _panel?.GetGlobalRect() ?? new Rect2();
 	}
 
 	// ── private ───────────────────────────────────────────────────────────────

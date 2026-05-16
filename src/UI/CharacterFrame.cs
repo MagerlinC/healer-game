@@ -45,7 +45,7 @@ public abstract partial class CharacterFrame : VBoxContainer
 	/// </summary>
 	protected virtual int EffectGridColumns => 5;
 
-	public int _effectIndicatorSize = 28;
+	public int _effectIndicatorSize = 34;
 	protected CharacterFrame()
 	{
 		EffectBar = new GridContainer();
