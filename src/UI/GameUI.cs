@@ -49,7 +49,9 @@ public partial class GameUI : CanvasLayer
 	/// to spotlight the afflicted frame in the Dispel tutorial.
 	/// </summary>
 	public Rect2 GetPartyFrameRect(string characterName)
-		=> _partyFrames.GetFrameRect(characterName);
+	{
+		return _partyFrames.GetFrameRect(characterName);
+	}
 	UltimateSlot _ultimateSlot = null!;
 	CombatMeter _healingMeter;
 	CombatMeter _damageMeter;
@@ -123,13 +125,13 @@ public partial class GameUI : CanvasLayer
 		// disappears when it triggers.  Uses the same 44px ItemEffectIndicator badge
 		// style as other item-proc indicators.
 		var stoneContainer = new Control();
-		stoneContainer.AnchorLeft  = stoneContainer.AnchorRight  = 0.2f;
-		stoneContainer.AnchorTop   = stoneContainer.AnchorBottom = 0.8f;
+		stoneContainer.AnchorLeft = stoneContainer.AnchorRight = 0.2f;
+		stoneContainer.AnchorTop = stoneContainer.AnchorBottom = 0.8f;
 		stoneContainer.GrowHorizontal = Control.GrowDirection.End;
-		stoneContainer.GrowVertical   = Control.GrowDirection.Both;
-		stoneContainer.OffsetLeft  = 80f;   // 10px gap after orb right edge (70px)
-		stoneContainer.OffsetRight = 124f;  // 44px wide
-		stoneContainer.OffsetTop   = -22f;  // vertically centred with orb
+		stoneContainer.GrowVertical = Control.GrowDirection.Both;
+		stoneContainer.OffsetLeft = 80f; // 10px gap after orb right edge (70px)
+		stoneContainer.OffsetRight = 124f; // 44px wide
+		stoneContainer.OffsetTop = -22f; // vertically centred with orb
 		stoneContainer.OffsetBottom = 22f;
 		stoneContainer.MouseFilter = Control.MouseFilterEnum.Pass;
 		anchor.AddChild(stoneContainer);
@@ -278,7 +280,10 @@ public partial class GameUI : CanvasLayer
 	/// Returns the player's currently locked default healing target (set by
 	/// left-clicking a party frame), or <c>null</c> if no frame is locked.
 	/// </summary>
-	public Character? GetDefaultTarget() => _partyFrames.GetDefaultTarget();
+	public Character? GetDefaultTarget()
+	{
+		return _partyFrames.GetDefaultTarget();
+	}
 
 	/// <summary>Returns the Character whose party frame or boss health bar the cursor is over, or null.</summary>
 	public Character? GetHoveredCharacter()
@@ -300,7 +305,7 @@ public partial class GameUI : CanvasLayer
 		foreach (var (charName, bar) in _vinesBars)
 		{
 			if (bar.IsHovered() && _vinesCharacters.TryGetValue(charName, out var vines)
-			    && vines.IsAlive)
+			                    && vines.IsAlive)
 				return vines;
 		}
 
@@ -400,16 +405,16 @@ public partial class GameUI : CanvasLayer
 			_vinesSection = new VBoxContainer();
 			_vinesSection.AddThemeConstantOverride("separation", 4);
 			_vinesSection.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
-			_vinesSection.OffsetLeft   = 8f;
-			_vinesSection.OffsetRight  = 228f;  // 220 px wide column
-			_vinesSection.OffsetTop    = 170f;  // clear of taller boss bar + cast bar
+			_vinesSection.OffsetLeft = 18f;
+			_vinesSection.OffsetRight = 228f; // 220 px wide column
+			_vinesSection.OffsetTop = 170f; // clear of taller boss bar + cast bar
 			_vinesSection.SizeFlagsVertical = Control.SizeFlags.ShrinkBegin;
 			_anchor.AddChild(_vinesSection);
 		}
 
 		// Compact BossHealthBar with a tight side margin to fit the narrow column.
 		// Inherits hover-highlighting, effect badges, and all the same styling.
-		var bar = new BossHealthBar(vines.CharacterName, sideMargin: 6);
+		var bar = new BossHealthBar(vines.CharacterName, 6);
 		bar.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		_vinesSection.AddChild(bar);
 

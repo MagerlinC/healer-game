@@ -43,6 +43,10 @@ public partial class CampController : LoadoutController
 		AddChild(_armoryPanel);
 
 		// ── Merchant overlay panel ────────────────────────────────────────────
+		// Generate this camp's item stock before the panel is built so that the
+		// first Refresh() call (triggered when the player opens the shop) has
+		// items ready to display.
+		healerfantasy.Merchant.MerchantStore.GenerateStock();
 		_merchantPane = new MerchantPane();
 		(_merchantPanel, _) = BuildOverlayPanel("The Merchant", _merchantPane);
 		_panels.Add(_merchantPanel);

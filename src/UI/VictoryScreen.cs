@@ -225,7 +225,7 @@ public partial class VictoryScreen : CanvasLayer
 		PopulateRunLogsCard();
 
 		ClearButtons();
-		_btnRow.AddChild(MakeButton("Play Again",
+		_btnRow.AddChild(MakeButton("Back to Town",
 			new Color(0.18f, 0.14f, 0.10f), new Color(0.65f, 0.52f, 0.28f), OnPlayAgainPressed));
 		_btnRow.AddChild(MakeButton("Main Menu",
 			new Color(0.14f, 0.11f, 0.09f), new Color(0.45f, 0.38f, 0.22f), OnMainMenuPressed));
@@ -1066,7 +1066,8 @@ public partial class VictoryScreen : CanvasLayer
 		var isHealing = section == DetailSection.Healing;
 		var filtered = section switch
 		{
-			DetailSection.DamageTaken => events.Where(e => e.Type == CombatEventType.Damage && PartyMemberNames.Contains(e.TargetName)).ToList(),
+			DetailSection.DamageTaken => events
+				.Where(e => e.Type == CombatEventType.Damage && PartyMemberNames.Contains(e.TargetName)).ToList(),
 			DetailSection.Healing => events.Where(e => e.Type == CombatEventType.Healing).ToList(),
 			DetailSection.DamageDealt => events
 				.Where(e => e.Type == CombatEventType.Damage && !PartyMemberNames.Contains(e.TargetName))
