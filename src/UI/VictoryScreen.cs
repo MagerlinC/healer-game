@@ -119,19 +119,21 @@ public partial class VictoryScreen : CanvasLayer
 				RunHistoryStore.RecordBossEncounter(character.CharacterName);
 				CombatLog.Clear();
 
-				// Roll for item drop.
+				// Roll for boss rewards.
 				var droppedItem = ItemRegistry.RollDrop(character.CharacterName);
 				if (droppedItem != null)
 					ItemStore.AddToInventory(droppedItem);
+				var droppedGold = ItemRegistry.RollGoldDrop();
+				RunState.Instance.AddGold(droppedGold);
 
 				if (RunState.Instance.IsDevTestFight)
-					ShowDevTestComplete(character.CharacterName, droppedItem);
+					ShowDevTestComplete(character.CharacterName, droppedItem, droppedGold);
 				else if (!RunState.Instance.IsLastBossInDungeon)
-					ShowArenaCleared(character.CharacterName, droppedItem);
+					ShowArenaCleared(character.CharacterName, droppedItem, droppedGold);
 				else if (!RunState.Instance.IsLastDungeon)
-					ShowDungeonCleared(character.CharacterName, droppedItem);
+					ShowDungeonCleared(character.CharacterName, droppedItem, droppedGold);
 				else
-					ShowVictoryScreen(droppedItem);
+					ShowVictoryScreen(droppedItem, droppedGold);
 			}));
 
 		BuildLayout();
@@ -143,14 +145,14 @@ public partial class VictoryScreen : CanvasLayer
 
 	// ── public show API ───────────────────────────────────────────────────────
 
-	public void ShowArenaCleared(string defeatedBossName, EquippableItem? droppedItem = null)
+	public void ShowArenaCleared(string defeatedBossName, EquippableItem? droppedItem = null, int droppedGold = 0)
 	{
 		if (Visible) return;
 		_audioPlayer.Play();
 		_titleLabel.Text = "ARENA CLEARED!";
 		_subLabel.Text = $"{defeatedBossName} has been defeated.\nPrepare for the next battle.";
 		PopulateTalentOffers();
-		PopulateItemsCard(droppedItem);
+		PopulateItemsCard(droppedItem, droppedGold);
 		PopulateRunLogsCard();
 
 		ClearButtons();
@@ -164,14 +166,14 @@ public partial class VictoryScreen : CanvasLayer
 		GetTree().Paused = true;
 	}
 
-	public void ShowDungeonCleared(string defeatedBossName, EquippableItem? droppedItem = null)
+	public void ShowDungeonCleared(string defeatedBossName, EquippableItem? droppedItem = null, int droppedGold = 0)
 	{
 		if (Visible) return;
 		_audioPlayer.Play();
 		_titleLabel.Text = "DUNGEON CLEARED!";
 		_subLabel.Text = $"{defeatedBossName} has been defeated.\nHead to camp and prepare for the next dungeon.";
 		PopulateTalentOffers(2);
-		PopulateItemsCard(droppedItem);
+		PopulateItemsCard(droppedItem, droppedGold);
 		PopulateRunLogsCard();
 
 		ClearButtons();
@@ -185,7 +187,7 @@ public partial class VictoryScreen : CanvasLayer
 		GetTree().Paused = true;
 	}
 
-	public void ShowVictoryScreen(EquippableItem? droppedItem = null)
+	public void ShowVictoryScreen(EquippableItem? droppedItem = null, int droppedGold = 0)
 	{
 		if (Visible) return;
 		_audioPlayer.Play();
@@ -221,7 +223,7 @@ public partial class VictoryScreen : CanvasLayer
 		_subLabel.Text = "The Queen of the Frozen Wastes has fallen.\nAll dungeons conquered — the realm is saved!";
 		_offerSectionWrapper.Visible = false; // no talent offer on final victory
 		_activeBtn = null;
-		PopulateItemsCard(droppedItem, runeDropped, runeDropName, runeIndex);
+		PopulateItemsCard(droppedItem, droppedGold, runeDropped, runeDropName, runeIndex);
 		PopulateRunLogsCard();
 
 		ClearButtons();
@@ -239,7 +241,7 @@ public partial class VictoryScreen : CanvasLayer
 	/// the Ctrl+Alt+O popup). Skips normal run progression and returns straight
 	/// to the Overworld with a full RunState reset.
 	/// </summary>
-	public void ShowDevTestComplete(string defeatedBossName, EquippableItem? droppedItem = null)
+	public void ShowDevTestComplete(string defeatedBossName, EquippableItem? droppedItem = null, int droppedGold = 0)
 	{
 		if (Visible) return;
 		_audioPlayer.Play();
@@ -247,7 +249,7 @@ public partial class VictoryScreen : CanvasLayer
 		_subLabel.Text = $"{defeatedBossName} defeated.\n[Dev mode — run state will be reset]";
 		_offerSectionWrapper.Visible = false; // no talent offer in dev test
 		_activeBtn = null;
-		PopulateItemsCard(droppedItem);
+		PopulateItemsCard(droppedItem, droppedGold);
 		PopulateRunLogsCard();
 
 		ClearButtons();
@@ -742,12 +744,12 @@ public partial class VictoryScreen : CanvasLayer
 	/// Fills the Items Acquired card.
 	/// Shows item drag-to-equip pane and/or rune entry; empty hint if nothing dropped.
 	/// </summary>
-	void PopulateItemsCard(EquippableItem? item,
+	void PopulateItemsCard(EquippableItem? item, int gold = 0,
 		bool runeDropped = false, string runeDropName = "", int runeIndex = 0)
 	{
 		foreach (var child in _itemsCardContent.GetChildren()) child.QueueFree();
 
-		if (item == null && !runeDropped)
+		if (item == null && gold <= 0 && !runeDropped)
 		{
 			var empty = new Label();
 			empty.Text = "No items found this fight.";
@@ -762,17 +764,19 @@ public partial class VictoryScreen : CanvasLayer
 		}
 
 		// ── Equipment drop ────────────────────────────────────────────────────
-		if (item != null)
+		if (item != null || gold > 0)
 		{
-			var pane = new EquipmentPane(item);
+			var pane = new EquipmentPane(item, RunState.Instance.Gold, gold);
 			pane.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+			pane.SizeFlagsVertical = Control.SizeFlags.ShrinkBegin;
 			_itemsCardContent.AddChild(pane);
 		}
+
 
 		// ── Rune drop (full-victory only) ─────────────────────────────────────
 		if (runeDropped)
 		{
-			if (item != null) AddSep(_itemsCardContent);
+			if (item != null || gold > 0) AddSep(_itemsCardContent);
 
 			var runeRow = new HBoxContainer();
 			runeRow.Alignment = BoxContainer.AlignmentMode.Center;

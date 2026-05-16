@@ -184,6 +184,8 @@ public static class AssetConstants
 		return $"{ItemsPath}amulets/{n}.png";
 	}
 
+	public static readonly string GoldIconPath = $"{ItemsPath}gold.png";
+
 	// ── Scene backgrounds ─────────────────────────────────────────────────────
 
 	public static readonly string OverworldBackgroundPath = BackgroundBasePath + "overworld/background.png";

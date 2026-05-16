@@ -23,7 +23,7 @@ public partial class DeflectSpell : SpellResource
 	{
 		Name = "Deflect";
 		Description =
-			"Deflects an incoming telegraphed attack, reducing its damage to zero. Must be cast just before the incoming spell goes off (deflect window lasts 0.5s).";
+			"Deflects an incoming telegraphed attack, reducing its damage to zero. Deflect can be cast during global cooldown, and must be cast just before the incoming spell goes off (deflect window lasts 0.5s).";
 		ManaCost = 0f;
 		CastTime = 0f;
 		Cooldown = 1f;

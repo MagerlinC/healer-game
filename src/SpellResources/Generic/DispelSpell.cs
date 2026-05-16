@@ -16,7 +16,7 @@ public partial class DispelSpell : SpellResource
 	public DispelSpell()
 	{
 		Name = "Dispel";
-		Description = "Cleanses the target of all harmful effects.";
+		Description = "Cleanses the target of all harmful effects. Dispel can be cast during global cooldown.";
 		ManaCost = 0f;
 		CastTime = 0f;
 		Cooldown = 8f;

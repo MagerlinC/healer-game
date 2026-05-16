@@ -22,6 +22,10 @@ namespace healerfantasy.Items;
 /// </summary>
 public static class ItemRegistry
 {
+	public const float GoldDropChance = 0.33f;
+	public const int MinGoldDrop = 0;
+	public const int MaxGoldDrop = 100;
+
 	/// <summary>
 	/// (BossName | null, factory).
 	/// null BossName = item may drop from any boss.
@@ -90,7 +94,6 @@ public static class ItemRegistry
 
 	public static EquippableItem? RollDrop(string bossName)
 	{
-
 		var rarity = RollRarity();
 		if (rarity == null) return null;
 
@@ -125,5 +128,18 @@ public static class ItemRegistry
 		}
 
 		return null;
+	}
+
+	/// <summary>
+	/// Rolls optional bonus gold for a boss kill.
+	/// Returns 0 when no gold drops; otherwise returns a random amount in the
+	/// inclusive range <see cref="MinGoldDrop"/> to <see cref="MaxGoldDrop"/>.
+	/// </summary>
+	public static int RollGoldDrop()
+	{
+		if (GD.Randf() > GoldDropChance)
+			return 0;
+
+		return GD.RandRange(MinGoldDrop, MaxGoldDrop);
 	}
 }

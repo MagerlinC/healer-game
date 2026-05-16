@@ -25,6 +25,8 @@ namespace healerfantasy.UI;
 public partial class EquipmentPane : Control
 {
 	readonly EquippableItem? _highlightItem;
+	readonly int? _currentGold;
+	readonly int _recentGoldDrop;
 
 	// Live references for incremental refresh (slots are permanent; only inventory
 	// flow is rebuilt when items move in or out).
@@ -37,9 +39,11 @@ public partial class EquipmentPane : Control
 	static readonly Color HintColor = new(0.45f, 0.42f, 0.38f);
 	static readonly Color SepColor = new(0.50f, 0.40f, 0.22f, 0.55f);
 
-	public EquipmentPane(EquippableItem? highlightItem = null)
+	public EquipmentPane(EquippableItem? highlightItem = null, int? currentGold = null, int recentGoldDrop = 0)
 	{
 		_highlightItem = highlightItem;
+		_currentGold = currentGold;
+		_recentGoldDrop = Math.Max(0, recentGoldDrop);
 	}
 
 	public override void _Ready()
@@ -195,6 +199,8 @@ public partial class EquipmentPane : Control
 		_inventoryFlow.AddThemeConstantOverride("h_separation", 8);
 		_inventoryFlow.AddThemeConstantOverride("v_separation", 8);
 		scroll.AddChild(_inventoryFlow);
+		if (_currentGold != null)
+			vbox.AddChild(BuildGoldSummaryRow());
 
 		// ── Unequip drop strip ────────────────────────────────────────────────
 		var dropZone = new InventoryDropZoneControl();
@@ -214,6 +220,43 @@ public partial class EquipmentPane : Control
 
 		RebuildInventoryFlow();
 		return vbox;
+	}
+
+	Control BuildGoldSummaryRow()
+	{
+		var row = new HBoxContainer();
+		row.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		row.AddThemeConstantOverride("separation", 10);
+
+		var spacer = new Control();
+		spacer.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		row.AddChild(spacer);
+
+		var icon = new TextureRect();
+		icon.Texture = GD.Load<Texture2D>(AssetConstants.GoldIconPath);
+		icon.CustomMinimumSize = new Vector2(24f, 24f);
+		icon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+		icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+		row.AddChild(icon);
+
+		var amountLabel = new Label();
+		amountLabel.Text = $"{_currentGold.Value} Gold";
+		amountLabel.AddThemeFontSizeOverride("font_size", 15);
+		amountLabel.AddThemeColorOverride("font_color", TitleColor);
+		amountLabel.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+		row.AddChild(amountLabel);
+
+		if (_recentGoldDrop > 0)
+		{
+			var deltaLabel = new Label();
+			deltaLabel.Text = $"(+ {_recentGoldDrop})";
+			deltaLabel.AddThemeFontSizeOverride("font_size", 13);
+			deltaLabel.AddThemeColorOverride("font_color", new Color(0.90f, 0.76f, 0.26f));
+			deltaLabel.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+			row.AddChild(deltaLabel);
+		}
+
+		return row;
 	}
 
 	void RebuildInventoryFlow()
