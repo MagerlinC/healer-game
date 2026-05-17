@@ -14,7 +14,7 @@ public class BulwarkOfOvergrowth : EquippableItem
 	{
 		Name = "Bulwark of Overgrowth";
 		Description = $"{100 * ShieldConversion:F0}% of overhealing is turned into shield.";
-		Rarity = ItemRarity.Rare;
+		Rarity = ItemRarity.Epic;
 		Slot = EquipSlot.Amulet;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(2));
 		SpellModifiers.Add(new OverhealShieldingModifier());

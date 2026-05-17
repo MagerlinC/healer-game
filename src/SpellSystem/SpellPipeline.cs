@@ -178,7 +178,11 @@ public static class SpellPipeline
 			}
 		}
 
-		// ── 11. Record in history ───────────────────────────────────────────
+		// ── 11. OnPostApply — runs after Apply so effects are already live ───
+		foreach (var mod in modifiers)
+			mod.OnPostApply(ctx);
+
+		// ── 12. Record in history ───────────────────────────────────────────
 		caster.SpellHistory.Record(spell.Name, ctx.Timestamp);
 
 		return ctx;

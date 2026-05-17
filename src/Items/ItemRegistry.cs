@@ -33,6 +33,7 @@ public static class ItemRegistry
 	static readonly List<(string? BossName, Func<EquippableItem> Factory)> LootTable =
 	[
 		// Staves
+		(null, () => new WrathOfNature()),
 		(null, () => new CrystalStaff()),
 		(null, () => new StaffOfRestoration()),
 		(null, () => new SlimewardenSceptre()),

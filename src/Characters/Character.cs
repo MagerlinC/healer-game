@@ -431,6 +431,19 @@ public abstract partial class Character : CharacterBody2D
 		}
 	}
 
+	/// <summary>
+	/// Remove an active effect by id without invoking its
+	/// <see cref="CharacterEffect.OnExpired"/> callback.
+	/// Use when you intend to immediately replace the effect with a new one
+	/// and don't want the expiry logic to fire (e.g. Wrath of Nature swapping
+	/// a plain HoT for a wrapped version).
+	/// </summary>
+	public void RemoveEffectSilent(string effectId)
+	{
+		if (_effects.Remove(effectId))
+			EmitSignalEffectRemoved(CharacterName, effectId);
+	}
+
 	public enum EffectFilter
 	{
 		All,

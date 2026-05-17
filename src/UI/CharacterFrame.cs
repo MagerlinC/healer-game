@@ -100,6 +100,8 @@ public abstract partial class CharacterFrame : VBoxContainer
 
 	void ShowEffectIndicator(CharacterEffect effect)
 	{
+		if (effect.IsInvisible) return;
+
 		// Remove the stale badge so a refreshed effect doesn't appear twice.
 		HideEffectIndicator(effect.EffectId);
 		var indicator = new EffectIndicator(effect, _effectIndicatorSize);

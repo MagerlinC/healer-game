@@ -82,6 +82,13 @@ public abstract partial class CharacterEffect : RefCounted
 	public bool IsHarmful { get; set; } = false;
 
 	/// <summary>
+	/// When true, this effect is never shown as an indicator on the party frame.
+	/// Use for invisible bookkeeping effects (watchers, trackers) that have no
+	/// meaningful icon or tooltip to display to the player.
+	/// </summary>
+	public bool IsInvisible { get; set; } = false;
+
+	/// <summary>
 	/// Haste multiplier applied to tick timing. A value of 1.2 means ticks fire
 	/// 20% more often (i.e. the effective interval is <c>baseInterval / HasteMultiplier</c>).
 	/// Set this to <c>1f + casterStats.IncreasedHaste</c> when applying the effect.

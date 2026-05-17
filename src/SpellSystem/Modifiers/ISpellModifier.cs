@@ -39,4 +39,13 @@ public interface ISpellModifier
 	/// The spell itself has NOT yet been applied when this runs.
 	/// </summary>
 	void OnAfterCast(SpellContext context);
+
+	/// <summary>
+	/// Phase 4 — runs after the spell's <see cref="SpellResource.Apply"/> has
+	/// executed. Effects applied by the spell are already live on their targets
+	/// at this point. Use this phase to intercept or augment those effects
+	/// (e.g. wrapping a HoT with additional on-expiry behaviour).
+	/// Default implementation is a no-op so existing modifiers don't need changes.
+	/// </summary>
+	void OnPostApply(SpellContext context) { }
 }

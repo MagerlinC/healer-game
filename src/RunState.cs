@@ -286,8 +286,9 @@ public partial class RunState : Node
 
 	/// <summary>
 	/// Configure a one-off developer test fight against a specific boss.
-	/// Preserves the player's current spell loadout but replaces run
-	/// progression so that <see cref="World"/> loads exactly the chosen boss.
+	/// Preserves the player's current spell loadout and equipped items, but
+	/// replaces run progression so that <see cref="World"/> loads exactly
+	/// the chosen boss.
 	/// </summary>
 	public void SetupDevTestFight(DungeonDefinition dungeon, int bossIndex)
 	{
@@ -295,7 +296,6 @@ public partial class RunState : Node
 		CompletedCamps = 0;
 		CurrentBossIndexInDungeon = bossIndex;
 		RunDungeons = new List<DungeonDefinition> { dungeon };
-		ItemStore.Clear();
 		IsDevTestFight = true;
 	}
 
