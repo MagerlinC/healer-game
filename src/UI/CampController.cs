@@ -189,9 +189,10 @@ public partial class CampController : LoadoutController
 
 		TutorialHighlightOverlay.Show(
 			GetTree(),
-			"The Merchant",
-			"The Merchant sells useful items between dungeons.\n\n" +
-			"Click an item to buy it with gold. You can also sell items you no longer need to free up inventory space.\n\n" +
+			"Welcome to Camp!",
+			"In the camp, you can review the items and talents you have found so far, and prepare for your next battle by changing your spells at the spell table.\n\n" +
+			"The Camp Merchant sells useful items between dungeons.\n" +
+			"Click an item to buy it with gold. You can also sell items you no longer need.\n\n" +
 			"Stock is refreshed each time you rest at camp.",
 			spotlight,
 			null,

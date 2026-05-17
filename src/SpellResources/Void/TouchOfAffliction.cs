@@ -8,7 +8,7 @@ namespace healerfantasy.SpellResources.Void;
 public partial class TouchOfAffliction : SpellResource
 {
 	public static readonly string SpellName = "Touch of Affliction";
-	[Export] public float AddedDamagePerDoT = 5f;
+	[Export] public float AddedDamagePerDoT = 15f;
 	[Export] public float BaseDamage = 10f;
 
 	public TouchOfAffliction()
@@ -19,6 +19,7 @@ public partial class TouchOfAffliction : SpellResource
 		ManaCost = 10f;
 		CastTime = 0.0f;
 		School = SpellSchool.Void;
+		Cooldown = 6f;
 		Tags = SpellTags.Damage;
 		RequiredSchoolPoints = 1;
 		TargetingType = TargetingType.Enemy;

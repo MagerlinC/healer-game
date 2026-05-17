@@ -117,7 +117,7 @@ public partial class CombatTutorialManager : Node
 		TutorialHighlightOverlay.Show(
 			GetTree(),
 			"Combat Tutorial - Targeting",
-			"Cast a spell while hovering over a character to target them directly.\n\n" +
+			"Cast a spell while hovering your mouse over a character to target them directly.\n\n" +
 			"With no target hovered, harmful spells target the boss and helpful spells target yourself.\n\n" +
 			"Click a party frame to lock in a default target - spells will target them if no other target is being hovered.",
 			new Rect2(),
