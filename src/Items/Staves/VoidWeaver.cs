@@ -10,11 +10,13 @@ public class VoidWeaver : EquippableItem
 
 	public override string ItemId => "void_weaver";
 
+	static readonly float DurationExtension = 2f;
+
 	public VoidWeaver()
 	{
 		Name = "Void Weaver";
 		Description =
-			"20% increased void damage. Dealing void damage has a chance to refresh all damage over time effects on the target";
+			$"20% increased void damage. Casting a void spell increases the remaining duration of damage effects on the target by {DurationExtension:F0}s";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Staff;
 		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(6));
@@ -43,11 +45,8 @@ public class VoidWeaver : EquippableItem
 
 		public void OnAfterCast(SpellContext context)
 		{
-			context.Target.RefreshAllPlayerEffects(Character.EffectFilter.HarmfulOnly);
-			var isCritHeal = context.Tags.HasFlag(SpellTags.Critical)
-			                 && context.Tags.HasFlag(SpellTags.Healing);
-			if (isCritHeal)
-				context.Caster.RestoreMana(5f);
+			if (context.IsSpellOfSchool(SpellSchool.Void))
+				context.Target.ExtendAllPlayerEffects(DurationExtension, Character.EffectFilter.HarmfulOnly);
 		}
 	}
 }

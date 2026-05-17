@@ -39,7 +39,7 @@ public partial class NourishSpell : SpellResource
 		Tags = SpellTags.Healing;
 		RequiredSchoolPoints = 1;
 		TargetingType = TargetingType.Ally;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "nature/swarm-of-locusts.png");
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "healer/healer6.png");
 	}
 
 	public override float GetBaseValue()

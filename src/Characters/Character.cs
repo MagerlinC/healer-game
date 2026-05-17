@@ -447,7 +447,7 @@ public abstract partial class Character : CharacterBody2D
 			: _effects.Values;
 
 		var nonUltPlayerEffects = effectsForSchool.Where(effect =>
-			effect.SourceCharacterName != GameConstants.HealerName && !effect.IsUltimateEffect);
+			effect.SourceCharacterName == GameConstants.HealerName && !effect.IsUltimateEffect);
 
 		foreach (var effect in nonUltPlayerEffects)
 		{
@@ -457,6 +457,30 @@ public abstract partial class Character : CharacterBody2D
 				case EffectFilter.FriendlyOnly when !effect.IsHarmful:
 				case EffectFilter.HarmfulOnly when effect.IsHarmful:
 					effect.Refresh();
+					break;
+			}
+		}
+	}
+
+	public void ExtendAllPlayerEffects(float duration, EffectFilter filter = EffectFilter.All, SpellSchool? school = null)
+	{
+		if (_effects.Count == 0) return;
+
+		var effectsForSchool = school.HasValue
+			? _effects.Values.Where(effect => effect.School == school.Value)
+			: _effects.Values;
+
+		var nonUltPlayerEffects = effectsForSchool.Where(effect =>
+			effect.SourceCharacterName == GameConstants.HealerName && !effect.IsUltimateEffect);
+
+		foreach (var effect in nonUltPlayerEffects)
+		{
+			switch (filter)
+			{
+				case EffectFilter.All:
+				case EffectFilter.FriendlyOnly when !effect.IsHarmful:
+				case EffectFilter.HarmfulOnly when effect.IsHarmful:
+					effect.ExtendBy(duration);
 					break;
 			}
 		}

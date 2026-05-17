@@ -145,6 +145,11 @@ public abstract partial class CharacterEffect : RefCounted
 		Remaining = Duration;
 	}
 
+	public void ExtendBy(float duration)
+	{
+		Remaining += duration;
+	}
+
 	/// <summary>
 	/// Override to trigger early expiry based on runtime state.
 	/// Checked every frame in <see cref="Update"/> before tick processing.

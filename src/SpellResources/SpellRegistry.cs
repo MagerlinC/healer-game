@@ -64,7 +64,7 @@ public static class SpellRegistry
 		new WildGrowthSpell(),
 		new PoisonBoltSpell(),
 		new LeafShadeSpell(),
-		new BoonOfTheWildsSpell(),
+		new SwarmOfTheForest(),
 		new NourishSpell(),
 		new OneWithNatureSpell()
 	];

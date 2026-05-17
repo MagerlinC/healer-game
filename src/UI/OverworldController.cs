@@ -1,7 +1,6 @@
 #nullable enable
 using Godot;
 using healerfantasy;
-using healerfantasy.SpellResources;
 using healerfantasy.UI;
 
 /// <summary>
@@ -57,10 +56,16 @@ public partial class OverworldController : LoadoutController
 			new Vector2(525f, FloorHeight - 8f), new Vector2(0.100f, 0.100f), 28f));
 		mapItem.Scale = new Vector2(1.5f, 1.5f);
 
-		var runeTable = AddInteractible(new InteractibleObject(
-			AssetConstants.RuneTableInteractiblePath,
-			new Vector2(1110f, FloorHeight), new Vector2(0.085f, 0.085f), 36f,
-			AssetConstants.RuneSfxPath));
+		if (PlayerProgressStore.HasUnlockedRuneEntry)
+		{
+			var runeTable = AddInteractible(new InteractibleObject(
+				AssetConstants.RuneTableInteractiblePath,
+				new Vector2(1110f, FloorHeight), new Vector2(0.085f, 0.085f), 36f,
+				AssetConstants.RuneSfxPath));
+
+			runeTable.Interacted += () => _runeTablePanel!.Open();
+			WireHints(runeTable, "Rune Table  •  Configure difficulty runes");
+		}
 
 		_talentBoard = AddInteractible(new InteractibleObject(
 			AssetConstants.GetTalentBoardPathForAffinity(RunState.Instance.SchoolAffinity),
@@ -123,8 +128,6 @@ public partial class OverworldController : LoadoutController
 		mapItem.Interacted += OnOpenMap;
 		WireHints(mapItem, "World Map  •  Plan your journey");
 
-		runeTable.Interacted += () => _runeTablePanel!.Open();
-		WireHints(runeTable, "Rune Table  •  Configure difficulty runes");
 
 		_talentBoard.Interacted += () => OpenPanel(_talentPanel!);
 		WireHints(_talentBoard, "School Affinity & Talents  •  Click to open");
