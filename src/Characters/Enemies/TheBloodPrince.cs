@@ -378,6 +378,13 @@ public partial class TheBloodPrince : EnemyCharacter
 		_pendingAttack = PendingAttack.Siphon;
 		_sprite.Play("cast");
 
+		// Highlight siphon targets immediately — the player has the 1-second cast
+		// window to react before drain begins.
+		var siphonNames = new string[_siphonTargets.Count];
+		for (var i = 0; i < _siphonTargets.Count; i++)
+			siphonNames[i] = _siphonTargets[i].CharacterName;
+		RaiseBossSpellTargets(siphonNames);
+
 		// Show the pre-channel cast bar (1 s cast time).
 		EmitSignalCastWindupStarted("Sanguine Siphon", _siphonSpell.Icon, _siphonSpell.CastTime);
 	}
@@ -464,6 +471,8 @@ public partial class TheBloodPrince : EnemyCharacter
 		_isSiphonChanneling = false;
 		EmitSignalSanguineChannelEnded();
 		EmitSignalSanguineHealthTargetCleared();
+		// Clear the spell-target highlight; melee (Templar) outline resumes.
+		RaiseBossSpellTargets();
 
 		GD.Print("[BloodPrince] Sanguine Siphon channel ended.");
 	}

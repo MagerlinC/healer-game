@@ -74,6 +74,15 @@ public abstract partial class Character : CharacterBody2D
 	[Signal]
 	public delegate void BossMeleeTargetChangedEventHandler(string characterName);
 
+	/// <summary>
+	/// Emitted by bosses when they select one or more specific party members as
+	/// spell targets. The UI uses this to highlight exactly the targeted frames
+	/// rather than lighting the whole party up. Pass an empty array to clear any
+	/// active spell-target highlight and restore the default melee-target outline.
+	/// </summary>
+	[Signal]
+	public delegate void BossSpellTargetsChangedEventHandler(string[] targetNames);
+
 	// ── exports ──────────────────────────────────────────────────────────────
 	[Export] public string CharacterName = "Character";
 	[Export] public float MaxHealth = 100.0f;
@@ -151,6 +160,7 @@ public abstract partial class Character : CharacterBody2D
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(Died));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(FloatingCombatText));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(BossMeleeTargetChanged));
+		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(BossSpellTargetsChanged));
 		EmitSignalHealthChanged(CharacterName, CurrentHealth, MaxHealth);
 		EmitSignalManaChanged(CharacterName, CurrentMana, MaxMana);
 	}
@@ -598,6 +608,18 @@ public abstract partial class Character : CharacterBody2D
 	{
 		if (IsBeingRemoved || IsQueuedForDeletion()) return;
 		EmitSignalBossMeleeTargetChanged(target?.CharacterName ?? string.Empty);
+	}
+
+	/// <summary>
+	/// Emits <see cref="BossSpellTargetsChanged"/> so the party-frame UI can
+	/// highlight exactly the characters being targeted by a spell.
+	/// Call with zero arguments (or an empty array) to clear any active
+	/// spell-target highlight and restore the default melee-target outline.
+	/// </summary>
+	protected void RaiseBossSpellTargets(params string[] names)
+	{
+		if (IsBeingRemoved || IsQueuedForDeletion()) return;
+		EmitSignalBossSpellTargetsChanged(names);
 	}
 
 	/// <summary>Subtract mana, clamped at 0.</summary>

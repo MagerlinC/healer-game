@@ -1,6 +1,6 @@
+using System.Collections.Generic;
 using Godot;
 using healerfantasy;
-using healerfantasy.SpellResources;
 
 /// <summary>
 /// The four party health frames rendered at the bottom of the screen.
@@ -25,14 +25,8 @@ public partial class PartyFrames : Control
 		(GameConstants.WizardName, new Color(0.20f, 0.50f, 0.95f), 100f) // sapphire-blue
 	};
 
-	// Slot indices (must match MemberDefs order)
-	const int TemplarSlot = 0;
-
 	// ── node refs ─────────────────────────────────────────────────────────────
 	readonly PartyFrame[] _frames = new PartyFrame[4];
-
-	// True while a boss cast windup is in progress (suppresses tank-only highlight).
-	bool _specialCastActive;
 
 	// The party member the player has locked as their default healing target.
 	// Null = no lock; spells fall back to the caster when nothing is hovered.
@@ -40,6 +34,20 @@ public partial class PartyFrames : Control
 
 	// The exact party member currently selected by the boss for melee attacks.
 	string? _currentBossMeleeTargetName = GameConstants.TemplarName;
+
+	// ── spell-target tracking ─────────────────────────────────────────────────
+	// Names of party members currently highlighted as boss spell targets.
+	// When non-empty, these frames are lit instead of the default melee target.
+	readonly HashSet<string> _spellTargetNames = new();
+
+	// Minimum time (seconds) a spell-target highlight stays visible after being
+	// set. This prevents instant-cast spells (CastTime = 0) from producing a
+	// single-frame flicker that the player cannot react to.
+	const float SpellHighlightHoldDuration = 1.5f;
+
+	// Counts down from SpellHighlightHoldDuration after spell targets are set.
+	// When it reaches zero, the highlight clears automatically.
+	float _spellHighlightTimer;
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 	public override void _Ready()
@@ -73,13 +81,12 @@ public partial class PartyFrames : Control
 			frame.OnDefaultTargetClicked = HandleDefaultTargetClicked;
 
 		// ── default targeting state ───────────────────────────────────────────
-		// Keep the exact current boss melee target outlined in red between
-		// special boss casts.
-		UpdateMeleeHighlight();
+		// Keep the exact current boss melee target outlined in red between spells.
+		UpdateTargetHighlight();
 
 		// ── Templar death tracking ───────────────────────────────────────────
-		// Re-evaluate the default melee highlight whenever a party member dies so
-		// the UI never keeps a dead frame marked as the boss's target.
+		// Re-evaluate the highlight whenever a party member dies so the UI never
+		// keeps a dead frame marked as the boss's target.
 		GlobalAutoLoad.SubscribeToSignal(
 			nameof(Character.Died),
 			Callable.From((Character dead) =>
@@ -87,7 +94,7 @@ public partial class PartyFrames : Control
 				if (dead.IsFriendly && dead.CharacterName == _currentBossMeleeTargetName)
 				{
 					_currentBossMeleeTargetName = null;
-					UpdateMeleeHighlight();
+					UpdateTargetHighlight();
 				}
 			}));
 
@@ -98,38 +105,92 @@ public partial class PartyFrames : Control
 				_currentBossMeleeTargetName = string.IsNullOrEmpty(targetName)
 					? null
 					: targetName;
-				UpdateMeleeHighlight();
+				UpdateTargetHighlight();
 			}));
 
-		// ── boss cast-windup targeting ────────────────────────────────────────
-		// Re-use the existing CastWindupStarted / CastWindupEnded signal pair that
-		// every boss already emits.  When a windup begins we highlight the whole
-		// party (the target is often random or AoE); when it ends we restore the
-		// tank-only default.
+		// ── boss spell-target highlighting ────────────────────────────────────
+		// Bosses emit BossSpellTargetsChanged with the exact character names they
+		// are targeting. We highlight only those frames. An empty array clears
+		// the override and restores the melee-target outline.
 		GlobalAutoLoad.SubscribeToSignal(
-			nameof(CrystalKnight.CastWindupStarted),
-			Callable.From((string _n, Texture2D _t, float _d) => OnCastWindupStarted()));
-
-		GlobalAutoLoad.SubscribeToSignal(
-			nameof(CrystalKnight.CastWindupEnded),
-			Callable.From(OnCastWindupEnded));
+			nameof(Character.BossSpellTargetsChanged),
+			Callable.From((string[] names) => OnBossSpellTargetsChanged(names)));
 	}
 
 	// ── private ───────────────────────────────────────────────────────────────
 
-	/// <summary>
-	/// Recomputes which frame should show the default melee-target outline.
-	/// Suppressed during special-cast windups because those temporarily light up
-	/// every party member instead.
-	/// </summary>
-	void UpdateMeleeHighlight()
+	public override void _Process(double delta)
 	{
-		if (_specialCastActive)
-			return;
+		// Tick down the spell-highlight hold timer for instant-cast spells.
+		// When it expires, restore the default melee-target outline.
+		if (_spellTargetNames.Count > 0 && _spellHighlightTimer > 0f)
+		{
+			_spellHighlightTimer -= (float)delta;
+			if (_spellHighlightTimer <= 0f)
+				ClearSpellTargetHighlight();
+		}
+	}
 
-		var meleeTargetIndex = GetCurrentMeleeTargetIndex();
-		for (var i = 0; i < _frames.Length; i++)
-			_frames[i].SetBossTargeted(i == meleeTargetIndex);
+	/// <summary>
+	/// Called when the boss announces which party members its next spell will
+	/// hit. An empty array means the spell has resolved and highlighting should
+	/// revert to the default melee-target outline.
+	/// </summary>
+	void OnBossSpellTargetsChanged(string[] names)
+	{
+		_spellTargetNames.Clear();
+
+		if (names != null && names.Length > 0)
+		{
+			foreach (var n in names)
+				_spellTargetNames.Add(n);
+			// Always reset the hold timer so even a sequence of instant spells
+			// never produces a flicker too brief to see.
+			_spellHighlightTimer = SpellHighlightHoldDuration;
+		}
+		else
+		{
+			// Explicit clear from the boss (channel ended, phase finished, etc.).
+			_spellHighlightTimer = 0f;
+		}
+
+		UpdateTargetHighlight();
+	}
+
+	/// <summary>
+	/// Called when the hold timer expires for an instant-cast spell that
+	/// doesn't emit an explicit clear signal.
+	/// </summary>
+	void ClearSpellTargetHighlight()
+	{
+		_spellTargetNames.Clear();
+		_spellHighlightTimer = 0f;
+		UpdateTargetHighlight();
+	}
+
+	/// <summary>
+	/// Recomputes which frames show the boss-targeting outline.
+	/// Spell targets take priority: when the boss has announced specific targets
+	/// only those frames are lit. Otherwise only the current melee target is lit.
+	/// </summary>
+	void UpdateTargetHighlight()
+	{
+		if (_spellTargetNames.Count > 0)
+		{
+			// Highlight exactly the frames that are spell-targeted.
+			for (var i = 0; i < _frames.Length; i++)
+			{
+				var name = _frames[i].BoundCharacter?.CharacterName;
+				_frames[i].SetBossTargeted(name != null && _spellTargetNames.Contains(name));
+			}
+		}
+		else
+		{
+			// Default: only the current melee target.
+			var meleeTargetIndex = GetCurrentMeleeTargetIndex();
+			for (var i = 0; i < _frames.Length; i++)
+				_frames[i].SetBossTargeted(i == meleeTargetIndex);
+		}
 	}
 
 	int GetCurrentMeleeTargetIndex()
@@ -161,31 +222,6 @@ public partial class PartyFrames : Control
 				frame.BoundCharacter?.CharacterName == _defaultTarget.CharacterName);
 	}
 
-	/// <summary>
-	/// Called when any boss begins a telegraphed cast wind-up.
-	/// Highlights every party frame to warn the player that a special ability
-	/// is incoming and the target is not yet known (or is the whole party).
-	/// </summary>
-	void OnCastWindupStarted()
-	{
-		_specialCastActive = true;
-		foreach (var frame in _frames)
-			frame.SetBossTargeted(true);
-	}
-
-	/// <summary>
-	/// Called when the boss cast wind-up ends (ability fires or is cancelled).
-	/// Restores the default melee-target highlight.
-	/// </summary>
-	void OnCastWindupEnded()
-	{
-		_specialCastActive = false;
-		// Restore the tank-only default — but only if the Templar is still alive.
-		// If the tank has died, the boss auto-attacks random members and there is no
-		// reliable single frame to keep highlighted.
-		UpdateMeleeHighlight();
-	}
-
 	// ── public API ────────────────────────────────────────────────────────────
 
 	/// <summary>
@@ -205,7 +241,7 @@ public partial class PartyFrames : Control
 	{
 		if (slot < 0 || slot >= _frames.Length) return;
 		_frames[slot].BindCharacter(character);
-		UpdateMeleeHighlight();
+		UpdateTargetHighlight();
 	}
 
 	/// <summary>

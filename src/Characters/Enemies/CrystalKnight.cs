@@ -202,6 +202,9 @@ public partial class CrystalKnight : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.CrystalBlast;
+		// Highlight the target immediately so the player sees who will be hit
+		// before the animation completes and damage lands.
+		RaiseBossSpellTargets(target.CharacterName);
 		_sprite.Play("spell");
 	}
 
@@ -211,6 +214,8 @@ public partial class CrystalKnight : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.CrystalDecay;
+		// Same: announce the target so the player can start preparing a dispel.
+		RaiseBossSpellTargets(target.CharacterName);
 		_sprite.Play("spell");
 	}
 

@@ -228,6 +228,7 @@ public partial class TheNightborne : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.VoidLance;
+		RaiseBossSpellTargets(target.CharacterName);
 		_sprite.Play("attack");
 	}
 
@@ -237,6 +238,7 @@ public partial class TheNightborne : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.NightVeil;
+		RaiseBossSpellTargets(target.CharacterName);
 		_sprite.Play("attack");
 	}
 
@@ -315,6 +317,13 @@ public partial class TheNightborne : EnemyCharacter
 		_nightsAdvancePhase = NightsAdvancePhase.Windup;
 		_nightsAdvancePhaseTimer = NightsAdvanceWindupDuration;
 
+		// Announce ALL targets during the 2-second windup so the player can
+		// see who will be struck and pre-shield them in time.
+		var targetNames = new string[_nightsAdvanceTargets.Count];
+		for (var i = 0; i < _nightsAdvanceTargets.Count; i++)
+			targetNames[i] = _nightsAdvanceTargets[i].CharacterName;
+		RaiseBossSpellTargets(targetNames);
+
 		// Notify the UI so the cast bar is displayed (not parryable — the player
 		// counter-play is shielding or healing targets before the cast ends).
 		EmitSignalCastWindupStarted("Night's Advance", null, NightsAdvanceWindupDuration);
@@ -352,6 +361,10 @@ public partial class TheNightborne : EnemyCharacter
 	{
 		var target = _nightsAdvanceTargets[_nightsAdvanceTargetIndex];
 
+		// Narrow the highlight to just this target as the boss blinks to them,
+		// giving the player a clear visual cue for each sequential strike.
+		RaiseBossSpellTargets(target.CharacterName);
+
 		// Teleport the boss to the target's position, slightly behind them.
 		GlobalPosition = target.GlobalPosition + new Vector2(-40f, 0f);
 		SpawnStarDust(target.GlobalPosition);
@@ -386,6 +399,8 @@ public partial class TheNightborne : EnemyCharacter
 		_nightsAdvancePhase = NightsAdvancePhase.None;
 		GlobalPosition = _nightsAdvanceOrigin;
 		_sprite.Play("idle");
+		// Clear spell-target highlight; the default melee (Templar) outline resumes.
+		RaiseBossSpellTargets();
 	}
 
 	/// <summary>
