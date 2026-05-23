@@ -25,6 +25,15 @@ using SpellResource = healerfantasy.SpellResources.SpellResource;
 /// swallowed by blank areas of the UI.  Only interactive leaf nodes (PanelContainers,
 /// buttons) use the default Stop filter.  This keeps native tooltips and world-space
 /// click events working correctly regardless of the CanvasLayer.
+///
+/// Mini-enemy health bars
+/// ──────────────────────
+/// Spawned adds (VinesEnemy, BloodRune, etc.) each get a compact floating health
+/// bar that tracks their world-space position.  Optionally a small cast bar can
+/// be embedded below the health bar for adds that channel spells (e.g. Blood Rune).
+/// Call <see cref="AddMiniEnemyHealthBar"/> for any add that needs a health frame;
+/// <see cref="AddVinesHealthBar"/> is a thin wrapper kept for VinesManager
+/// compatibility.
 /// </summary>
 public partial class GameUI : CanvasLayer
 {
@@ -56,24 +65,38 @@ public partial class GameUI : CanvasLayer
 	CombatMeter _healingMeter;
 	CombatMeter _damageMeter;
 	Control _anchor = null!;
-	const float VinesBarWidth = 220f;
-	const float VinesBarHeight = 112f;
-	const float VinesBarTopOffset = 86f;
+
+	// ── Mini-enemy health bar constants ───────────────────────────────────────
+	const float MiniEnemyBarWidth     = 220f;
+	const float MiniEnemyBarHeight    = 112f;
+	/// <summary>Extra height reserved for the embedded cast bar (health bar + 4px gap + 32px cast bar).</summary>
+	const float MiniEnemyBarWithCastHeight = 148f;
+	const float MiniEnemyBarTopOffset = 86f;
 
 	/// <summary>Badge shown to the right of the mana orb when Stone of Rebirth is active.</summary>
 	ItemEffectIndicator? _stoneOfRebirthBadge;
 
-	/// <summary>Positioned screen-space wrapper for each active vines health bar.</summary>
-	readonly Dictionary<string, Control> _vinesBarAnchors = new();
+	/// <summary>
+	/// Positioned screen-space wrapper for each active mini-enemy health bar
+	/// (VinesEnemy, BloodRune, etc.).
+	/// </summary>
+	readonly Dictionary<string, Control> _miniEnemyBarAnchors = new();
 
 	/// <summary>
-	/// CharacterName → BossHealthBar for each active VinesEnemy.
+	/// CharacterName → BossHealthBar for each active mini-enemy.
 	/// Stored so <see cref="GetHoveredCharacter"/> can check hover state.
 	/// </summary>
-	readonly Dictionary<string, BossHealthBar> _vinesBars = new();
+	readonly Dictionary<string, BossHealthBar> _miniEnemyBars = new();
 
-	/// <summary>Maps CharacterName → Character for each active VinesEnemy.</summary>
-	readonly Dictionary<string, Character> _vinesCharacters = new();
+	/// <summary>Maps CharacterName → Character for each active mini-enemy.</summary>
+	readonly Dictionary<string, Character> _miniEnemyCharacters = new();
+
+	/// <summary>
+	/// CharacterName → CastBarBase for mini-enemies that have an embedded cast bar.
+	/// Only populated when <see cref="AddMiniEnemyHealthBar"/> is called with
+	/// <c>hasCastBar = true</c>.
+	/// </summary>
+	readonly Dictionary<string, CastBarBase> _miniEnemyCastBars = new();
 
 	// Stored so GetHoveredCharacter can return the right Character object and
 	// fall back to the alive twin when one is dead.
@@ -274,7 +297,7 @@ public partial class GameUI : CanvasLayer
 	public override void _Process(double delta)
 	{
 		base._Process(delta);
-		UpdateVinesBarPositions();
+		UpdateMiniEnemyBarPositions();
 	}
 
 	public void BindCharacter(int slot, Character character)
@@ -310,12 +333,12 @@ public partial class GameUI : CanvasLayer
 		if (_bossHealthBar.IsHovered())
 			return AliveOrFallback(_primaryBossCharacter, _secondaryBossCharacter);
 
-		// Vines bars (Rune of Nature) — return the matching VinesEnemy Character.
-		foreach (var (charName, bar) in _vinesBars)
+		// Mini-enemy bars (VinesEnemy, BloodRune, etc.) — return the matching Character.
+		foreach (var (charName, bar) in _miniEnemyBars)
 		{
-			if (bar.IsHovered() && _vinesCharacters.TryGetValue(charName, out var vines)
-			                    && vines.IsAlive)
-				return vines;
+			if (bar.IsHovered() && _miniEnemyCharacters.TryGetValue(charName, out var enemy)
+			                    && enemy.IsAlive)
+				return enemy;
 		}
 
 		return _partyFrames.GetHoveredCharacter();
@@ -395,85 +418,126 @@ public partial class GameUI : CanvasLayer
 		_bossCastBar.OffsetBottom = 278f;
 	}
 
-	// ── Vines health bars (Rune of Nature) ────────────────────────────────────
+	// ── Mini-enemy health bars (VinesEnemy, BloodRune, etc.) ─────────────────
+
+	/// <summary>
+	/// Creates a compact health bar — and optionally an embedded cast bar — for
+	/// <paramref name="enemy"/> and adds both to a floating screen-space anchor
+	/// that follows the enemy's world position.
+	///
+	/// Also registers <paramref name="enemy"/> for hover-targeting via
+	/// <see cref="GetHoveredCharacter"/> so the player can click/hover the health
+	/// frame to target the add with damage spells.
+	///
+	/// When <paramref name="hasCastBar"/> is <c>true</c> a
+	/// <see cref="BloodRuneCastBar"/> is embedded below the health bar and
+	/// returned; the caller is responsible for calling
+	/// <see cref="CastBarBase.StartCast"/> and <see cref="CastBarBase.StopCast"/>
+	/// on it at the appropriate times.
+	/// Returns <c>null</c> when <paramref name="hasCastBar"/> is <c>false</c>.
+	/// </summary>
+	public CastBarBase? AddMiniEnemyHealthBar(Character enemy, string displayName, bool hasCastBar = false)
+	{
+		var anchorHeight = hasCastBar ? MiniEnemyBarWithCastHeight : MiniEnemyBarHeight;
+
+		// Free-positioned wrapper so the bar can follow the enemy's world position.
+		var anchor = new Control();
+		anchor.CustomMinimumSize = new Vector2(MiniEnemyBarWidth, anchorHeight);
+		anchor.Size              = new Vector2(MiniEnemyBarWidth, anchorHeight);
+		anchor.MouseFilter       = Control.MouseFilterEnum.Pass;
+		_anchor.AddChild(anchor);
+
+		// Vertical stack: health bar on top, optional cast bar below.
+		var vbox = new VBoxContainer();
+		vbox.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		vbox.AddThemeConstantOverride("separation", 4);
+		vbox.MouseFilter = Control.MouseFilterEnum.Pass;
+		anchor.AddChild(vbox);
+
+		// Compact BossHealthBar — expands to fill available height in the VBox.
+		var bar = new BossHealthBar(enemy.CharacterName, 6);
+		bar.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		bar.MouseFilter       = Control.MouseFilterEnum.Pass;
+		vbox.AddChild(bar);
+
+		// Initialise immediately so the bar is visible from the first frame.
+		bar.Init(displayName, enemy.CurrentHealth, enemy.MaxHealth);
+
+		_miniEnemyBarAnchors[enemy.CharacterName] = anchor;
+		_miniEnemyBars[enemy.CharacterName]       = bar;
+		_miniEnemyCharacters[enemy.CharacterName] = enemy;
+		UpdateSingleMiniEnemyBarPosition(enemy.CharacterName, enemy);
+
+		if (!hasCastBar) return null;
+
+		// Embedded cast bar — driven externally by the add enemy.
+		var castBar = new BloodRuneCastBar();
+		castBar.CustomMinimumSize    = new Vector2(0f, 32f);
+		castBar.SizeFlagsHorizontal  = Control.SizeFlags.ExpandFill;
+		vbox.AddChild(castBar);
+		_miniEnemyCastBars[enemy.CharacterName] = castBar;
+		return castBar;
+	}
 
 	/// <summary>
 	/// Creates a compact health bar for <paramref name="vines"/> and adds it to
 	/// a floating screen-space anchor above the attached target.
-	/// Also registers <paramref name="vines"/> for hover-targeting via
-	/// <see cref="GetHoveredCharacter"/>.
-	/// Called by <see cref="VinesManager"/> when new vines spawn.
+	/// Wrapper around <see cref="AddMiniEnemyHealthBar"/> kept for
+	/// <see cref="VinesManager"/> compatibility.
 	/// </summary>
 	public void AddVinesHealthBar(VinesEnemy vines)
 	{
-		// Free-positioned wrapper so the bar can follow the vine's world position.
-		var anchor = new Control();
-		anchor.CustomMinimumSize = new Vector2(VinesBarWidth, VinesBarHeight);
-		anchor.Size = new Vector2(VinesBarWidth, VinesBarHeight);
-		anchor.MouseFilter = Control.MouseFilterEnum.Pass;
-		_anchor.AddChild(anchor);
+		AddMiniEnemyHealthBar(vines, vines.DisplayName, hasCastBar: false);
+	}
 
-		// Compact BossHealthBar sized to fit above the attached party member.
-		var bar = new BossHealthBar(vines.CharacterName, 6);
-		bar.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-		bar.MouseFilter = Control.MouseFilterEnum.Pass;
-		anchor.AddChild(bar);
+	/// <summary>
+	/// Removes the mini-enemy health bar (and optional embedded cast bar) for
+	/// the character named <paramref name="characterName"/>.
+	/// Called when the add dies or despawns.
+	/// </summary>
+	public void RemoveMiniEnemyHealthBar(string characterName)
+	{
+		_miniEnemyCharacters.Remove(characterName);
+		_miniEnemyBars.Remove(characterName);
+		_miniEnemyCastBars.Remove(characterName);
 
-		// Initialise immediately — the vines _Ready() has already fired so the
-		// initial HealthChanged signal has already been missed.
-		// Use DisplayName for the label ("Vine (Templar)") but CharacterName is
-		// already baked into the BossHealthBar constructor for signal routing.
-		bar.Init(vines.DisplayName, vines.CurrentHealth, vines.MaxHealth);
-
-		_vinesBarAnchors[vines.CharacterName] = anchor;
-		_vinesBars[vines.CharacterName] = bar;
-		_vinesCharacters[vines.CharacterName] = vines;
-		UpdateSingleVinesBarPosition(vines.CharacterName, vines);
+		if (_miniEnemyBarAnchors.TryGetValue(characterName, out var anchor))
+		{
+			_miniEnemyBarAnchors.Remove(characterName);
+			anchor.QueueFree(); // frees the VBox, BossHealthBar, and cast bar as children
+		}
 	}
 
 	/// <summary>
 	/// Removes the vines health bar for the character named
 	/// <paramref name="vinesCharacterName"/>.
-	/// Called when the vines die.
+	/// Wrapper around <see cref="RemoveMiniEnemyHealthBar"/> kept for
+	/// <see cref="VinesManager"/> compatibility.
 	/// </summary>
 	public void RemoveVinesHealthBar(string vinesCharacterName)
+		=> RemoveMiniEnemyHealthBar(vinesCharacterName);
+
+	void UpdateMiniEnemyBarPositions()
 	{
-		_vinesCharacters.Remove(vinesCharacterName);
+		if (_miniEnemyCharacters.Count == 0) return;
 
-		if (_vinesBars.TryGetValue(vinesCharacterName, out var bar))
-		{
-			_vinesBars.Remove(vinesCharacterName);
-			bar.QueueFree();
-		}
-
-		if (_vinesBarAnchors.TryGetValue(vinesCharacterName, out var anchor))
-		{
-			_vinesBarAnchors.Remove(vinesCharacterName);
-			anchor.QueueFree();
-		}
+		foreach (var (characterName, enemy) in _miniEnemyCharacters)
+			UpdateSingleMiniEnemyBarPosition(characterName, enemy);
 	}
 
-	void UpdateVinesBarPositions()
+	void UpdateSingleMiniEnemyBarPosition(string characterName, Character enemyCharacter)
 	{
-		if (_vinesCharacters.Count == 0) return;
-
-		foreach (var (characterName, vines) in _vinesCharacters)
-			UpdateSingleVinesBarPosition(characterName, vines);
-	}
-
-	void UpdateSingleVinesBarPosition(string characterName, Character vinesCharacter)
-	{
-		if (!_vinesBarAnchors.TryGetValue(characterName, out var anchor)
+		if (!_miniEnemyBarAnchors.TryGetValue(characterName, out var anchor)
 		    || !IsInstanceValid(anchor)
-		    || !IsInstanceValid(vinesCharacter))
+		    || !IsInstanceValid(enemyCharacter))
 			return;
 
-		// Convert the vine's world position into screen-space pixels so the
+		// Convert the enemy's world position into screen-space pixels so the
 		// bar follows the same on-screen point as the animated sprite.
-		var canvasTransform = vinesCharacter.GetViewport().GetCanvasTransform();
-		var screenPos = canvasTransform * vinesCharacter.GlobalPosition;
+		var canvasTransform = enemyCharacter.GetViewport().GetCanvasTransform();
+		var screenPos = canvasTransform * enemyCharacter.GlobalPosition;
 		anchor.Position = new Vector2(
-			screenPos.X - VinesBarWidth / 2f,
-			screenPos.Y - VinesBarTopOffset);
+			screenPos.X - MiniEnemyBarWidth / 2f,
+			screenPos.Y - MiniEnemyBarTopOffset);
 	}
 }

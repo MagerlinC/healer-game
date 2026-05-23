@@ -310,8 +310,9 @@ public partial class Player : Character
 		_sprite.Play("idle");
 		_sprite.Position = new Vector2(0f, _liftOffset); // keep lift smooth; _PhysicsProcess descends it
 
-		// Tell party members which boss to focus when the player attacks one directly.
-		if (spell.Tags.HasFlag(SpellTags.Damage) && target != null && target.IsInGroup(GameConstants.BossGroupName))
+		// Tell party members which enemy to focus when the player attacks one directly.
+		// Checks IsFriendly rather than BossGroupName so adds like BloodRune are included.
+		if (spell.Tags.HasFlag(SpellTags.Damage) && target != null && !target.IsFriendly)
 			PartyMember.NotifyPlayerAttackedBoss(target);
 
 		var stats = GetCharacterStats();

@@ -3,6 +3,7 @@ using Godot;
 using healerfantasy;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
+using healerfantasy.UI;
 
 /// <summary>
 /// The Blood Knight — first boss of the Castle of Blood.
@@ -61,6 +62,9 @@ public partial class BloodKnight : EnemyCharacter
 	[Export] public float CleaveDamage = 28f;
 	[Export] public float DrainDamage = 65f;
 
+	/// <summary>How often (in seconds) a new Blood Rune spawns during the fight.</summary>
+	[Export] public float BloodRuneSpawnInterval = 10.0f;
+
 	/// <summary>HP fraction (0–1) below which Enrage triggers. Default 30%.</summary>
 	[Export] public float EnrageThreshold = 0.30f;
 
@@ -82,6 +86,13 @@ public partial class BloodKnight : EnemyCharacter
 	AudioStreamPlayer _riserPlayer;
 
 	bool _enraged;
+
+	// ── Blood Rune spawning ───────────────────────────────────────────────────
+
+	GameUI? _gameUI;
+	float _bloodRuneTimer;
+	int _bloodRuneCounter;
+	readonly List<BloodRune> _activeRunes = new();
 
 	enum PendingAttack
 	{
@@ -124,6 +135,18 @@ public partial class BloodKnight : EnemyCharacter
 		_sprite.AnimationFinished += OnAnimationFinished;
 		_sprite.Play("idle");
 		ApplyRuneModifiers();
+
+		// Auto-discover the GameUI from the parent World scene.
+		// GetParent() is valid here because AddChild sets the parent before _Ready fires.
+		var ui = GetParent()?.GetNodeOrNull<GameUI>("PartyUI");
+		if (ui != null)
+		{
+			_gameUI         = ui;
+			_bloodRuneTimer = BloodRuneSpawnInterval;
+		}
+
+		// Clean up any living Blood Runes when the Blood Knight dies.
+		Died += _ => CleanupAllBloodRunes();
 	}
 
 	public override void _Process(double delta)
@@ -143,6 +166,17 @@ public partial class BloodKnight : EnemyCharacter
 			if (_drainWindupTimer <= 0f)
 				ExecuteBloodDrain();
 			return;
+		}
+
+		// ── Blood Rune spawn timer ────────────────────────────────────────────
+		if (_gameUI != null)
+		{
+			_bloodRuneTimer -= (float)delta;
+			if (_bloodRuneTimer <= 0f)
+			{
+				_bloodRuneTimer = BloodRuneSpawnInterval;
+				SpawnBloodRune();
+			}
 		}
 
 		// ── Regular attack timers ─────────────────────────────────────────────
@@ -254,6 +288,55 @@ public partial class BloodKnight : EnemyCharacter
 
 		if (IsAlive)
 			_sprite.Play("idle");
+	}
+
+	// ── Blood Rune management ─────────────────────────────────────────────────
+
+	/// <summary>
+	/// Spawns a new <see cref="BloodRune"/> add at a fixed offset from the Blood
+	/// Knight, creates its health-frame in the UI (with an embedded cast bar), and
+	/// registers cleanup callbacks so the frame is removed when the rune dies or
+	/// successfully fires Blood Burst.
+	/// </summary>
+	void SpawnBloodRune()
+	{
+		_bloodRuneCounter++;
+		var instanceName = $"BloodRune_{_bloodRuneCounter}";
+
+		var rune = new BloodRune(instanceName);
+
+		// Place slightly to the left and below the Blood Knight.
+		rune.Position = Position + new Vector2(-120f, 50f);
+		GetParent().AddChild(rune);
+
+		// Create the health frame with an embedded cast bar; inject the bar into
+		// the rune so it can drive StartCast / StopCast directly.
+		var castBar = _gameUI!.AddMiniEnemyHealthBar(rune, rune.DisplayName, hasCastBar: true);
+		rune.CastBar = castBar;
+
+		// Remove the health frame when the rune despawns (death or fired).
+		rune.OnDespawn = () =>
+		{
+			_gameUI?.RemoveMiniEnemyHealthBar(rune.CharacterName);
+			_activeRunes.Remove(rune);
+		};
+
+		_activeRunes.Add(rune);
+	}
+
+	/// <summary>
+	/// Force-removes all living Blood Runes and their UI frames when the Blood
+	/// Knight dies, so adds do not outlast the fight.
+	/// </summary>
+	void CleanupAllBloodRunes()
+	{
+		foreach (var rune in _activeRunes.ToArray())
+		{
+			_gameUI?.RemoveMiniEnemyHealthBar(rune.CharacterName);
+			if (IsInstanceValid(rune))
+				rune.QueueFree();
+		}
+		_activeRunes.Clear();
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
