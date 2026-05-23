@@ -222,6 +222,14 @@ public partial class BloodKnight : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Cleave;
+		// Ask the spell itself who it will hit so the highlight is always accurate,
+		// including the fallback case where a frontliner is dead and the cleave
+		// rolls onto other party members instead.
+		var cleaveTargets = _cleaveSpell.ResolveTargets(this, target);
+		var names = new string[cleaveTargets.Count];
+		for (var i = 0; i < cleaveTargets.Count; i++)
+			names[i] = cleaveTargets[i].CharacterName;
+		RaiseBossSpellTargets(names);
 		_sprite.Play("attack");
 	}
 
