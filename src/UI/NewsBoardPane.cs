@@ -88,7 +88,7 @@ public partial class NewsBoardPane : VBoxContainer
 
 		// Tutorial — always visible
 		list.AddChild(BuildTopicRow(
-			"📖  Welcome to Healer Fantasy",
+			"📖  Welcome to Keep Us Alive",
 			"Tutorial: your guide to dungeon delving",
 			false,
 			() => ShowDetail(BuildTutorialDetail())));

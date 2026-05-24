@@ -25,6 +25,7 @@ public static class AssetConstants
 	public static readonly string FinalBossPhase2MusicPath = "res://assets/music/boss-battle.ogg";
 
 	public static readonly string MainMenuPath = "res://assets/backgrounds/main-menu/background.png";
+	public static readonly string MistTexturePath = "res://assets/textures/mist.png";
 
 	static readonly string BackgroundBasePath = "res://assets/backgrounds/";
 

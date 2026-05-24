@@ -31,6 +31,10 @@ window/stretch/aspect="expand"
 
 project/assembly_name="healer-fantasy"
 
+[gui]
+
+theme/custom_font="uid://djqgnmavmtnng"
+
 [input]
 
 move_up={

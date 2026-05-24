@@ -78,7 +78,7 @@ public partial class TutorialPopup : CanvasLayer
 
 		// ── Title ─────────────────────────────────────────────────────────────────
 		var titleLabel = new Label();
-		titleLabel.Text = "Welcome to Healer Fantasy!";
+		titleLabel.Text = "Welcome to Keep Us Alive!";
 		titleLabel.HorizontalAlignment = HorizontalAlignment.Center;
 		titleLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		titleLabel.AddThemeFontSizeOverride("font_size", 26);

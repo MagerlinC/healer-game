@@ -43,7 +43,7 @@ public partial class MainMenuUI : Node2D
 
 	const string SettingsSavePath = "user://settings.cfg";
 	const string DisplaySection = "display";
-	const string AudioSection   = "audio";
+	const string AudioSection = "audio";
 
 	static readonly (string Label, int W, int H)[] Resolutions =
 	{
@@ -91,46 +91,89 @@ public partial class MainMenuUI : Node2D
 		var bgRect = new TextureRect();
 		bgRect.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		bgRect.Texture = GD.Load<Texture2D>(AssetConstants.MainMenuPath);
-		bgRect.StretchMode = TextureRect.StretchModeEnum.Scale;
+		// ExpandMode.IgnoreSize lets the rect shrink/grow freely regardless of
+		// the texture's native resolution, so the anchors can fill the viewport.
+		// KeepAspectCovered scales the image to cover the full rect while
+		// maintaining aspect ratio, centering it and trimming equally from both
+		// sides — giving correct behaviour for any aspect ratio narrower than 21:9.
+		bgRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+		bgRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered;
 		bgRect.MouseFilter = Control.MouseFilterEnum.Ignore;
 		bg.AddChild(bgRect);
 
 		canvas.AddChild(bg);
 
-		// Centred content column
-		var vbox = new VBoxContainer();
-		vbox.SetAnchorsPreset(Control.LayoutPreset.Center);
-		vbox.GrowHorizontal = Control.GrowDirection.Both;
-		vbox.GrowVertical = Control.GrowDirection.Both;
-		vbox.AddThemeConstantOverride("separation", 16);
-		bg.AddChild(vbox);
+		// ── Mist layers ───────────────────────────────────────────────────────
+		var mistTex = GD.Load<Texture2D>(AssetConstants.MistTexturePath);
+		var mistShader = BuildMistShader();
+		AddMistLayer(bg, mistTex, mistShader, 0.015f,  -0.003f, 0.11f, 0f);
+		AddMistLayer(bg, mistTex, mistShader, -0.010f,  0.002f, 0.09f, 17f);
+		AddMistLayer(bg, mistTex, mistShader, 0.020f,  -0.001f, 0.07f, 33f);
 
-		// Title
+		// ── Title region (top ~24 % of the screen) ───────────────────────────
+		var titleRegion = new CenterContainer();
+		titleRegion.AnchorLeft = 0f;
+		titleRegion.AnchorRight = 1f;
+		titleRegion.AnchorTop = 0.10f;
+		titleRegion.AnchorBottom = 0.34f;
+		titleRegion.MouseFilter = Control.MouseFilterEnum.Ignore;
+		bg.AddChild(titleRegion);
+
 		var title = new Label();
-		title.Text = "HEALER FANTASY";
+		title.Text = "Keep Us Alive";
+		title.Uppercase = true;
 		title.HorizontalAlignment = HorizontalAlignment.Center;
-		title.AddThemeFontSizeOverride("font_size", 52);
-		title.AddThemeColorOverride("font_color", TitleColor);
-		vbox.AddChild(title);
+		title.AddThemeFontSizeOverride("font_size", 80);
+		title.MouseFilter = Control.MouseFilterEnum.Ignore;
 
-		var sub = new Label();
-		sub.Text = "A Roguelike Healing Experience";
-		sub.HorizontalAlignment = HorizontalAlignment.Center;
-		sub.AddThemeFontSizeOverride("font_size", 16);
-		sub.AddThemeColorOverride("font_color", SubtitleColor);
-		vbox.AddChild(sub);
+		// Horizontal gradient: #DEB56A (0 %) → #FBF8EB (50 %) → #DEB56A (100 %)
+		// We use a canvas_item shader so the gradient is based on the label's
+		// local-space X position.  node_width is updated whenever the label's
+		// rect changes so the gradient always spans the exact text width.
+		var gradShader = new Shader();
+		gradShader.Code =
+			"shader_type canvas_item;\n" +
+			"uniform float node_width = 600.0;\n" +
+			"varying float grad_x;\n" +
+			"void vertex() { grad_x = VERTEX.x / node_width; }\n" +
+			"void fragment() {\n" +
+			"    vec4 tex = texture(TEXTURE, UV);\n" +
+			"    float t = clamp(grad_x, 0.0, 1.0);\n" +
+			"    vec3 colorA = vec3(0.87059, 0.70980, 0.41569);\n" +
+			"    vec3 colorB = vec3(0.98431, 0.97255, 0.92157);\n" +
+			"    float blend = 1.0 - abs(t * 2.0 - 1.0);\n" +
+			"    COLOR = vec4(mix(colorA, colorB, blend), tex.a);\n" +
+			"}\n";
+		var titleMat = new ShaderMaterial();
+		titleMat.Shader = gradShader;
+		titleMat.SetShaderParameter("node_width", 700.0f);
+		title.Material = titleMat;
+		// Keep node_width in sync with the label's actual rendered width
+		title.ItemRectChanged += () =>
+		{
+			if (title.Size.X > 1f)
+				titleMat.SetShaderParameter("node_width", title.Size.X);
+		};
+		titleRegion.AddChild(title);
 
-		// Spacer
-		var spacer = new Control();
-		spacer.CustomMinimumSize = new Vector2(0, 36);
-		vbox.AddChild(spacer);
+		// ── Menu region (20 – 48 % of the screen) ────────────────────────────
+		var menuRegion = new CenterContainer();
+		menuRegion.AnchorLeft = 0f;
+		menuRegion.AnchorRight = 1f;
+		menuRegion.AnchorTop = 0.25f;
+		menuRegion.AnchorBottom = 0.53f;
+		menuRegion.MouseFilter = Control.MouseFilterEnum.Ignore;
+		bg.AddChild(menuRegion);
 
-		// Menu buttons
-		vbox.AddChild(MakeMenuButton("Play", OnPlayPressed));
-		vbox.AddChild(MakeMenuButton("Settings", OnSettingsPressed));
-		vbox.AddChild(MakeMenuButton("Exit", OnExitPressed));
+		var menuVbox = new VBoxContainer();
+		menuVbox.AddThemeConstantOverride("separation", 2);
+		menuVbox.MouseFilter = Control.MouseFilterEnum.Ignore;
+		menuVbox.AddChild(MakeTextMenuItem("Play", OnPlayPressed));
+		menuVbox.AddChild(MakeTextMenuItem("Settings", OnSettingsPressed));
+		menuVbox.AddChild(MakeTextMenuItem("Exit", OnExitPressed));
+		menuRegion.AddChild(menuVbox);
 
-		// Settings panel (hidden by default, added on top of bg)
+		// Settings panel (hidden by default, rendered above everything else)
 		canvas.AddChild(BuildSettingsPanel());
 	}
 
@@ -156,6 +199,58 @@ public partial class MainMenuUI : Node2D
 
 		btn.Pressed += onPressed;
 		return btn;
+	}
+
+	/// <summary>
+	/// Creates a text-only menu item for the main menu.
+	/// Normal colour: #CAAC72.  On hover: a bullet dot appears to the left
+	/// and the text brightens to #FBF7E8.
+	/// The dot always occupies its layout space (SelfModulate hides it) so the
+	/// row width never shifts when the cursor enters or leaves.
+	/// </summary>
+	Control MakeTextMenuItem(string text, System.Action onPressed)
+	{
+		var row = new HBoxContainer();
+		row.Alignment = BoxContainer.AlignmentMode.Center;
+		row.AddThemeConstantOverride("separation", 8);
+		row.MouseFilter = Control.MouseFilterEnum.Stop;
+		row.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+
+		// Bullet dot — transparent until hovered, but always takes up space
+		var dot = new Label();
+		dot.Text = "•";
+		dot.VerticalAlignment = VerticalAlignment.Center;
+		dot.AddThemeFontSizeOverride("font_size", 32);
+		dot.AddThemeColorOverride("font_color", new Color(0.984f, 0.969f, 0.910f)); // #FBF7E8
+		dot.SelfModulate = new Color(1f, 1f, 1f, 0f); // invisible
+		dot.MouseFilter = Control.MouseFilterEnum.Ignore;
+
+		var label = new Label();
+		label.Text = text;
+		label.VerticalAlignment = VerticalAlignment.Center;
+		label.AddThemeFontSizeOverride("font_size", 34);
+		label.AddThemeColorOverride("font_color", new Color(0.792f, 0.675f, 0.447f)); // #CAAC72
+		label.MouseFilter = Control.MouseFilterEnum.Ignore;
+
+		row.MouseEntered += () =>
+		{
+			dot.SelfModulate = Colors.White;
+			label.AddThemeColorOverride("font_color", new Color(0.984f, 0.969f, 0.910f)); // #FBF7E8
+		};
+		row.MouseExited += () =>
+		{
+			dot.SelfModulate = new Color(1f, 1f, 1f, 0f);
+			label.AddThemeColorOverride("font_color", new Color(0.792f, 0.675f, 0.447f)); // #CAAC72
+		};
+		row.GuiInput += (InputEvent evt) =>
+		{
+			if (evt is InputEventMouseButton mb && mb.ButtonIndex == MouseButton.Left && mb.Pressed)
+				onPressed();
+		};
+
+		row.AddChild(dot);
+		row.AddChild(label);
+		return row;
 	}
 
 	static StyleBoxFlat MakeBtnStyle(Color bg, Color border)
@@ -320,15 +415,15 @@ public partial class MainMenuUI : Node2D
 		_windowModeBtn.CustomMinimumSize = new Vector2(180, 32);
 		_windowModeBtn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
 		_windowModeBtn.AddThemeFontSizeOverride("font_size", 13);
-		_windowModeBtn.AddItem("Windowed",            0);
+		_windowModeBtn.AddItem("Windowed", 0);
 		_windowModeBtn.AddItem("Windowed Fullscreen", 1);
-		_windowModeBtn.AddItem("Fullscreen",          2);
+		_windowModeBtn.AddItem("Fullscreen", 2);
 
 		_windowModeBtn.Selected = DisplayServer.WindowGetMode() switch
 		{
-			DisplayServer.WindowMode.Fullscreen          => 1,
+			DisplayServer.WindowMode.Fullscreen => 1,
 			DisplayServer.WindowMode.ExclusiveFullscreen => 2,
-			_                                            => 0
+			_ => 0
 		};
 
 		_windowModeBtn.ItemSelected += (index) =>
@@ -369,7 +464,7 @@ public partial class MainMenuUI : Node2D
 		volRow.AddChild(volLabel);
 
 		var currentLinear = Mathf.DbToLinear(AudioServer.GetBusVolumeDb(AudioServer.GetBusIndex("Master")));
-		var currentPct    = Mathf.RoundToInt(currentLinear * 100f);
+		var currentPct = Mathf.RoundToInt(currentLinear * 100f);
 
 		_volumeValueLabel = new Label();
 		_volumeValueLabel.Text = $"{currentPct}%";
@@ -645,7 +740,7 @@ public partial class MainMenuUI : Node2D
 		if (currentMode == DisplayServer.WindowMode.Windowed)
 		{
 			var size = DisplayServer.WindowGetSize();
-			cfg.SetValue(DisplaySection, "width",  size.X);
+			cfg.SetValue(DisplaySection, "width", size.X);
 			cfg.SetValue(DisplaySection, "height", size.Y);
 		}
 
@@ -670,7 +765,7 @@ public partial class MainMenuUI : Node2D
 		if (DisplayServer.WindowGetMode() == DisplayServer.WindowMode.Windowed)
 		{
 			if (cfg.HasSectionKey(DisplaySection, "width") &&
-				cfg.HasSectionKey(DisplaySection, "height"))
+			    cfg.HasSectionKey(DisplaySection, "height"))
 			{
 				var w = (int)cfg.GetValue(DisplaySection, "width");
 				var h = (int)cfg.GetValue(DisplaySection, "height");
@@ -832,5 +927,94 @@ public partial class MainMenuUI : Node2D
 		overlay.Visible = false;
 		_deleteConfirmRow!.Visible = false;
 		_deleteInitialBtn!.Visible = true;
+	}
+
+	// ── mist helpers ──────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Builds the shared canvas_item shader used by all mist layers.
+	///
+	/// Technique — eliminates square tiling seams and creates organic cloud shapes:
+	///
+	///   Detail sample A  — tiled UV, fades to 0 near its own tile edges.
+	///   Detail sample B  — same tile count but offset +0.5 in both axes, so its
+	///                      seams never align with A's.  Also fades near its edges.
+	///   max(A, B)        — wherever A is at a seam (dark), B is in its bright
+	///                      centre, and vice-versa.  The result has no hard edges.
+	///   Shape mask       — a third, very slow sample at ~3× zoom sculpts the mist
+	///                      into organic blob outlines instead of a uniform band.
+	///   Screen fades     — smooth vertical + horizontal falloff keeps mist in the
+	///                      centre of the screen and away from all four edges.
+	/// </summary>
+	static Shader BuildMistShader()
+	{
+		var s = new Shader();
+		s.Code = @"
+shader_type canvas_item;
+uniform float scroll_x    = 0.015;
+uniform float scroll_y    = 0.0;
+uniform float alpha_scale = 0.07;
+uniform float time_offset = 0.0;
+
+void fragment() {
+    float t  = TIME + time_offset;
+    vec2  uv = vec2(UV.x * 2.5 + scroll_x * t, UV.y * 1.2 + scroll_y * t);
+
+    // ── Detail sample A (main tile) ──────────────────────────────────────
+    vec2  fA  = fract(uv);
+    float lumA = dot(texture(TEXTURE, fA).rgb, vec3(0.299, 0.587, 0.114));
+    // Fade to 0 near every tile edge so the wrap seam is invisible
+    float eA = smoothstep(0.0, 0.30, fA.x) * (1.0 - smoothstep(0.70, 1.0, fA.x))
+             * smoothstep(0.0, 0.30, fA.y) * (1.0 - smoothstep(0.70, 1.0, fA.y));
+
+    // ── Detail sample B (half-tile offset — seams staggered from A's) ───
+    vec2  fB  = fract(uv + vec2(0.5, 0.5));
+    float lumB = dot(texture(TEXTURE, fB).rgb, vec3(0.299, 0.587, 0.114));
+    float eB = smoothstep(0.0, 0.30, fB.x) * (1.0 - smoothstep(0.70, 1.0, fB.x))
+             * smoothstep(0.0, 0.30, fB.y) * (1.0 - smoothstep(0.70, 1.0, fB.y));
+
+    // ── Cloud-shape mask (slow, large-scale sample) ──────────────────────
+    // Scrolls at 20 % of the detail speed so the cloud outlines evolve
+    // independently, giving organic varying density rather than a uniform band.
+    vec2  fS    = fract(vec2(UV.x * 0.85 + scroll_x * 0.2 * t,
+                             UV.y * 0.55 + scroll_y * 0.2 * t));
+    float shape = smoothstep(0.18, 0.55,
+                             dot(texture(TEXTURE, fS).rgb, vec3(0.299, 0.587, 0.114)));
+
+    float mist = max(lumA * eA, lumB * eB) * shape;
+
+    // ── Screen-space soft fades ──────────────────────────────────────────
+    float vm = smoothstep(0.20, 0.42, UV.y) * (1.0 - smoothstep(0.68, 0.90, UV.y));
+    float hm = smoothstep(0.0,  0.12, UV.x) * (1.0 - smoothstep(0.88, 1.0,  UV.x));
+
+    COLOR = vec4(0.72, 0.79, 0.88, mist * alpha_scale * vm * hm);
+}
+";
+		return s;
+	}
+
+	/// <summary>
+	/// Adds a single full-screen mist TextureRect with its own ShaderMaterial
+	/// so it scrolls independently from the other layers.
+	/// </summary>
+	static void AddMistLayer(
+		Control parent, Texture2D tex, Shader shader,
+		float scrollX, float scrollY, float alpha, float timeOffset)
+	{
+		var mat = new ShaderMaterial();
+		mat.Shader = shader;
+		mat.SetShaderParameter("scroll_x", scrollX);
+		mat.SetShaderParameter("scroll_y", scrollY);
+		mat.SetShaderParameter("alpha_scale", alpha);
+		mat.SetShaderParameter("time_offset", timeOffset);
+
+		var rect = new TextureRect();
+		rect.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		rect.Texture = tex;
+		rect.StretchMode = TextureRect.StretchModeEnum.Scale;
+		rect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+		rect.MouseFilter = Control.MouseFilterEnum.Ignore;
+		rect.Material = mat;
+		parent.AddChild(rect);
 	}
 }
