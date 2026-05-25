@@ -87,7 +87,7 @@ public static class AssetConstants
 	public static readonly string NewsBoardInteractiblePath = "res://assets/interactibles/news-board.png";
 	public static readonly string ExclamationInteractiblePath = "res://assets/interactibles/exclamation.png";
 
-	// ── Talent tome assets (school affinity selector) ────────────────────────
+	// ── Talent tome assets (school affinity selector cards in the spellbook) ─
 
 	public static readonly string TalentTomeHolyPath = "res://assets/interactibles/talent-tome-holy.png";
 	public static readonly string TalentTomeNaturePath = "res://assets/interactibles/talent-tome-nature.png";
@@ -95,7 +95,7 @@ public static class AssetConstants
 	public static readonly string TalentTomeChronomancyPath = "res://assets/interactibles/talent-tome-chronomancy.png";
 	public static readonly string TalentTomeSanguimancyPath = "res://assets/interactibles/talent-tome-sanguimancy.png";
 
-	/// <summary>Returns the res:// path for the tome icon of the given spell school.</summary>
+	/// <summary>Returns the res:// path for the talent tome icon of the given spell school.</summary>
 	public static string TalentTomePath(SpellSchool school)
 	{
 		return school switch
@@ -107,6 +107,19 @@ public static class AssetConstants
 			SpellSchool.Sanguimancy => TalentTomeSanguimancyPath,
 			_ => TalentTomeHolyPath
 		};
+	}
+
+	// ── Spell-book interactible (texture reflects active school affinity) ─────
+
+	/// <summary>
+	/// Returns the res:// path for the world-space spell-book interactible sprite.
+	/// When <paramref name="affinity"/> is <c>null</c> (no affinity set), returns
+	/// the neutral <c>spell-book.png</c>; otherwise returns the school-coloured variant.
+	/// </summary>
+	public static string GetSpellBookPathForAffinity(SpellSchool? affinity)
+	{
+		var suffix = affinity == null ? "" : "-" + affinity.ToString()!.ToLower();
+		return $"res://assets/interactibles/spell-book/spell-book{suffix}.png";
 	}
 
 	// ── Merchant assets ───────────────────────────────────────────────────────
@@ -189,7 +202,8 @@ public static class AssetConstants
 
 	// ── Scene backgrounds ─────────────────────────────────────────────────────
 
-	public static readonly string OverworldBackgroundPath = BackgroundBasePath + "overworld/background.png";
+	public static readonly string CampBackgroundPath = BackgroundBasePath + "camp/camp.png";
 	public static readonly string MapBackgroundPath = BackgroundBasePath + "map/world-map.png";
-	public static readonly string CampBackgroundPath = OverworldBackgroundPath; // IDK, maybe same for now
+
+	public static readonly string CinzelFontPath = "res://assets/fonts/cinzel/Cinzel-VariableFont_wght.ttf";
 }

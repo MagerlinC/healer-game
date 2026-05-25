@@ -10,10 +10,13 @@ using healerfantasy.UI;
 ///
 /// Extends <see cref="LoadoutController"/> to inherit the full spell/talent
 /// overlay system.  Camp-specific additions:
-///   • Camp background
-///   • Four interactibles: Map, Spell Tome, Talent Board, Armory
-///   • Map click → navigate to MapScreen to select the next dungeon
-///   • Armory click → open item equip/unequip panel (item management)
+///   • Armory interactible + overlay (item equip/unequip management)
+///   • Merchant interactible + overlay (buy/sell items for gold)
+///   • Dungeon progress label in the HUD
+///   • Camp merchant first-visit tutorial
+///
+/// The spell tome, talent board, map, and news board are handled by the
+/// shared <see cref="LoadoutController.SetupCommonInteractibles"/> method.
 ///
 /// Note: <see cref="RunState.CompleteCamp"/> is called by MapScreenController
 /// when the player actually clicks a dungeon node, not here — so clicking Map
@@ -23,14 +26,18 @@ public partial class CampController : LoadoutController
 {
 	CanvasLayer? _armoryPanel;
 	EquipmentPane? _equipmentPane;
-	InteractibleObject? _talentBoard;
-	NewsBoardPane? _newsBoardPane;
-	CanvasLayer? _newsBoardPanel;
 	CanvasLayer? _merchantPanel;
 	MerchantPane? _merchantPane;
 	InteractibleObject? _merchantInteractible;
 
 	protected override bool PersistSpellLoadout => false;
+
+	// ── Virtual config overrides (Camp layout differs slightly from Overworld) ─
+
+	protected override float MapTextureScale => 0.125f;
+	protected override string MapHintText => "World Map  •  Continue your journey";
+
+	// ── SetupScene ────────────────────────────────────────────────────────────
 
 	protected override void SetupScene()
 	{
@@ -53,17 +60,10 @@ public partial class CampController : LoadoutController
 		_panels.Add(_merchantPanel);
 		AddChild(_merchantPanel);
 
-		// ── Interactibles ─────────────────────────────────────────────────────
-		var spellTome = AddInteractible(new InteractibleObject(
-			AssetConstants.SpellTomeInteractiblePath,
-			new Vector2(996f, FloorHeight - 12f), new Vector2(0.080f, 0.080f), 28f,
-			AssetConstants.SpellbookSfxPath));
+		// ── Common interactibles (Spell Tome, Talent Board, Map, News Board) ──
+		SetupCommonInteractibles();
 
-		_talentBoard = AddInteractible(new InteractibleObject(
-			AssetConstants.GetTalentBoardPathForAffinity(RunState.Instance.SchoolAffinity),
-			new Vector2(796f, FloorHeight - 12f), new Vector2(0.080f, 0.080f), 50f,
-			AssetConstants.TalentsSfxPath));
-
+		// ── Camp-specific interactibles ───────────────────────────────────────
 		var armory = AddInteractible(new InteractibleObject(
 			AssetConstants.ArmoryInteractiblePath,
 			new Vector2(696f, FloorHeight - 12f), new Vector2(0.125f, 0.125f), 36f));
@@ -72,32 +72,6 @@ public partial class CampController : LoadoutController
 			AssetConstants.MerchantInteractiblePath,
 			new Vector2(1400f, FloorHeight - 30f), new Vector2(0.20f, 0.20f), 36f));
 		var merchant = _merchantInteractible;
-
-		var mapItem = AddInteractible(new InteractibleObject(
-			AssetConstants.MapInteractiblePath,
-			new Vector2(525f, FloorHeight - 8f), new Vector2(0.125f, 0.125f), 28f));
-		mapItem.Scale = new Vector2(1.5f, 1.5f);
-
-		const float NewsBoardX = 585f;
-		var newsBoard = AddInteractible(new InteractibleObject(
-			AssetConstants.NewsBoardInteractiblePath,
-			new Vector2(NewsBoardX, FloorHeight - 18f), new Vector2(0.090f, 0.090f), 32f,
-			AssetConstants.SpellbookSfxPath));
-
-		var exclamation = new Sprite2D
-		{
-			Texture = GD.Load<Texture2D>(AssetConstants.ExclamationInteractiblePath),
-			Scale = new Vector2(0.045f, 0.045f),
-			Position = new Vector2(NewsBoardX + 26f, FloorHeight - 52f),
-			Visible = PlayerProgressStore.HasUnreadBoardEntries
-		};
-		AddChild(exclamation);
-
-		// ── News Board panel ──────────────────────────────────────────────────
-		_newsBoardPane = new NewsBoardPane { ExclamationSprite = exclamation };
-		(_newsBoardPanel, _) = BuildOverlayPanel("News Board", _newsBoardPane);
-		_panels.Add(_newsBoardPanel);
-		AddChild(_newsBoardPanel);
 
 		// ── Player ────────────────────────────────────────────────────────────
 		SetupPlayer(660f, bgLeft, bgRight);
@@ -116,41 +90,17 @@ public partial class CampController : LoadoutController
 		progressLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
 		hud.AddChild(progressLabel);
 
-		// ── Wire interactible clicks ──────────────────────────────────────────
-		spellTome.Interacted += () => OpenPanel(_spellPanel!);
-		WireHints(spellTome, "Spellbook  •  Click to open");
-
-		_talentBoard.Interacted += () => OpenPanel(_talentPanel!);
-		WireHints(_talentBoard, "Talent Board  •  Click to open");
-
+		// ── Wire camp-specific interactibles ──────────────────────────────────
 		armory.Interacted += OpenArmory;
 		WireHints(armory, "Armory  •  Manage your equipped items");
 
 		merchant.Interacted += OpenMerchant;
 		WireHints(merchant, "Merchant  •  Buy and sell items for gold");
 
-		mapItem.Interacted += OnOpenMap;
-		WireHints(mapItem, "World Map  •  Continue your journey");
-
-		newsBoard.Interacted += () =>
-		{
-			_newsBoardPane!.ResetToTopicList();
-			OpenPanel(_newsBoardPanel!);
-		};
-		WireHints(newsBoard, "News Board  •  Discoveries & tips");
-
 		// Show the camp merchant tutorial the first time the player visits camp.
 		// Deferred so the scene is fully laid out before we query node positions.
 		if (!PlayerProgressStore.HasSeenCampMerchantTutorial)
 			Callable.From(ShowCampMerchantTutorial).CallDeferred();
-	}
-
-	// ── Affinity change ───────────────────────────────────────────────────────
-
-	protected override void OnAffinityChanged()
-	{
-		_talentBoard?.SetTexture(
-			AssetConstants.GetTalentBoardPathForAffinity(RunState.Instance.SchoolAffinity));
 	}
 
 	// ── armory panel ──────────────────────────────────────────────────────────

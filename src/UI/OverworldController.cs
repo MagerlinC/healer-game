@@ -10,11 +10,11 @@ using healerfantasy.UI;
 /// overlay system.  Overworld-specific additions:
 ///   • Library background + walkable player
 ///   • Run History scroll interactible + overlay (see <c>OverworldController.RunHistory.cs</c>)
-///   • Map interactible — opens MapScreen to start or continue the run
 ///   • Rune Table interactible
-///   • Talent / School Affinity interactible — opens the read-only talent panel,
-///     which includes the 4-tome school affinity picker at the top
 ///   • First-time tutorial popup via <see cref="TutorialPopup"/>
+///
+/// The spell tome, talent board, map, and news board are handled by the
+/// shared <see cref="LoadoutController.SetupCommonInteractibles"/> method.
 ///
 /// Talents are earned during each run via the victory screen after defeating bosses.
 /// School affinity can be set here (before or between runs) or changed at Camp.
@@ -22,9 +22,6 @@ using healerfantasy.UI;
 public partial class OverworldController : LoadoutController
 {
 	RuneTablePanel? _runeTablePanel;
-	InteractibleObject? _talentBoard;
-	NewsBoardPane? _newsBoardPane;
-	CanvasLayer? _newsBoardPanel;
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -38,23 +35,16 @@ public partial class OverworldController : LoadoutController
 
 	protected override void SetupScene()
 	{
-		var (bgLeft, bgRight) = SetupBackground(AssetConstants.OverworldBackgroundPath);
+		var (bgLeft, bgRight) = SetupBackground(AssetConstants.CampBackgroundPath);
 
-		// ── Interactibles ─────────────────────────────────────────────────────
-		var spellTome = AddInteractible(new InteractibleObject(
-			AssetConstants.SpellTomeInteractiblePath,
-			new Vector2(996f, FloorHeight - 12f), new Vector2(0.080f, 0.080f), 28f,
-			AssetConstants.SpellbookSfxPath));
+		// ── Common interactibles (Spell Tome, Talent Board, Map, News Board) ──
+		SetupCommonInteractibles();
 
+		// ── Overworld-specific interactibles ──────────────────────────────────
 		var runHistoryScroll = AddInteractible(new InteractibleObject(
 			AssetConstants.RunScrollInteractiblePath,
 			new Vector2(696f, FloorHeight - 8f), new Vector2(0.075f, 0.075f), 28f,
 			AssetConstants.SpellbookSfxPath));
-
-		var mapItem = AddInteractible(new InteractibleObject(
-			AssetConstants.MapInteractiblePath,
-			new Vector2(525f, FloorHeight - 8f), new Vector2(0.100f, 0.100f), 28f));
-		mapItem.Scale = new Vector2(1.5f, 1.5f);
 
 		if (PlayerProgressStore.HasUnlockedRuneEntry)
 		{
@@ -67,27 +57,6 @@ public partial class OverworldController : LoadoutController
 			WireHints(runeTable, "Rune Table  •  Configure difficulty runes");
 		}
 
-		_talentBoard = AddInteractible(new InteractibleObject(
-			AssetConstants.GetTalentBoardPathForAffinity(RunState.Instance.SchoolAffinity),
-			new Vector2(820f, FloorHeight - 12f), new Vector2(0.080f, 0.080f), 28f,
-			AssetConstants.TalentsSfxPath));
-
-		const float NewsBoardX = 585f;
-		var newsBoard = AddInteractible(new InteractibleObject(
-			AssetConstants.NewsBoardInteractiblePath,
-			new Vector2(NewsBoardX, FloorHeight - 18f), new Vector2(0.090f, 0.090f), 32f,
-			AssetConstants.SpellbookSfxPath));
-
-		// Exclamation sprite — shown above the board when there are unread entries.
-		var exclamation = new Sprite2D
-		{
-			Texture = GD.Load<Texture2D>(AssetConstants.ExclamationInteractiblePath),
-			Scale = new Vector2(0.045f, 0.045f),
-			Position = new Vector2(NewsBoardX + 26f, FloorHeight - 52f),
-			Visible = PlayerProgressStore.HasUnreadBoardEntries
-		};
-		AddChild(exclamation);
-
 		// ── Run History panel (see OverworldController.RunHistory.cs) ─────────
 		(_historyPanel, _) = BuildOverlayPanel("Run History", BuildRunHistoryPane());
 		_panels.Add(_historyPanel);
@@ -98,58 +67,27 @@ public partial class OverworldController : LoadoutController
 		_panels.Add(_runeTablePanel);
 		AddChild(_runeTablePanel);
 
-		// ── News Board panel ──────────────────────────────────────────────────
-		_newsBoardPane = new NewsBoardPane { ExclamationSprite = exclamation };
-		(_newsBoardPanel, _) = BuildOverlayPanel("News Board", _newsBoardPane);
-		_panels.Add(_newsBoardPanel);
-		AddChild(_newsBoardPanel);
-
-		// ── Encounter detail modal (layer 15 — above the history panel) ───────
-		_detailModalLayer = BuildDetailModal();
-		AddChild(_detailModalLayer);
-
 		// ── Player ────────────────────────────────────────────────────────────
 		SetupPlayer(896f, bgLeft, bgRight);
 
 		// ── HUD ───────────────────────────────────────────────────────────────
 		SetupHud();
 
-		// ── Wire interactible clicks ──────────────────────────────────────────
-		spellTome.Interacted += () =>
-		{
-			PlayerProgressStore.MarkSpellbookOpened();
-			OpenPanel(_spellPanel!);
-		};
-		WireHints(spellTome, "Spellbook  •  Click to open");
-
+		// ── Wire overworld-specific interactibles ─────────────────────────────
 		runHistoryScroll.Interacted += OpenHistoryPanel;
 		WireHints(runHistoryScroll, "Run History  •  Click to open");
-
-		mapItem.Interacted += OnOpenMap;
-		WireHints(mapItem, "World Map  •  Plan your journey");
-
-
-		_talentBoard.Interacted += () => OpenPanel(_talentPanel!);
-		WireHints(_talentBoard, "School Affinity & Talents  •  Click to open");
-
-		newsBoard.Interacted += () =>
-		{
-			_newsBoardPane!.ResetToTopicList();
-			OpenPanel(_newsBoardPanel!);
-		};
-		WireHints(newsBoard, "News Board  •  Discoveries & tips");
 
 		// ── Dev boss popup (Ctrl+Alt+O) — only available in debug builds ─────
 		if (OS.IsDebugBuild())
 			AddChild(new DevBossPopup());
 	}
 
-	// ── Affinity change ───────────────────────────────────────────────────────
+	// ── Spell Tome — mark first open on Overworld ─────────────────────────────
 
-	protected override void OnAffinityChanged()
+	protected override void OnSpellTomeInteracted()
 	{
-		_talentBoard?.SetTexture(
-			AssetConstants.GetTalentBoardPathForAffinity(RunState.Instance.SchoolAffinity));
+		PlayerProgressStore.MarkSpellbookOpened();
+		OpenPanel(_spellPanel!);
 	}
 
 	// ── Main Menu override (no run in progress from Overworld) ────────────────

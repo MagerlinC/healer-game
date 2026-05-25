@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://de31viscneme8"
-path="res://.godot/imported/camp.png-94a80212946f186c3ea9f52e0baaf58f.ctex"
+uid="uid://dle4o57i5pssr"
+path="res://.godot/imported/spell-book-sanguimancy.png-97a26f958dcd7c6d3868aef81674a71b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/backgrounds/camp/camp.png"
-dest_files=["res://.godot/imported/camp.png-94a80212946f186c3ea9f52e0baaf58f.ctex"]
+source_file="res://assets/interactibles/spell-book/spell-book-sanguimancy.png"
+dest_files=["res://.godot/imported/spell-book-sanguimancy.png-97a26f958dcd7c6d3868aef81674a71b.ctex"]
 
 [params]
 

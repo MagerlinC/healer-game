@@ -10,9 +10,8 @@ public static class GameConstants
 	/// Uniform scale applied to the healer AnimatedSprite2D in both the
 	/// overworld/camp scenes and the combat scene.  Change this one value to
 	/// resize the character everywhere at once.
-	/// 0.165 = original 0.15 × 1.10 (10 % size increase).
 	/// </summary>
-	public const float HealerSpriteScale = 0.165f;
+	public const float HealerSpriteScale = 0.175f;
 
 	public const string TemplarName = "Templar";
 	public const string AssassinName = "Assassin";

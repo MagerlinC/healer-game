@@ -56,6 +56,8 @@ public partial class MainMenuUI : Node2D
 		("3840 × 2160", 3840, 2160)
 	};
 
+	public static Font MenuFont;
+
 	// ── rebind state ──────────────────────────────────────────────────────────
 	string? _actionToRebind;
 	Label? _rebindPromptLabel;
@@ -76,6 +78,7 @@ public partial class MainMenuUI : Node2D
 		LoadKeybinds();
 		LoadDisplaySettings();
 		LoadAudioSettings();
+		MenuFont = GD.Load<Font>(AssetConstants.CinzelFontPath);
 
 		var canvas = new CanvasLayer();
 		AddChild(canvas);
@@ -106,9 +109,9 @@ public partial class MainMenuUI : Node2D
 		// ── Mist layers ───────────────────────────────────────────────────────
 		var mistTex = GD.Load<Texture2D>(AssetConstants.MistTexturePath);
 		var mistShader = BuildMistShader();
-		AddMistLayer(bg, mistTex, mistShader, 0.015f,  -0.003f, 0.11f, 0f);
-		AddMistLayer(bg, mistTex, mistShader, -0.010f,  0.002f, 0.09f, 17f);
-		AddMistLayer(bg, mistTex, mistShader, 0.020f,  -0.001f, 0.07f, 33f);
+		AddMistLayer(bg, mistTex, mistShader, 0.015f, -0.003f, 0.11f, 0f);
+		AddMistLayer(bg, mistTex, mistShader, -0.010f, 0.002f, 0.09f, 17f);
+		AddMistLayer(bg, mistTex, mistShader, 0.020f, -0.001f, 0.07f, 33f);
 
 		// ── Title region (top ~24 % of the screen) ───────────────────────────
 		var titleRegion = new CenterContainer();
@@ -120,6 +123,7 @@ public partial class MainMenuUI : Node2D
 		bg.AddChild(titleRegion);
 
 		var title = new Label();
+		title.AddThemeFontOverride("font", MenuFont);
 		title.Text = "Keep Us Alive";
 		title.Uppercase = true;
 		title.HorizontalAlignment = HorizontalAlignment.Center;
@@ -168,9 +172,9 @@ public partial class MainMenuUI : Node2D
 		var menuVbox = new VBoxContainer();
 		menuVbox.AddThemeConstantOverride("separation", 2);
 		menuVbox.MouseFilter = Control.MouseFilterEnum.Ignore;
-		menuVbox.AddChild(MakeTextMenuItem("Play", OnPlayPressed));
-		menuVbox.AddChild(MakeTextMenuItem("Settings", OnSettingsPressed));
-		menuVbox.AddChild(MakeTextMenuItem("Exit", OnExitPressed));
+		menuVbox.AddChild(MakeTextMenuItem("Play", MenuFont, OnPlayPressed));
+		menuVbox.AddChild(MakeTextMenuItem("Settings", MenuFont, OnSettingsPressed));
+		menuVbox.AddChild(MakeTextMenuItem("Exit", MenuFont, OnExitPressed));
 		menuRegion.AddChild(menuVbox);
 
 		// Settings panel (hidden by default, rendered above everything else)
@@ -179,10 +183,11 @@ public partial class MainMenuUI : Node2D
 
 	// ── button factory ────────────────────────────────────────────────────────
 
-	static Button MakeMenuButton(string text, System.Action onPressed)
+	static Button MakeMenuButton(string text, Font font, System.Action onPressed)
 	{
 		var btn = new Button();
 		btn.Text = text;
+		btn.AddThemeFontOverride("font", font);
 		btn.CustomMinimumSize = new Vector2(240f, 56f);
 		btn.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
 		btn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
@@ -208,7 +213,7 @@ public partial class MainMenuUI : Node2D
 	/// The dot always occupies its layout space (SelfModulate hides it) so the
 	/// row width never shifts when the cursor enters or leaves.
 	/// </summary>
-	Control MakeTextMenuItem(string text, System.Action onPressed)
+	Control MakeTextMenuItem(string text, Font font, System.Action onPressed)
 	{
 		var row = new HBoxContainer();
 		row.Alignment = BoxContainer.AlignmentMode.Center;
@@ -227,6 +232,7 @@ public partial class MainMenuUI : Node2D
 
 		var label = new Label();
 		label.Text = text;
+		label.AddThemeFontOverride("font", font);
 		label.VerticalAlignment = VerticalAlignment.Center;
 		label.AddThemeFontSizeOverride("font_size", 34);
 		label.AddThemeColorOverride("font_color", new Color(0.792f, 0.675f, 0.447f)); // #CAAC72
@@ -897,7 +903,7 @@ public partial class MainMenuUI : Node2D
 		confirmBtn.CustomMinimumSize = new Vector2(200f, 40f);
 		btnRow.AddChild(confirmBtn);
 
-		var cancelBtn = MakeMenuButton("Cancel", OnCancelDeletePressed);
+		var cancelBtn = MakeMenuButton("Cancel", MenuFont, OnCancelDeletePressed);
 		cancelBtn.CustomMinimumSize = new Vector2(100f, 40f);
 		btnRow.AddChild(cancelBtn);
 
@@ -967,27 +973,27 @@ void fragment() {
     float eA = smoothstep(0.0, 0.30, fA.x) * (1.0 - smoothstep(0.70, 1.0, fA.x))
              * smoothstep(0.0, 0.30, fA.y) * (1.0 - smoothstep(0.70, 1.0, fA.y));
 
-    // ── Detail sample B (half-tile offset — seams staggered from A's) ───
-    vec2  fB  = fract(uv + vec2(0.5, 0.5));
-    float lumB = dot(texture(TEXTURE, fB).rgb, vec3(0.299, 0.587, 0.114));
-    float eB = smoothstep(0.0, 0.30, fB.x) * (1.0 - smoothstep(0.70, 1.0, fB.x))
-             * smoothstep(0.0, 0.30, fB.y) * (1.0 - smoothstep(0.70, 1.0, fB.y));
+	// ── Detail sample B (half-tile offset — seams staggered from A's) ───
+	vec2  fB  = fract(uv + vec2(0.5, 0.5));
+	float lumB = dot(texture(TEXTURE, fB).rgb, vec3(0.299, 0.587, 0.114));
+	float eB = smoothstep(0.0, 0.30, fB.x) * (1.0 - smoothstep(0.70, 1.0, fB.x))
+			 * smoothstep(0.0, 0.30, fB.y) * (1.0 - smoothstep(0.70, 1.0, fB.y));
 
-    // ── Cloud-shape mask (slow, large-scale sample) ──────────────────────
-    // Scrolls at 20 % of the detail speed so the cloud outlines evolve
-    // independently, giving organic varying density rather than a uniform band.
-    vec2  fS    = fract(vec2(UV.x * 0.85 + scroll_x * 0.2 * t,
-                             UV.y * 0.55 + scroll_y * 0.2 * t));
-    float shape = smoothstep(0.18, 0.55,
-                             dot(texture(TEXTURE, fS).rgb, vec3(0.299, 0.587, 0.114)));
+	// ── Cloud-shape mask (slow, large-scale sample) ──────────────────────
+	// Scrolls at 20 % of the detail speed so the cloud outlines evolve
+	// independently, giving organic varying density rather than a uniform band.
+	vec2  fS    = fract(vec2(UV.x * 0.85 + scroll_x * 0.2 * t,
+							 UV.y * 0.55 + scroll_y * 0.2 * t));
+	float shape = smoothstep(0.18, 0.55,
+							 dot(texture(TEXTURE, fS).rgb, vec3(0.299, 0.587, 0.114)));
 
-    float mist = max(lumA * eA, lumB * eB) * shape;
+	float mist = max(lumA * eA, lumB * eB) * shape;
 
-    // ── Screen-space soft fades ──────────────────────────────────────────
-    float vm = smoothstep(0.20, 0.42, UV.y) * (1.0 - smoothstep(0.68, 0.90, UV.y));
-    float hm = smoothstep(0.0,  0.12, UV.x) * (1.0 - smoothstep(0.88, 1.0,  UV.x));
+	// ── Screen-space soft fades ──────────────────────────────────────────
+	float vm = smoothstep(0.20, 0.42, UV.y) * (1.0 - smoothstep(0.68, 0.90, UV.y));
+	float hm = smoothstep(0.0,  0.12, UV.x) * (1.0 - smoothstep(0.88, 1.0,  UV.x));
 
-    COLOR = vec4(0.72, 0.79, 0.88, mist * alpha_scale * vm * hm);
+	COLOR = vec4(0.72, 0.79, 0.88, mist * alpha_scale * vm * hm);
 }
 ";
 		return s;

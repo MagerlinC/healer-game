@@ -4,12 +4,14 @@ namespace healerfantasy;
 
 /// <summary>
 /// Minimal player character used only in the Overworld and Camp scenes.
-/// Handles WASD / arrow-key movement and carries a Camera2D so the
-/// library background scrolls as the player explores.
+/// Handles WASD / arrow-key movement in 2D (left/right and up/down).
 ///
 /// Animation and audio are managed entirely here so both
 /// <see cref="OverworldController"/> and CampController get identical
 /// behaviour from <see cref="LoadoutController.SetupPlayer"/>.
+///
+/// Vertical movement is restricted to the bottom half of the reference canvas
+/// via <see cref="YMin"/> / <see cref="YMax"/> set by <see cref="LoadoutController"/>.
 ///
 /// No spell-casting logic — the Player.cs NullReferenceException that
 /// occurs when no boss group exists is avoided by using this lighter class.
@@ -22,6 +24,12 @@ public partial class OverworldPlayer : CharacterBody2D
 	/// the player within the background image edges.</summary>
 	public float XMin = float.NegativeInfinity;
 	public float XMax = float.PositiveInfinity;
+
+	/// <summary>World-space Y bounds set by <see cref="LoadoutController"/>.
+	/// Vertical movement is restricted to the bottom half of the reference canvas
+	/// so the player stays within the visible play area.</summary>
+	public float YMin = float.NegativeInfinity;
+	public float YMax = float.PositiveInfinity;
 
 	AnimatedSprite2D _sprite = null!;
 
@@ -80,6 +88,8 @@ public partial class OverworldPlayer : CharacterBody2D
 
 		if (Input.IsKeyPressed(Key.D) || Input.IsKeyPressed(Key.Right)) dir.X += 1f;
 		if (Input.IsKeyPressed(Key.A) || Input.IsKeyPressed(Key.Left)) dir.X -= 1f;
+		if (Input.IsKeyPressed(Key.S) || Input.IsKeyPressed(Key.Down)) dir.Y += 1f;
+		if (Input.IsKeyPressed(Key.W) || Input.IsKeyPressed(Key.Up)) dir.Y -= 1f;
 
 		if (dir != Vector2.Zero)
 		{
@@ -114,7 +124,9 @@ public partial class OverworldPlayer : CharacterBody2D
 		Velocity = dir * Speed;
 		MoveAndSlide();
 
-		// Clamp to background edges (X only — vertical movement is disabled).
-		Position = new Vector2(Mathf.Clamp(Position.X, XMin, XMax), Position.Y);
+		// Clamp to background edges and the allowed vertical range.
+		Position = new Vector2(
+			Mathf.Clamp(Position.X, XMin, XMax),
+			Mathf.Clamp(Position.Y, YMin, YMax));
 	}
 }

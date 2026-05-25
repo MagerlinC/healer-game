@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://de31viscneme8"
-path="res://.godot/imported/camp.png-94a80212946f186c3ea9f52e0baaf58f.ctex"
+uid="uid://12wgirckuu2y"
+path="res://.godot/imported/spell-book-void.png-18813286396a919ea5037b7b75820cdf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/backgrounds/camp/camp.png"
-dest_files=["res://.godot/imported/camp.png-94a80212946f186c3ea9f52e0baaf58f.ctex"]
+source_file="res://assets/interactibles/spell-book/spell-book-void.png"
+dest_files=["res://.godot/imported/spell-book-void.png-18813286396a919ea5037b7b75820cdf.ctex"]
 
 [params]
 

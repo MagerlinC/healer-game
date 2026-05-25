@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://de31viscneme8"
-path="res://.godot/imported/camp.png-94a80212946f186c3ea9f52e0baaf58f.ctex"
+uid="uid://dbbkgerrl3pf3"
+path="res://.godot/imported/spell-book-chronomancy.png-9873e8c5a5f44518afb969e223530c16.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/backgrounds/camp/camp.png"
-dest_files=["res://.godot/imported/camp.png-94a80212946f186c3ea9f52e0baaf58f.ctex"]
+source_file="res://assets/interactibles/spell-book/spell-book-chronomancy.png"
+dest_files=["res://.godot/imported/spell-book-chronomancy.png-9873e8c5a5f44518afb969e223530c16.ctex"]
 
 [params]
 

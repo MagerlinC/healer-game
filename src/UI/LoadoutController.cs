@@ -74,6 +74,38 @@ public abstract partial class LoadoutController : Node2D
 		(SpellSchool.Sanguimancy, "Sanguimancy", new Color(0.85f, 0.15f, 0.15f))
 	};
 
+	// ── shared interactible state (common to Overworld and Camp) ─────────────
+
+	/// <summary>
+	/// World-space spell-book interactible.  Its texture is swapped to match the
+	/// active school affinity so the affinity is visible even when the UI is closed.
+	/// </summary>
+	protected InteractibleObject? _spellTomeInteractible;
+
+	protected NewsBoardPane? _newsBoardPane;
+	protected CanvasLayer? _newsBoardPanel;
+
+	/// <summary>
+	/// Style references for the per-school affinity tome cards inside the spellbook.
+	/// Populated when the spellbook pane is built; refreshed by <see cref="OnAffinityChanged"/>.
+	/// </summary>
+	readonly List<(SpellSchool School, StyleBoxFlat Style)> _affinityCardStyles = new();
+
+	/// <summary>
+	/// Style references for the spell-school column panels inside the spellbook.
+	/// The border of the column matching the active affinity is highlighted;
+	/// all others are dimmed. Refreshed by <see cref="OnAffinityChanged"/>.
+	/// </summary>
+	readonly List<(SpellSchool School, StyleBoxFlat Style)> _schoolColumnStyles = new();
+
+	// ── virtual config — override in subclasses to customise layout ───────────
+
+	/// <summary>Sprite scale of the map interactible texture (visual scale stays 1.5×).</summary>
+	protected virtual float MapTextureScale => 0.100f;
+
+	/// <summary>Hint-bar text shown when hovering over the map interactible.</summary>
+	protected virtual string MapHintText => "World Map  •  Plan your journey";
+
 	// ── runtime state ─────────────────────────────────────────────────────────
 	protected readonly SpellResource?[] _loadout = new SpellResource?[Player.MaxSpellSlots];
 
@@ -90,7 +122,6 @@ public abstract partial class LoadoutController : Node2D
 
 	protected OverworldPlayer? _player;
 	protected CanvasLayer? _spellPanel;
-	protected CanvasLayer? _talentPanel;
 	protected Label? _hintLabel;
 	protected readonly List<Area2D> _interactibles = new();
 
@@ -130,14 +161,10 @@ public abstract partial class LoadoutController : Node2D
 		System.Array.Copy(RunState.Instance.SelectedSpells, _loadout, Player.MaxSpellSlots);
 		AddChild(new GameTooltip());
 
-		// Build shared spell + talent panels first so SetupScene can wire
-		// interactible click handlers that reference _spellPanel / _talentPanel.
+		// Build the spellbook overlay (affinity selection is now embedded inside it).
 		(_spellPanel, _) = BuildOverlayPanel("Spellbook", BuildSpellbookPane());
-		(_talentPanel, _) = BuildOverlayPanel("Talents", BuildReadOnlyTalentPane());
 		_panels.Add(_spellPanel);
-		_panels.Add(_talentPanel);
 		AddChild(_spellPanel);
-		AddChild(_talentPanel);
 
 		SetupScene();
 		RefreshSpellLockVisuals();
@@ -145,7 +172,7 @@ public abstract partial class LoadoutController : Node2D
 
 	/// <summary>
 	/// Subclasses implement this to add their background, interactibles, player, and HUD.
-	/// Called after <see cref="_spellPanel"/> and <see cref="_talentPanel"/> are ready.
+	/// Called after <see cref="_spellPanel"/> is ready.
 	/// </summary>
 	protected abstract void SetupScene();
 
@@ -154,9 +181,6 @@ public abstract partial class LoadoutController : Node2D
 	protected void OpenPanel(CanvasLayer panel)
 	{
 		CloseAllPanels();
-		// Refresh the read-only talent list every time the panel is shown,
-		// since talents may have been earned since the scene last loaded.
-		if (panel == _talentPanel) RefreshReadOnlyTalentPane();
 		panel.Visible = true;
 		SetInteractiblesPickable(false);
 		_player?.SetPhysicsProcess(false);
@@ -356,6 +380,8 @@ public abstract partial class LoadoutController : Node2D
 	/// <summary>
 	/// Creates and adds the <see cref="OverworldPlayer"/> to the scene, assigning
 	/// movement bounds from the background edges.
+	/// Vertical movement is restricted to the bottom 50 % of the reference canvas
+	/// so the player stays within the visible play area.
 	/// </summary>
 	protected void SetupPlayer(float xPosition, float bgLeft, float bgRight)
 	{
@@ -364,7 +390,9 @@ public abstract partial class LoadoutController : Node2D
 			Position = new Vector2(xPosition, FloorHeight - 8f),
 			Scale = new Vector2(1.5f, 1.5f),
 			XMin = bgLeft,
-			XMax = bgRight
+			XMax = bgRight,
+			YMin = RefH * 0.5f, // top of the bottom half (~540 px)
+			YMax = RefH - 80f // keep player visible near the bottom (~1000 px)
 		};
 		AddChild(_player);
 	}
@@ -415,6 +443,84 @@ public abstract partial class LoadoutController : Node2D
 		GetTree().ChangeSceneToFile("res://levels/MapScreen.tscn");
 	}
 
+	/// <summary>
+	/// Creates and registers the interactibles and panels that are shared between
+	/// the Overworld and Camp scenes:
+	/// <list type="bullet">
+	///   <item>Spell Tome — opens the spellbook overlay</item>
+	///   <item>Talent Board — opens the read-only talent/affinity overlay</item>
+	///   <item>Map — navigates to the Map Screen</item>
+	///   <item>News Board + exclamation sprite + overlay panel</item>
+	/// </list>
+	/// Positions and hint texts are controlled by the virtual config properties
+	/// (<see cref="MapTextureScale"/>, <see cref="MapHintText"/>, etc.) so subclasses
+	/// can override individual values without duplicating setup logic.
+	/// </summary>
+	protected void SetupCommonInteractibles()
+	{
+		// ── Spell Book (texture reflects active affinity) ─────────────────────
+		// Prefer a node named "SpellBook" that was placed in the Godot editor,
+		// which allows position, scale, and collision radius to be tuned visually
+		// against the scene background.  Fall back to code creation at the
+		// hardcoded default position when no such node exists.
+		_spellTomeInteractible = GetNodeOrNull<InteractibleObject>("SpellBook");
+		if (_spellTomeInteractible != null)
+		{
+			// Register so panel open/close can toggle pickability.
+			_interactibles.Add(_spellTomeInteractible);
+		}
+		else
+		{
+			_spellTomeInteractible = AddInteractible(new InteractibleObject(
+				AssetConstants.GetSpellBookPathForAffinity(RunState.Instance.SchoolAffinity),
+				new Vector2(800f, FloorHeight - 220f), new Vector2(0.3f, 0.3f), 28f,
+				AssetConstants.SpellbookSfxPath));
+		}
+
+		// Always apply the affinity texture — editor-placed nodes start with an
+		// empty TexturePath and receive their first texture here.
+		_spellTomeInteractible.SetTexture(
+			AssetConstants.GetSpellBookPathForAffinity(RunState.Instance.SchoolAffinity));
+		_spellTomeInteractible.Interacted += OnSpellTomeInteracted;
+		WireHints(_spellTomeInteractible, "Spellbook  •  Click to open  •  Set school affinity inside");
+
+		// ── Map ───────────────────────────────────────────────────────────────
+		var mapItem = AddInteractible(new InteractibleObject(
+			AssetConstants.MapInteractiblePath,
+			new Vector2(525f, FloorHeight - 8f), new Vector2(MapTextureScale, MapTextureScale), 28f));
+		mapItem.Scale = new Vector2(1.5f, 1.5f);
+		mapItem.Interacted += OnOpenMap;
+		WireHints(mapItem, MapHintText);
+
+		// ── News Board ────────────────────────────────────────────────────────
+		const float NewsBoardX = 585f;
+		var newsBoard = AddInteractible(new InteractibleObject(
+			AssetConstants.NewsBoardInteractiblePath,
+			new Vector2(NewsBoardX, FloorHeight - 18f), new Vector2(0.090f, 0.090f), 32f,
+			AssetConstants.SpellbookSfxPath));
+
+		var exclamation = new Sprite2D
+		{
+			Texture = GD.Load<Texture2D>(AssetConstants.ExclamationInteractiblePath),
+			Scale = new Vector2(0.045f, 0.045f),
+			Position = new Vector2(NewsBoardX + 26f, FloorHeight - 52f),
+			Visible = PlayerProgressStore.HasUnreadBoardEntries
+		};
+		AddChild(exclamation);
+
+		_newsBoardPane = new NewsBoardPane { ExclamationSprite = exclamation };
+		(_newsBoardPanel, _) = BuildOverlayPanel("News Board", _newsBoardPane);
+		_panels.Add(_newsBoardPanel);
+		AddChild(_newsBoardPanel);
+
+		newsBoard.Interacted += () =>
+		{
+			_newsBoardPane!.ResetToTopicList();
+			OpenPanel(_newsBoardPanel!);
+		};
+		WireHints(newsBoard, "News Board  •  Discoveries & tips");
+	}
+
 	// ══════════════════════════════════════════════════════════════════════════
 	// SPELLBOOK PANE
 	// ══════════════════════════════════════════════════════════════════════════
@@ -431,12 +537,15 @@ public abstract partial class LoadoutController : Node2D
 		vbox.AddThemeConstantOverride("separation", 12);
 		margin.AddChild(vbox);
 
-		// Spell school columns
+		// Spell school columns + per-school affinity tome card
+		_affinityCardStyles.Clear();
+		_schoolColumnStyles.Clear();
+
 		var columns = new HBoxContainer();
 		columns.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 		columns.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		columns.CustomMinimumSize = new Vector2(0, 280f);
-		columns.AddThemeConstantOverride("separation", 12);
+		columns.AddThemeConstantOverride("separation", 6);
 
 		foreach (var (school, name) in SpellSchoolTabs)
 		{
@@ -451,7 +560,9 @@ public abstract partial class LoadoutController : Node2D
 			panel.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 
 			var style = new StyleBoxFlat();
-			style.BorderColor = PanelBorder;
+			style.BorderColor = RunState.Instance.SchoolAffinity == school
+				? PanelBorder
+				: new Color(PanelBorder.R, PanelBorder.G, PanelBorder.B, 0.25f);
 			style.BorderWidthLeft = 1;
 			style.BorderWidthRight = 1;
 			style.BorderWidthTop = 1;
@@ -465,6 +576,7 @@ public abstract partial class LoadoutController : Node2D
 			style.ShadowSize = 6;
 
 			panel.AddThemeStyleboxOverride("panel", style);
+			_schoolColumnStyles.Add((school, style));
 
 			// Inner layout
 			var wrapper = new VBoxContainer();
@@ -477,7 +589,7 @@ public abstract partial class LoadoutController : Node2D
 			var header = new Label();
 			header.Text = name;
 			header.HorizontalAlignment = HorizontalAlignment.Center;
-			header.AddThemeFontSizeOverride("font_size", 13);
+			header.AddThemeFontSizeOverride("font_size", 16);
 			header.AddThemeColorOverride("font_color", AssetConstants.SpellSchoolColor(school));
 			headerMarginContainer.AddChild(header);
 
@@ -485,7 +597,15 @@ public abstract partial class LoadoutController : Node2D
 			wrapper.AddChild(pane);
 
 			panel.AddChild(wrapper);
-			columns.AddChild(panel);
+
+			// ── Wrap spell column + affinity card in a vertical stack ─────────
+			var schoolStack = new VBoxContainer();
+			schoolStack.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+			schoolStack.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+			schoolStack.AddThemeConstantOverride("separation", 6);
+			schoolStack.AddChild(panel);
+			schoolStack.AddChild(BuildAffinityTomeCard(school, name));
+			columns.AddChild(schoolStack);
 		}
 
 		vbox.AddChild(columns);
@@ -494,13 +614,137 @@ public abstract partial class LoadoutController : Node2D
 		vbox.AddChild(BuildLoadoutRow());
 
 		var hint = new Label();
-		hint.Text = "Click a spell to equip or unequip it  •  Click a loadout slot to clear it";
+		hint.Text =
+			"Click a spell to equip or unequip it  •  Click a tome to set your school affinity  •  Click a loadout slot to clear it";
 		hint.HorizontalAlignment = HorizontalAlignment.Center;
 		hint.AddThemeFontSizeOverride("font_size", 11);
 		hint.AddThemeColorOverride("font_color", HintColor);
 		vbox.AddChild(hint);
 
 		return margin;
+	}
+
+	/// <summary>
+	/// Builds the narrow affinity tome card that appears to the right of each
+	/// spell-school column.  Clicking the card toggles that school as the active
+	/// school affinity; a gold border shows the currently selected school.
+	///
+	/// Sanguimancy is shown locked until the Castle of Blood has been defeated.
+	/// </summary>
+	Control BuildAffinityTomeCard(SpellSchool school, string schoolName)
+	{
+		var isLocked = school == SpellSchool.Sanguimancy && !PlayerProgressStore.HasDefeatedCastleOfBlood;
+		var isSelected = RunState.Instance.SchoolAffinity == school;
+		var (_, _, accent) = TalentSchoolOrder.First(e => e.School == school);
+
+		// ── Card container ────────────────────────────────────────────────────
+		var cardStyle = new StyleBoxFlat();
+		cardStyle.BgColor = new Color(0.08f, 0.07f, 0.04f, 0.90f);
+		cardStyle.SetCornerRadiusAll(6);
+		cardStyle.ContentMarginLeft = cardStyle.ContentMarginRight = 6f;
+		cardStyle.ContentMarginTop = cardStyle.ContentMarginBottom = 8f;
+		cardStyle.ShadowColor = new Color(0f, 0f, 0f, 0.4f);
+		cardStyle.ShadowSize = 6;
+		if (isSelected)
+		{
+			cardStyle.SetBorderWidthAll(2);
+			cardStyle.BorderColor = PanelBorder;
+		}
+		else
+		{
+			cardStyle.SetBorderWidthAll(1);
+			cardStyle.BorderColor = new Color(PanelBorder.R, PanelBorder.G, PanelBorder.B, 0.25f);
+		}
+
+		var card = new PanelContainer();
+		card.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		card.AddThemeStyleboxOverride("panel", cardStyle);
+
+		// ── Inner layout (tome icon + label, centred vertically) ──────────────
+		var vbox = new VBoxContainer();
+		vbox.AddThemeConstantOverride("separation", 6);
+		vbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		vbox.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		vbox.Alignment = BoxContainer.AlignmentMode.Center;
+		vbox.MouseFilter = Control.MouseFilterEnum.Ignore;
+		card.AddChild(vbox);
+
+		// Tome icon
+		var tomeIcon = new TextureRect();
+		tomeIcon.Texture = GD.Load<Texture2D>(AssetConstants.TalentTomePath(school));
+		tomeIcon.CustomMinimumSize = new Vector2(56f, 56f);
+		tomeIcon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+		tomeIcon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+		tomeIcon.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+		tomeIcon.MouseFilter = Control.MouseFilterEnum.Ignore;
+		vbox.AddChild(tomeIcon);
+
+		if (isLocked)
+		{
+			// ── Locked (Sanguimancy before Castle of Blood) ───────────────────
+			var lockLabel = new Label();
+			lockLabel.Text = "🔒";
+			lockLabel.HorizontalAlignment = HorizontalAlignment.Center;
+			lockLabel.AddThemeFontSizeOverride("font_size", 11);
+			lockLabel.AddThemeColorOverride("font_color", HintColor);
+			lockLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+			vbox.AddChild(lockLabel);
+
+			card.MouseFilter = Control.MouseFilterEnum.Ignore;
+		}
+		else
+		{
+			// ── Interactive ───────────────────────────────────────────────────
+			_affinityCardStyles.Add((school, cardStyle));
+
+			var affinityLabel = new Label();
+			affinityLabel.Text = "Affinity";
+			affinityLabel.HorizontalAlignment = HorizontalAlignment.Center;
+			affinityLabel.AddThemeFontSizeOverride("font_size", 10);
+			affinityLabel.AddThemeColorOverride("font_color", accent);
+			affinityLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+			vbox.AddChild(affinityLabel);
+
+			card.MouseFilter = Control.MouseFilterEnum.Stop;
+			card.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+
+			var capturedSchool = school;
+			var capturedName = schoolName;
+			card.MouseEntered += () =>
+			{
+				if (!isSelected)
+				{
+					cardStyle.SetBorderWidthAll(1);
+					cardStyle.BorderColor = PanelBorder;
+				}
+
+				GameTooltip.Show(
+					$"{capturedName} Affinity",
+					$"Click to set your school affinity to {capturedName}.\n" +
+					"Doubles the chance of at least one talent from this school appearing after each boss.\n\n" +
+					"Click again to clear your affinity.");
+			};
+			card.MouseExited += () =>
+			{
+				if (RunState.Instance.SchoolAffinity != capturedSchool)
+				{
+					cardStyle.SetBorderWidthAll(1);
+					cardStyle.BorderColor = new Color(PanelBorder.R, PanelBorder.G, PanelBorder.B, 0.25f);
+				}
+
+				GameTooltip.Hide();
+			};
+			card.GuiInput += ev =>
+			{
+				if (ev is not InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left }) return;
+				var alreadySelected = RunState.Instance.SchoolAffinity == capturedSchool;
+				RunState.Instance.SetSchoolAffinity(alreadySelected ? null : capturedSchool);
+				OnAffinityChanged();
+				card.AcceptEvent();
+			};
+		}
+
+		return card;
 	}
 
 	Control BuildSpellLibraryPane(SpellSchool? school)
@@ -1293,10 +1537,52 @@ public abstract partial class LoadoutController : Node2D
 	}
 
 	/// <summary>
-	/// Called whenever the player changes their school affinity in the picker.
-	/// Override in subclasses to react (e.g. update world-space interactible textures).
+	/// Called whenever the player changes their school affinity.
+	/// Updates the world-space spell-book sprite and refreshes the affinity card
+	/// borders inside the open spellbook pane.
+	/// Override (and call base) in subclasses to add further reactions.
 	/// </summary>
-	protected virtual void OnAffinityChanged() { }
+	protected virtual void OnAffinityChanged()
+	{
+		// Swap the world-space spell-book texture so the affinity is visible outside the UI.
+		_spellTomeInteractible?.SetTexture(
+			AssetConstants.GetSpellBookPathForAffinity(RunState.Instance.SchoolAffinity));
+
+		// Refresh the borders on the affinity tome cards and school column panels.
+		var dimBorder = new Color(PanelBorder.R, PanelBorder.G, PanelBorder.B, 0.25f);
+
+		foreach (var (school, style) in _affinityCardStyles)
+		{
+			if (RunState.Instance.SchoolAffinity == school)
+			{
+				style.SetBorderWidthAll(2);
+				style.BorderColor = PanelBorder;
+			}
+			else
+			{
+				style.SetBorderWidthAll(0);
+			}
+		}
+
+		foreach (var (school, style) in _schoolColumnStyles)
+		{
+			style.BorderColor = RunState.Instance.SchoolAffinity == school
+				? PanelBorder
+				: dimBorder;
+		}
+	}
+
+	// ── virtual interaction hooks ─────────────────────────────────────────────
+
+	/// <summary>
+	/// Called when the player clicks the spell tome interactible.
+	/// The base implementation opens the spell panel.
+	/// Override to add scene-specific behaviour (e.g. tracking first open).
+	/// </summary>
+	protected virtual void OnSpellTomeInteracted()
+	{
+		OpenPanel(_spellPanel!);
+	}
 
 	// ── shared helpers ────────────────────────────────────────────────────────
 
