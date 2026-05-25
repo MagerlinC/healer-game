@@ -515,7 +515,7 @@ public abstract partial class LoadoutController : Node2D
 		{
 			_spellTomeInteractible = AddInteractible(new InteractibleObject(
 				AssetConstants.GetSpellBookPathForAffinity(RunState.Instance.SchoolAffinity),
-				new Vector2(820f, FloorHeight - 220f), new Vector2(0.3f, 0.3f), 28f,
+				new Vector2(820f, FloorHeight - 220f), new Vector2(0.35f, 0.35f), 28f,
 				AssetConstants.SpellbookSfxPath));
 		}
 
