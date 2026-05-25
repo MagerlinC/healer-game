@@ -374,7 +374,49 @@ public abstract partial class LoadoutController : Node2D
 
 		AddChild(bg);
 
+		// ── Bonfire smoke ─────────────────────────────────────────────────────
+		// Spawn (or pick up an editor-placed) BonfireSmoke node right after the
+		// background so it renders behind interactibles and the player.
+		SetupBonfireSmoke(camera.Position);
+
 		return (camera.Position.X - worldW / 2f, camera.Position.X + worldW / 2f);
+	}
+
+	/// <summary>
+	/// Spawns a <see cref="BonfireSmoke"/> effect positioned over the bonfire in
+	/// the background image, or adopts one already placed in the scene via the
+	/// Godot editor.
+	///
+	/// Override <see cref="BonfireSmokePosition"/> in a subclass to shift the
+	/// default world-space anchor point for scenes where the bonfire sits at a
+	/// different pixel.  The node's exported properties can also be tweaked
+	/// directly in the Inspector when it is placed in the editor.
+	/// </summary>
+	void SetupBonfireSmoke(Vector2 cameraPos)
+	{
+		var smoke = GetNodeOrNull<BonfireSmoke>("BonfireSmoke");
+		if (smoke == null)
+		{
+			var pos = BonfireSmokePosition(cameraPos);
+			smoke = new BonfireSmoke
+			{
+				ColumnCenterX = pos.X,
+				BonfireY = pos.Y
+			};
+			AddChild(smoke);
+		}
+	}
+
+	/// <summary>
+	/// Returns the world-space position (X = horizontal centre, Y = bonfire base)
+	/// of the bonfire smoke column for this scene.
+	///
+	/// Defaults to the approximate bonfire position in the shared camp/overworld
+	/// background.  Override in a subclass if the bonfire is at a different location.
+	/// </summary>
+	protected virtual Vector2 BonfireSmokePosition(Vector2 cameraPos)
+	{
+		return new Vector2(cameraPos.X, cameraPos.Y + 85f);
 	}
 
 	/// <summary>
@@ -473,7 +515,7 @@ public abstract partial class LoadoutController : Node2D
 		{
 			_spellTomeInteractible = AddInteractible(new InteractibleObject(
 				AssetConstants.GetSpellBookPathForAffinity(RunState.Instance.SchoolAffinity),
-				new Vector2(800f, FloorHeight - 220f), new Vector2(0.3f, 0.3f), 28f,
+				new Vector2(820f, FloorHeight - 220f), new Vector2(0.3f, 0.3f), 28f,
 				AssetConstants.SpellbookSfxPath));
 		}
 
@@ -487,23 +529,23 @@ public abstract partial class LoadoutController : Node2D
 		// ── Map ───────────────────────────────────────────────────────────────
 		var mapItem = AddInteractible(new InteractibleObject(
 			AssetConstants.MapInteractiblePath,
-			new Vector2(525f, FloorHeight - 8f), new Vector2(MapTextureScale, MapTextureScale), 28f));
+			new Vector2(1050f, FloorHeight - 220f), new Vector2(MapTextureScale, MapTextureScale), 28f));
 		mapItem.Scale = new Vector2(1.5f, 1.5f);
 		mapItem.Interacted += OnOpenMap;
 		WireHints(mapItem, MapHintText);
 
 		// ── News Board ────────────────────────────────────────────────────────
-		const float NewsBoardX = 585f;
+		const float NewsBoardX = 755f;
 		var newsBoard = AddInteractible(new InteractibleObject(
 			AssetConstants.NewsBoardInteractiblePath,
-			new Vector2(NewsBoardX, FloorHeight - 18f), new Vector2(0.090f, 0.090f), 32f,
+			new Vector2(NewsBoardX, FloorHeight - 200f), new Vector2(0.090f, 0.090f), 32f,
 			AssetConstants.SpellbookSfxPath));
 
 		var exclamation = new Sprite2D
 		{
 			Texture = GD.Load<Texture2D>(AssetConstants.ExclamationInteractiblePath),
 			Scale = new Vector2(0.045f, 0.045f),
-			Position = new Vector2(NewsBoardX + 26f, FloorHeight - 52f),
+			Position = new Vector2(NewsBoardX + 26f, FloorHeight - 222f),
 			Visible = PlayerProgressStore.HasUnreadBoardEntries
 		};
 		AddChild(exclamation);
@@ -547,7 +589,11 @@ public abstract partial class LoadoutController : Node2D
 		columns.CustomMinimumSize = new Vector2(0, 280f);
 		columns.AddThemeConstantOverride("separation", 6);
 
-		foreach (var (school, name) in SpellSchoolTabs)
+		var availableSchools = PlayerProgressStore.HasDefeatedCastleOfBlood
+			? SpellSchoolTabs
+			: SpellSchoolTabs.Where(s => s.School != SpellSchool.Sanguimancy).ToArray();
+
+		foreach (var (school, name) in availableSchools)
 		{
 			var pane = BuildSpellLibraryPane(school);
 

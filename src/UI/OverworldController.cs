@@ -43,7 +43,7 @@ public partial class OverworldController : LoadoutController
 		// ── Overworld-specific interactibles ──────────────────────────────────
 		var runHistoryScroll = AddInteractible(new InteractibleObject(
 			AssetConstants.RunScrollInteractiblePath,
-			new Vector2(696f, FloorHeight - 8f), new Vector2(0.075f, 0.075f), 28f,
+			new Vector2(565f, FloorHeight - 110f), new Vector2(0.12f, 0.12f), 28f,
 			AssetConstants.SpellbookSfxPath));
 
 		if (PlayerProgressStore.HasUnlockedRuneEntry)
