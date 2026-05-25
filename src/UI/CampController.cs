@@ -66,11 +66,11 @@ public partial class CampController : LoadoutController
 		// ── Camp-specific interactibles ───────────────────────────────────────
 		var armory = AddInteractible(new InteractibleObject(
 			AssetConstants.ArmoryInteractiblePath,
-			new Vector2(696f, FloorHeight - 12f), new Vector2(0.125f, 0.125f), 36f));
+			new Vector2(696f, FloorHeight - 205f), new Vector2(0.125f, 0.125f), 36f));
 
 		_merchantInteractible = AddInteractible(new InteractibleObject(
 			AssetConstants.MerchantInteractiblePath,
-			new Vector2(1400f, FloorHeight - 30f), new Vector2(0.20f, 0.20f), 36f));
+			new Vector2(1300f, FloorHeight - 130f), new Vector2(0.25f, 0.25f), 36f));
 		var merchant = _merchantInteractible;
 
 		// ── Player ────────────────────────────────────────────────────────────

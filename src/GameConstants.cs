@@ -11,7 +11,7 @@ public static class GameConstants
 	/// overworld/camp scenes and the combat scene.  Change this one value to
 	/// resize the character everywhere at once.
 	/// </summary>
-	public const float HealerSpriteScale = 0.175f;
+	public const float HealerSpriteScale = 0.185f;
 
 	public const string TemplarName = "Templar";
 	public const string AssassinName = "Assassin";

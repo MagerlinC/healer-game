@@ -23,12 +23,14 @@ public partial class OverworldPlayer : CharacterBody2D
 	/// <summary>World-space X bounds set by <see cref="LoadoutController"/> to keep
 	/// the player within the background image edges.</summary>
 	public float XMin = float.NegativeInfinity;
+
 	public float XMax = float.PositiveInfinity;
 
 	/// <summary>World-space Y bounds set by <see cref="LoadoutController"/>.
 	/// Vertical movement is restricted to the bottom half of the reference canvas
 	/// so the player stays within the visible play area.</summary>
 	public float YMin = float.NegativeInfinity;
+
 	public float YMax = float.PositiveInfinity;
 
 	AnimatedSprite2D _sprite = null!;
@@ -39,15 +41,19 @@ public partial class OverworldPlayer : CharacterBody2D
 
 	/// <summary>How many pixels above ground the sprite hovers while moving.</summary>
 	const float FloatHeight = 6f;
+
 	/// <summary>Additional ±pixels of slow sine-wave bob layered on top of the lift.</summary>
 	const float BobAmplitude = 2f;
+
 	/// <summary>Sine oscillations per second while floating.</summary>
 	const float BobSpeed = 0.7f;
+
 	/// <summary>Lerp factor controlling how quickly the sprite ascends / descends.</summary>
 	const float LiftSpeed = 2.5f;
 
 	/// <summary>Current lerped base lift offset (0 = ground, -FloatHeight = fully airborne).</summary>
 	float _liftOffset = 0f;
+
 	/// <summary>Phase accumulator for the sine bob (advances only while moving).</summary>
 	float _bobPhase = 0f;
 
@@ -69,7 +75,7 @@ public partial class OverworldPlayer : CharacterBody2D
 			frames.AddFrame("walk", GD.Load<Texture2D>($"res://assets/characters/healer/float{i}.png"));
 
 		_sprite = new AnimatedSprite2D();
-		_sprite.Scale = new Vector2(GameConstants.HealerSpriteScale, GameConstants.HealerSpriteScale);
+		_sprite.Scale = new Vector2(GameConstants.HealerSpriteScale * 1.20f, GameConstants.HealerSpriteScale * 1.20f);
 		_sprite.SpriteFrames = frames;
 		_sprite.Play("idle");
 		AddChild(_sprite);
