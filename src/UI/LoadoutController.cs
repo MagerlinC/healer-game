@@ -360,6 +360,9 @@ public abstract partial class LoadoutController : Node2D
 	/// </summary>
 	protected virtual bool UseLastLightScene => false;
 
+	/// <summary>Last Light scenes only: place a bonfire (a second light) at the camp fire.</summary>
+	protected virtual bool LastLightBonfire => false;
+
 	bool LastLightScene => LastLightStyle.Enabled && UseLastLightScene;
 
 	protected (float BgLeft, float BgRight) SetupBackground(string texturePath)
@@ -379,6 +382,16 @@ public abstract partial class LoadoutController : Node2D
 			var darkLayer = new CanvasLayer { Layer = 1 };
 			AddChild(darkLayer);
 			darkLayer.AddChild(new CreepingDarkness { Radius = 0.34f, MaxDark = 0.88f });
+
+			if (LastLightBonfire)
+			{
+				AddChild(new Bonfire
+				{
+					Position = BonfireSmokePosition(camera.Position) + new Vector2(0f, 16f),
+					Scale = new Vector2(1.6f, 1.6f)
+				});
+				SetupBonfireSmoke(camera.Position);
+			}
 
 			return (camera.Position.X - worldW / 2f, camera.Position.X + worldW / 2f);
 		}

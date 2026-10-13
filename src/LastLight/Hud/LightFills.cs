@@ -17,6 +17,7 @@ public partial class LightHealthFill : ColorRect
 	public override void _Ready()
 	{
 		_shader ??= GD.Load<Shader>("res://src/LastLight/Hud/hud_health.gdshader");
+		ProcessMode = ProcessModeEnum.Always; // finish draining when the death screen pauses the game
 		_mat = new ShaderMaterial { Shader = _shader };
 		_mat.SetShaderParameter("seed", GD.Randf() * 50f);
 		Material = _mat;
@@ -62,6 +63,7 @@ public partial class LightOrbFill : ColorRect
 	public override void _Ready()
 	{
 		_shader ??= GD.Load<Shader>("res://src/LastLight/Hud/hud_orb.gdshader");
+		ProcessMode = ProcessModeEnum.Always;
 		_mat = new ShaderMaterial { Shader = _shader };
 		Material = _mat;
 		MouseFilter = MouseFilterEnum.Ignore;

@@ -73,6 +73,9 @@ public partial class LastLightBackground : Control
 		_lightMat.SetShaderParameter("feet_uv", LastLightStyle.LightFeetUv);
 		_lightMat.SetShaderParameter("strength", LastLightStyle.LightStrength);
 		_lightMat.SetShaderParameter("aspect", size.Y > 0f ? size.X / size.Y : 1.7778f);
+		var hasPocket = LastLightStyle.Pockets.Count > 0;
+		_lightMat.SetShaderParameter("extra_strength", hasPocket ? 1f : 0f);
+		if (hasPocket) _lightMat.SetShaderParameter("extra_uv", LastLightStyle.Pockets[0].Uv);
 	}
 
 	// ── ruins ────────────────────────────────────────────────────────────────

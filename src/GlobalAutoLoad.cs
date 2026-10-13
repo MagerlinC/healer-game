@@ -30,6 +30,10 @@ public partial class GlobalAutoLoad : Node
 	public override void _Ready()
 	{
 		Instance = this;
+
+		// Grade every UI control created from here on into the Last Light look.
+		if (LastLight.LastLightStyle.Enabled)
+			LastLight.Hud.LastLightSkin.Install(GetTree());
 	}
 
 	// ── generic pub/sub ───────────────────────────────────────────────────────

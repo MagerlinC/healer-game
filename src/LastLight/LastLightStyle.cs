@@ -23,6 +23,9 @@ public static class LastLightStyle
 	public static Vector2 LightFeetUv = new(0.5f, 0.55f);
 	public static float LightStrength = 1f;
 
+	/// <summary>Other lights in the scene (bonfires) that also hold the dark back.</summary>
+	public static readonly List<LightPocket> Pockets = new();
+
 	static readonly Dictionary<string, Func<RigDefinition>> PartyRigs = new()
 	{
 		[GameConstants.TemplarName] = RigLibrary.Templar,

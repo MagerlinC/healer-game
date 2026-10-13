@@ -1,13 +1,16 @@
-// Last Light — the darkness closing in on the healer's light.
-// Everything outside a ragged, breathing boundary around the light is swallowed;
-// thin tendrils reach inward now and then, and the boundary smoulders faintly.
+// Last Light — the darkness closing in on every light that is left.
+// Each light holds back a ragged, breathing pocket; the dark fills everything
+// outside them, thin tendrils reach inward now and then, and the edges smoulder.
 shader_type canvas_item;
 
-uniform vec2 light_uv = vec2(0.5, 0.6);
+const int MAX_LIGHTS = 8;
+
+uniform int light_count = 1;
+uniform vec2 light_uvs[8];
+uniform float light_radii[8];     // in screen heights
+
 uniform float aspect = 1.7778;
-uniform float radius = 0.32;      // in screen heights
-uniform float squash = 1.5;       // >1 flattens the circle onto the floor
-uniform float strength = 1.0;     // the healer's flicker; the dark pushes in when it dips
+uniform float squash = 1.5;       // >1 flattens each pocket onto the floor
 uniform float max_dark = 0.95;
 uniform vec4 ember : source_color = vec4(0.85, 0.38, 0.14, 1.0);
 
@@ -20,37 +23,60 @@ float noise(vec2 p) {
 	           mix(hash2(i + vec2(0.0, 1.0)), hash2(i + vec2(1.0, 1.0)), f.x), f.y);
 }
 
-void fragment() {
-	vec2 q = UV - light_uv;
+// Distance from the ragged edge of one light's pocket (negative = inside the light).
+float edge_distance(vec2 uv, vec2 light_uv, float radius, float seed) {
+	vec2 q = uv - light_uv;
 	q.x *= aspect;
 	q.y *= squash;
 	float d = length(q);
 	float ang = atan(q.y, q.x);
 	vec2 dir = vec2(cos(ang), sin(ang));
-	float t = TIME * 0.12;
+	float t = TIME * 0.12 + seed * 13.0;
 
-	// Ragged, slowly shifting boundary.
 	float wob = noise(dir * 2.0 + vec2(t, -t)) * 0.6 + noise(dir * 5.0 + vec2(-t * 1.7, t)) * 0.4;
-	float teeth = abs(fract(ang * 16.0 / 6.2831853 + wob * 1.5) - 0.5) * 2.0;
+	float teeth = abs(fract(ang * 16.0 / 6.2831853 + wob * 1.5 + seed) - 0.5) * 2.0;
 	float fine = abs(fract(ang * 41.0 / 6.2831853 + wob * 3.0) - 0.5) * 2.0;
 	// Tendrils: narrow, sharp reaches toward the light that come and go.
-	float tendril = pow(noise(dir * 7.0 + vec2(t * 1.4, 3.0)), 5.0);
-	float breathe = 0.018 * sin(TIME * 0.45) + 0.008 * sin(TIME * 1.3);
+	float tendril = pow(noise(dir * 7.0 + vec2(t * 1.4, 3.0 + seed * 5.0)), 5.0);
+	float breathe = 0.018 * sin(TIME * 0.45 + seed * 6.0) + 0.008 * sin(TIME * 1.3 + seed * 9.0);
 
-	float r = radius * mix(0.9, 1.0, clamp(strength, 0.0, 1.2))
-		+ (wob - 0.5) * 0.08 + (teeth - 0.5) * 0.05 + (fine - 0.5) * 0.015
-		- tendril * radius * 0.75 + breathe;
+	// Edge features shrink with small pockets so they stay ragged, not shredded.
+	float scale = clamp(radius / 0.3, 0.35, 1.2);
+	float r = radius + ((wob - 0.5) * 0.08 + (teeth - 0.5) * 0.05 + (fine - 0.5) * 0.015 + breathe) * scale
+		- tendril * radius * 0.75;
+	return d - r;
+}
 
-	// A hard ragged front, then smoke thickening into full dark behind it.
-	float dark = smoothstep(r, r + 0.01, d) * 0.72 + smoothstep(r, r + 0.14, d) * (max_dark - 0.72);
-	// The light also thins toward its edge.
-	float dim = smoothstep(r * 0.45, r, d) * 0.3;
-	float alpha = max(dark, dim);
+void fragment() {
+	float alphas[MAX_LIGHTS];
+	float edges[MAX_LIGHTS];
+	float alpha = max_dark;
+	int n = min(light_count, MAX_LIGHTS);
 
-	// The boundary smoulders where light meets dark.
-	float seam = 1.0 - smoothstep(0.0, 0.004, abs(d - r));
-	float flick = 0.6 + 0.4 * noise(dir * 12.0 + vec2(TIME * 1.5, 0.0));
+	for (int i = 0; i < n; i++) {
+		float e = edge_distance(UV, light_uvs[i], light_radii[i], float(i) * 0.37);
+		float r = light_radii[i];
+		// A hard ragged front, then smoke thickening into full dark behind it.
+		float a = smoothstep(0.0, 0.01, e) * 0.72 + smoothstep(0.0, 0.14, e) * (max_dark - 0.72);
+		// The light also thins toward its edge.
+		a = max(a, smoothstep(-r * 0.55, 0.0, e) * 0.3);
+		alphas[i] = a;
+		edges[i] = e;
+		alpha = min(alpha, a);
+	}
 
-	vec3 col = ember.rgb * seam * flick;
-	COLOR = vec4(col, max(alpha, seam * 0.45 * flick));
+	// Smoulder only where a pocket's edge is not lit by another light.
+	float seam = 0.0;
+	for (int i = 0; i < n; i++) {
+		float others = 1.0;
+		for (int j = 0; j < n; j++) {
+			if (j != i) {
+				others = min(others, smoothstep(0.0, 0.5, alphas[j]));
+			}
+		}
+		seam = max(seam, (1.0 - smoothstep(0.0, 0.004, abs(edges[i]))) * others);
+	}
+	float flick = 0.6 + 0.4 * noise(UV * vec2(aspect, 1.0) * 60.0 + vec2(TIME * 1.5, 0.0));
+
+	COLOR = vec4(ember.rgb * seam * flick, max(alpha, seam * 0.45 * flick));
 }

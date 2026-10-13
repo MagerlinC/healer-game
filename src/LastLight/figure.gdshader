@@ -28,6 +28,11 @@ uniform vec4 rim_color : source_color = vec4(1.0, 0.86, 0.6, 1.0);
 uniform vec4 dark_color : source_color = vec4(0.018, 0.014, 0.014, 1.0);
 uniform float rim_px = 2.0;
 
+// Party only: a thin warm outline just outside the silhouette, so allies stay
+// readable when they stand inside a boss's darkness. 0 disables.
+uniform float outline_px = 2.0;
+uniform vec4 outline_color : source_color = vec4(1.0, 0.84, 0.58, 0.8);
+
 float hash1(float n) { return fract(sin(n) * 43758.5453); }
 float hash2(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float vnoise(float x) {
@@ -39,11 +44,26 @@ float vnoise(float x) {
 
 void fragment() {
 	vec4 src = textureLod(screen_tex, SCREEN_UV, 0.0);
+	vec2 px = SCREEN_PIXEL_SIZE;
+
+	// Outside the silhouette: either the outline ring, or nothing.
+	float outline = 0.0;
 	if (src.a < 0.004) {
-		discard;
+		if (mode != 0 || outline_px <= 0.0) {
+			discard;
+		}
+		float near = 0.0;
+		for (int i = 0; i < 8; i++) {
+			float a = float(i) * 0.7853982;
+			near = max(near, textureLod(screen_tex, SCREEN_UV + vec2(cos(a), sin(a)) * outline_px * px, 0.0).a);
+		}
+		outline = smoothstep(0.25, 0.8, near);
+		if (outline <= 0.0) {
+			discard;
+		}
+		src = vec4(0.0, 0.0, 0.0, 1.0); // keeps the shading math below well-defined
 	}
 	vec3 base = src.rgb / src.a;
-	vec2 px = SCREEN_PIXEL_SIZE;
 
 	// Direction and distance to the light, in pixels (aspect-correct).
 	vec2 to_light = (light_uv - SCREEN_UV) / px;
@@ -100,4 +120,7 @@ void fragment() {
 	}
 
 	COLOR = vec4(col, alpha);
+	if (outline > 0.0) {
+		COLOR = vec4(outline_color.rgb, outline_color.a * outline);
+	}
 }

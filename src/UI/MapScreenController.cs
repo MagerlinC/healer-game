@@ -2,6 +2,8 @@
 using System.Linq;
 using Godot;
 using healerfantasy;
+using healerfantasy.LastLight;
+using healerfantasy.LastLight.Hud;
 
 /// <summary>
 /// The World Map screen shown between locations.
@@ -43,15 +45,16 @@ public partial class MapScreenController : Node2D
 	static readonly Vector2 CampNodeSize = new(120f, 72f);
 
 	// ── colours ───────────────────────────────────────────────────────────────
-	static readonly Color ColCompleted = new(0.25f, 0.65f, 0.28f, 1f);
-	static readonly Color ColAvailable = new(0.95f, 0.80f, 0.20f, 1f);
-	static readonly Color ColInProgress = new(0.85f, 0.55f, 0.15f, 1f);
-	static readonly Color ColLocked = new(0.30f, 0.28f, 0.26f, 0.80f);
-	static readonly Color ColLineDone = new(0.35f, 0.65f, 0.35f, 0.90f);
-	static readonly Color ColLinePending = new(0.45f, 0.40f, 0.28f, 0.60f);
-	static readonly Color ColPanelBg = new(0.08f, 0.07f, 0.07f, 0.95f);
-	static readonly Color ColPanelBorder = new(0.65f, 0.52f, 0.28f);
-	static readonly Color ColTitle = new(0.95f, 0.84f, 0.50f);
+	static readonly bool LL = LastLightStyle.Enabled;
+	static readonly Color ColCompleted = LL ? new(0.76f, 0.66f, 0.5f, 1f) : new(0.25f, 0.65f, 0.28f, 1f);
+	static readonly Color ColAvailable = LL ? LastLightHud.Light : new(0.95f, 0.80f, 0.20f, 1f);
+	static readonly Color ColInProgress = LL ? LastLightHud.Ember : new(0.85f, 0.55f, 0.15f, 1f);
+	static readonly Color ColLocked = LL ? new(0.32f, 0.29f, 0.26f, 0.85f) : new(0.30f, 0.28f, 0.26f, 0.80f);
+	static readonly Color ColLineDone = LL ? new(0.95f, 0.62f, 0.3f, 0.9f) : new(0.35f, 0.65f, 0.35f, 0.90f);
+	static readonly Color ColLinePending = LL ? new(0.45f, 0.38f, 0.3f, 0.45f) : new(0.45f, 0.40f, 0.28f, 0.60f);
+	static readonly Color ColPanelBg = LL ? LastLightHud.Soot : new(0.08f, 0.07f, 0.07f, 0.95f);
+	static readonly Color ColPanelBorder = LL ? LastLightHud.Iron : new(0.65f, 0.52f, 0.28f);
+	static readonly Color ColTitle = LL ? LastLightHud.Light : new(0.95f, 0.84f, 0.50f);
 	static readonly Color ColHint = new(0.50f, 0.46f, 0.40f);
 
 	// ── runtime ───────────────────────────────────────────────────────────────
@@ -82,6 +85,53 @@ public partial class MapScreenController : Node2D
 		bgRect.StretchMode = TextureRect.StretchModeEnum.Scale;
 		bgRect.MouseFilter = Control.MouseFilterEnum.Ignore;
 		bgLayer.AddChild(bgRect);
+
+		// Last Light: a lost world in ink on black; only the places you've reached hold back the dark.
+		CreepingDarkness? darkness = null;
+		if (LL)
+		{
+			bgRect.Visible = false;
+			var groundMat = new ShaderMaterial { Shader = GD.Load<Shader>("res://src/LastLight/map_ground.gdshader") };
+			var view = GetViewport().GetVisibleRect().Size;
+			groundMat.SetShaderParameter("aspect", view.X / view.Y);
+			var ground = new ColorRect { Material = groundMat, MouseFilter = Control.MouseFilterEnum.Ignore };
+			ground.Size = view;
+			bgLayer.AddChild(ground);
+
+			var darkLayer = new CanvasLayer { Layer = -5 };
+			AddChild(darkLayer);
+			darkness = new CreepingDarkness { FollowHealer = false, MaxDark = 0.9f };
+			darkLayer.AddChild(darkness);
+			for (var i = 0; i < NodeCentres.Length; i++)
+			{
+				var radius = GetNodeState(i) switch
+				{
+					RunState.MapNodeState.Completed => 0.1f,
+					RunState.MapNodeState.Available => 0.17f,
+					RunState.MapNodeState.InProgress => 0.17f,
+					_ => 0f
+				};
+				if (radius <= 0f) continue;
+				darkness.Extra.Add(new LightPocket { Uv = NodeCentres[i] / view, Radius = radius });
+
+				// A warm glow on the map under each place that still holds light.
+				var glowGradient = new Gradient();
+				glowGradient.SetColor(0, new Color(1f, 0.7f, 0.35f, 0.32f));
+				glowGradient.SetColor(1, new Color(1f, 0.5f, 0.2f, 0f));
+				bgLayer.AddChild(new Sprite2D
+				{
+					Texture = new GradientTexture2D
+					{
+						Gradient = glowGradient, Width = 256, Height = 256,
+						Fill = GradientTexture2D.FillEnum.Radial,
+						FillFrom = new Vector2(0.5f, 0.5f), FillTo = new Vector2(0.5f, 0f)
+					},
+					Material = new CanvasItemMaterial { BlendMode = CanvasItemMaterial.BlendModeEnum.Add },
+					Position = NodeCentres[i],
+					Scale = Vector2.One * (radius * view.Y * 2.4f / 256f)
+				});
+			}
+		}
 
 		// ── Map canvas layer ──────────────────────────────────────────────────
 		var mapLayer = new CanvasLayer { Layer = 0 };
@@ -124,6 +174,7 @@ public partial class MapScreenController : Node2D
 		title.AddThemeFontSizeOverride("font_size", 28);
 		title.AddThemeColorOverride("font_color", ColTitle);
 		title.MouseFilter = Control.MouseFilterEnum.Ignore;
+		if (LL) LastLightHud.Style(title, 30, ColTitle);
 		hudRoot.AddChild(title);
 
 		var backBtn = MakeTextButton("← Back");
@@ -176,7 +227,7 @@ public partial class MapScreenController : Node2D
 
 		var panelStyle = new StyleBoxFlat();
 		panelStyle.BgColor = bgColor;
-		panelStyle.SetCornerRadiusAll(isDungeonNode ? 8 : 50);
+		panelStyle.SetCornerRadiusAll(LL ? 0 : isDungeonNode ? 8 : 50);
 		panelStyle.SetBorderWidthAll(2);
 		panelStyle.BorderColor = borderColor;
 		_nodeBorders[slotIndex] = panelStyle;
@@ -200,7 +251,15 @@ public partial class MapScreenController : Node2D
 		icon.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		icon.AddThemeFontSizeOverride("font_size", isDungeonNode ? 20 : 16);
 		icon.Modulate = new Color(1f, 1f, 1f, state == RunState.MapNodeState.Locked ? 0.40f : 1f);
-		vbox.AddChild(icon);
+		if (LL)
+			vbox.AddChild(new MapMarker
+			{
+				IsDungeon = isDungeonNode,
+				Lit = state != RunState.MapNodeState.Locked,
+				Tint = borderColor
+			});
+		else
+			vbox.AddChild(icon);
 
 		// Name
 		var nodeName = isDungeonNode
@@ -216,6 +275,9 @@ public partial class MapScreenController : Node2D
 		nameLabel.AddThemeFontSizeOverride("font_size", isDungeonNode ? 11 : 10);
 		nameLabel.AddThemeColorOverride("font_color",
 			state == RunState.MapNodeState.Locked ? new Color(0.45f, 0.42f, 0.38f) : borderColor);
+		if (LL)
+			LastLightHud.Style(nameLabel, isDungeonNode ? 12 : 11,
+				state == RunState.MapNodeState.Locked ? LastLightHud.TextDim : borderColor);
 		vbox.AddChild(nameLabel);
 
 		// Boss count sub-label for non-locked dungeons
@@ -279,7 +341,8 @@ public partial class MapScreenController : Node2D
 
 		_detailPanelStyle = new StyleBoxFlat();
 		_detailPanelStyle.BgColor = new Color(0.07f, 0.06f, 0.05f, 0.97f);
-		_detailPanelStyle.SetCornerRadiusAll(8);
+		_detailPanelStyle.SetCornerRadiusAll(LL ? 0 : 8);
+		if (LL) _detailPanelStyle.BgColor = LastLightHud.Soot;
 		_detailPanelStyle.SetBorderWidthAll(2);
 		_detailPanelStyle.BorderColor = ColPanelBorder;
 		_detailPanelStyle.ContentMarginLeft = _detailPanelStyle.ContentMarginRight = 20f;
@@ -310,6 +373,7 @@ public partial class MapScreenController : Node2D
 		_detailTitle.AutowrapMode = TextServer.AutowrapMode.Word;
 		_detailTitle.AddThemeFontSizeOverride("font_size", 20);
 		_detailTitle.AddThemeColorOverride("font_color", ColTitle);
+		if (LL) LastLightHud.Style(_detailTitle, 22, ColTitle);
 		vbox.AddChild(_detailTitle);
 
 		// Sub-label (state badge)
@@ -347,8 +411,12 @@ public partial class MapScreenController : Node2D
 		vbox.AddChild(_spellbookWarningLabel);
 
 		// Enter button
-		var enterStyle = MakeBtnStyle(new Color(0.12f, 0.17f, 0.12f), new Color(0.30f, 0.65f, 0.28f));
-		var enterHover = MakeBtnStyle(new Color(0.18f, 0.24f, 0.16f), new Color(0.40f, 0.80f, 0.35f));
+		var enterStyle = LL
+			? MakeBtnStyle(new Color(0.09f, 0.05f, 0.03f), LastLightHud.Ember)
+			: MakeBtnStyle(new Color(0.12f, 0.17f, 0.12f), new Color(0.30f, 0.65f, 0.28f));
+		var enterHover = LL
+			? MakeBtnStyle(new Color(0.16f, 0.08f, 0.04f), LastLightHud.Light)
+			: MakeBtnStyle(new Color(0.18f, 0.24f, 0.16f), new Color(0.40f, 0.80f, 0.35f));
 
 		_enterBtn = new Button();
 		_enterBtn.Text = "Enter";
@@ -363,6 +431,7 @@ public partial class MapScreenController : Node2D
 		_enterBtn.AddThemeStyleboxOverride("pressed", enterStyle);
 		_enterBtn.AddThemeStyleboxOverride("focus", enterStyle);
 		_enterBtn.Pressed += OnEnterPressed;
+		if (LL) _enterBtn.AddThemeFontOverride("font", LastLightHud.Serif);
 		vbox.AddChild(_enterBtn);
 
 		return container;
@@ -537,7 +606,7 @@ public partial class MapScreenController : Node2D
 	{
 		var s = new StyleBoxFlat();
 		s.BgColor = bg;
-		s.SetCornerRadiusAll(6);
+		s.SetCornerRadiusAll(LL ? 0 : 6);
 		s.SetBorderWidthAll(2);
 		s.BorderColor = border;
 		s.ContentMarginLeft = s.ContentMarginRight = 16f;
@@ -565,7 +634,10 @@ public partial class MapScreenController : Node2D
 			for (var i = 0; i < _centres.Length - 1; i++)
 			{
 				var color = _done[i] ? ColLineDone : ColLinePending;
-				DrawLine(_centres[i], _centres[i + 1], color, 4f, true);
+				if (LL && !_done[i])
+					DrawDashedLine(_centres[i], _centres[i + 1], color, 2f, 10f, true, true);
+				else
+					DrawLine(_centres[i], _centres[i + 1], color, LL ? 3f : 4f, true);
 				var mid = (_centres[i] + _centres[i + 1]) / 2f;
 				DrawCircle(mid, 5f, color * new Color(1f, 1f, 1f, 0.6f));
 			}

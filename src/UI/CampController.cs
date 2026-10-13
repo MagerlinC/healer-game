@@ -32,6 +32,9 @@ public partial class CampController : LoadoutController
 
 	protected override bool PersistSpellLoadout => false;
 
+	protected override bool UseLastLightScene => true;
+	protected override bool LastLightBonfire => true;
+
 	// ── Virtual config overrides (Camp layout differs slightly from Overworld) ─
 
 	protected override float MapTextureScale => 0.125f;

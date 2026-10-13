@@ -12,6 +12,10 @@ uniform float aspect = 1.7778;
 uniform float reach = 0.3;
 uniform vec4 warm : source_color = vec4(1.0, 0.78, 0.45, 1.0);
 
+// One extra light (a bonfire). extra_strength = 0 disables it.
+uniform vec2 extra_uv = vec2(0.5, 0.5);
+uniform float extra_strength = 0.0;
+
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 
 void fragment() {
@@ -30,6 +34,11 @@ void fragment() {
 	float ring = (1.0 - smoothstep(0.0, 0.0035, abs(e - reach))) * dash * 0.2;
 	vec3 add = warm.rgb * (glow + pool + ring) * strength;
 
+	vec2 x = UV - extra_uv;
+	x.x *= aspect;
+	float xd = length(vec2(x.x, x.y * 1.6));
+	add += vec3(1.0, 0.62, 0.3) * (exp(-xd * xd / (2.0 * 0.09 * 0.09)) * 0.3 + exp(-xd * xd / (2.0 * 0.3 * 0.3)) * 0.1) * extra_strength;
+
 	// Drifting ash: grey specks, rising slowly.
 	vec2 g = vec2(UV.x * aspect, UV.y) * 70.0 + vec2(0.0, TIME * 1.6);
 	vec2 cell = floor(g);
@@ -39,6 +48,7 @@ void fragment() {
 
 	// Darkness: everything far from the light, plus a heavy vignette.
 	float far = smoothstep(0.22, 1.05, d / max(strength, 0.3)) * 0.62;
+	far = min(far, mix(1.0, smoothstep(0.18, 0.9, xd) * 0.62, step(0.001, extra_strength)));
 	vec2 v = (UV - 0.5) * vec2(1.0, 1.25);
 	float vig = smoothstep(0.38, 0.85, length(v)) * 0.55;
 	float a = clamp(far + vig, 0.0, 0.93);

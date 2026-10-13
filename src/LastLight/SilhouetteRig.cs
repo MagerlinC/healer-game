@@ -66,6 +66,9 @@ public partial class SilhouetteRig : CanvasGroup
 	public override void _Ready()
 	{
 		_shader ??= GD.Load<Shader>("res://src/LastLight/figure.gdshader");
+		// Keep animating while the game is paused (death and pause screens), so the
+		// figures settle into their final state instead of freezing mid-motion.
+		ProcessMode = ProcessModeEnum.Always;
 		_seed = GD.Randf() * 100f;
 		_t = GD.Randf() * 10f;
 		_lastPos = _owner.GlobalPosition;
@@ -177,6 +180,9 @@ public partial class SilhouetteRig : CanvasGroup
 		if (_src != null)
 		{
 			_src.SelfModulate = new Color(1, 1, 1, 0);
+			// Death visuals swap in a shader that ignores modulate and would show the
+			// old sprite again; the hidden sprite never needs a material.
+			if (_src.Material != null) _src.Material = null;
 			if (_deathT <= 0f) Modulate = _src.Modulate;
 		}
 
