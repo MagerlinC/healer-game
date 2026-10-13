@@ -212,6 +212,12 @@ public partial class InteractibleObject : Area2D
     /// Safe to call before <see cref="_Ready"/> has run — the texture will be
     /// applied once the sprite nodes are created.
     /// </summary>
+    /// <summary>Sets a material on the visible sprite (not the hover glow).</summary>
+    public void SetSpriteMaterial(Material material)
+    {
+        if (_sprite != null) _sprite.Material = material;
+    }
+
     public void SetTexture(string texturePath)
     {
         TexturePath = texturePath;

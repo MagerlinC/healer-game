@@ -1,5 +1,7 @@
 using Godot;
 using healerfantasy;
+using healerfantasy.LastLight;
+using healerfantasy.LastLight.Hud;
 
 namespace healerfantasy.UI;
 
@@ -20,9 +22,9 @@ namespace healerfantasy.UI;
 public partial class BossHealthBar : CharacterFrame
 {
 	// ── constants ─────────────────────────────────────────────────────────────
-	static readonly Color BorderDefault = new(0.32f, 0.26f, 0.26f);
-	static readonly Color BorderHovered = new(0.90f, 0.80f, 0.20f);
-	static readonly Color BarTextColor = new(0.95f, 0.90f, 0.85f);
+	static readonly Color BorderDefault = LastLightStyle.Enabled ? new Color(0f, 0f, 0f, 0f) : new(0.32f, 0.26f, 0.26f);
+	static readonly Color BorderHovered = LastLightStyle.Enabled ? LastLightHud.IronLit : new(0.90f, 0.80f, 0.20f);
+	static readonly Color BarTextColor = LastLightStyle.Enabled ? LastLightHud.Text : new(0.95f, 0.90f, 0.85f);
 
 	/// <summary>
 	/// Horizontal inset shared by both the health panel and the effect-badge row.
@@ -278,6 +280,12 @@ public partial class BossHealthBar : CharacterFrame
 		panelStyle.ContentMarginRight = 8f;
 		panelStyle.ContentMarginTop = 6f;
 		panelStyle.ContentMarginBottom = 6f;
+		if (LastLightStyle.Enabled)
+		{
+			// Souls-style: no box, just the name over a long thin bar.
+			panelStyle.BgColor = new Color(0f, 0f, 0f, 0f);
+			panelStyle.SetCornerRadiusAll(0);
+		}
 
 		_innerPanel = new PanelContainer();
 		_innerPanel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
@@ -399,5 +407,51 @@ public partial class BossHealthBar : CharacterFrame
 		_currentHealthLabel.AddThemeColorOverride("font_color", BarTextColor);
 		_currentHealthLabel.MouseFilter = MouseFilterEnum.Ignore;
 		overlay.AddChild(_currentHealthLabel);
+
+		if (LastLightStyle.Enabled)
+			ApplyLastLightLook(overlay);
+	}
+
+	/// <summary>
+	/// Re-lays the bar Souls-style: serif name above a thin dark-red bar with an
+	/// iron border; shield and marker overlays follow the bar's new height.
+	/// </summary>
+	void ApplyLastLightLook(Control overlay)
+	{
+		const float barHeight = 9f;
+		overlay.CustomMinimumSize = new Vector2(0f, 34f);
+
+		foreach (var c in new Control[] { _bar, _shieldBar, _healthTargetMarker })
+		{
+			c.AnchorTop = 1f;
+			c.AnchorBottom = 1f;
+			c.OffsetTop = -barHeight;
+			c.OffsetBottom = 0f;
+		}
+
+		var bg = LastLightHud.Panel(new Color(0.03f, 0.022f, 0.02f, 0.92f), LastLightHud.Iron);
+		bg.ShadowSize = 6;
+		bg.ShadowColor = new Color(0f, 0f, 0f, 0.6f);
+		_bar.AddThemeStyleboxOverride("background", bg);
+		// Dark blood with a thin brighter lip along the top.
+		var fill = new StyleBoxFlat { BgColor = new Color(0.46f, 0.08f, 0.05f, 1f) };
+		fill.BorderWidthTop = 1;
+		fill.BorderColor = new Color(0.72f, 0.2f, 0.12f, 1f);
+		_bar.AddThemeStyleboxOverride("fill", fill);
+		_shieldBar.Color = LastLightHud.ShieldGlass;
+		_healthTargetMarker.Color = LastLightHud.Light;
+
+		foreach (var label in new[] { _nameLabel, _currentHealthLabel })
+		{
+			label.AnchorTop = 0f;
+			label.AnchorBottom = 1f;
+			label.OffsetTop = 0f;
+			label.OffsetBottom = -barHeight - 3f;
+			label.VerticalAlignment = VerticalAlignment.Bottom;
+		}
+		_nameLabel.OffsetLeft = 2f;
+		_currentHealthLabel.OffsetRight = -2f;
+		LastLightHud.Style(_nameLabel, 19, LastLightHud.Text);
+		LastLightHud.Style(_currentHealthLabel, 12, LastLightHud.TextDim);
 	}
 }

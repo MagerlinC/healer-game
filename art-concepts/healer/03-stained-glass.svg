@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- STAINED GLASS // lead #0d0b12 (5px, round joins), emerald #0f5a3c/#1b7a52, amber #d9b25a/#c9963a, ruby #c2183a, cobalt #1d3a9e -->
+  <g stroke="#0d0b12" stroke-width="5" stroke-linejoin="round">
+    <!-- halo -->
+    <circle cx="128" cy="58" r="48" fill="#1d3a9e"/>
+    <path d="M128 10 V106 M80 58 H176 M94 24 L162 92 M162 24 L94 92" stroke-width="3"/>
+    <circle cx="128" cy="58" r="48" fill="none"/>
+    <!-- staff -->
+    <rect x="46" y="50" width="12" height="194" fill="#c9963a"/>
+    <path d="M52 4 L68 30 L52 56 L36 30 Z" fill="#c2183a"/>
+    <path d="M52 4 L68 30 L52 30 Z" fill="#e8435f"/>
+    <path d="M36 30 L52 56 L52 30 Z" fill="#8c0f28"/>
+    <!-- cloak facets -->
+    <path d="M128 12 L96 40 L90 70 L112 56 Z" fill="#1b7a52"/>
+    <path d="M128 12 L160 40 L166 70 L144 56 Z" fill="#0f5a3c"/>
+    <path d="M128 12 L112 56 L144 56 Z" fill="#0f5a3c"/>
+    <path d="M90 70 L112 56 L112 100 L84 100 Z" fill="#0f5a3c"/>
+    <path d="M166 70 L144 56 L144 100 L172 100 Z" fill="#1b7a52"/>
+    <path d="M84 100 L112 100 L104 170 L68 170 Z" fill="#1b7a52"/>
+    <path d="M68 170 L104 170 L98 242 L46 242 Z" fill="#0f5a3c"/>
+    <path d="M172 100 L144 100 L152 170 L188 170 Z" fill="#0f5a3c"/>
+    <path d="M188 170 L152 170 L158 242 L210 242 Z" fill="#1b7a52"/>
+    <!-- robe -->
+    <path d="M112 100 L144 100 L152 170 L104 170 Z" fill="#d9b25a"/>
+    <path d="M104 170 L128 170 L128 242 L98 242 Z" fill="#c9963a"/>
+    <path d="M128 170 L152 170 L158 242 L128 242 Z" fill="#e3c06e"/>
+    <!-- chest jewel -->
+    <path d="M128 110 L138 124 L128 138 L118 124 Z" fill="#c2183a"/>
+    <!-- face -->
+    <path d="M112 56 L144 56 L140 84 L128 96 L116 84 Z" fill="#ead7b0"/>
+    <!-- arm + hand -->
+    <path d="M84 112 L60 120 L60 136 L88 128 Z" fill="#0f5a3c"/>
+    <circle cx="54" cy="128" r="9" fill="#ead7b0"/>
+  </g>
+  <path d="M118 72 h7 M131 72 h7" stroke="#0d0b12" stroke-width="3.5" stroke-linecap="round"/>
+</svg>

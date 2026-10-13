@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- GRAVE DOLL // burnt paper scraps pinned with rusty nails. soot #17140f, char #2a231b, burnt paper #5a4a36, old parchment #8d7a58, dried blood #5e140e, rust #7a3a1a, smoulder #e0642a. -->
+  <defs>
+    <filter id="torn" filterUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" seed="4" result="t"/>
+      <feDisplacementMap in="SourceGraphic" in2="t" scale="8" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feDropShadow in="d" dx="2" dy="3" stdDeviation="1" flood-color="#000" flood-opacity="0.7"/>
+    </filter>
+    <filter id="smoulder" filterUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" seed="4" result="t"/>
+      <feDisplacementMap in="SourceGraphic" in2="t" scale="8" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feGaussianBlur in="d" stdDeviation="1.2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="d"/></feMerge>
+    </filter>
+  </defs>
+  <!-- staff -->
+  <g filter="url(#torn)">
+    <rect x="46" y="48" width="12" height="198" fill="#17140f" transform="rotate(-3 52 146)"/>
+    <path d="M52 6 L67 31 L52 58 L37 31 Z" fill="#5e140e"/>
+  </g>
+  <!-- cloak scraps -->
+  <g filter="url(#torn)">
+    <path d="M98 72 C100 52 114 34 134 30 C154 30 168 46 172 70 L178 108 C192 154 202 200 212 242 L46 242 C56 200 66 158 80 118 L88 88 C90 80 94 76 98 72 Z" fill="#2a231b"/>
+    <path d="M134 30 C120 32 104 46 98 66 L90 120 L76 200 L70 242 L46 242 C56 200 66 158 80 118 L88 88 C90 80 94 76 98 72 C100 52 114 34 134 30 Z" fill="#17140f"/>
+    <path d="M116 104 L148 100 L162 242 L102 242 Z" fill="#5a4a36"/>
+    <path d="M100 64 C104 52 136 50 142 60 L140 94 C136 106 112 108 106 98 Z" fill="#17140f"/>
+    <path d="M106 68 L136 64 L134 92 C128 100 116 100 110 92 Z" fill="#8d7a58"/>
+  </g>
+  <!-- burn hole with smouldering rim -->
+  <path d="M164 176 L178 170 L186 184 L176 198 L162 192 Z" fill="none" stroke="#e0642a" stroke-width="2.4" filter="url(#smoulder)"/>
+  <path d="M164 176 L178 170 L186 184 L176 198 L162 192 Z" fill="#0b0907" filter="url(#torn)"/>
+  <!-- smouldering hood edge -->
+  <path d="M98 72 C100 52 114 34 134 30" fill="none" stroke="#e0642a" stroke-width="1.6" opacity="0.8" filter="url(#smoulder)"/>
+  <!-- stitches in dark red thread -->
+  <g stroke="#5e140e" stroke-width="2" stroke-linecap="round" fill="none">
+    <path d="M98 70 L90 120 L78 196" stroke-dasharray="1 6"/>
+    <path d="M128 124 V150 M116 136 H140" stroke-width="2.6"/>
+    <path d="M114 86 H132 M117 83 v6 M121 83 v6 M125 83 v6 M129 83 v6" stroke="#17140f" stroke-width="1.4"/>
+  </g>
+  <!-- nail eyes, weeping rust -->
+  <g>
+    <path d="M114 76 q1 10 -1 18 M129 74 q1 8 0 14" stroke="#7a3a1a" stroke-width="1.6" fill="none" opacity="0.9"/>
+    <circle cx="114" cy="76" r="3.6" fill="#7a3a1a" stroke="#17140f" stroke-width="1.2"/>
+    <circle cx="129" cy="74" r="3.6" fill="#7a3a1a" stroke="#17140f" stroke-width="1.2"/>
+  </g>
+  <!-- arm, nailed to the staff -->
+  <g filter="url(#torn)">
+    <path d="M90 112 L60 122 L60 136 L94 128 Z" fill="#17140f"/>
+    <circle cx="54" cy="129" r="8" fill="#8d7a58"/>
+  </g>
+  <circle cx="54" cy="129" r="2.6" fill="#7a3a1a" stroke="#17140f" stroke-width="1"/>
+  <circle cx="52" cy="31" r="2.6" fill="#7a3a1a" stroke="#17140f" stroke-width="1"/>
+  <circle cx="154" cy="214" r="2.4" fill="#7a3a1a" stroke="#17140f" stroke-width="1"/>
+  <!-- drifting cinders -->
+  <g fill="#e0642a">
+    <rect x="190" y="150" width="2" height="2"/><rect x="200" y="120" width="1.5" height="1.5" opacity="0.7"/><rect x="182" y="132" width="1.5" height="1.5"/>
+  </g>
+</svg>

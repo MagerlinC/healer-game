@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- LAST LANTERN // pure black #050506 silhouette, ONE light source (#9ff5e0). Rim light only on edges facing that light. -->
+  <defs>
+    <radialGradient id="halo" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#d8fff6" stop-opacity="0.9"/>
+      <stop offset="0.25" stop-color="#6ff0d0" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#6ff0d0" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2"/></filter>
+  </defs>
+  <circle cx="53" cy="30" r="29" fill="url(#halo)"/>
+  <ellipse cx="128" cy="246" rx="96" ry="6" fill="#6ff0d0" opacity="0.12"/>
+  <!-- staff -->
+  <rect x="50" y="34" width="6" height="216" fill="#050506"/>
+  <!-- body with tattered hem and a hood tip trailing back -->
+  <path fill="#050506" d="M108 30 C116 14 146 2 180 10 C160 16 156 28 162 48 L168 96 C184 140 196 190 214 236 L204 226 L200 252 L186 228 L176 250 L166 226 L154 252 L144 228 L130 254 L120 230 L106 252 L98 228 L84 250 L76 226 L62 246 L58 228 L44 240 C58 190 72 140 86 96 L92 52 C94 42 100 36 108 30 Z"/>
+  <path fill="#050506" d="M92 110 C80 116 70 120 58 122 L56 134 C72 134 86 130 98 124 Z"/>
+  <!-- rim light -->
+  <g fill="none" stroke="#9ff5e0" stroke-linecap="round">
+    <path d="M108 30 C100 36 94 42 92 52 L86 96 C76 128 66 160 56 196" stroke-width="2.2" opacity="0.9"/>
+    <path d="M108 30 C116 14 146 2 180 10" stroke-width="1.4" opacity="0.55"/>
+    <path d="M92 110 C80 116 70 120 58 122" stroke-width="1.8" opacity="0.8"/>
+    <path d="M56 40 V120" stroke-width="1.2" opacity="0.7"/>
+  </g>
+  <!-- eyes -->
+  <circle cx="112" cy="58" r="2.2" fill="#d6fff4"/>
+  <circle cx="124" cy="59" r="2.2" fill="#d6fff4"/>
+  <!-- crystal -->
+  <path d="M53 12 L63 30 L53 48 L43 30 Z" fill="#9ff5e0" filter="url(#soft)"/>
+  <path d="M53 16 L60 30 L53 44 L46 30 Z" fill="#f2fffc"/>
+</svg>

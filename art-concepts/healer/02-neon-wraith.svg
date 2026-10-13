@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- NEON WRAITH // void #07021a, sunset gradient, cyan #29f0ff, magenta #ff2bd6. The cloak IS a sliced retro sun. -->
+  <defs>
+    <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#140533"/>
+      <stop offset="0.35" stop-color="#5a12a8"/>
+      <stop offset="0.6" stop-color="#ff2bd6"/>
+      <stop offset="0.82" stop-color="#ff6b3d"/>
+      <stop offset="1" stop-color="#ffd23f"/>
+    </linearGradient>
+    <mask id="slices">
+      <rect width="256" height="256" fill="#fff"/>
+      <g fill="#000">
+        <rect y="140" width="256" height="2"/><rect y="158" width="256" height="3"/>
+        <rect y="176" width="256" height="4"/><rect y="194" width="256" height="5"/>
+        <rect y="211" width="256" height="6"/><rect y="228" width="256" height="7"/>
+      </g>
+    </mask>
+    <filter id="glow" filterUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <feGaussianBlur stdDeviation="2.4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- floor grid -->
+  <g stroke="#ff2bd6" stroke-width="1" opacity="0.55" filter="url(#glow)">
+    <path d="M40 244 H216 M60 250 H196"/>
+    <path d="M128 240 V254 M100 240 L92 254 M156 240 L164 254 M72 240 L56 254 M184 240 L200 254"/>
+  </g>
+  <!-- cloak -->
+  <path d="M128 16 C152 18 168 40 170 66 L176 104 C190 150 200 200 210 238 L46 238 C56 200 66 150 80 104 L86 66 C88 40 104 18 128 16 Z" fill="url(#sun)" mask="url(#slices)"/>
+  <path d="M128 16 C152 18 168 40 170 66 L176 104 C190 150 200 200 210 238 L46 238 C56 200 66 150 80 104 L86 66 C88 40 104 18 128 16 Z" fill="none" stroke="#29f0ff" stroke-width="2" filter="url(#glow)"/>
+  <!-- the void inside the hood -->
+  <path d="M110 54 C112 42 144 42 146 54 L144 88 C140 100 116 100 112 88 Z" fill="#07021a" stroke="#ff2bd6" stroke-width="1.5" filter="url(#glow)"/>
+  <g fill="#29f0ff" filter="url(#glow)">
+    <rect x="116" y="70" width="9" height="3"/><rect x="131" y="70" width="9" height="3"/>
+  </g>
+  <!-- staff -->
+  <path d="M52 52 V242" stroke="#29f0ff" stroke-width="3" filter="url(#glow)"/>
+  <path d="M52 8 L66 32 L52 56 L38 32 Z" fill="#07021a" stroke="#ff2bd6" stroke-width="2.5" filter="url(#glow)"/>
+  <path d="M52 22 L58 32 L52 42 L46 32 Z" fill="#ffd23f" filter="url(#glow)"/>
+  <!-- sleeve/hand -->
+  <path d="M84 116 L58 126 L58 136 L88 130" fill="#07021a" stroke="#29f0ff" stroke-width="2" stroke-linejoin="round" filter="url(#glow)"/>
+</svg>

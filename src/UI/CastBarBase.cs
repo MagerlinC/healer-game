@@ -1,4 +1,6 @@
 using Godot;
+using healerfantasy.LastLight;
+using healerfantasy.LastLight.Hud;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
 
 /// <summary>
@@ -10,12 +12,14 @@ using SpellResource = healerfantasy.SpellResources.SpellResource;
 public abstract partial class CastBarBase : PanelContainer
 {
 	// ── colours — overridable by subclasses ──────────────────────────────────
-	protected virtual Color BgColor      => new(0.10f, 0.08f, 0.07f, 0.95f);
-	protected virtual Color BorderColor  => new(0.55f, 0.44f, 0.22f, 0.90f);
-	protected virtual Color NameColor    => new(0.92f, 0.88f, 0.82f);
-	protected virtual Color TimeColor    => new(0.95f, 0.84f, 0.50f);
-	protected virtual Color BarFillColor => new(0.80f, 0.62f, 0.12f); // warm amber
-	protected virtual Color BarBgColor   => new(0.14f, 0.11f, 0.09f);
+	protected virtual Color BgColor      => LastLightStyle.Enabled ? LastLightHud.Soot : new(0.10f, 0.08f, 0.07f, 0.95f);
+	protected virtual Color BorderColor  => LastLightStyle.Enabled ? LastLightHud.Iron : new(0.55f, 0.44f, 0.22f, 0.90f);
+	protected virtual Color NameColor    => LastLightStyle.Enabled ? LastLightHud.Text : new(0.92f, 0.88f, 0.82f);
+	protected virtual Color TimeColor    => LastLightStyle.Enabled ? LastLightHud.Light : new(0.95f, 0.84f, 0.50f);
+	protected virtual Color BarFillColor => LastLightStyle.Enabled ? new(0.86f, 0.6f, 0.3f) : new(0.80f, 0.62f, 0.12f); // warm amber
+	protected virtual Color BarBgColor   => LastLightStyle.Enabled ? LastLightHud.Pit : new(0.14f, 0.11f, 0.09f);
+
+	static int Radius(int classic) => LastLightStyle.Enabled ? 0 : classic;
 
 	// ── child node refs ───────────────────────────────────────────────────────
 	TextureRect _iconRect;
@@ -148,7 +152,7 @@ public abstract partial class CastBarBase : PanelContainer
 	{
 		PanelStyle = new StyleBoxFlat();
 		PanelStyle.BgColor = BgColor;
-		PanelStyle.SetCornerRadiusAll(5);
+		PanelStyle.SetCornerRadiusAll(Radius(5));
 		PanelStyle.SetBorderWidthAll(1);
 		PanelStyle.BorderColor        = BorderColor;
 		PanelStyle.ContentMarginLeft  = 8f;
@@ -190,12 +194,12 @@ public abstract partial class CastBarBase : PanelContainer
 
 		var barBg = new StyleBoxFlat();
 		barBg.BgColor = BarBgColor;
-		barBg.SetCornerRadiusAll(3);
+		barBg.SetCornerRadiusAll(Radius(3));
 		_bar.AddThemeStyleboxOverride("background", barBg);
 
 		BarFillStyle = new StyleBoxFlat();
 		BarFillStyle.BgColor = BarFillColor;
-		BarFillStyle.SetCornerRadiusAll(3);
+		BarFillStyle.SetCornerRadiusAll(Radius(3));
 		_bar.AddThemeStyleboxOverride("fill", BarFillStyle);
 
 		overlay.AddChild(_bar);
@@ -222,5 +226,11 @@ public abstract partial class CastBarBase : PanelContainer
 		_timeLabel.AddThemeColorOverride("font_color", TimeColor);
 		_timeLabel.MouseFilter          = MouseFilterEnum.Ignore;
 		overlay.AddChild(_timeLabel);
+
+		if (LastLightStyle.Enabled)
+		{
+			LastLightHud.Style(_nameLabel, 13, NameColor);
+			LastLightHud.Style(_timeLabel, 12, TimeColor);
+		}
 	}
 }

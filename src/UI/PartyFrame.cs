@@ -2,6 +2,8 @@
 using System;
 using Godot;
 using healerfantasy;
+using healerfantasy.LastLight;
+using healerfantasy.LastLight.Hud;
 
 /// <summary>
 /// A single party-member health frame: an effect-badge row above a dark health panel.
@@ -17,10 +19,10 @@ using healerfantasy;
 public partial class PartyFrame : CharacterFrame
 {
 	// ── constants ─────────────────────────────────────────────────────────────
-	static readonly Color BorderDefault = new(0.32f, 0.26f, 0.26f);
-	static readonly Color BorderHovered = new(0.90f, 0.80f, 0.20f);
-	static readonly Color BorderBossTargeted = new(0.90f, 0.12f, 0.12f);
-	static readonly Color FrameTextColor = new(0.90f, 0.87f, 0.83f);
+	static readonly Color BorderDefault = LastLightStyle.Enabled ? LastLightHud.Iron : new(0.32f, 0.26f, 0.26f);
+	static readonly Color BorderHovered = LastLightStyle.Enabled ? LastLightHud.Light : new(0.90f, 0.80f, 0.20f);
+	static readonly Color BorderBossTargeted = LastLightStyle.Enabled ? LastLightHud.BloodBright : new(0.90f, 0.12f, 0.12f);
+	static readonly Color FrameTextColor = LastLightStyle.Enabled ? LastLightHud.Text : new(0.90f, 0.87f, 0.83f);
 
 
 	// ── per-member config ─────────────────────────────────────────────────────
@@ -39,6 +41,7 @@ public partial class PartyFrame : CharacterFrame
 	ProgressBar _shieldBar = null!;
 	ProgressBar _absorbBar = null!;
 	StyleBoxFlat _panelStyle = null!;
+	LightHealthFill? _lightFill;
 
 	// ── overlay refs ──────────────────────────────────────────────────────────
 	TextureRect _selectionFrame = null!;
@@ -89,6 +92,14 @@ public partial class PartyFrame : CharacterFrame
 		_panelStyle.BgColor = new Color(0.11f, 0.09f, 0.09f, 0.95f);
 		_panelStyle.SetCornerRadiusAll(6);
 		_panelStyle.SetBorderWidthAll(2);
+		if (LastLightStyle.Enabled)
+		{
+			_panelStyle.BgColor = LastLightHud.Pit;
+			_panelStyle.SetCornerRadiusAll(0);
+			_panelStyle.SetBorderWidthAll(1);
+			_panelStyle.ShadowColor = new Color(0f, 0f, 0f, 0.5f);
+			_panelStyle.ShadowSize = 5;
+		}
 		_panelStyle.BorderColor = BorderDefault;
 		_panelStyle.ContentMarginLeft = 8f;
 		_panelStyle.ContentMarginRight = 8f;
@@ -106,6 +117,17 @@ public partial class PartyFrame : CharacterFrame
 		_healthBar.AddThemeStyleboxOverride("background", new StyleBoxFlat { BgColor = new Color(0.16f, 0.13f, 0.13f) });
 		_healthBar.AddThemeStyleboxOverride("fill", new StyleBoxFlat { BgColor = _barColor });
 		_panel.AddChild(_healthBar);
+
+		// Last Light: health is light meeting the dark at a jagged edge.
+		if (LastLightStyle.Enabled)
+		{
+			_healthBar.AddThemeStyleboxOverride("background", new StyleBoxEmpty());
+			_healthBar.AddThemeStyleboxOverride("fill", new StyleBoxEmpty());
+			_lightFill = new LightHealthFill();
+			_lightFill.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+			_lightFill.SizeFlagsVertical = SizeFlags.ExpandFill;
+			_panel.AddChild(_lightFill);
+		}
 
 		var textBox = new VBoxContainer();
 		textBox.MouseFilter = MouseFilterEnum.Ignore;
@@ -147,7 +169,7 @@ public partial class PartyFrame : CharacterFrame
 		_shieldBar.Value = 0f;
 		_shieldBar.MouseFilter = MouseFilterEnum.Ignore;
 		_shieldBar.AddThemeStyleboxOverride("background", new StyleBoxFlat { BgColor = new Color(0f, 0f, 0f, 0f) });
-		_shieldBar.AddThemeStyleboxOverride("fill", new StyleBoxFlat { BgColor = new Color(0.45f, 0.70f, 1.00f, 0.50f) });
+		_shieldBar.AddThemeStyleboxOverride("fill", new StyleBoxFlat { BgColor = LastLightStyle.Enabled ? LastLightHud.ShieldGlass : new Color(0.45f, 0.70f, 1.00f, 0.50f) });
 		_panel.AddChild(_shieldBar);
 
 		// ── heal-absorption overlay (Rune of the Void) ────────────────────────
@@ -161,7 +183,7 @@ public partial class PartyFrame : CharacterFrame
 		_absorbBar.Value = 0f;
 		_absorbBar.MouseFilter = MouseFilterEnum.Ignore;
 		_absorbBar.AddThemeStyleboxOverride("background", new StyleBoxFlat { BgColor = new Color(0f, 0f, 0f, 0f) });
-		_absorbBar.AddThemeStyleboxOverride("fill", new StyleBoxFlat { BgColor = new Color(0.38f, 0.10f, 0.55f, 0.65f) });
+		_absorbBar.AddThemeStyleboxOverride("fill", new StyleBoxFlat { BgColor = LastLightStyle.Enabled ? LastLightHud.VoidAbsorb : new Color(0.38f, 0.10f, 0.55f, 0.65f) });
 		_panel.AddChild(_absorbBar);
 
 		// ── default-target selection frame ────────────────────────────────────
@@ -179,6 +201,17 @@ public partial class PartyFrame : CharacterFrame
 		_selectionFrame.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
 		_selectionFrame.MouseFilter = MouseFilterEnum.Ignore;
 		_selectionFrame.Visible = false;
+		if (LastLightStyle.Enabled)
+		{
+			_selectionFrame.Texture = null;
+			var brackets = new CornerBrackets();
+			brackets.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+			brackets.OffsetLeft = -4f;
+			brackets.OffsetTop = -4f;
+			brackets.OffsetRight = 4f;
+			brackets.OffsetBottom = 4f;
+			_selectionFrame.AddChild(brackets);
+		}
 
 		_targetingRing = new Panel();
 		_targetingRing.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
@@ -187,7 +220,7 @@ public partial class PartyFrame : CharacterFrame
 
 		_targetingRingStyle = new StyleBoxFlat();
 		_targetingRingStyle.BgColor = new Color(0f, 0f, 0f, 0f);
-		_targetingRingStyle.SetCornerRadiusAll(6);
+		_targetingRingStyle.SetCornerRadiusAll(LastLightStyle.Enabled ? 0 : 6);
 		_targetingRingStyle.SetBorderWidthAll(2);
 		_targetingRingStyle.BorderColor = BorderBossTargeted;
 		_targetingRing.AddThemeStyleboxOverride("panel", _targetingRingStyle);
@@ -327,6 +360,7 @@ public partial class PartyFrame : CharacterFrame
 		_healthBar.MaxValue = max;
 		_healthBar.Value = current;
 		_currentHealthLabel.Text = $"{current:F0}/{max:F0}";
+		_lightFill?.SetRatio(max > 0f ? current / max : 0f);
 	}
 
 	void SetShield(float shield, float maxHp)
@@ -344,6 +378,13 @@ public partial class PartyFrame : CharacterFrame
 	Label GenerateTextLabel(int fontSize)
 	{
 		var label = new Label();
+		if (LastLightStyle.Enabled)
+		{
+			label.MouseFilter = MouseFilterEnum.Ignore;
+			LastLightHud.Style(label, fontSize, fontSize >= 14 ? LastLightHud.Text : LastLightHud.LightPale);
+			return label;
+		}
+
 		label.AddThemeColorOverride("font_color", FrameTextColor);
 		label.MouseFilter = MouseFilterEnum.Ignore;
 		label.AddThemeColorOverride("font_outline_color", Colors.Black);

@@ -5,6 +5,8 @@ using Godot;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellResources.Void;
 using healerfantasy.Talents;
+using healerfantasy.LastLight;
+using healerfantasy.LastLight.Hud;
 using healerfantasy.UI;
 
 namespace healerfantasy;
@@ -351,12 +353,35 @@ public abstract partial class LoadoutController : Node2D
 	/// The sprite keeps its bottom edge aligned with the camera so wider/taller
 	/// aspect ratios crop from the top instead of hiding the floor.
 	/// </summary>
+	/// <summary>
+	/// When true (and <see cref="LastLightStyle.Enabled"/>), the scene is drawn in
+	/// the Last Light style: a sanctuary of broken stones, the healer as the only
+	/// light, and darkness creeping in around it.
+	/// </summary>
+	protected virtual bool UseLastLightScene => false;
+
+	bool LastLightScene => LastLightStyle.Enabled && UseLastLightScene;
+
 	protected (float BgLeft, float BgRight) SetupBackground(string texturePath)
 	{
 		var camera = GetNode<Camera2D>("Camera2D");
 		var viewSize = GetViewport().GetVisibleRect().Size;
 		var worldW = viewSize.X / camera.Zoom.X;
 		var worldH = viewSize.Y / camera.Zoom.Y;
+
+		if (LastLightScene)
+		{
+			var backLayer = new CanvasLayer { Layer = -10 };
+			AddChild(backLayer);
+			backLayer.AddChild(new LastLightBackground { BackgroundPreset = LastLightBackground.Preset.Sanctuary });
+
+			// Above the world, below the HUD (5) and overlay panels (10).
+			var darkLayer = new CanvasLayer { Layer = 1 };
+			AddChild(darkLayer);
+			darkLayer.AddChild(new CreepingDarkness { Radius = 0.34f, MaxDark = 0.88f });
+
+			return (camera.Position.X - worldW / 2f, camera.Position.X + worldW / 2f);
+		}
 
 		var bg = new Sprite2D
 		{
@@ -437,6 +462,17 @@ public abstract partial class LoadoutController : Node2D
 			YMax = RefH - 80f // keep player visible near the bottom (~1000 px)
 		};
 		AddChild(_player);
+
+		if (LastLightScene)
+		{
+			// Start a little up from the floor edge so the whole circle of light is on screen.
+			_player.Position = new Vector2(xPosition, FloorHeight - 110f);
+			SilhouetteRig.Attach(_player, RigLibrary.Healer());
+			// The painted props are seen by candlelight, like the spell icons.
+			foreach (var area in _interactibles)
+				if (area is InteractibleObject io)
+					io.SetSpriteMaterial(LastLightHud.IconMaterial);
+		}
 	}
 
 	/// <summary>

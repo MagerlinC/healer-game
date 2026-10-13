@@ -74,7 +74,7 @@ public partial class OverworldPlayer : CharacterBody2D
 		foreach (var i in new[] { 1, 2, 3 })
 			frames.AddFrame("walk", GD.Load<Texture2D>($"res://assets/characters/healer/float{i}.png"));
 
-		_sprite = new AnimatedSprite2D();
+		_sprite = new AnimatedSprite2D { Name = "AnimatedSprite2D" };
 		_sprite.Scale = new Vector2(GameConstants.HealerSpriteScale * 1.20f, GameConstants.HealerSpriteScale * 1.20f);
 		_sprite.SpriteFrames = frames;
 		_sprite.Play("idle");

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- ASH WOODCUT // ink #0e0c0a, dirty bone #c9bb98, old blood #7d1712. Gaunt, hunched, self-bandaged. Crook staff with a hanging censer. -->
+  <defs>
+    <filter id="grit" filterUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="2" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="3" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="9" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.05  0 0 0 0 0.04  0 0 0 0 0.03  1.8 0 0 0 -1.0" result="s"/>
+      <feComposite in="s" in2="d" operator="in" result="sp"/>
+      <feMerge><feMergeNode in="d"/><feMergeNode in="sp"/></feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#grit)">
+    <!-- crook staff -->
+    <path d="M47 246 L45 160 L49 96 L45 40 C44 18 52 8 64 8 C76 8 82 18 78 30" fill="none" stroke="#0e0c0a" stroke-width="8" stroke-linejoin="bevel"/>
+    <path d="M47 90 l5 4 M46 140 l5 4 M46 190 l5 4" stroke="#c9bb98" stroke-width="1.6"/>
+    <!-- chain + censer -->
+    <path d="M78 30 V46" stroke="#0e0c0a" stroke-width="2" stroke-dasharray="3 2"/>
+    <path d="M78 44 L90 60 L78 76 L66 60 Z" fill="#0e0c0a"/>
+    <path d="M78 52 L84 60 L78 68 L72 60 Z" fill="#7d1712"/>
+    <path d="M72 60 H84" stroke="#0e0c0a" stroke-width="2"/>
+    <path d="M76 78 q2 10 0 16 q-3 -6 0 -16 Z M81 76 q1 6 0 9 q-2 -3 0 -9 Z" fill="#7d1712"/>
+    <!-- hunched cloak, jagged everything -->
+    <path d="M98 66 L110 42 L134 30 L158 36 L172 58 L176 90 L184 130 L196 180 L212 244 L200 236 L192 250 L178 238 L168 252 L156 238 L144 250 L134 238 L120 252 L110 238 L96 250 L86 236 L72 248 L64 236 L46 244 L58 196 L70 150 L80 110 L88 82 Z" fill="#0e0c0a"/>
+    <!-- gouges on lit right side -->
+    <g fill="#c9bb98">
+      <path d="M156 40 L162 46 L170 92 L166 92 Z"/>
+      <path d="M176 104 L179 106 L200 230 L197 231 Z"/>
+      <path d="M168 116 L170 117 L188 236 L185 236 Z"/>
+      <path d="M161 136 L163 136 L174 240 L171 240 Z"/>
+      <path d="M142 34 L148 36 L156 50 L152 50 Z"/>
+      <path d="M92 130 L93 130 L80 210 L79 210 Z"/>
+    </g>
+    <!-- horizontal hatching on lower cloak -->
+    <path d="M70 200 h14 M66 214 h18 M62 228 h20 M150 204 h16 M154 218 h20 M156 232 h24" stroke="#c9bb98" stroke-width="1.3" opacity="0.8"/>
+    <!-- bandaged chest -->
+    <path d="M106 112 L150 102 L152 112 L108 122 Z" fill="#c9bb98"/>
+    <path d="M104 132 L154 122 L156 132 L106 142 Z" fill="#c9bb98"/>
+    <path d="M104 152 L156 142 L157 151 L106 161 Z" fill="#c9bb98"/>
+    <path d="M120 110 l4 8 M138 106 l4 9 M118 132 l3 8 M142 126 l3 9 M128 148 l3 9" stroke="#0e0c0a" stroke-width="1.5"/>
+    <path d="M136 128 c6 -2 10 2 8 8 c-2 4 -8 4 -10 0 Z" fill="#7d1712"/>
+    <path d="M140 138 q1 10 -1 18" stroke="#7d1712" stroke-width="2"/>
+    <!-- gaunt face, leaning toward the staff -->
+    <path d="M102 66 L130 60 L134 90 L118 104 L104 92 Z" fill="#c9bb98"/>
+    <path d="M98 60 L136 54 L132 72 L118 66 L104 74 Z" fill="#0e0c0a"/>
+    <path d="M106 78 L116 76 L114 84 Z M122 75 L131 73 L129 82 Z" fill="#0e0c0a"/>
+    <path d="M108 90 L112 98 M128 88 L124 96 M114 98 h8" stroke="#0e0c0a" stroke-width="1.8"/>
+    <!-- arm + bony hand -->
+    <path d="M90 112 L60 122 L62 134 L94 126 Z" fill="#0e0c0a"/>
+    <path d="M40 120 L58 116 L62 134 L44 138 Z" fill="#c9bb98" stroke="#0e0c0a" stroke-width="3"/>
+    <path d="M44 124 h12 M45 129 h12" stroke="#0e0c0a" stroke-width="1.4"/>
+  </g>
+</svg>

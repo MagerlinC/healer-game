@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using healerfantasy.CombatLog;
+using healerfantasy.LastLight;
+using healerfantasy.LastLight.Hud;
 
 /// <summary>
 /// A compact panel showing healing-per-second or damage-per-second for each
@@ -23,14 +25,14 @@ public partial class CombatMeter : PanelContainer
 	}
 
 	// ── colours ───────────────────────────────────────────────────────────────
-	static readonly Color PanelBg = new(0.10f, 0.08f, 0.07f, 0.92f);
-	static readonly Color PanelBorder = new(0.40f, 0.33f, 0.22f, 0.90f);
-	static readonly Color TitleColor = new(0.80f, 0.72f, 0.50f);
-	static readonly Color LabelColor = new(0.90f, 0.87f, 0.83f);
-	static readonly Color RowBg = new(0.14f, 0.11f, 0.10f, 1f);
-	static readonly Color RowHoverBg = new(0.22f, 0.18f, 0.14f, 1f);
-	static readonly Color HealFill = new(0.25f, 0.68f, 0.30f, 0.75f);
-	static readonly Color DamageFill = new(0.80f, 0.22f, 0.18f, 0.75f);
+	static readonly Color PanelBg = LastLightStyle.Enabled ? LastLightHud.Soot : new(0.10f, 0.08f, 0.07f, 0.92f);
+	static readonly Color PanelBorder = LastLightStyle.Enabled ? LastLightHud.Iron : new(0.40f, 0.33f, 0.22f, 0.90f);
+	static readonly Color TitleColor = LastLightStyle.Enabled ? LastLightHud.TextDim : new(0.80f, 0.72f, 0.50f);
+	static readonly Color LabelColor = LastLightStyle.Enabled ? LastLightHud.Text : new(0.90f, 0.87f, 0.83f);
+	static readonly Color RowBg = LastLightStyle.Enabled ? LastLightHud.Pit : new(0.14f, 0.11f, 0.10f, 1f);
+	static readonly Color RowHoverBg = LastLightStyle.Enabled ? new(0.1f, 0.085f, 0.07f, 1f) : new(0.22f, 0.18f, 0.14f, 1f);
+	static readonly Color HealFill = LastLightStyle.Enabled ? new(0.78f, 0.55f, 0.26f, 0.6f) : new(0.25f, 0.68f, 0.30f, 0.75f);
+	static readonly Color DamageFill = LastLightStyle.Enabled ? new(0.5f, 0.11f, 0.07f, 0.85f) : new(0.80f, 0.22f, 0.18f, 0.75f);
 
 	// ── config ────────────────────────────────────────────────────────────────
 	const double RefreshInterval = 0.5;
@@ -98,7 +100,7 @@ public partial class CombatMeter : PanelContainer
 
 		var style = new StyleBoxFlat();
 		style.BgColor = PanelBg;
-		style.SetCornerRadiusAll(5);
+		style.SetCornerRadiusAll(LastLightStyle.Enabled ? 0 : 5);
 		style.SetBorderWidthAll(1);
 		style.BorderColor = PanelBorder;
 		style.ContentMarginLeft = 6f;
@@ -120,6 +122,8 @@ public partial class CombatMeter : PanelContainer
 		title.AddThemeFontSizeOverride("font_size", 11);
 		title.AddThemeColorOverride("font_color", TitleColor);
 		title.MouseFilter = MouseFilterEnum.Ignore;
+		if (LastLightStyle.Enabled)
+			LastLightHud.Style(title, 11, TitleColor);
 		vbox.AddChild(title);
 
 		// Separator

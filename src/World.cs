@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Godot;
 using healerfantasy;
 using healerfantasy.CombatLog;
+using healerfantasy.LastLight;
 using healerfantasy.Runes;
 using healerfantasy.UI;
 
@@ -89,6 +90,14 @@ public partial class World : Node2D
 
 		foreach (var b in bossCharacters)
 			fctManager.Register(b);
+
+		// ── Last Light art direction ──────────────────────────────────────────
+		LastLightStyle.Apply(
+			new[] { player, templar, assassin, wizard },
+			bossCharacters,
+			dungeon.BossScenePaths[bossIndex],
+			dungeon,
+			bgRect);
 
 		// Register boss character refs for hover-targeting and health bar management.
 		ui.SetBossCharacters(

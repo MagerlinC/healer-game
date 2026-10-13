@@ -1,5 +1,7 @@
 using Godot;
 using healerfantasy;
+using healerfantasy.LastLight;
+using healerfantasy.LastLight.Hud;
 
 public partial class ManaOrb : Control
 {
@@ -16,6 +18,7 @@ public partial class ManaOrb : Control
 	static readonly Color TextColor = new(0.92f, 0.97f, 1.00f, 0.98f);
 
 	Label _valueLabel = null!;
+	LightOrbFill? _lightFill;
 	float _currentMana;
 	float _maxMana = 1f;
 
@@ -23,6 +26,13 @@ public partial class ManaOrb : Control
 	{
 		MouseFilter = MouseFilterEnum.Ignore;
 		CustomMinimumSize = new Vector2(160f, 160f);
+
+		// Last Light: the orb is black glass holding the healer's light.
+		if (LastLightStyle.Enabled)
+		{
+			_lightFill = new LightOrbFill();
+			AddChild(_lightFill);
+		}
 
 		_valueLabel = new Label();
 		_valueLabel.HorizontalAlignment = HorizontalAlignment.Center;
@@ -32,6 +42,8 @@ public partial class ManaOrb : Control
 		_valueLabel.AddThemeColorOverride("font_shadow_color", TextShadowColor);
 		_valueLabel.AddThemeConstantOverride("shadow_offset_x", 1);
 		_valueLabel.AddThemeConstantOverride("shadow_offset_y", 2);
+		if (LastLightStyle.Enabled)
+			LastLightHud.Style(_valueLabel, 18, LastLightHud.LightPale);
 		AddChild(_valueLabel);
 
 		Resized += OnResized;
@@ -51,6 +63,8 @@ public partial class ManaOrb : Control
 
 	public override void _Draw()
 	{
+		if (_lightFill != null) return;
+
 		var drawSize = Size;
 		var diameter = Mathf.Min(drawSize.X, drawSize.Y) - 8f;
 		if (diameter <= 0f)
@@ -76,6 +90,7 @@ public partial class ManaOrb : Control
 	{
 		_currentMana = Mathf.Max(current, 0f);
 		_maxMana = max;
+		_lightFill?.SetRatio(max > 0f ? _currentMana / max : 0f);
 		UpdateValueLabel();
 		QueueRedraw();
 	}
@@ -89,9 +104,17 @@ public partial class ManaOrb : Control
 		var labelHeight = Mathf.Clamp(diameter * 0.28f, 24f, 40f);
 		var fontSize = Mathf.Clamp((int)(diameter * 0.16f), 14, 22);
 
+		if (_lightFill != null)
+		{
+			// The shader's glass is 80% of the rect, so overscan to keep the old orb size.
+			var overscan = Size * 0.1f;
+			_lightFill.Position = -overscan;
+			_lightFill.Size = Size + overscan * 2f;
+		}
+
 		_valueLabel.Position = new Vector2(0f, Size.Y * 0.5f - labelHeight * 0.5f + diameter * 0.18f);
 		_valueLabel.Size = new Vector2(Size.X, labelHeight);
-		_valueLabel.AddThemeFontSizeOverride("font_size", fontSize);
+		_valueLabel.AddThemeFontSizeOverride("font_size", _lightFill != null ? fontSize - 2 : fontSize);
 
 		QueueRedraw();
 	}

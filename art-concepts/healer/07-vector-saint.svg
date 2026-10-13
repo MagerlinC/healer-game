@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- VECTOR SAINT (1980s vector-monitor / wireframe) // phosphor #3dff8a on near-black #020a05. Only straight lines, vertices marked. -->
+  <defs>
+    <filter id="phos" filterUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <feGaussianBlur stdDeviation="1.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- dark body fill so it reads on any background -->
+  <polygon points="128,14 166,60 172,104 210,240 46,240 84,104 90,60" fill="#020a05" opacity="0.92"/>
+  <g fill="none" stroke="#3dff8a" stroke-width="1.6" stroke-linejoin="bevel" filter="url(#phos)">
+    <!-- outline -->
+    <polygon points="128,14 166,60 172,104 210,240 46,240 84,104 90,60"/>
+    <!-- mesh -->
+    <path d="M128 14 L128 46 M90 60 L112 50 L128 46 L144 50 L166 60"/>
+    <path d="M84 104 L110 100 L128 108 L146 100 L172 104"/>
+    <path d="M90 60 L110 100 M166 60 L146 100"/>
+    <path d="M110 100 L100 170 L128 108 L156 170 L146 100"/>
+    <path d="M84 104 L100 170 M172 104 L156 170 M68 170 H188"/>
+    <path d="M100 170 L78 240 M100 170 L128 240 L156 170 M156 170 L178 240 M128 108 V240" opacity="0.6"/>
+    <!-- face: hollow hex -->
+    <polygon points="112,56 144,56 148,72 138,90 118,90 108,72" stroke-opacity="0.9"/>
+    <!-- staff -->
+    <path d="M52 52 V242"/>
+    <polygon points="52,10 64,31 52,52 40,31"/>
+    <path d="M40 31 H64 M52 10 V52" opacity="0.5"/>
+    <ellipse cx="52" cy="31" rx="20" ry="6" stroke-dasharray="3 3" opacity="0.7"/>
+    <!-- arm -->
+    <path d="M84 116 L58 124 L60 136 L90 130"/>
+    <!-- health glyph -->
+    <path d="M124 128 h8 v6 h6 v8 h-6 v6 h-8 v-6 h-6 v-8 h6 Z" stroke-width="1.4"/>
+  </g>
+  <!-- eyes + vertices: hot points -->
+  <g fill="#c8ffdc" filter="url(#phos)">
+    <rect x="118" y="70" width="6" height="3"/><rect x="132" y="70" width="6" height="3"/>
+    <rect x="126.5" y="12.5" width="3" height="3"/><rect x="88.5" y="58.5" width="3" height="3"/><rect x="164.5" y="58.5" width="3" height="3"/>
+    <rect x="82.5" y="102.5" width="3" height="3"/><rect x="170.5" y="102.5" width="3" height="3"/><rect x="126.5" y="106.5" width="3" height="3"/>
+    <rect x="98.5" y="168.5" width="3" height="3"/><rect x="154.5" y="168.5" width="3" height="3"/>
+    <rect x="50.5" y="8.5" width="3" height="3"/>
+  </g>
+</svg>

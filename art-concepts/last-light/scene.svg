@@ -1,0 +1,211 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <!--
+    LAST LIGHT // concept scene
+    Darkness: pure black #050404, ragged, no outlines (enemies + the rot creeping up the party).
+    Light:    the healer only. #fff3d6 core, #ffd99a / #e0a85a falloff.
+    Party:    lit from the healer's side only (left->right gradient + warm rim). Missing HP = black risen up the body.
+    World:    cold fog greys; warm only inside the healer's reach.
+  -->
+  <defs>
+    <!-- background -->
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2a2b"/>
+      <stop offset="0.55" stop-color="#4b4a47"/>
+      <stop offset="0.78" stop-color="#3a3834"/>
+      <stop offset="1" stop-color="#151413"/>
+    </linearGradient>
+    <radialGradient id="reach" cx="236" cy="470" r="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffe2a8" stop-opacity="0.55"/>
+      <stop offset="0.18" stop-color="#e0a85a" stop-opacity="0.3"/>
+      <stop offset="0.5" stop-color="#7a5430" stop-opacity="0.1"/>
+      <stop offset="1" stop-color="#7a5430" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="vignette" cx="0.45" cy="0.5" r="0.75">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.85"/>
+    </radialGradient>
+    <!-- party lighting: lit from the left (the healer) -->
+    <linearGradient id="lit" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c9b28a"/>
+      <stop offset="0.35" stop-color="#6b5b48"/>
+      <stop offset="1" stop-color="#211c17"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffd99a"/>
+      <stop offset="0.4" stop-color="#ffd99a" stop-opacity="0"/>
+    </linearGradient>
+    <!-- healer -->
+    <linearGradient id="robe" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff3d6"/>
+      <stop offset="0.55" stop-color="#e9cf98"/>
+      <stop offset="1" stop-color="#c08a48" stop-opacity="0.15"/>
+    </linearGradient>
+    <radialGradient id="aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff6dc" stop-opacity="0.9"/>
+      <stop offset="0.3" stop-color="#ffd99a" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ffb04a" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="bloom" filterUnits="userSpaceOnUse" x="-1500" y="-1500" width="4300" height="3000">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="grit" filterUnits="userSpaceOnUse" x="-1500" y="-1500" width="4300" height="3000">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="3" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.6 0 0 0 -0.95" result="s"/>
+      <feComposite in="s" in2="SourceGraphic" operator="in" result="sp"/>
+      <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="sp"/></feMerge>
+    </filter>
+
+    <!-- party silhouettes (local coords, feet at 0,0, facing right) -->
+    <path id="templar" d="
+      M-40 0 L-36 -96 C-36 -124 -22 -134 0 -136 C22 -134 36 -124 36 -98 L40 0 L10 0 L6 -50 L-6 -50 L-10 0 Z
+      M-17 -134 L-17 -172 C-17 -184 17 -184 17 -172 L17 -134 Z
+      M20 -132 L64 -132 L64 -62 L42 -20 L20 -62 Z
+      M-28 -120 L-24 -124 L-58 -206 L-62 -204 Z
+      M-52 -156 L-36 -164 L-34 -160 L-50 -152 Z"/>
+    <path id="assassin" d="
+      M-26 0 L-18 -60 C-20 -90 -6 -110 14 -112 C30 -112 38 -100 36 -86 L30 -60 L36 0 L22 0 L16 -40 L0 -40 L-10 0 Z
+      M-4 -108 L-38 -120 L-8 -94 Z
+      M-10 -94 L-62 -82 L-56 -74 L-6 -84 Z
+      M34 -80 L78 -88 L36 -72 Z
+      M-14 -52 L-50 -28 L-10 -44 Z"/>
+    <path id="wizard" d="
+      M-30 0 C-24 -40 -20 -90 -14 -110 L14 -110 C20 -90 26 -40 34 0 Z
+      M-34 -106 L36 -106 L18 -118 C10 -150 -6 -170 -32 -178 C-14 -160 -10 -140 -12 -118 Z
+      M-2 -106 L16 -106 L6 -74 Z
+      M10 -90 L40 -98 L40 -90 L12 -82 Z
+      M36 -150 L41 -150 L43 0 L38 0 Z
+      M29 -160 a9 9 0 1 0 18 0 a9 9 0 1 0 -18 0 Z"/>
+    <!-- the rot: ragged rising edge, translated up by (missing HP) -->
+    <path id="rot" d="M-110 300 L-110 0 L-90 -4 L-82 -26 L-74 -6 L-60 -10 L-52 -44 L-44 -8 L-30 -2 L-20 -20 L-10 0 L2 -8 L8 -36 L16 -4 L28 -10 L36 -24 L44 -2 L58 -8 L64 -40 L72 -6 L86 -2 L94 -18 L110 0 L110 300 Z"/>
+    <clipPath id="cTemplar"><use href="#templar"/></clipPath>
+    <clipPath id="cAssassin"><use href="#assassin"/></clipPath>
+    <clipPath id="cWizard"><use href="#wizard"/></clipPath>
+  </defs>
+
+  <!-- ============ WORLD ============ -->
+  <rect width="1280" height="720" fill="url(#sky)"/>
+  <!-- distant ruins in the fog -->
+  <g fill="#353331" opacity="0.7">
+    <path d="M380 560 L380 430 C380 396 420 380 440 380 C460 380 500 396 500 430 L500 560 L484 560 L484 434 C484 414 460 400 440 400 C420 400 396 414 396 434 L396 560 Z"/>
+    <path d="M560 560 L566 360 L572 340 L578 360 L584 560 Z M600 560 L604 410 L610 396 L616 410 L620 560 Z"/>
+    <path d="M60 560 L64 380 L72 350 L80 380 L84 560 Z M120 560 L120 470 L170 450 L176 560 Z"/>
+  </g>
+  <rect y="560" width="1280" height="160" fill="#1a1816"/>
+  <rect width="1280" height="720" fill="url(#reach)"/>
+  <!-- the light's reach on the ground -->
+  <ellipse cx="236" cy="566" rx="210" ry="22" fill="#ffd99a" opacity="0.12"/>
+  <ellipse cx="236" cy="566" rx="210" ry="22" fill="none" stroke="#ffd99a" stroke-width="1.2" opacity="0.35" stroke-dasharray="10 6"/>
+
+  <!-- ============ THE DARK ============ -->
+  <g fill="#050404">
+    <!-- dead candles on the burden -->
+    <rect x="1066" y="14" width="10" height="70"/><rect x="1090" y="-4" width="12" height="80"/>
+    <rect x="1118" y="8" width="9" height="70"/><rect x="1142" y="-10" width="12" height="90"/>
+    <rect x="1168" y="18" width="9" height="70"/><rect x="1190" y="40" width="10" height="60"/>
+    <!-- the burden -->
+    <path d="M1000 140 C990 70 1050 30 1120 38 C1190 46 1226 100 1210 160 C1198 210 1150 232 1100 222 Z"/>
+    <!-- the Snuffer: colossal hunched pilgrim -->
+    <path d="M760 250 C770 180 820 140 880 140 C940 120 1000 110 1060 130 C1140 160 1180 240 1190 330 L1210 450 C1226 510 1244 560 1262 600
+             L1240 590 L1236 636 L1210 600 L1196 648 L1170 604 L1150 650 L1126 608 L1100 654 L1080 610 L1056 648 L1036 606 L1010 644 L990 604 L962 638 L944 598 L912 628 L900 590 L872 612 L862 580 L838 596
+             C826 500 806 400 794 324 C774 300 758 280 760 250 Z"/>
+    <!-- hood tip trailing back -->
+    <path d="M870 150 C890 92 950 66 1010 76 C970 90 950 110 952 140 Z"/>
+    <!-- arm -->
+    <path d="M870 246 C830 266 796 286 764 298 L752 330 C794 324 834 310 880 290 Z"/>
+    <!-- snuffer pole + cone, hanging over the healer's flame -->
+    <polygon points="770.6,316.5 240.6,226.5 239.4,233.5 769.4,323.5"/>
+    <circle cx="240" cy="236" r="7"/>
+    <path d="M230 242 L250 242 L276 318 L204 318 Z"/>
+    <!-- the pool, spreading toward the party -->
+    <path d="M336 574 L370 566 L404 572 L440 562 L480 570 L520 560 L566 568 L610 558 L660 566 L720 556 L800 564 L1280 558 L1280 720 L480 720 C440 690 400 660 372 620 Z"/>
+    <!-- tendrils reaching for the light, stopping at its edge -->
+    <path d="M350 576 C330 582 310 578 290 584 C304 582 326 578 352 580 Z"/>
+    <path d="M380 616 C350 628 320 630 300 642 C326 634 356 628 384 622 Z"/>
+    <path d="M360 572 C352 562 350 552 356 540 C346 552 348 564 356 576 Z"/>
+  </g>
+  <!-- smoke from the dead candles -->
+  <g fill="none" stroke="#77736d" stroke-width="2" opacity="0.45">
+    <path d="M1071 12 C1060 -2 1080 -14 1068 -30"/>
+    <path d="M1148 -12 C1160 -26 1140 -40 1154 -60"/>
+    <path d="M1122 6 C1130 -8 1112 -20 1124 -36"/>
+  </g>
+  <!-- faint warm rim where the healer's light reaches the giant -->
+  <g fill="none" stroke="#e8b878" stroke-linecap="round" opacity="0.35">
+    <path d="M760 250 C770 180 820 140 880 140" stroke-width="2"/>
+    <path d="M870 246 C830 266 796 286 764 298" stroke-width="1.6"/>
+    <path d="M300 240 L600 291" stroke-width="1.2"/>
+    <path d="M204 318 L230 242" stroke-width="2.2" opacity="1"/>
+    <path d="M206 318 H274" stroke-width="2" opacity="1"/>
+  </g>
+  <!-- cold eyes -->
+  <g fill="#cfd5d1" filter="url(#bloom)">
+    <circle cx="784" cy="232" r="3.2"/><circle cx="798" cy="226" r="2.2"/><circle cx="792" cy="246" r="1.6"/>
+  </g>
+
+  <!-- ============ THE PARTY ============ -->
+  <!-- Wizard: 15% consumed -->
+  <g transform="translate(396 566)" filter="url(#grit)">
+    <use href="#wizard" fill="url(#lit)"/>
+    <use href="#wizard" fill="none" stroke="url(#rim)" stroke-width="2.5"/>
+    <g clip-path="url(#cWizard)"><use href="#rot" transform="translate(0 -26) scale(-1 1)" fill="#050404"/></g>
+    <circle cx="38" cy="-160" r="4" fill="#ffd99a" opacity="0.8"/>
+  </g>
+  <!-- Templar: 35% consumed, the tank -->
+  <g transform="translate(656 562)" filter="url(#grit)">
+    <use href="#templar" fill="url(#lit)"/>
+    <use href="#templar" fill="none" stroke="url(#rim)" stroke-width="2.5"/>
+    <g clip-path="url(#cTemplar)"><use href="#rot" transform="translate(0 -62)" fill="#050404"/></g>
+    <rect x="-12" y="-162" width="26" height="4" fill="#050404"/>
+    <path d="M42 -112 V-48 M28 -96 H56" stroke="#3a322a" stroke-width="4"/>
+  </g>
+  <!-- Assassin: 70% consumed, being healed -->
+  <g transform="translate(532 570)" filter="url(#grit)">
+    <use href="#assassin" fill="url(#lit)"/>
+    <use href="#assassin" fill="none" stroke="url(#rim)" stroke-width="2.5"/>
+    <g clip-path="url(#cAssassin)"><use href="#rot" transform="translate(0 -82) scale(-1 1)" fill="#050404"/></g>
+  </g>
+  <!-- ash flaking off where the rot meets the lit body -->
+  <g fill="#050404">
+    <rect x="520" y="474" width="3" height="3"/><rect x="546" y="466" width="2" height="2"/><rect x="536" y="458" width="2" height="2"/>
+    <rect x="650" y="486" width="3" height="3"/><rect x="672" y="478" width="2" height="2"/>
+    <rect x="404" y="526" width="2" height="2"/>
+  </g>
+
+  <!-- ============ THE HEALER (the light) ============ -->
+  <circle cx="236" cy="440" r="150" fill="url(#aura)"/>
+  <!-- heal thread to the assassin -->
+  <path d="M290 452 C360 420 450 440 538 500" fill="none" stroke="#ffe2a8" stroke-width="1.6" stroke-dasharray="14 4 4 4" filter="url(#bloom)" opacity="0.9"/>
+  <g transform="translate(236 560)" filter="url(#bloom)">
+    <!-- crook -->
+    <path d="M-34 4 L-36 -150 C-36 -170 -18 -174 -12 -162" fill="none" stroke="#f5dfa8" stroke-width="4" stroke-linecap="round"/>
+    <!-- robe dissolving into light at the hem -->
+    <path d="M-30 4 C-26 -50 -22 -90 -20 -112 C-20 -132 -10 -142 2 -142 C14 -142 22 -132 22 -112 C24 -90 28 -50 34 4 Z" fill="url(#robe)"/>
+    <!-- hood opening -->
+    <path d="M-8 -110 C-8 -132 14 -132 14 -110 C10 -104 -4 -104 -8 -110 Z" fill="#c99a58"/>
+    <!-- the flame where a face should be -->
+    <path d="M3 -176 C22 -150 20 -124 3 -112 C-14 -124 -16 -150 3 -176 Z" fill="#ffe7b0"/>
+    <path d="M3 -156 C12 -140 11 -126 3 -118 C-5 -126 -6 -140 3 -156 Z" fill="#ffffff"/>
+    <!-- arm reaching toward the party -->
+    <path d="M14 -96 L50 -112 L52 -104 L18 -86 Z" fill="#f2deb0"/>
+    <circle cx="54" cy="-108" r="6" fill="#ffffff"/>
+  </g>
+  <!-- embers around the light -->
+  <g fill="#ffd99a" filter="url(#bloom)">
+    <rect x="196" y="372" width="2" height="2"/><rect x="290" y="392" width="2" height="2"/><rect x="262" y="350" width="1.5" height="1.5"/>
+    <rect x="168" y="430" width="1.5" height="1.5"/><rect x="310" y="470" width="2" height="2" opacity="0.6"/>
+  </g>
+
+  <!-- drifting ash, everywhere else -->
+  <g fill="#8a857e" opacity="0.5">
+    <rect x="720" y="420" width="2" height="2"/><rect x="980" y="300" width="2" height="2"/><rect x="620" y="200" width="1.5" height="1.5"/>
+    <rect x="1100" y="420" width="2" height="2"/><rect x="460" y="300" width="1.5" height="1.5"/><rect x="860" y="80" width="2" height="2"/>
+  </g>
+
+  <rect width="1280" height="720" fill="url(#vignette)"/>
+
+  <!-- ============ BOSS BAR (Souls-style) ============ -->
+  <text x="340" y="672" fill="#cfc6b4" font-family="Georgia, serif" font-size="18" letter-spacing="2">The Snuffer, Who Keeps the Ash</text>
+  <rect x="340" y="682" width="600" height="8" fill="#0c0b0a" stroke="#4a4440" stroke-width="1"/>
+  <rect x="341" y="683" width="470" height="6" fill="#6e1a12"/>
+</svg>

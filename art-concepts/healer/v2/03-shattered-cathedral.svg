@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- SHATTERED CATHEDRAL // lead #0a0908, murky green #1f3a2c/#2c4a36, tarnished gold #8c6a2c/#a07d3a, dried blood #6a1018, slate #26324a, pallid #b3a688. Missing panes, cracks, broken halo. -->
+  <defs>
+    <filter id="grit" filterUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="5" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.04  0 0 0 0 0.03  0 0 0 0 0.02  1.9 0 0 0 -1.05" result="s"/>
+      <feComposite in="s" in2="SourceGraphic" operator="in" result="sp"/>
+      <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="sp"/></feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#grit)">
+    <!-- broken halo: three aligned dashed rings -->
+    <g fill="none" stroke-dasharray="70 18 40 30 90 52" transform="rotate(-80 130 62)">
+      <circle cx="130" cy="62" r="46" pathLength="300" stroke="#0a0908" stroke-width="18"/>
+      <circle cx="130" cy="62" r="46" pathLength="300" stroke="#26324a" stroke-width="10"/>
+    </g>
+    <g stroke="#0a0908" stroke-width="5" stroke-linejoin="round">
+      <!-- staff -->
+      <rect x="46" y="52" width="11" height="192" fill="#8c6a2c" transform="rotate(-3 52 148)"/>
+      <path d="M52 6 L67 31 L52 56 L37 31 Z" fill="#6a1018"/>
+      <path d="M52 6 L67 31 L52 31 Z" fill="#8a1a24"/>
+      <!-- cloak facets (two are gone) -->
+      <path d="M132 30 L104 52 L98 78 L116 66 Z" fill="#2c4a36"/>
+      <path d="M132 30 L162 48 L170 80 L144 66 Z" fill="#1f3a2c"/>
+      <path d="M132 30 L116 66 L144 66 Z" fill="#1f3a2c"/>
+      <path d="M98 78 L116 66 L116 108 L88 108 Z" fill="#1f3a2c"/>
+      <path d="M170 80 L144 66 L144 108 L176 108 Z" fill="#2c4a36"/>
+      <path d="M88 108 L116 108 L108 176 L72 176 Z" fill="#2c4a36"/>
+      <path d="M72 176 L108 176 L100 244 L46 244 Z" fill="#1f3a2c"/>
+      <path d="M176 108 L144 108 L152 176 L190 176 Z" fill="#1f3a2c"/>
+      <path d="M190 176 L152 176 L158 244 L212 244 Z" fill="none"/>
+      <path d="M190 176 L170 176 L194 206 Z" fill="#2c4a36"/>
+      <path d="M158 244 L156 214 L172 244 Z" fill="#1f3a2c"/>
+      <!-- robe -->
+      <path d="M116 108 L144 108 L152 176 L108 176 Z" fill="#a07d3a"/>
+      <path d="M108 176 L128 176 L128 244 L100 244 Z" fill="#8c6a2c"/>
+      <path d="M128 176 L152 176 L158 244 L128 244 Z" fill="none"/>
+      <path d="M128 176 L142 176 L128 204 Z" fill="#a07d3a"/>
+      <!-- wound jewel -->
+      <path d="M130 118 L140 132 L130 146 L120 132 Z" fill="#6a1018"/>
+      <!-- pallid face -->
+      <path d="M116 66 L144 66 L140 92 L128 102 L118 92 Z" fill="#b3a688"/>
+      <!-- arm + hand -->
+      <path d="M90 114 L62 122 L62 136 L94 128 Z" fill="#1f3a2c"/>
+      <circle cx="55" cy="129" r="8" fill="#b3a688"/>
+    </g>
+    <!-- hollow eyes, cracks -->
+    <path d="M121 78 h7 v4 h-7 Z M133 78 h6 v4 h-6 Z" fill="#0a0908"/>
+    <g fill="none" stroke="#0a0908" stroke-width="2" stroke-linejoin="bevel">
+      <path d="M140 72 L134 84 L138 90"/>
+      <path d="M80 180 L88 196 L82 210 L92 228"/>
+      <path d="M112 120 L122 136 L118 150 L130 170"/>
+      <path d="M150 116 L160 136 L156 150"/>
+      <path d="M52 16 L56 28 L50 34 L54 46"/>
+    </g>
+    <!-- blood seeping from the jewel -->
+    <path d="M130 146 q-1 12 1 24" stroke="#6a1018" stroke-width="2.5" fill="none"/>
+  </g>
+</svg>

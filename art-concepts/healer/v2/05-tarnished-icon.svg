@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- TARNISHED ICON // maiden in black. black #0a0a0c, tarnished gold #8a7036, last-gleam gold #c4a052, oxblood #4a0e14, blood #9c1c22. Veiled face, flaking gilt, a single candle. -->
+  <defs>
+    <filter id="grit" filterUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="2" seed="3" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="2.5" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="11" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.04  0 0 0 0 0.04  0 0 0 0 0.05  2 0 0 0 -1.05" result="s"/>
+      <feComposite in="s" in2="d" operator="in" result="sp"/>
+      <feMerge><feMergeNode in="d"/><feMergeNode in="sp"/></feMerge>
+    </filter>
+    <filter id="flame" filterUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <feGaussianBlur stdDeviation="2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#grit)">
+    <!-- cracked halo -->
+    <circle cx="128" cy="62" r="46" fill="none" stroke="#8a7036" stroke-width="7" stroke-dasharray="2 5 2 5 2 14 2 5 2 5 2 5 2 22" />
+    <circle cx="128" cy="62" r="38" fill="none" stroke="#8a7036" stroke-width="1.5" stroke-dasharray="60 8 30 14 90 6"/>
+    <!-- staff -->
+    <path d="M52 50 V244" stroke="#8a7036" stroke-width="4"/>
+    <path d="M52 8 L63 29 L52 50 L41 29 Z" fill="#0a0a0c" stroke="#8a7036" stroke-width="2"/>
+    <path d="M52 18 V40 M45 29 H59" stroke="#8a7036" stroke-width="1.6"/>
+    <path d="M55 20 L50 30 L55 36" stroke="#0a0a0c" stroke-width="1.5" fill="none"/>
+    <!-- mantle -->
+    <path d="M128 18 C152 20 168 42 170 68 L176 104 C190 150 200 200 210 238 L198 232 L192 246 L180 234 L166 246 L154 234 L140 246 L128 234 L116 246 L102 234 L90 246 L76 234 L64 246 L58 232 L46 238 C56 200 66 150 80 104 L86 68 C88 42 104 20 128 18 Z" fill="#0a0a0c" stroke="#8a7036" stroke-width="2.5"/>
+    <path d="M128 26 C146 28 160 46 162 68 L168 104 C180 150 190 200 198 228" fill="none" stroke="#8a7036" stroke-width="1" stroke-dasharray="1 3"/>
+    <path d="M128 26 C110 28 96 46 94 68 L88 104 C76 150 66 200 58 228" fill="none" stroke="#8a7036" stroke-width="1" stroke-dasharray="1 3"/>
+    <!-- inner robe -->
+    <path d="M110 100 L146 100 L156 236 L100 236 Z" fill="#4a0e14" stroke="#8a7036" stroke-width="2"/>
+    <path d="M128 150 V232 M118 160 L112 232 M138 160 L144 232" stroke="#8a7036" stroke-width="1" opacity="0.7"/>
+    <!-- the veil: no face, just cloth -->
+    <path d="M110 50 C114 40 142 40 146 50 L150 100 C140 106 116 106 106 100 Z" fill="#0a0a0c" stroke="#8a7036" stroke-width="2"/>
+    <path d="M108 96 C118 101 138 101 148 96" fill="none" stroke="#c4a052" stroke-width="1" stroke-dasharray="2 2"/>
+    <path d="M120 70 q-1 14 1 24 M136 70 q1 12 -1 20" fill="none" stroke="#9c1c22" stroke-width="1.6"/>
+    <!-- hands holding a candle -->
+    <path d="M112 128 C118 120 138 120 144 128 L140 142 C134 148 122 148 116 142 Z" fill="#0a0a0c" stroke="#8a7036" stroke-width="2"/>
+    <rect x="124" y="108" width="8" height="20" fill="#cbbf9f" stroke="#8a7036" stroke-width="1"/>
+    <!-- gilt flaking off: black chips over gold lines -->
+    <g fill="#0a0a0c">
+      <path d="M170 92 l6 -3 l2 7 l-6 2 Z"/><path d="M90 160 l7 -2 l1 6 l-7 3 Z"/>
+      <path d="M180 196 l5 1 l-1 8 l-6 -2 Z"/><path d="M128 18 l6 0 l-2 5 l-5 -1 Z"/>
+    </g>
+  </g>
+  <!-- candle flame (kept clean so it glows) -->
+  <path d="M128 94 q6 8 0 13 q-6 -5 0 -13 Z" fill="#ffc46a" filter="url(#flame)"/>
+  <circle cx="128" cy="104" r="16" fill="#ffb04a" opacity="0.12"/>
+</svg>

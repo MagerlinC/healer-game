@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- HOLLOW PILGRIM // black silhouette #070606 bent under a burden of candles. One warm light (#ffb04a). Rim light only where the lantern reaches. -->
+  <defs>
+    <radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffe2a8" stop-opacity="0.95"/>
+      <stop offset="0.3" stop-color="#ffb04a" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#ff8a2a" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="flame" filterUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <feGaussianBlur stdDeviation="1.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="40" cy="74" r="34" fill="url(#lamp)"/>
+  <ellipse cx="128" cy="247" rx="92" ry="5" fill="#ffb04a" opacity="0.08"/>
+  <g fill="#070606">
+    <!-- crook staff -->
+    <path d="M58 248 L56 120 L58 40 C58 26 50 20 40 22 C32 24 30 32 32 40 L36 40 C36 34 38 28 44 28 C50 28 52 34 52 42 L50 120 L52 248 Z"/>
+    <path d="M33 40 V52" stroke="#070606" stroke-width="1.5"/>
+    <!-- lantern -->
+    <path d="M33 52 L41 58 L41 76 L33 82 L25 76 L25 58 Z"/>
+    <!-- burden -->
+    <path d="M140 60 C136 30 160 14 190 16 C218 18 230 46 220 76 C212 100 188 112 166 108 Z" stroke="#2e2a26" stroke-width="2.5"/>
+    <!-- candles -->
+    <rect x="148" y="14" width="5" height="18"/><rect x="160" y="2" width="5" height="24"/>
+    <rect x="173" y="8" width="4" height="16"/><rect x="186" y="0" width="5" height="22"/>
+    <rect x="200" y="12" width="4" height="16"/><rect x="211" y="26" width="4" height="14"/>
+    <!-- body, bent forward -->
+    <path d="M92 74 C96 56 112 44 130 46 C148 48 160 62 164 86 L172 120 C188 160 200 200 212 238 L202 230 L198 252 L184 232 L174 250 L162 230 L150 252 L140 232 L126 254 L116 232 L102 252 L92 230 L80 250 L72 230 L58 244 C66 204 74 164 82 128 L84 98 C86 86 88 80 92 74 Z"/>
+    <path d="M94 104 C84 108 72 114 60 116 L58 128 C74 128 88 124 100 118 Z"/>
+  </g>
+  <!-- rope binding the burden -->
+  <path d="M150 34 C172 60 196 86 214 94 M212 34 C196 60 176 90 156 104" fill="none" stroke="#2e2a26" stroke-width="2"/>
+  <!-- wax drips -->
+  <path d="M150 32 v4 M162 26 v6 M188 22 v5" stroke="#3a2f22" stroke-width="2"/>
+  <!-- rim light -->
+  <g fill="none" stroke="#ffb04a" stroke-linecap="round">
+    <path d="M92 74 C88 80 86 86 84 98 L82 128 C78 150 74 170 70 192" stroke-width="2" opacity="0.85"/>
+    <path d="M92 74 C96 56 112 44 130 46" stroke-width="1.4" opacity="0.5"/>
+    <path d="M94 104 C84 108 72 114 60 116" stroke-width="1.6" opacity="0.8"/>
+    <path d="M50 60 V140" stroke-width="1.2" opacity="0.7"/>
+  </g>
+  <!-- lantern window + candle flames -->
+  <path d="M33 60 L37 63 L37 73 L33 76 L29 73 L29 63 Z" fill="#ffe2a8" filter="url(#flame)"/>
+  <g fill="#ffb04a" filter="url(#flame)">
+    <path d="M150.5 6 q3 4 0 8 q-3 -4 0 -8 Z"/><path d="M162.5 -4 q3 4 0 6 q-3 -2 0 -6 Z" opacity="0.5"/>
+    <path d="M175 1 q3 4 0 7 q-3 -3 0 -7 Z"/><path d="M202 4 q3 4 0 8 q-3 -4 0 -8 Z"/>
+    <path d="M213 19 q2.5 3 0 6 q-2.5 -3 0 -6 Z" opacity="0.7"/>
+  </g>
+  <!-- a single dim eye -->
+  <circle cx="104" cy="76" r="1.8" fill="#ffd28a"/>
+</svg>

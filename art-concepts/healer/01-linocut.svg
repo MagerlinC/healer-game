@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- LINOCUT // ink #15110f, bone #ebdfc4, blood #a3201a. Light from the right. Bone = "carved away". -->
+  <!-- staff -->
+  <path d="M47 44 L57 44 L59 246 L45 246 Z" fill="#15110f"/>
+  <path d="M49 72 l6 5 M49 96 l6 5 M49 168 l6 5 M49 200 l6 5 M49 224 l6 5" stroke="#ebdfc4" stroke-width="2"/>
+  <!-- crystal + drips -->
+  <path d="M52 4 L68 32 L52 60 L36 32 Z" fill="#a3201a" stroke="#15110f" stroke-width="4"/>
+  <path d="M53 14 L61 32 L53 28 Z" fill="#ebdfc4"/>
+  <path d="M44 62 q2 8 0 12 q-3 -4 0 -12 Z M60 60 q2 12 0 18 q-3 -6 0 -18 Z" fill="#a3201a"/>
+  <!-- cloak, jagged hem -->
+  <path d="M128 12 L152 22 L167 50 L173 98 L187 150 L199 200 L215 244 L201 236 L190 248 L177 236 L164 249 L150 238 L138 249 L128 238 L117 249 L105 238 L92 249 L80 236 L66 247 L56 236 L41 244 L57 200 L69 150 L83 98 L89 50 L104 22 Z" fill="#15110f"/>
+  <!-- carved gouges, mostly on the lit right side -->
+  <g fill="#ebdfc4">
+    <path d="M160 40 L165 52 L170 98 L166 98 Z"/>
+    <path d="M174 110 L178 112 L198 228 L194 230 Z"/>
+    <path d="M166 120 L169 121 L184 232 L180 233 Z"/>
+    <path d="M160 140 L162 140 L170 236 L167 236 Z"/>
+    <path d="M147 26 L152 28 L160 44 L156 44 Z"/>
+    <path d="M86 120 L88 120 L76 196 L74 196 Z"/>
+    <path d="M94 150 L96 150 L90 210 L88 210 Z"/>
+  </g>
+  <!-- robe panel -->
+  <path d="M112 104 L144 104 L156 238 L100 238 Z" fill="#ebdfc4"/>
+  <path d="M120 140 L114 236 M128 142 L128 236 M136 140 L142 236" stroke="#15110f" stroke-width="3"/>
+  <!-- blood cross on chest -->
+  <path d="M124 108 h8 v8 h8 v8 h-8 v14 h-8 v-14 h-8 v-8 h8 Z" fill="#a3201a" stroke="#15110f" stroke-width="2"/>
+  <!-- face carved out of the hood -->
+  <path d="M113 56 L143 56 L141 84 L128 98 L115 84 Z" fill="#ebdfc4"/>
+  <path d="M110 52 L146 52 L142 70 L128 64 L114 70 Z" fill="#15110f"/>
+  <path d="M117 76 L126 79 M130 79 L139 76" stroke="#15110f" stroke-width="3.5"/>
+  <path d="M124 90 L132 90" stroke="#15110f" stroke-width="2"/>
+  <!-- arm + hand on staff -->
+  <path d="M84 116 L64 124 L66 136 L88 130 Z" fill="#15110f"/>
+  <path d="M42 124 L62 120 L66 136 L46 140 Z" fill="#ebdfc4" stroke="#15110f" stroke-width="3"/>
+</svg>

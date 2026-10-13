@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 using healerfantasy;
+using healerfantasy.LastLight;
 
 /// <summary>
 /// Root script for the Main Menu scene.
@@ -106,12 +107,20 @@ public partial class MainMenuUI : Node2D
 
 		canvas.AddChild(bg);
 
-		// ── Mist layers ───────────────────────────────────────────────────────
-		var mistTex = GD.Load<Texture2D>(AssetConstants.MistTexturePath);
-		var mistShader = BuildMistShader();
-		AddMistLayer(bg, mistTex, mistShader, 0.015f, -0.003f, 0.11f, 0f);
-		AddMistLayer(bg, mistTex, mistShader, -0.010f, 0.002f, 0.09f, 17f);
-		AddMistLayer(bg, mistTex, mistShader, 0.020f, -0.001f, 0.07f, 33f);
+		if (LastLightStyle.Enabled)
+		{
+			bgRect.Visible = false;
+			BuildLastLightScene(bg);
+		}
+		else
+		{
+			// ── Mist layers ───────────────────────────────────────────────────
+			var mistTex = GD.Load<Texture2D>(AssetConstants.MistTexturePath);
+			var mistShader = BuildMistShader();
+			AddMistLayer(bg, mistTex, mistShader, 0.015f, -0.003f, 0.11f, 0f);
+			AddMistLayer(bg, mistTex, mistShader, -0.010f, 0.002f, 0.09f, 17f);
+			AddMistLayer(bg, mistTex, mistShader, 0.020f, -0.001f, 0.07f, 33f);
+		}
 
 		// ── Title region (top ~24 % of the screen) ───────────────────────────
 		var titleRegion = new CenterContainer();
@@ -124,7 +133,7 @@ public partial class MainMenuUI : Node2D
 
 		var title = new Label();
 		title.AddThemeFontOverride("font", MenuFont);
-		title.Text = "Keep Us Alive";
+		title.Text = "Keep the light";
 		title.Uppercase = true;
 		title.HorizontalAlignment = HorizontalAlignment.Center;
 		title.AddThemeFontSizeOverride("font_size", 80);
@@ -179,6 +188,30 @@ public partial class MainMenuUI : Node2D
 
 		// Settings panel (hidden by default, rendered above everything else)
 		canvas.AddChild(BuildSettingsPanel());
+	}
+
+	// ── Last Light splash ─────────────────────────────────────────────────────
+
+	/// <summary>
+	/// The healer stands in a ring of broken stones, the only light in an endless
+	/// dark that keeps creeping in on it. Title and menu sit out in the dark above.
+	/// </summary>
+	static void BuildLastLightScene(Control bg)
+	{
+		bg.AddChild(new LastLightBackground { BackgroundPreset = LastLightBackground.Preset.Sanctuary });
+
+		var view = bg.GetViewport().GetVisibleRect().Size;
+		var healer = new Node2D
+		{
+			Position = new Vector2(view.X * 0.5f, view.Y * 0.7f),
+			Scale = new Vector2(5f, 5f)
+		};
+		bg.AddChild(healer);
+		SilhouetteRig.Attach(healer, RigLibrary.Healer());
+
+		var dark = new CreepingDarkness { Radius = 0.34f, MaxDark = 0.93f };
+		dark.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		bg.AddChild(dark);
 	}
 
 	// ── button factory ────────────────────────────────────────────────────────

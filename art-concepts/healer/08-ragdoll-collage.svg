@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- RAGDOLL COLLAGE // torn paper scraps + stitches. soot #23201c, parchment #cbb68b, dried blood #7a1e16, moss #4e5b34, bruise #3b2f3f. Rough edges = displacement. Eyes are stitched X's. -->
+  <defs>
+    <filter id="torn" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" seed="4" result="t"/>
+      <feDisplacementMap in="SourceGraphic" in2="t" scale="7" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feDropShadow in="d" dx="2" dy="3" stdDeviation="0.8" flood-color="#000" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+  <!-- staff -->
+  <g filter="url(#torn)">
+    <rect x="46" y="46" width="12" height="200" fill="#23201c" transform="rotate(-2 52 146)"/>
+    <path d="M52 4 L68 30 L52 58 L36 30 Z" fill="#7a1e16"/>
+  </g>
+  <!-- tape over the crystal -->
+  <rect x="38" y="36" width="30" height="10" fill="#e8dcb8" opacity="0.6" transform="rotate(-14 53 41)"/>
+  <!-- cloak -->
+  <g filter="url(#torn)">
+    <path d="M128 14 C152 16 168 40 170 66 L176 104 C190 150 200 200 210 240 L46 240 C56 200 66 150 80 104 L86 66 C88 40 104 16 128 14 Z" fill="#4e5b34"/>
+    <path d="M128 14 C116 16 100 30 92 54 L84 120 L70 200 L64 240 L46 240 C56 200 66 150 80 104 L86 66 C88 40 104 16 128 14 Z" fill="#3b2f3f"/>
+    <path d="M112 100 L146 100 L160 240 L98 240 Z" fill="#cbb68b"/>
+    <path d="M110 52 C112 40 146 40 148 52 L144 88 C140 100 118 100 114 88 Z" fill="#23201c"/>
+    <path d="M115 60 L143 60 L140 86 C136 94 122 94 118 86 Z" fill="#cbb68b"/>
+    <path d="M150 156 L182 152 L184 178 L152 182 Z" fill="#7a1e16"/>
+  </g>
+  <!-- stitches -->
+  <g stroke="#cbb68b" stroke-width="2" stroke-linecap="round" fill="none">
+    <path d="M92 60 L84 120 L72 200" stroke-dasharray="1 6"/>
+    <path d="M166 70 L172 106 M180 140 L192 200" stroke-dasharray="1 6"/>
+  </g>
+  <g stroke="#7a1e16" stroke-width="2.4" stroke-linecap="round">
+    <!-- red-thread cross on robe -->
+    <path d="M128 120 V146 M116 132 H140"/>
+    <path d="M111 194 l6 4 M139 194 l6 -4 M114 214 l4 4 M142 214 l-4 4" stroke="#23201c" stroke-width="2"/>
+  </g>
+  <!-- X eyes + sewn mouth -->
+  <g stroke="#23201c" stroke-width="2.4" stroke-linecap="round">
+    <path d="M120 68 l6 6 M126 68 l-6 6 M132 68 l6 6 M138 68 l-6 6"/>
+    <path d="M122 84 H136 M125 81 v6 M129 81 v6 M133 81 v6" stroke-width="1.4"/>
+  </g>
+  <!-- satchel button + arm -->
+  <circle cx="167" cy="166" r="3" fill="#cbb68b"/>
+  <g filter="url(#torn)">
+    <path d="M86 114 L60 122 L60 136 L90 130 Z" fill="#3b2f3f"/>
+    <circle cx="54" cy="129" r="8" fill="#cbb68b"/>
+  </g>
+</svg>

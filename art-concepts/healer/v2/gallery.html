@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Healer Directions II</title>
+<style>
+  :root { --bg:#08070a; --card:#111013; --ink:#ddd6c8; --mute:#857d72; --line:#221f24; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.5 ui-sans-serif, system-ui, sans-serif; padding:32px 16px 64px; }
+  header { max-width:1240px; margin:0 auto 28px; display:flex; gap:24px; align-items:center; flex-wrap:wrap; }
+  header img { width:110px; background:#222; border-radius:8px; padding:6px; filter:grayscale(.3); }
+  h1 { margin:0 0 4px; font-size:22px; letter-spacing:.04em; font-family:Georgia, serif; font-weight:normal; }
+  header p { margin:0; color:var(--mute); max-width:680px; }
+  header a { color:#c49a5a; }
+  .grid { max-width:1240px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:18px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:6px; overflow:hidden; display:flex; flex-direction:column; }
+  .stage { aspect-ratio:1; display:grid; place-items:center; position:relative; overflow:hidden; }
+  .stage img { width:82%; position:relative; z-index:1; }
+  .stage::after { content:""; position:absolute; inset:0; z-index:2; pointer-events:none; background:radial-gradient(ellipse at 50% 45%, transparent 45%, #000a 100%); }
+  .meta { padding:14px 16px 16px; }
+  .meta h2 { margin:0; font-size:15px; letter-spacing:.1em; text-transform:uppercase; font-family:Georgia, serif; font-weight:normal; }
+  .meta .tag { color:var(--mute); margin:2px 0 10px; font-style:italic; }
+  .sw { display:flex; gap:4px; margin-bottom:10px; }
+  .sw i { width:22px; height:22px; border-radius:3px; border:1px solid #fff2; }
+  ul { margin:0; padding-left:18px; color:#c2baad; }
+  li { margin:2px 0; }
+  .b1 { background:radial-gradient(circle at 50% 40%, #8f8065, #4a4031 80%); }
+  .b2 { background:linear-gradient(#050303 0%, #1a0806 65%, #2e0d07 100%); }
+  .b3 { background:radial-gradient(circle at 50% 30%, #3a3328, #0c0b0a 75%); }
+  .b4 { background:linear-gradient(#5a5650, #34302b 55%, #181614); }
+  .b5 { background:#0d0d10; outline:3px solid #6e5a2c; outline-offset:-14px; }
+  .b6 { background:linear-gradient(#77706a, #4a4440); }
+  .b6::before { content:""; position:absolute; width:70%; aspect-ratio:1; border-radius:50%; background:#5e1d10; opacity:.55; bottom:-28%; right:-8%; }
+  .b7 { background:#030101; }
+  .b7 img { z-index:1; }
+  .b7::before { content:""; position:absolute; inset:0; z-index:3; pointer-events:none; background:repeating-linear-gradient(#0000 0 2px, #000a 2px 3px); }
+  .b8 { background:#1c1813; }
+  .b8::before { content:""; position:absolute; inset:9%; background:#4a3d2c; opacity:.35; transform:rotate(-3deg); }
+</style>
+</head>
+<body>
+<header>
+  <img src="../../../assets/characters/healer/idle1.png" alt="Current healer idle frame">
+  <div>
+    <h1>Healer: 8 directions, darker</h1>
+    <p>The same 8 ideas, pushed toward Dark Souls. Shared rules across all of them: a hunched pose, tattered hems, colour drained to ash, rust and ember, wear and grime on every surface, and at most one warm light. <a href="../gallery.html">The first set is here.</a></p>
+  </div>
+</header>
+<main class="grid">
+
+  <section class="card"><div class="stage b1"><img src="01-ash-woodcut.svg" alt=""></div><div class="meta">
+    <h2>01 · Ash Woodcut</h2><div class="tag">Plague pamphlet, gaunt and self-bandaged</div>
+    <div class="sw"><i style="background:#0e0c0a"></i><i style="background:#c9bb98"></i><i style="background:#7d1712"></i></div>
+    <ul><li>Ink, dirty bone, old blood. Nothing else.</li><li>Faces are gaunt: triangle eye sockets and slashed cheeks.</li><li>The healer carries a crook with a hanging censer. Their bandages are on their own body.</li></ul>
+  </div></section>
+
+  <section class="card"><div class="stage b2"><img src="02-ember-wraith.svg" alt=""></div><div class="meta">
+    <h2>02 · Ember Wraith</h2><div class="tag">The synthwave sun, burnt out</div>
+    <div class="sw"><i style="background:#0a0605"></i><i style="background:#7a1508"></i><i style="background:#ff5a1f"></i><i style="background:#ffb347"></i></div>
+    <ul><li>The sun gradient only burns at the bottom, with tears cut through it.</li><li>Neon outlines have gaps, like a failing sign.</li><li>A darksign ring on the chest. Embers drift upward.</li></ul>
+  </div></section>
+
+  <section class="card"><div class="stage b3"><img src="03-shattered-cathedral.svg" alt=""></div><div class="meta">
+    <h2>03 · Shattered Cathedral</h2><div class="tag">A ruined saint's window</div>
+    <div class="sw"><i style="background:#0a0908"></i><i style="background:#1f3a2c"></i><i style="background:#8c6a2c"></i><i style="background:#6a1018"></i><i style="background:#26324a"></i><i style="background:#b3a688"></i></div>
+    <ul><li>Murky, tarnished glass. Every character is missing 1–2 panes.</li><li>Crack lines in the lead colour. The halo is broken into chunks.</li><li>Pallid faces with rectangular hollow eyes.</li></ul>
+  </div></section>
+
+  <section class="card"><div class="stage b4"><img src="04-hollow-pilgrim.svg" alt=""></div><div class="meta">
+    <h2>04 · Hollow Pilgrim</h2><div class="tag">Bent under a burden of candles</div>
+    <div class="sw"><i style="background:#070606"></i><i style="background:#ffb04a"></i><i style="background:#ffe2a8"></i></div>
+    <ul><li>Black silhouettes in grey fog. Each class has a burden on its back: candles, a coffin, a bell, a broken wheel.</li><li>The only light is one small warm flame.</li><li>Rim light only where that flame reaches. One dim eye.</li></ul>
+  </div></section>
+
+  <section class="card"><div class="stage b5"><img src="05-tarnished-icon.svg" alt=""></div><div class="meta">
+    <h2>05 · Tarnished Icon</h2><div class="tag">Maiden in black</div>
+    <div class="sw"><i style="background:#0a0a0c"></i><i style="background:#8a7036"></i><i style="background:#c4a052"></i><i style="background:#4a0e14"></i><i style="background:#9c1c22"></i></div>
+    <ul><li>Dull, tarnished gold lines, with chips where the gilt has flaked off.</li><li>No faces. Veils, with blood tears running down them.</li><li>Each character holds one sacred object (here a candle), and it's the only thing that glows.</li></ul>
+  </div></section>
+
+  <section class="card"><div class="stage b6"><img src="06-hollow-iron.svg" alt=""></div><div class="meta">
+    <h2>06 · Hollow Iron</h2><div class="tag">Bauhaus geometry, rusted shut</div>
+    <div class="sw"><i style="background:#141312"></i><i style="background:#3b3c3e"></i><i style="background:#7e3a1e"></i><i style="background:#a99e88"></i><i style="background:#c8561e"></i></div>
+    <ul><li>Still only circles, triangles and rectangles. Now everything leans, as if under weight.</li><li>Great helms with cross slits instead of faces. Chains are rows of rings.</li><li>A rust-noise pass and heavy grain go on last. One ember dot per character.</li></ul>
+  </div></section>
+
+  <section class="card"><div class="stage b7"><img src="07-hollow-signal.svg" alt=""></div><div class="meta">
+    <h2>07 · Hollow Signal</h2><div class="tag">A vector display going hollow</div>
+    <div class="sw"><i style="background:#070202"></i><i style="background:#5a0f0a"></i><i style="background:#ff3b2a"></i><i style="background:#ffc2b8"></i></div>
+    <ul><li>Red phosphor, with a burnt-in ghost copy offset behind it.</li><li>Lines drop out. One eye is lit, the other is dead.</li><li>Damage could literally erase lines from the mesh.</li></ul>
+  </div></section>
+
+  <section class="card"><div class="stage b8"><img src="08-grave-doll.svg" alt=""></div><div class="meta">
+    <h2>08 · Grave Doll</h2><div class="tag">Burnt paper, rusty nails</div>
+    <div class="sw"><i style="background:#17140f"></i><i style="background:#2a231b"></i><i style="background:#5a4a36"></i><i style="background:#8d7a58"></i><i style="background:#5e140e"></i><i style="background:#e0642a"></i></div>
+    <ul><li>Charred paper scraps, some with smouldering edges.</li><li>Rusty nails hold things in place, including the eyes, which weep rust.</li><li>Burn holes and dark-red stitches. The healer is the one holding the party together with thread.</li></ul>
+  </div></section>
+
+</main>
+</body>
+</html>

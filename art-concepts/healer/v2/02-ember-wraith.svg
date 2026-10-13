@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- EMBER WRAITH // the synthwave sun, burnt out. void #0a0605, ember #ff5a1f, flame #ffb347, deep red #7a1508. Broken neon, darksign on the chest, rising embers. -->
+  <defs>
+    <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a0605"/>
+      <stop offset="0.45" stop-color="#2b0d08"/>
+      <stop offset="0.72" stop-color="#7a1508"/>
+      <stop offset="0.9" stop-color="#ff5a1f"/>
+      <stop offset="1" stop-color="#ffb347"/>
+    </linearGradient>
+    <mask id="slices">
+      <rect width="256" height="256" fill="#fff"/>
+      <g fill="#000">
+        <rect y="150" width="256" height="2"/><rect y="168" width="256" height="3"/>
+        <rect y="186" width="256" height="4"/><rect y="203" width="256" height="5"/>
+        <rect y="219" width="256" height="6"/><rect y="234" width="256" height="7"/>
+        <!-- tears through the sun -->
+        <path d="M150 160 L162 196 L156 198 Z M86 180 L94 214 L90 215 Z M120 200 L126 244 L122 244 Z"/>
+      </g>
+    </mask>
+    <filter id="glow" filterUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <feGaussianBlur stdDeviation="2.4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- ash floor -->
+  <g stroke="#7a1508" stroke-width="1" opacity="0.6" filter="url(#glow)">
+    <path d="M40 246 H120 M136 246 H216 M66 252 H190" stroke-dasharray="14 5 4 6"/>
+  </g>
+  <!-- hunched cloak, tattered hem -->
+  <path d="M98 72 C100 52 114 34 134 30 C154 30 168 46 172 70 L178 108 C192 154 202 200 212 242 L200 234 L194 250 L182 236 L172 252 L160 238 L148 250 L138 236 L124 252 L114 236 L100 250 L90 236 L76 248 L66 236 L46 242 C56 200 66 158 80 118 L88 88 C90 80 94 76 98 72 Z" fill="url(#sun)" mask="url(#slices)"/>
+  <!-- broken neon outline -->
+  <path d="M98 72 C100 52 114 34 134 30 C154 30 168 46 172 70 L178 108 C192 154 202 200 212 242 M46 242 C56 200 66 158 80 118 L88 88 C90 80 94 76 98 72" fill="none" stroke="#ff5a1f" stroke-width="2" stroke-dasharray="70 6 24 4 50 9 90 5" filter="url(#glow)"/>
+  <!-- the void in the hood, eyes guttering -->
+  <path d="M104 68 C108 56 132 54 138 64 L136 92 C132 104 114 106 108 96 Z" fill="#050303" stroke="#7a1508" stroke-width="1.5"/>
+  <rect x="111" y="78" width="8" height="2.5" fill="#ffb347" filter="url(#glow)"/>
+  <rect x="125" y="77" width="6" height="2" fill="#ff5a1f" opacity="0.6" filter="url(#glow)"/>
+  <!-- darksign -->
+  <circle cx="132" cy="132" r="13" fill="#050303"/>
+  <circle cx="132" cy="132" r="11" fill="none" stroke="#ff5a1f" stroke-width="3" stroke-dasharray="6 2 10 3 4 2 12 3" filter="url(#glow)"/>
+  <circle cx="132" cy="132" r="4" fill="#050303" stroke="#ffb347" stroke-width="1"/>
+  <!-- staff, cracked crystal -->
+  <path d="M52 56 V160 M53 166 V244" stroke="#ff5a1f" stroke-width="2.5" filter="url(#glow)"/>
+  <path d="M52 10 L66 33 L52 56 L38 33 Z" fill="#050303" stroke="#ff5a1f" stroke-width="2" filter="url(#glow)"/>
+  <path d="M52 22 L57 32 L50 36 L54 46" fill="none" stroke="#ffb347" stroke-width="1.5" filter="url(#glow)"/>
+  <!-- sleeve/hand -->
+  <path d="M90 114 L60 124 L60 134 L94 126" fill="#0a0605" stroke="#ff5a1f" stroke-width="1.6" stroke-linejoin="round" filter="url(#glow)"/>
+  <!-- embers -->
+  <g fill="#ffb347" filter="url(#glow)">
+    <rect x="72" y="70" width="2" height="2"/><rect x="186" y="96" width="2" height="2"/>
+    <rect x="160" y="22" width="1.5" height="1.5"/><rect x="34" y="96" width="2" height="2"/>
+    <rect x="200" y="160" width="1.5" height="1.5"/><rect x="88" y="40" width="1.5" height="1.5" opacity="0.6"/>
+  </g>
+</svg>

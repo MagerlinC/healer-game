@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Healer Art Directions</title>
+<style>
+  :root { --bg:#0c0b0d; --card:#151317; --ink:#e9e4da; --mute:#9a938a; --line:#2a262c; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.5 ui-sans-serif, system-ui, sans-serif; padding:32px 16px 64px; }
+  header { max-width:1240px; margin:0 auto 28px; display:flex; gap:24px; align-items:center; flex-wrap:wrap; }
+  header img { width:120px; background:#2b2b2b; border-radius:8px; padding:6px; }
+  h1 { margin:0 0 4px; font-size:22px; letter-spacing:.02em; }
+  header p { margin:0; color:var(--mute); max-width:640px; }
+  .grid { max-width:1240px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:18px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; display:flex; flex-direction:column; }
+  .stage { aspect-ratio:1; display:grid; place-items:center; position:relative; }
+  .stage img { width:82%; position:relative; z-index:1; }
+  .meta { padding:14px 16px 16px; }
+  .meta h2 { margin:0; font-size:15px; letter-spacing:.06em; text-transform:uppercase; }
+  .meta .tag { color:var(--mute); margin:2px 0 10px; font-style:italic; }
+  .sw { display:flex; gap:4px; margin-bottom:10px; }
+  .sw i { width:22px; height:22px; border-radius:4px; border:1px solid #0006; }
+  ul { margin:0; padding-left:18px; color:#cfc8bd; }
+  li { margin:2px 0; }
+  /* backdrops */
+  .b1 { background:#ebdfc4; }
+  .b1::after { content:""; position:absolute; inset:0; background:repeating-linear-gradient(-12deg, transparent 0 9px, #15110f14 9px 11px); }
+  .b2 { background:linear-gradient(#07021a 0%, #1a0640 62%, #3b0a55 100%); }
+  .b3 { background:radial-gradient(circle at 50% 40%, #2a2216, #0d0b12 75%); }
+  .b4 { background:linear-gradient(#5d6e6a, #2c3836 55%, #141a19); }
+  .b4::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 30% 22%, #bfe9dd88, transparent 45%); }
+  .b5 { background:#0a1024; outline:3px solid #d8b25a; outline-offset:-14px; }
+  .b6 { background:#d9cfba; }
+  .b6::before { content:""; position:absolute; width:62%; aspect-ratio:1; border-radius:50%; background:#b4442a; opacity:.35; top:10%; right:6%; }
+  .b7 { background:#010402; }
+  .b7::after { content:""; position:absolute; inset:0; z-index:2; pointer-events:none; background:repeating-linear-gradient(#0000 0 2px, #0008 2px 3px); }
+  .b8 { background:#2c2620; }
+  .b8::before { content:""; position:absolute; inset:8%; background:#8a7756; opacity:.25; transform:rotate(-3deg); }
+</style>
+</head>
+<body>
+<header>
+  <img src="../../assets/characters/healer/idle1.png" alt="Current healer idle frame">
+  <div>
+    <h1>Healer: 8 art directions</h1>
+    <p>Same character beats in every version: hood, staff with a diamond crystal, long cloak, hand on staff. Each direction has a few hard rules so new characters and backgrounds can be made fast and still match.</p>
+  </div>
+</header>
+<main class="grid">
+
+  <section class="card"><div class="stage b1"><img src="01-linocut.svg" alt=""></div><div class="meta">
+    <h2>01 · Linocut</h2><div class="tag">Medieval woodcut / plague pamphlet</div>
+    <div class="sw"><i style="background:#15110f"></i><i style="background:#ebdfc4"></i><i style="background:#a3201a"></i></div>
+    <ul><li>Two colours plus one red. Nothing else.</li><li>Draw the shape in ink, then cut bone-coloured wedges out of it on the lit side.</li><li>Straight jagged edges only. No curves.</li></ul>
+  </div></section>
+
+  <section class="card"><div class="stage b2"><img src="02-neon-wraith.svg" alt=""></div><div class="meta">
+    <h2>02 · Neon Wraith</h2><div class="tag">Synthwave necromancy</div>
+    <div class="sw"><i style="background:#07021a"></i><i style="background:#29f0ff"></i><i style="background:#ff2bd6"></i><i style="background:#ff6b3d"></i><i style="background:#ffd23f"></i></div>
+    <ul><li>Big shapes get the sunset gradient, sliced by horizontal bars that thicken towards the bottom.</li><li>Every outline is a glowing neon line.</li><li>Faces are empty voids with light-bar eyes.</li></ul>
+  </div></section>
+
+  <section class="card"><div class="stage b3"><img src="03-stained-glass.svg" alt=""></div><div class="meta">
+    <h2>03 · Stained Glass</h2><div class="tag">Cathedral window saints</div>
+    <div class="sw"><i style="background:#0d0b12"></i><i style="background:#0f5a3c"></i><i style="background:#1b7a52"></i><i style="background:#d9b25a"></i><i style="background:#c2183a"></i><i style="background:#1d3a9e"></i></div>
+    <ul><li>Everything is flat polygons with the same thick dark stroke.</li><li>Shade by splitting a shape into two facets of the same hue.</li><li>Each character gets a segmented halo or rose in its own colour.</li></ul>
+  </div></section>
+
+  <section class="card"><div class="stage b4"><img src="04-last-lantern.svg" alt=""></div><div class="meta">
+    <h2>04 · Last Lantern</h2><div class="tag">Limbo-style silhouette, one light</div>
+    <div class="sw"><i style="background:#050506"></i><i style="background:#9ff5e0"></i><i style="background:#f2fffc"></i></div>
+    <ul><li>Characters are pure black shapes; the outline does all the work.</li><li>Each character owns one light colour: healer teal, wizard violet, assassin red, templar gold.</li><li>Rim light only on the edges facing that light.</li></ul>
+  </div></section>
+
+  <section class="card"><div class="stage b5"><img src="05-gilded-icon.svg" alt=""></div><div class="meta">
+    <h2>05 · Gilded Icon</h2><div class="tag">Byzantine icon / tarot card</div>
+    <div class="sw"><i style="background:#0f1730"></i><i style="background:#d8b25a"></i><i style="background:#5e1420"></i><i style="background:#e7cf93"></i></div>
+    <ul><li>Dark fills with one gold line weight. Stars and dashed trim for texture.</li><li>Frontal, symmetrical, closed eyes. Faces stay calm.</li><li>Bosses can be framed as cursed tarot cards.</li></ul>
+  </div></section>
+
+  <section class="card"><div class="stage b6"><img src="06-iron-primitive.svg" alt=""></div><div class="meta">
+    <h2>06 · Iron Primitive</h2><div class="tag">Bauhaus meets grimdark propaganda</div>
+    <div class="sw"><i style="background:#1d1b19"></i><i style="background:#b4442a"></i><i style="background:#dca33c"></i><i style="background:#ebe1cc"></i><i style="background:#3a4a52"></i></div>
+    <ul><li>Only circles, triangles and rectangles.</li><li>The class is the silhouette: healer = triangle, templar = square, assassin = thin diagonal, wizard = circle.</li><li>A visor slit instead of a face. Grain over everything.</li></ul>
+  </div></section>
+
+  <section class="card"><div class="stage b7"><img src="07-vector-saint.svg" alt=""></div><div class="meta">
+    <h2>07 · Vector Saint</h2><div class="tag">1980s vector-arcade wireframe</div>
+    <div class="sw"><i style="background:#020a05"></i><i style="background:#3dff8a"></i><i style="background:#c8ffdc"></i></div>
+    <ul><li>Straight lines only, one stroke width. Vertices are lit squares.</li><li>One phosphor colour per faction: party green, enemies amber or red.</li><li>Spells are pure geometry: rings, rays and dashed orbits.</li></ul>
+  </div></section>
+
+  <section class="card"><div class="stage b8"><img src="08-ragdoll-collage.svg" alt=""></div><div class="meta">
+    <h2>08 · Ragdoll Collage</h2><div class="tag">Torn paper, stitches, tape</div>
+    <div class="sw"><i style="background:#23201c"></i><i style="background:#3b2f3f"></i><i style="background:#4e5b34"></i><i style="background:#cbb68b"></i><i style="background:#7a1e16"></i></div>
+    <ul><li>Each part is a torn scrap with a small drop shadow.</li><li>Seams are dashed stitch lines. Eyes are sewn X's.</li><li>Tape and pins show what is "fixed on". Fits a healer stitching the party back together.</li></ul>
+  </div></section>
+
+</main>
+</body>
+</html>

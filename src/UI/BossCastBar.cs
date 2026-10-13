@@ -1,5 +1,6 @@
 using Godot;
 using healerfantasy;
+using healerfantasy.LastLight;
 using healerfantasy.SpellResources;
 
 /// <summary>
@@ -20,19 +21,19 @@ using healerfantasy.SpellResources;
 public partial class BossCastBar : CastBarBase
 {
 	// ── base danger colour palette ────────────────────────────────────────────
-	protected override Color BgColor => new(0.14f, 0.05f, 0.05f, 0.97f);
-	protected override Color BorderColor => new(0.85f, 0.20f, 0.15f, 0.90f);
-	protected override Color NameColor => new(1.00f, 0.75f, 0.65f);
-	protected override Color TimeColor => new(1.00f, 0.35f, 0.25f);
-	protected override Color BarFillColor => new(0.90f, 0.22f, 0.10f);
-	protected override Color BarBgColor => new(0.22f, 0.07f, 0.07f);
+	protected override Color BgColor => LastLightStyle.Enabled ? new(0.06f, 0.02f, 0.018f, 0.96f) : new(0.14f, 0.05f, 0.05f, 0.97f);
+	protected override Color BorderColor => LastLightStyle.Enabled ? new(0.55f, 0.12f, 0.08f, 0.95f) : new(0.85f, 0.20f, 0.15f, 0.90f);
+	protected override Color NameColor => LastLightStyle.Enabled ? new(0.92f, 0.78f, 0.7f) : new(1.00f, 0.75f, 0.65f);
+	protected override Color TimeColor => LastLightStyle.Enabled ? new(0.9f, 0.4f, 0.2f) : new(1.00f, 0.35f, 0.25f);
+	protected override Color BarFillColor => LastLightStyle.Enabled ? new(0.55f, 0.1f, 0.06f) : new(0.90f, 0.22f, 0.10f);
+	protected override Color BarBgColor => LastLightStyle.Enabled ? new(0.08f, 0.02f, 0.02f) : new(0.22f, 0.07f, 0.07f);
 
 	// ── animation targets ─────────────────────────────────────────────────────
 	// The border pulses between the base red and a searing orange-yellow.
-	static readonly Color BorderPeak = new(1.00f, 0.65f, 0.10f, 1.00f);
+	static readonly Color BorderPeak = LastLightStyle.Enabled ? new(0.95f, 0.42f, 0.16f, 1.00f) : new(1.00f, 0.65f, 0.10f, 1.00f);
 
 	// The bar fill brightens towards a vivid orange as the cast completes.
-	static readonly Color FillPeak = new(1.00f, 0.50f, 0.05f);
+	static readonly Color FillPeak = LastLightStyle.Enabled ? new(0.9f, 0.3f, 0.1f) : new(1.00f, 0.50f, 0.05f);
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 	public override void _Ready()

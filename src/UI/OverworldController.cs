@@ -23,6 +23,8 @@ public partial class OverworldController : LoadoutController
 {
 	RuneTablePanel? _runeTablePanel;
 
+	protected override bool UseLastLightScene => true;
+
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
 	public override void _Ready()

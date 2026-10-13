@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using healerfantasy;
+using healerfantasy.LastLight;
+using healerfantasy.LastLight.Hud;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
 
 /// <summary>
@@ -22,9 +24,9 @@ public partial class ActionBar : HBoxContainer
 	float _castTimer = 0f;
 	bool _isPlayerDead = false;
 
-	static readonly Color BorderDefault = new(0.25f, 0.22f, 0.20f);
-	static readonly Color BorderActive = new(0.95f, 0.80f, 0.10f); // gold
-	static readonly Color BorderEmpty = new(0.18f, 0.16f, 0.14f); // near-black for empty slots
+	static readonly Color BorderDefault = LastLightStyle.Enabled ? LastLightHud.Iron : new(0.25f, 0.22f, 0.20f);
+	static readonly Color BorderActive = LastLightStyle.Enabled ? LastLightHud.Light : new(0.95f, 0.80f, 0.10f); // gold
+	static readonly Color BorderEmpty = LastLightStyle.Enabled ? LastLightHud.IronDim : new(0.18f, 0.16f, 0.14f); // near-black for empty slots
 
 	// Shared greyscale shader — applied to the icon TextureRect when mana is too low.
 	static ShaderMaterial _greyMaterial;
@@ -124,7 +126,7 @@ public partial class ActionBar : HBoxContainer
 		{
 			slot.Icon!.Material = _isPlayerDead || slot.Spell != null && current < slot.Spell.ManaCost
 				? GreyMaterial
-				: null;
+				: LastLightStyle.Enabled ? LastLightHud.IconMaterial : null;
 		}
 	}
 
@@ -207,8 +209,8 @@ public partial class ActionBar : HBoxContainer
 		panel.CustomMinimumSize = new Vector2(58, 58);
 
 		var borderStyle = new StyleBoxFlat();
-		borderStyle.BgColor = new Color(0.12f, 0.10f, 0.10f, 0.95f);
-		borderStyle.SetCornerRadiusAll(4);
+		borderStyle.BgColor = LastLightStyle.Enabled ? LastLightHud.Soot : new Color(0.12f, 0.10f, 0.10f, 0.95f);
+		borderStyle.SetCornerRadiusAll(LastLightStyle.Enabled ? 0 : 4);
 		borderStyle.SetBorderWidthAll(2);
 		borderStyle.BorderColor = spell != null ? BorderDefault : BorderEmpty;
 		borderStyle.ContentMarginLeft = 3f;
@@ -233,6 +235,7 @@ public partial class ActionBar : HBoxContainer
 			iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 			iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			iconRect.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+			if (LastLightStyle.Enabled) iconRect.Material = LastLightHud.IconMaterial;
 			inner.AddChild(iconRect);
 		}
 
