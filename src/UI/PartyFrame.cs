@@ -381,7 +381,8 @@ public partial class PartyFrame : CharacterFrame
 		if (LastLightStyle.Enabled)
 		{
 			label.MouseFilter = MouseFilterEnum.Ignore;
-			LastLightHud.Style(label, fontSize, fontSize >= 14 ? LastLightHud.Text : LastLightHud.LightPale);
+			// Names a touch larger (heavy serif), HP numbers in bold sans.
+			LastLightHud.Style(label, fontSize + 2, fontSize >= 14 ? LastLightHud.LightPale : LastLightHud.Text);
 			return label;
 		}
 

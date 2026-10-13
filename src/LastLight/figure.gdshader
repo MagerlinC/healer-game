@@ -28,9 +28,10 @@ uniform vec4 rim_color : source_color = vec4(1.0, 0.86, 0.6, 1.0);
 uniform vec4 dark_color : source_color = vec4(0.018, 0.014, 0.014, 1.0);
 uniform float rim_px = 2.0;
 
-// Party only: a thin warm outline just outside the silhouette, so allies stay
-// readable when they stand inside a boss's darkness. 0 disables.
-uniform float outline_px = 2.0;
+// A thin outline just outside the silhouette: always on for the party (so allies
+// stay readable inside a boss's darkness), and on darkness while it is highlighted
+// (e.g. hovering a Countess clone). Set per rig; 0 disables.
+uniform float outline_px = 0.0;
 uniform vec4 outline_color : source_color = vec4(1.0, 0.84, 0.58, 0.8);
 
 float hash1(float n) { return fract(sin(n) * 43758.5453); }
@@ -49,7 +50,7 @@ void fragment() {
 	// Outside the silhouette: either the outline ring, or nothing.
 	float outline = 0.0;
 	if (src.a < 0.004) {
-		if (mode != 0 || outline_px <= 0.0) {
+		if (outline_px <= 0.0) {
 			discard;
 		}
 		float near = 0.0;

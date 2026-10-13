@@ -78,13 +78,23 @@ public static class LastLightSkin
 		if (c is ColorRect rect && rect.Material == null)
 			rect.Color = IsDark(rect.Color) ? Background(rect.Color) : Accent(rect.Color, 0.85f, 0.45f);
 
-		if (c is Label or Button && !c.HasThemeFontOverride("font"))
-			foreach (var name in FontSizeNames)
-				if (c.HasThemeFontSizeOverride(name) && c.GetThemeFontSize(name) >= 18)
-				{
-					c.AddThemeFontOverride("font", LastLightHud.Serif);
-					break;
-				}
+		if (c is Label or Button)
+		{
+			if (!c.HasThemeFontOverride("font"))
+			{
+				foreach (var name in FontSizeNames)
+					if (c.HasThemeFontSizeOverride(name) && c.GetThemeFontSize(name) >= 18)
+					{
+						c.AddThemeFontOverride("font", LastLightHud.Serif);
+						break;
+					}
+			}
+			// Older screens set plain (light, spindly) Cinzel directly; use the heavy cut instead.
+			else if (c.GetThemeFont("font") is FontFile { ResourcePath: var path } && path == AssetConstants.CinzelFontPath)
+			{
+				c.AddThemeFontOverride("font", LastLightHud.Serif);
+			}
+		}
 
 		if (c is TextureRect tr && tr.Material == null && tr.Texture is { } tex)
 		{

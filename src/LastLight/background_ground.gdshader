@@ -8,6 +8,10 @@ uniform vec4 ground_far : source_color = vec4(0.19, 0.185, 0.175, 1.0);
 uniform vec4 ground_near : source_color = vec4(0.065, 0.06, 0.056, 1.0);
 uniform vec4 fog_color : source_color = vec4(0.3, 0.3, 0.29, 1.0);
 
+// Stars in the sky (0 = none). Used by the Sanctum of Stars.
+uniform float stars = 0.0;
+uniform vec4 star_color : source_color = vec4(0.85, 0.9, 1.0, 1.0);
+
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float noise(vec2 p) {
 	vec2 i = floor(p);
@@ -33,6 +37,14 @@ void fragment() {
 	if (uv.y < horizon) {
 		float t = uv.y / horizon;
 		col = mix(sky_top.rgb, sky_low.rgb, t * t);
+		if (stars > 0.0) {
+			vec2 g = uv * vec2(260.0, 160.0);
+			vec2 cell = floor(g);
+			float h = hash(cell);
+			float tw = 0.6 + 0.4 * sin(TIME * (1.0 + h * 3.0) + h * 40.0);
+			float star = step(1.0 - stars, h) * (1.0 - smoothstep(0.05, 0.3, length(fract(g) - 0.5)));
+			col += star_color.rgb * star * tw * (1.0 - t * 0.7);
+		}
 	} else {
 		float g = (uv.y - horizon) / (1.0 - horizon);
 		col = mix(ground_far.rgb, ground_near.rgb, pow(g, 0.7));

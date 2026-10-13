@@ -92,12 +92,7 @@ public partial class World : Node2D
 			fctManager.Register(b);
 
 		// ── Last Light art direction ──────────────────────────────────────────
-		LastLightStyle.Apply(
-			new[] { player, templar, assassin, wizard },
-			bossCharacters,
-			dungeon.BossScenePaths[bossIndex],
-			dungeon,
-			bgRect);
+		LastLightStyle.ApplyArena(dungeon, bgRect);
 
 		// Register boss character refs for hover-targeting and health bar management.
 		ui.SetBossCharacters(

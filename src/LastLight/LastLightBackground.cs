@@ -17,12 +17,64 @@ public partial class LastLightBackground : Control
 		AncientKeep,
 
 		/// <summary>Menu / overworld: a ring of broken standing stones around the light.</summary>
-		Sanctuary
+		Sanctuary,
+
+		/// <summary>Rusted fortress, smokestacks and a fallen gear under an amber haze; embers rise.</summary>
+		ForsakenCitadel,
+
+		/// <summary>A cathedral facade with dull red windows, spires and torn banners; red haze.</summary>
+		CastleOfBlood,
+
+		/// <summary>A starry sky, floating rock islands, a broken orrery ring and obelisks.</summary>
+		SanctumOfStars,
+
+		/// <summary>Jagged peaks, falling snow, a pale floor and the frost ring of the arena.</summary>
+		FrozenPeak
 	}
 
 	public Preset BackgroundPreset = Preset.AncientKeep;
 
-	float Horizon => BackgroundPreset == Preset.Sanctuary ? 0.42f : 0.2f;
+	/// <summary>Everything that gives a backdrop its mood, besides its silhouettes.</summary>
+	sealed record Palette(
+		float Horizon,
+		Color SkyTop, Color SkyLow, Color GroundFar, Color GroundNear, Color Fog,
+		Color Far, Color Mid, Color Near,
+		Color Speck, float SpeckSpeed, float SpeckDensity, float SpeckSize, float SpeckStrength,
+		float Stars = 0f);
+
+	static readonly Palette Neutral = new(0.2f,
+		new(0.10f, 0.10f, 0.105f), new(0.28f, 0.275f, 0.265f), new(0.19f, 0.185f, 0.175f), new(0.065f, 0.06f, 0.056f),
+		new(0.3f, 0.3f, 0.29f),
+		new(0.15f, 0.148f, 0.142f, 0.9f), new(0.085f, 0.08f, 0.076f), new(0.025f, 0.022f, 0.02f),
+		new(0.5f, 0.48f, 0.45f), 1.6f, 0.012f, 1f, 0.3f);
+
+	Palette Mood => BackgroundPreset switch
+	{
+		Preset.Sanctuary => Neutral with { Horizon = 0.42f },
+		Preset.ForsakenCitadel => new Palette(0.22f,
+			new(0.09f, 0.07f, 0.05f), new(0.34f, 0.25f, 0.14f), new(0.2f, 0.16f, 0.11f), new(0.07f, 0.055f, 0.04f),
+			new(0.36f, 0.27f, 0.15f),
+			new(0.17f, 0.13f, 0.09f, 0.92f), new(0.09f, 0.07f, 0.05f), new(0.03f, 0.022f, 0.016f),
+			new(1f, 0.5f, 0.2f), 2.2f, 0.01f, 1.1f, 0.45f),
+		Preset.CastleOfBlood => new Palette(0.24f,
+			new(0.07f, 0.02f, 0.03f), new(0.28f, 0.07f, 0.07f), new(0.17f, 0.08f, 0.08f), new(0.06f, 0.025f, 0.025f),
+			new(0.35f, 0.09f, 0.08f),
+			new(0.15f, 0.06f, 0.06f, 0.92f), new(0.08f, 0.03f, 0.03f), new(0.025f, 0.01f, 0.01f),
+			new(0.6f, 0.14f, 0.1f), 0.9f, 0.012f, 1f, 0.35f),
+		Preset.SanctumOfStars => new Palette(0.3f,
+			new(0.015f, 0.015f, 0.03f), new(0.08f, 0.07f, 0.13f), new(0.1f, 0.09f, 0.15f), new(0.03f, 0.03f, 0.05f),
+			new(0.14f, 0.12f, 0.24f),
+			new(0.09f, 0.08f, 0.14f, 0.92f), new(0.05f, 0.045f, 0.08f), new(0.015f, 0.014f, 0.025f),
+			new(0.6f, 0.66f, 1f), 0.7f, 0.01f, 0.8f, 0.4f, Stars: 0.006f),
+		Preset.FrozenPeak => new Palette(0.2f,
+			new(0.12f, 0.14f, 0.18f), new(0.42f, 0.46f, 0.52f), new(0.42f, 0.45f, 0.5f), new(0.2f, 0.22f, 0.26f),
+			new(0.5f, 0.55f, 0.6f),
+			new(0.26f, 0.3f, 0.36f, 0.92f), new(0.13f, 0.15f, 0.19f), new(0.04f, 0.045f, 0.06f),
+			new(0.92f, 0.96f, 1f), -2.4f, 0.03f, 1.3f, 0.45f),
+		_ => Neutral
+	};
+
+	float Horizon => Mood.Horizon;
 
 	delegate void ShapeFn(Color c, params float[] xy);
 
@@ -37,7 +89,14 @@ public partial class LastLightBackground : Control
 		MouseFilter = MouseFilterEnum.Ignore;
 
 		var groundMat = new ShaderMaterial { Shader = GD.Load<Shader>("res://src/LastLight/background_ground.gdshader") };
-		groundMat.SetShaderParameter("horizon", Horizon);
+		var mood = Mood;
+		groundMat.SetShaderParameter("horizon", mood.Horizon);
+		groundMat.SetShaderParameter("sky_top", mood.SkyTop);
+		groundMat.SetShaderParameter("sky_low", mood.SkyLow);
+		groundMat.SetShaderParameter("ground_far", mood.GroundFar);
+		groundMat.SetShaderParameter("ground_near", mood.GroundNear);
+		groundMat.SetShaderParameter("fog_color", mood.Fog);
+		groundMat.SetShaderParameter("stars", mood.Stars);
 		_ground = FullRect(groundMat);
 
 		_ruins = new Control { MouseFilter = MouseFilterEnum.Ignore };
@@ -47,6 +106,11 @@ public partial class LastLightBackground : Control
 		AddChild(_ruins);
 
 		_lightMat = new ShaderMaterial { Shader = GD.Load<Shader>("res://src/LastLight/background_light.gdshader") };
+		_lightMat.SetShaderParameter("speck_color", mood.Speck);
+		_lightMat.SetShaderParameter("speck_speed", mood.SpeckSpeed);
+		_lightMat.SetShaderParameter("speck_density", mood.SpeckDensity);
+		_lightMat.SetShaderParameter("speck_size", mood.SpeckSize);
+		_lightMat.SetShaderParameter("speck_strength", mood.SpeckStrength);
 		_light = FullRect(_lightMat);
 	}
 
@@ -83,9 +147,10 @@ public partial class LastLightBackground : Control
 	void DrawRuins()
 	{
 		var s = _ruins.Size;
-		var far = new Color(0.15f, 0.148f, 0.142f, 0.9f);
-		var mid = new Color(0.085f, 0.08f, 0.076f, 1f);
-		var near = new Color(0.025f, 0.022f, 0.02f, 1f);
+		var mood = Mood;
+		var far = mood.Far;
+		var mid = mood.Mid;
+		var near = mood.Near;
 
 		// Coordinates are in units of screen height (x from the left edge), so
 		// shapes keep their proportions on any aspect ratio.
@@ -99,10 +164,30 @@ public partial class LastLightBackground : Control
 		var h = Horizon;
 		var w = s.X / s.Y; // screen width in screen-height units
 
-		if (BackgroundPreset == Preset.Sanctuary)
+		void Line(Color c, float width, Vector2[] pts)
 		{
-			DrawSanctuary(Shape, w, h, far, mid, near);
-			return;
+			var scaled = new Vector2[pts.Length];
+			for (var i = 0; i < pts.Length; i++) scaled[i] = pts[i] * s.Y;
+			_ruins.DrawPolyline(scaled, c, width, true);
+		}
+
+		switch (BackgroundPreset)
+		{
+			case Preset.Sanctuary:
+				DrawSanctuary(Shape, w, h, far, mid, near);
+				return;
+			case Preset.ForsakenCitadel:
+				DrawCitadel(Shape, w, h, far, mid, near);
+				return;
+			case Preset.CastleOfBlood:
+				DrawCastle(Shape, w, h, far, mid, near);
+				return;
+			case Preset.SanctumOfStars:
+				DrawSanctum(Shape, Line, w, h, far, mid, near);
+				return;
+			case Preset.FrozenPeak:
+				DrawFrozen(Shape, Line, w, h, far, mid, near);
+				return;
 		}
 
 		// ── distant keep along the horizon ──
@@ -179,5 +264,160 @@ public partial class LastLightBackground : Control
 		Stone(near, w * 0.95f, 1.02f, 0.12f, 0.42f, -0.03f);
 		shape(near, 0, 1, w * 0.2f, 1, w * 0.14f, 0.96f, w * 0.05f, 0.94f, 0, 0.93f);
 		shape(near, w, 1, w * 0.78f, 1, w * 0.86f, 0.965f, w * 0.95f, 0.95f, w, 0.92f);
+	}
+
+	// ── per-dungeon skylines ────────────────────────────────────────────────
+
+	/// <summary>A closed ellipse as points (screen-height units).</summary>
+	static Vector2[] Ellipse(float cx, float cy, float rx, float ry, int n = 64)
+	{
+		var pts = new Vector2[n + 1];
+		for (var i = 0; i <= n; i++)
+		{
+			var a = Mathf.Tau * i / n;
+			pts[i] = new Vector2(cx + Mathf.Cos(a) * rx, cy + Mathf.Sin(a) * ry);
+		}
+		return pts;
+	}
+
+	/// <summary>Points → flat xy array for filled shapes; drops a closing duplicate of the first point.</summary>
+	static float[] Flatten(Vector2[] pts)
+	{
+		var n = pts.Length > 2 && pts[^1].IsEqualApprox(pts[0]) ? pts.Length - 1 : pts.Length;
+		var xy = new float[n * 2];
+		for (var i = 0; i < n; i++) { xy[i * 2] = pts[i].X; xy[i * 2 + 1] = pts[i].Y; }
+		return xy;
+	}
+
+	static void DrawCitadel(ShapeFn shape, float w, float h, Color far, Color mid, Color near)
+	{
+		// crenellated fortress wall along the horizon, with towers
+		var wall = new System.Collections.Generic.List<float> { 0, h };
+		for (var x = 0f; x < w; x += 0.06f)
+			wall.AddRange(new[] { x, h - 0.07f, x + 0.03f, h - 0.07f, x + 0.03f, h - 0.085f, x + 0.06f, h - 0.085f });
+		wall.AddRange(new[] { w, h - 0.07f, w, h });
+		shape(far, wall.ToArray());
+		shape(far, w * 0.18f, h, w * 0.18f, h - 0.17f, w * 0.2f, h - 0.19f, w * 0.22f, h - 0.17f, w * 0.22f, h);
+		shape(far, w * 0.66f, h, w * 0.66f, h - 0.2f, w * 0.69f, h - 0.2f, w * 0.69f, h);
+		// smokestacks
+		shape(mid, w * 0.36f, h + 0.01f, w * 0.365f, h - 0.2f, w * 0.385f, h - 0.2f, w * 0.39f, h + 0.01f);
+		shape(mid, w * 0.43f, h + 0.01f, w * 0.433f, h - 0.15f, w * 0.448f, h - 0.15f, w * 0.452f, h + 0.01f);
+		// a giant broken gear, half sunk into the floor
+		var gx = w * 0.78f;
+		var gy = h + 0.06f;
+		var gear = new System.Collections.Generic.List<float>();
+		for (var i = 0; i <= 20; i++)
+		{
+			var a = Mathf.Pi + Mathf.Pi * i / 20f; // upper half only
+			var r = i % 2 == 0 ? 0.16f : 0.135f;
+			gear.Add(gx + Mathf.Cos(a) * r);
+			gear.Add(gy + Mathf.Sin(a) * r);
+		}
+		shape(mid, gear.ToArray());
+		shape(near, Flatten(Ellipse(gx, gy - 0.02f, 0.045f, 0.045f, 12)));
+		// iron girders framing the arena
+		shape(near, 0, 1, 0, 0.1f, 0.05f, 0.1f, 0.12f, 1);
+		shape(near, 0, 0.3f, 0.2f, 0.08f, 0.21f, 0.11f, 0, 0.34f);
+		shape(near, w, 1, w, 0.15f, w - 0.05f, 0.15f, w - 0.13f, 1);
+		shape(near, 0, 1, 0.22f, 1, 0.16f, 0.95f, 0, 0.92f);
+		shape(near, w, 1, w - 0.24f, 1, w - 0.17f, 0.955f, w, 0.93f);
+	}
+
+	static void DrawCastle(ShapeFn shape, float w, float h, Color far, Color mid, Color near)
+	{
+		var glow = new Color(0.4f, 0.06f, 0.05f);
+		// distant spires
+		for (var i = 0; i < 7; i++)
+		{
+			var x = w * (0.06f + i * 0.15f);
+			var top = h - 0.12f - (i % 3) * 0.05f;
+			shape(far, x - 0.015f, h, x - 0.015f, top + 0.05f, x, top, x + 0.015f, top + 0.05f, x + 0.015f, h);
+		}
+		// the cathedral facade, centred
+		var cx = w * 0.5f;
+		shape(mid, cx - 0.2f, h + 0.02f, cx - 0.2f, h - 0.12f, cx - 0.12f, h - 0.16f, cx - 0.08f, h - 0.2f,
+			cx, h - 0.27f, cx + 0.08f, h - 0.2f, cx + 0.12f, h - 0.16f, cx + 0.2f, h - 0.12f, cx + 0.2f, h + 0.02f);
+		shape(mid, cx - 0.2f, h - 0.1f, cx - 0.19f, h - 0.3f, cx - 0.17f, h - 0.36f, cx - 0.15f, h - 0.3f, cx - 0.14f, h - 0.1f);
+		shape(mid, cx + 0.14f, h - 0.1f, cx + 0.15f, h - 0.3f, cx + 0.17f, h - 0.36f, cx + 0.19f, h - 0.3f, cx + 0.2f, h - 0.1f);
+		// the rose window and lancet windows, glowing dull red
+		shape(glow, Flatten(Ellipse(cx, h - 0.15f, 0.03f, 0.03f, 16)));
+		shape(glow, cx - 0.1f, h, cx - 0.1f, h - 0.07f, cx - 0.09f, h - 0.09f, cx - 0.08f, h - 0.07f, cx - 0.08f, h);
+		shape(glow, cx + 0.08f, h, cx + 0.08f, h - 0.07f, cx + 0.09f, h - 0.09f, cx + 0.1f, h - 0.07f, cx + 0.1f, h);
+		shape(near, cx - 0.025f, h + 0.02f, cx - 0.025f, h - 0.05f, cx, h - 0.08f, cx + 0.025f, h - 0.05f, cx + 0.025f, h + 0.02f);
+		// torn banners hanging at the sides
+		shape(near, 0.06f, 0, 0.16f, 0, 0.16f, 0.55f, 0.13f, 0.5f, 0.11f, 0.58f, 0.09f, 0.5f, 0.06f, 0.55f);
+		shape(new Color(0.18f, 0.02f, 0.03f), 0.08f, 0.02f, 0.14f, 0.02f, 0.14f, 0.45f, 0.11f, 0.48f, 0.08f, 0.45f);
+		shape(near, w - 0.16f, 0, w - 0.06f, 0, w - 0.06f, 0.5f, w - 0.09f, 0.46f, w - 0.11f, 0.54f, w - 0.13f, 0.46f, w - 0.16f, 0.5f);
+		shape(new Color(0.18f, 0.02f, 0.03f), w - 0.14f, 0.02f, w - 0.08f, 0.02f, w - 0.08f, 0.41f, w - 0.11f, 0.44f, w - 0.14f, 0.41f);
+		// gothic pillars framing the arena
+		shape(near, 0, 1, 0, 0, 0.05f, 0, 0.05f, 1);
+		shape(near, w, 1, w, 0, w - 0.05f, 0, w - 0.05f, 1);
+		shape(near, 0, 1, 0.2f, 1, 0.14f, 0.95f, 0, 0.93f);
+		shape(near, w, 1, w - 0.22f, 1, w - 0.15f, 0.955f, w, 0.93f);
+	}
+
+	delegate void LineFn(Color c, float width, Vector2[] pts);
+
+	static void DrawSanctum(ShapeFn shape, LineFn line, float w, float h, Color far, Color mid, Color near)
+	{
+		// a vast broken orrery ring across the sky
+		var arc = new Vector2[40];
+		for (var i = 0; i < arc.Length; i++)
+		{
+			var a = Mathf.Pi * (1.08f + 0.7f * i / (arc.Length - 1));
+			arc[i] = new Vector2(w * 0.5f + Mathf.Cos(a) * w * 0.42f, h + 0.2f + Mathf.Sin(a) * 0.42f);
+		}
+		line(new Color(0.42f, 0.44f, 0.62f, 0.35f), 3f, arc);
+		// floating islands: flat tops, jagged undersides
+		void Island(float x, float y, float r)
+		{
+			shape(far, x - r, y, x - r * 0.6f, y - r * 0.12f, x + r * 0.5f, y - r * 0.1f, x + r, y,
+				x + r * 0.6f, y + r * 0.35f, x + r * 0.2f, y + r * 0.9f, x - r * 0.2f, y + r * 0.5f, x - r * 0.6f, y + r * 0.3f);
+		}
+		Island(w * 0.18f, h - 0.16f, 0.08f);
+		Island(w * 0.62f, h - 0.22f, 0.06f);
+		Island(w * 0.84f, h - 0.12f, 0.1f);
+		// a ruined arch on the largest island
+		shape(far, w * 0.84f - 0.03f, h - 0.13f, w * 0.84f - 0.03f, h - 0.19f, w * 0.84f, h - 0.21f, w * 0.84f + 0.03f, h - 0.19f,
+			w * 0.84f + 0.03f, h - 0.13f, w * 0.84f + 0.015f, h - 0.13f, w * 0.84f + 0.015f, h - 0.175f, w * 0.84f - 0.015f, h - 0.175f,
+			w * 0.84f - 0.015f, h - 0.13f);
+		// leaning obelisks
+		shape(mid, w * 0.3f, h + 0.04f, w * 0.31f, h - 0.14f, w * 0.318f, h - 0.16f, w * 0.326f, h - 0.14f, w * 0.334f, h + 0.04f);
+		shape(mid, w * 0.7f, h + 0.05f, w * 0.716f, h - 0.1f, w * 0.722f, h - 0.11f, w * 0.73f, h - 0.1f, w * 0.732f, h + 0.05f);
+		// monolith fragments framing the arena
+		shape(near, 0, 1, 0, 0.2f, 0.08f, 0.24f, 0.1f, 0.7f, 0.06f, 1);
+		shape(near, w, 1, w, 0.3f, w - 0.07f, 0.28f, w - 0.1f, 0.75f, w - 0.05f, 1);
+	}
+
+	static void DrawFrozen(ShapeFn shape, LineFn line, float w, float h, Color far, Color mid, Color near)
+	{
+		// jagged peaks along the horizon, one great peak behind the arena
+		shape(far, 0, h, 0, h - 0.08f, w * 0.08f, h - 0.15f, w * 0.14f, h - 0.07f, w * 0.22f, h - 0.13f, w * 0.3f, h - 0.05f,
+			w * 0.42f, h - 0.16f, w * 0.5f, h - 0.3f, w * 0.58f, h - 0.17f, w * 0.68f, h - 0.1f, w * 0.76f, h - 0.17f,
+			w * 0.86f, h - 0.06f, w * 0.94f, h - 0.12f, w, h - 0.07f, w, h);
+		shape(new Color(0.75f, 0.82f, 0.9f, 0.55f), w * 0.475f, h - 0.25f, w * 0.5f, h - 0.3f, w * 0.525f, h - 0.25f, w * 0.51f, h - 0.26f, w * 0.495f, h - 0.24f);
+
+		// the arena: a frozen lake inside a frost ring (matches the physics boundary)
+		var cx = w * 0.5f;
+		var cy = 0.64f;
+		var rx = w * 0.36f;
+		const float ry = 0.3f;
+		shape(new Color(0.55f, 0.66f, 0.78f, 0.12f), Flatten(Ellipse(cx, cy, rx, ry)));
+		line(new Color(0.85f, 0.93f, 1f, 0.45f), 4f, Ellipse(cx, cy, rx, ry));
+		line(new Color(0.85f, 0.93f, 1f, 0.15f), 10f, Ellipse(cx, cy, rx + 0.005f, ry + 0.004f));
+		// ice shards jutting outward from the ring
+		for (var i = 0; i < 18; i++)
+		{
+			var a = Mathf.Tau * i / 18f + 0.12f;
+			var dir = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+			var basePt = new Vector2(cx + dir.X * rx, cy + dir.Y * ry);
+			var len = 0.035f + (i % 3) * 0.015f;
+			var tip = basePt + dir * len;
+			var side = new Vector2(-dir.Y, dir.X) * 0.008f;
+			shape(new Color(0.7f, 0.8f, 0.9f, 0.5f), (basePt - side).X, (basePt - side).Y, tip.X, tip.Y, (basePt + side).X, (basePt + side).Y);
+		}
+		// snow-heavy rocks framing the arena
+		shape(near, 0, 1, 0, 0.35f, 0.06f, 0.3f, 0.12f, 0.55f, 0.1f, 0.8f, 0.16f, 1);
+		shape(near, w, 1, w, 0.4f, w - 0.07f, 0.36f, w - 0.11f, 0.6f, w - 0.14f, 1);
 	}
 }

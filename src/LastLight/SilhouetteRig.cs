@@ -46,6 +46,7 @@ public partial class SilhouetteRig : CanvasGroup
 	Sprite2D _glow;
 
 	float _t, _seed, _facing = 1f, _move, _consumed, _deathT;
+	Vector2 _srcBaseScale = Vector2.One;
 	Vector2 _lastPos;
 	Vector2 _feetOffset;
 
@@ -73,6 +74,8 @@ public partial class SilhouetteRig : CanvasGroup
 		_t = GD.Randf() * 10f;
 		_lastPos = _owner.GlobalPosition;
 		_feetOffset = new Vector2(0f, _def.Height * _def.Scale * 0.45f);
+		// Some enemies pulse their sprite's scale; the rig follows relative to this.
+		if (_src != null) _srcBaseScale = _src.Scale.Abs();
 
 		FitMargin = 6f;
 		ClearMargin = 6f;
@@ -84,15 +87,16 @@ public partial class SilhouetteRig : CanvasGroup
 		BuildJoints();
 		BuildPolygons();
 
-		// Darkness is drawn behind the party so the people you are healing stay readable.
+		// Darkness is drawn behind the party so the people you are healing stay readable
+		// (unless it is wrapped around them, like vines).
 		if (_def.Mode == RigMode.Darkness)
-			ZIndex = -1;
+			ZIndex = _def.InFront ? 1 : -1;
 
 		if (_def.Pool != Vector2.Zero)
 		{
 			_pool = new Polygon2D
 			{
-				Color = new Color(0.012f, 0.01f, 0.01f, 0.94f),
+				Color = _def.Hover ? new Color(_def.PoolColor, _def.PoolColor.A * 0.45f) : _def.PoolColor,
 				ZIndex = -2,
 				Antialiased = true
 			};
@@ -184,6 +188,11 @@ public partial class SilhouetteRig : CanvasGroup
 			// old sprite again; the hidden sprite never needs a material.
 			if (_src.Material != null) _src.Material = null;
 			if (_deathT <= 0f) Modulate = _src.Modulate;
+
+			// Follow the sprite's visibility (e.g. the Countess vanishing among her clones).
+			Visible = _src.Visible;
+			if (_pool != null) _pool.Visible = _src.Visible;
+			if (_glow != null) _glow.Visible = _src.Visible;
 		}
 
 		Position = _feetOffset + (_src?.Position ?? Vector2.Zero);
@@ -214,14 +223,15 @@ public partial class SilhouetteRig : CanvasGroup
 		_facing = Mathf.MoveToward(_facing, target, dt * 9f);
 		// Never collapse to zero width mid-turn.
 		var fx = Mathf.Abs(_facing) < 0.15f ? 0.15f * Mathf.Sign(target) : _facing;
-		Scale = new Vector2(_def.Scale * fx, _def.Scale);
+		var pulse = _src != null && _srcBaseScale.X > 0f ? Mathf.Abs(_src.Scale.X) / _srcBaseScale.X : 1f;
+		Scale = new Vector2(_def.Scale * fx, _def.Scale) * pulse;
 	}
 
 	void UpdateMovement(float dt)
 	{
 		var speed = (_owner.GlobalPosition - _lastPos).Length() / Mathf.Max(dt, 0.0001f);
 		_lastPos = _owner.GlobalPosition;
-		var target = speed > 6f || (_src?.Animation == "walk") ? 1f : 0f;
+		var target = speed > 6f || PoseFor(_src?.Animation.ToString() ?? "") == "move" ? 1f : 0f;
 		_move = Mathf.MoveToward(_move, target, dt * 5f);
 	}
 
@@ -260,13 +270,20 @@ public partial class SilhouetteRig : CanvasGroup
 		if (head != null) head.RotTarget = 0.04f * Mathf.Sin(_t * 1.3f + 1f);
 		if (arm != null) arm.RotTarget = 0.05f * Mathf.Sin(_t * 1.5f + 2f);
 		if (off != null) off.RotTarget = 0.06f * Mathf.Sin(_t * 1.4f + 3f);
-		// any extra joint (scarf, hat tip, shards, burden, lantern) sways on its own
+		// any extra joint (scarf, hat tip, shards, burden, lantern) sways on its own;
+		// wings beat
 		for (var i = 1; i < _joints.Count; i++)
 		{
 			var n = _joints[i].Def.Name;
 			if (n is "body" or "head" or "arm" or "off") continue;
-			_joints[i].RotTarget = 0.07f * Mathf.Sin(_t * (1.6f + i * 0.37f) + i * 1.3f + _seed);
+			_joints[i].RotTarget = n.StartsWith("wing")
+				? 0.32f * Mathf.Sin(_t * 6.5f + i * 0.6f)
+				: 0.07f * Mathf.Sin(_t * (1.6f + i * 0.37f) + i * 1.3f + _seed);
 		}
+
+		// ── hover ──
+		if (_def.Hover && IsAlive)
+			root.OffsetTarget.Y += -_def.HoverHeight + Mathf.Sin(_t * 2.2f + _seed) * 6f;
 
 		// ── move ──
 		root.OffsetTarget.Y = -Mathf.Abs(Mathf.Sin(_t * 9f)) * 5f * _move;
@@ -274,9 +291,10 @@ public partial class SilhouetteRig : CanvasGroup
 
 		// ── attack / cast, timed by the hidden sprite ──
 		var anim = _src?.Animation.ToString() ?? "idle";
+		var pose = PoseFor(anim);
 		var p = AnimProgress();
 
-		if (anim is "attack" or "cleave")
+		if (pose == "attack")
 		{
 			var wind = Smooth(0f, 0.35f, p);
 			var strike = Smooth(0.35f, 0.55f, p);
@@ -286,7 +304,7 @@ public partial class SilhouetteRig : CanvasGroup
 			if (body != null) body.RotTarget += -0.1f * wind * (1f - strike) + 0.16f * strike * (1f - recover);
 			root.OffsetTarget.X += _def.Lunge * strike * (1f - recover);
 		}
-		else if (anim is "cast" or "spell")
+		else if (pose == "cast")
 		{
 			var raise = Smooth(0f, 0.3f, p);
 			if (arm != null) arm.RotTarget += -_def.CastRaise * raise;
@@ -394,6 +412,15 @@ public partial class SilhouetteRig : CanvasGroup
 		_mat.SetShaderParameter("consumed", _consumed);
 		_mat.SetShaderParameter("light_uv", LastLightStyle.LightUv);
 		_mat.SetShaderParameter("light_radius", 0.85f * Mathf.Clamp(LastLightStyle.LightStrength, 0.2f, 1.3f));
+
+		// Party: always outlined. Darkness: outlined in gold only while highlighted
+		// (code that highlights a sprite brightens its modulate above 1).
+		var highlighted = _src != null && (_src.Modulate.R > 1.05f || _src.Modulate.G > 1.05f);
+		var outline = _def.Mode == RigMode.Party ? 2f : highlighted ? 2.5f : 0f;
+		_mat.SetShaderParameter("outline_px", outline);
+		_mat.SetShaderParameter("outline_color", _def.Mode == RigMode.Party
+			? new Color(1f, 0.84f, 0.58f, 0.8f)
+			: new Color(1f, 0.8f, 0.35f, 0.95f));
 	}
 
 	// ── helpers ──────────────────────────────────────────────────────────────
@@ -403,6 +430,20 @@ public partial class SilhouetteRig : CanvasGroup
 	{
 		var j = Get(_def.LightJoint) ?? _joints[0];
 		return Transform * (j.Xf * _def.LightOffset);
+	}
+
+	/// <summary>Maps a sprite animation name to a pose: "attack", "cast", "move" or "idle".</summary>
+	string PoseFor(string anim)
+	{
+		if (_def.AnimAliases.TryGetValue(anim, out var alias)) return alias;
+		return anim switch
+		{
+			"attack" or "cleave" or "land" => "attack",
+			"cast" or "spell" or "casting" or "beam" or "shield" or "shielded" or "ice_block"
+				or "jump" or "jump_hang" => "cast",
+			"walk" or "run" or "charge" => "move",
+			_ => "idle"
+		};
 	}
 
 	JointState Get(string name) =>

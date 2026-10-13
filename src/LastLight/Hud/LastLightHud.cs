@@ -27,9 +27,16 @@ public static class LastLightHud
 	public static readonly Color ShieldGlass = new(0.82f, 0.88f, 0.95f, 0.38f);
 	public static readonly Color VoidAbsorb = new(0.2f, 0.06f, 0.28f, 0.7f);
 
-	static Font _serif;
+	/// <summary>Below this size, text uses the sturdy sans instead of Cinzel.</summary>
+	public const int SerifMinSize = 15;
 
-	/// <summary>Cinzel, slightly heavier than its default weight.</summary>
+	static Font _serif;
+	static Font _sans;
+
+	/// <summary>
+	/// Cinzel at a heavy weight. It is a display face and gets spindly when light or
+	/// small, so it is reserved for names and titles at <see cref="SerifMinSize"/> and up.
+	/// </summary>
 	public static Font Serif
 	{
 		get
@@ -37,11 +44,19 @@ public static class LastLightHud
 			if (_serif != null) return _serif;
 			var file = GD.Load<FontFile>(AssetConstants.CinzelFontPath);
 			var variation = new FontVariation { BaseFont = file };
-			variation.VariationOpentype = new Godot.Collections.Dictionary { { "wght", 650 } };
+			// Axis keys must be numeric OpenType tags; a plain "wght" string is ignored.
+			var weight = TextServerManager.GetPrimaryInterface().NameToTag("wght");
+			variation.VariationOpentype = new Godot.Collections.Dictionary { { weight, 820 } };
 			_serif = variation;
 			return _serif;
 		}
 	}
+
+	/// <summary>The engine's default sans, emboldened, for small text such as numbers and labels.</summary>
+	public static Font Sans => _sans ??= new FontVariation { BaseFont = ThemeDB.FallbackFont, VariationEmbolden = 0.55f };
+
+	/// <summary>The right face for a size: heavy Cinzel for names and titles, bold sans for small text.</summary>
+	public static Font FontFor(int size) => size >= SerifMinSize ? Serif : Sans;
 
 	static ShaderMaterial _iconMaterial;
 
@@ -69,14 +84,14 @@ public static class LastLightHud
 	/// <summary>Applies the serif font, colour and a soft black shadow to a label.</summary>
 	public static void Style(Label label, int size, Color? color = null)
 	{
-		label.AddThemeFontOverride("font", Serif);
+		label.AddThemeFontOverride("font", FontFor(size));
 		label.AddThemeFontSizeOverride("font_size", size);
 		label.AddThemeColorOverride("font_color", color ?? Text);
 		label.AddThemeColorOverride("font_shadow_color", new Color(0, 0, 0, 0.9f));
 		label.AddThemeConstantOverride("shadow_offset_x", 1);
 		label.AddThemeConstantOverride("shadow_offset_y", 1);
-		label.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.85f));
-		label.AddThemeConstantOverride("outline_size", 3);
+		label.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
+		label.AddThemeConstantOverride("outline_size", size < SerifMinSize ? 4 : 5);
 	}
 }
 

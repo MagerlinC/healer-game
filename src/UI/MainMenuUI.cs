@@ -79,7 +79,9 @@ public partial class MainMenuUI : Node2D
 		LoadKeybinds();
 		LoadDisplaySettings();
 		LoadAudioSettings();
-		MenuFont = GD.Load<Font>(AssetConstants.CinzelFontPath);
+		MenuFont = LastLightStyle.Enabled
+			? healerfantasy.LastLight.Hud.LastLightHud.Serif
+			: GD.Load<Font>(AssetConstants.CinzelFontPath);
 
 		var canvas = new CanvasLayer();
 		AddChild(canvas);

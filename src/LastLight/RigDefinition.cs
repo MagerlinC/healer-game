@@ -58,6 +58,22 @@ public sealed class RigDefinition
 	/// <summary>Darkness rigs: size of the ragged pool under the feet (design units). Zero = none.</summary>
 	public Vector2 Pool = Vector2.Zero;
 
+	/// <summary>Colour of the pool; dungeons tint their darkness (blood, rust, frost).</summary>
+	public Color PoolColor = new(0.012f, 0.01f, 0.01f, 0.94f);
+
+	/// <summary>Flying: the figure floats above its pool, which becomes a faint shadow.</summary>
+	public bool Hover;
+	public float HoverHeight = 40f;
+
+	/// <summary>Draw in front of the party instead of behind (e.g. vines wrapping an ally).</summary>
+	public bool InFront;
+
+	/// <summary>
+	/// Per-rig overrides for how sprite animation names map to poses
+	/// ("attack", "cast", "move", "idle"). Unlisted names use the shared defaults.
+	/// </summary>
+	public Dictionary<string, string> AnimAliases = new();
+
 	/// <summary>Joint the healer's light is emitted from.</summary>
 	public string LightJoint = "";
 
@@ -135,6 +151,23 @@ public sealed class RigDefinition
 			pts[n * 2 - 1 - i] = right[i];
 		}
 		return pts;
+	}
+
+	/// <summary>
+	/// Scatters small glowing dots (stars, embers, frost) inside a rectangle.
+	/// Deterministic per seed.
+	/// </summary>
+	public RigDefinition Specks(string joint, Color color, float x0, float y0, float x1, float y1,
+		int count, int seed, float size = 1.6f, int z = 0)
+	{
+		var rng = new RandomNumberGenerator { Seed = (ulong)seed };
+		for (var i = 0; i < count; i++)
+		{
+			var r = size * rng.RandfRange(0.6f, 1.4f);
+			Parts.Add(new RigPart(joint, color,
+				Circle(rng.RandfRange(x0, x1), rng.RandfRange(y0, y1), r, 6), z));
+		}
+		return this;
 	}
 
 	/// <summary>Greyscale albedo for party rigs.</summary>

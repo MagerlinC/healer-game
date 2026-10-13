@@ -24,12 +24,14 @@ public partial class LastLightPreview : Node
 	{
 		var boss = 0;
 		var scene = "fight";
+		var dungeon = 0;
 		var outPrefix = OS.GetUserDataDir() + "/last-light";
 		foreach (var arg in OS.GetCmdlineUserArgs())
 		{
 			if (arg.StartsWith("--boss=")) boss = int.Parse(arg.Substring(7));
 			if (arg.StartsWith("--out=")) outPrefix = arg.Substring(6);
 			if (arg.StartsWith("--scene=")) scene = arg.Substring(8);
+			if (arg.StartsWith("--dungeon=")) dungeon = int.Parse(arg.Substring(10));
 			if (arg.StartsWith("--do=")) Actions = arg.Substring(5).Split(',');
 			if (arg.StartsWith("--crop="))
 			{
@@ -46,7 +48,7 @@ public partial class LastLightPreview : Node
 			"map" => "res://levels/MapScreen.tscn",
 			_ => "res://levels/World.tscn"
 		};
-		if (scene == "fight") RunState.Instance.SetupDevTestFight(DungeonDefinition.All[0], boss);
+		if (scene == "fight") RunState.Instance.SetupDevTestFight(DungeonDefinition.All[dungeon], boss);
 		else RunState.Instance.Reset();
 		// Camp and map: pretend the first dungeon is cleared so progress is visible.
 		if (scene is "camp" or "map") RunState.Instance.CompleteDungeon();

@@ -17,7 +17,7 @@ namespace healerfantasy.LastLight;
 ///   raised on cast), "off" (back arm). Extra joints sway in idle.
 /// • Higher Z draws in front.
 /// </summary>
-public static class RigLibrary
+public static partial class RigLibrary
 {
 	static readonly Color Dark = new(0.043f, 0.039f, 0.039f);
 	static readonly Color Dark2 = new(0.07f, 0.065f, 0.06f);
