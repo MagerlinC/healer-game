@@ -80,7 +80,6 @@ public static class AssetConstants
 	};
 
 	// ── Merchant assets ───────────────────────────────────────────────────────
-	public static readonly string MerchantInteractiblePath = "res://assets/characters/merchant/merchant.png";
 	public static readonly string StoneOfRebirthIconPath = "res://assets/characters/merchant/stone-of-rebirth.png";
 
 	// ── Rune assets ───────────────────────────────────────────────────────────

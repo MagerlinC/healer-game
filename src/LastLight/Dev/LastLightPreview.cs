@@ -16,7 +16,7 @@ public partial class LastLightPreview : Node
 
 	/// <summary>
 	/// UI states to trigger at t=2s (--do=a,b): settings, panel0..panelN (overlay panels),
-	/// tooltip, pause, killparty, killboss.
+	/// tooltip, pause, killparty, killboss, cast:Spell_Name, mouse:x;y.
 	/// </summary>
 	static string[] Actions = System.Array.Empty<string>();
 
@@ -92,6 +92,12 @@ public partial class LastLightPreview : Node
 				}
 				else if (action == "tooltip")
 					GameTooltip.Show("Renewing Light", "Heals the target for 40 over 12 seconds. Costs 12 mana.");
+				else if (action.StartsWith("mouse:"))
+				{
+					// mouse:x;y — moves the cursor to a screen position (e.g. to hover an interactible).
+					var xy = action.Substring(6).Split(';');
+					GetViewport().WarpMouse(new Vector2(float.Parse(xy[0]), float.Parse(xy[1])));
+				}
 				else if (action == "pause")
 					Input.ParseInputEvent(new InputEventKey { PhysicalKeycode = Key.Escape, Keycode = Key.Escape, Pressed = true });
 				else if (action.StartsWith("cast:") && scene?.GetNodeOrNull<Character>("Healer") is { } healer)

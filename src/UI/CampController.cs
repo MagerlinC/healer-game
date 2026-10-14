@@ -2,6 +2,7 @@
 using Godot;
 using healerfantasy;
 using healerfantasy.Items;
+using healerfantasy.LastLight;
 using healerfantasy.UI;
 
 /// <summary>
@@ -70,10 +71,16 @@ public partial class CampController : LoadoutController
 			AssetConstants.ArmoryInteractiblePath,
 			new Vector2(696f, FloorHeight - 205f), new Vector2(0.125f, 0.125f), 36f));
 
+		// The merchant is a rigged figure rather than a sprite: no texture, just the
+		// click area, with the rig (and its lantern) turned towards the fire and
+		// outlined on hover.
 		_merchantInteractible = AddInteractible(new InteractibleObject(
-			AssetConstants.MerchantInteractiblePath,
-			new Vector2(1300f, FloorHeight - 130f), new Vector2(0.25f, 0.25f), 36f));
+			"", new Vector2(1300f, FloorHeight - 130f), Vector2.One, 36f));
 		var merchant = _merchantInteractible;
+		var merchantVisual = CharacterVisual.Attach(merchant, new() { ["idle"] = new(1f, true) });
+		SilhouetteRig.Attach(merchant, RigLibrary.Merchant(), merchantVisual).Face(-1f);
+		merchant.MouseEntered += () => merchantVisual.Modulate = new Color(1.3f, 1.3f, 1.3f);
+		merchant.MouseExited += () => merchantVisual.Modulate = Colors.White;
 
 		// ── Player ────────────────────────────────────────────────────────────
 		SetupPlayer(660f, bgLeft, bgRight);

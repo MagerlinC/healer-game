@@ -137,6 +137,43 @@ public static partial class RigLibrary
 		.Part("arm", new Color("f2deb0"), "14,-98 50,-114 52,-106 18,-88", 1)
 		.Part("arm", new Color("ffffff"), Circle(54f, -110f, 6f, 10), 1);
 
+	/// <summary>
+	/// The camp merchant: a hunched peddler under a mountain of goods, leaning on a
+	/// stick with a small lantern of its own, which lights the figure.
+	/// </summary>
+	public static RigDefinition Merchant() => new RigDefinition
+		{
+			Id = "merchant", Mode = RigMode.Party, Height = 175f, Width = 110f, Scale = 0.38f, Breath = 0.7f,
+			LightJoint = "lantern", LightOffset = new Vector2(4f, 26f), OwnLightRadius = 0.3f
+		}
+		.Joint("body", "", 0, -40)
+		.Joint("head", "body", 24, -118)
+		.Joint("arm", "body", 28, -104)
+		.Joint("burden", "body", -30, -100)
+		.Joint("lantern", "arm", 62, -146)
+		// the pack, piled high behind
+		.Part("burden", G(0.62f), "-72,-36 -78,-116 -64,-148 -22,-154 -6,-128 -8,-40", -1)
+		.Part("burden", G(0.42f), "-76,-90 -8,-94 -8,-86 -76,-82", -1)
+		.Part("burden", G(0.5f), Circle(-40f, -162f, 15f), -2)
+		.Part("burden", G(0.5f), Circle(-62f, -158f, 11f), -2)
+		.Part("burden", G(0.55f), Thick(4f, "-58,-146 -86,-196"), -2)
+		.Part("burden", G(0.55f), "-24,-170 -6,-170 -4,-150 -26,-150", -2)
+		// hunched robe
+		.Part("body", G(1f), "-28,0 -30,-62 -22,-102 -4,-124 18,-128 34,-112 36,-78 30,-40 34,0")
+		.Part("body", G(0.7f), "-30,-60 36,-64 36,-56 -30,-52")
+		.Part("body", G(0.8f), "-22,-26 -8,-36 6,-24 -10,-12")
+		// hood, leaning forward
+		.Part("head", G(0.95f), "8,-118 12,-144 30,-158 48,-152 56,-132 48,-114 26,-108")
+		.Part("head", G(0.15f), "38,-142 52,-136 50,-122 38,-122")
+		// reaching arm and walking stick, in front
+		.Part("arm", G(0.9f), "26,-110 52,-98 54,-89 28,-98", 1)
+		.Part("arm", G(0.7f), Thick(5f, "54,-150 56,-80 58,0"), 1)
+		// lantern hanging off the stick
+		.Part("lantern", G(0.6f), Thick(1.5f, "56,-148 64,-146 66,-132"), 1)
+		.Part("lantern", G(0.75f), "58,-132 74,-132 76,-108 56,-108", 1)
+		.Part("lantern", new Color("e9b56a"), "61,-128 71,-128 72,-113 60,-113", 1)
+		.Part("lantern", G(0.75f), "60,-108 72,-108 66,-102", 1);
+
 	// ═════════════════════════════════════════════════════════════════════════
 	// THE ANCIENT KEEP — darkness
 	// ═════════════════════════════════════════════════════════════════════════

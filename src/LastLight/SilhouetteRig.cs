@@ -41,6 +41,7 @@ public partial class SilhouetteRig : CanvasGroup
 
 	Polygon2D _pool;
 	Sprite2D _glow;
+	LanternLight _lantern;
 
 	float _t, _seed, _facing = 1f, _move, _consumed, _deathT;
 	Vector2 _srcBaseScale = Vector2.One;
@@ -67,6 +68,9 @@ public partial class SilhouetteRig : CanvasGroup
 	}
 
 	bool IsAlive => _character?.IsAlive ?? true;
+
+	/// <summary>Turns the figure to face a direction (sign of <paramref name="x"/>); kept until something else turns it.</summary>
+	public void Face(float x) => _facing = x < 0f ? -1f : 1f;
 
 	public override void _Ready()
 	{
@@ -109,6 +113,11 @@ public partial class SilhouetteRig : CanvasGroup
 
 		if (_def.Mode == RigMode.Light)
 			BuildGlow();
+		else if (_def.OwnLightRadius > 0f)
+		{
+			_lantern = new LanternLight();
+			_owner.AddChild(_lantern);
+		}
 
 		Scale = new Vector2(_def.Scale, _def.Scale);
 		ApplyPose(1f);
@@ -380,6 +389,9 @@ public partial class SilhouetteRig : CanvasGroup
 			_pool.Modulate = new Color(1, 1, 1, IsAlive ? 1f : Mathf.Clamp(1f - _deathT / 2.5f, 0f, 1f));
 		}
 
+		if (_lantern != null)
+			_lantern.Position = LightPointLocal();
+
 		if (_def.Mode == RigMode.Light)
 		{
 			var light = LightPointLocal();
@@ -413,15 +425,23 @@ public partial class SilhouetteRig : CanvasGroup
 		_mat.SetShaderParameter("body_feet", feet / size);
 		_mat.SetShaderParameter("body_size", new Vector2(width / size.X, Mathf.Max(feet.Y - top.Y, 1f) / size.Y));
 		_mat.SetShaderParameter("consumed", _consumed);
-		_mat.SetShaderParameter("light_uv", LastLightStyle.LightUv);
-		_mat.SetShaderParameter("light_radius", 0.85f * Mathf.Clamp(LastLightStyle.LightStrength, 0.2f, 1.3f));
+		if (_lantern != null)
+		{
+			_mat.SetShaderParameter("light_uv", _lantern.GetGlobalTransformWithCanvas().Origin / size);
+			_mat.SetShaderParameter("light_radius", _def.OwnLightRadius);
+		}
+		else
+		{
+			_mat.SetShaderParameter("light_uv", LastLightStyle.LightUv);
+			_mat.SetShaderParameter("light_radius", 0.85f * Mathf.Clamp(LastLightStyle.LightStrength, 0.2f, 1.3f));
+		}
 
 		// Party: always outlined. Darkness: outlined in gold only while highlighted
 		// (code that highlights a sprite brightens its modulate above 1).
 		var highlighted = _src != null && (_src.Modulate.R > 1.05f || _src.Modulate.G > 1.05f);
-		var outline = _def.Mode == RigMode.Party ? 2f : highlighted ? 2.5f : 0f;
+		var outline = highlighted ? 2.5f : _def.Mode == RigMode.Party ? 2f : 0f;
 		_mat.SetShaderParameter("outline_px", outline);
-		_mat.SetShaderParameter("outline_color", _def.Mode == RigMode.Party
+		_mat.SetShaderParameter("outline_color", _def.Mode == RigMode.Party && !highlighted
 			? new Color(1f, 0.84f, 0.58f, 0.8f)
 			: new Color(1f, 0.8f, 0.35f, 0.95f));
 	}

@@ -80,6 +80,13 @@ public sealed class RigDefinition
 	/// <summary>Offset from <see cref="LightJoint"/>'s pivot to the light's centre, design units.</summary>
 	public Vector2 LightOffset = Vector2.Zero;
 
+	/// <summary>
+	/// A non-healer figure that carries its own small light (e.g. a lantern) at
+	/// <see cref="LightJoint"/>: it is lit from there instead of by the healer, and the
+	/// light holds back the dark around it. Screen-height fraction; 0 = no own light.
+	/// </summary>
+	public float OwnLightRadius;
+
 	// ── authoring helpers ────────────────────────────────────────────────────
 
 	public RigDefinition Joint(string name, string parent, float x, float y)
