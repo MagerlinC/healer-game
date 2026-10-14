@@ -1,6 +1,6 @@
 // Last Light — overlay on top of the arena backdrop.
-// Adds the healer's warm light (glow, a pool on the floor, the dashed edge of its
-// reach) and darkens everything far from it. Premultiplied blend: rgb is added,
+// Adds the healer's warm light (glow and a pool on the floor) and darkens
+// everything far from it. Premultiplied blend: rgb is added,
 // alpha is how much of the backdrop is swallowed.
 shader_type canvas_item;
 render_mode blend_premul_alpha;
@@ -36,10 +36,7 @@ void fragment() {
 
 	float glow = exp(-d * d / (2.0 * 0.06 * 0.06)) * 0.32 + exp(-d * d / (2.0 * 0.28 * 0.28)) * 0.13;
 	float pool = smoothstep(reach * 1.05, 0.0, e) * 0.22;
-	float ang = atan(f.y * 3.0, f.x);
-	float dash = step(0.45, fract(ang * 14.0 / 6.2831));
-	float ring = (1.0 - smoothstep(0.0, 0.0035, abs(e - reach))) * dash * 0.2;
-	vec3 add = warm.rgb * (glow + pool + ring) * strength;
+	vec3 add = warm.rgb * (glow + pool) * strength;
 
 	vec2 x = UV - extra_uv;
 	x.x *= aspect;
