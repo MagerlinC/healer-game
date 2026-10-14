@@ -150,7 +150,7 @@ public partial class LastLightPreview : Node
 			if (_index < _shots.Count && _t > _shots[_index])
 			{
 				// Make the healer cast for the later shots so that pose is covered too.
-				if (_index == 2 && GetTree().CurrentScene?.GetNodeOrNull<AnimatedSprite2D>("Healer/AnimatedSprite2D") is { } healer)
+				if (_index == 2 && GetTree().CurrentScene?.GetNodeOrNull<CharacterVisual>("Healer/" + CharacterVisual.NodeName) is { } healer)
 					healer.Play("cast");
 
 				var img = GetViewport().GetTexture().GetImage();

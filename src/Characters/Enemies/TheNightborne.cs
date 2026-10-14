@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 using healerfantasy.CombatLog;
 using healerfantasy.SpellResources;
@@ -32,17 +33,22 @@ using healerfantasy.SpellSystem;
 ///   snapping back to its origin. Not deflectable — the intended counter-play is
 ///   shielding or healing targets above the strike threshold before the cast
 ///   completes.
-///
-/// Animations loaded from individual PNGs extracted from the source GIFs:
-///   res://assets/enemies/the-nightborne/frames/{anim}/{anim}_{n}.png
-///   "idle"   — 9 frames,  looping
-///   "attack" — 12 frames, one-shot → idle
-///   "run"    — 6 frames,  one-shot → idle  (used as Umbral Eruption charge)
-///   "hurt"   — 5 frames,  one-shot → idle
-///   "death"  — 23 frames, one-shot, no return
 /// </summary>
 public partial class TheNightborne : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(9 / 8f, Loop: true),
+		["attack"] = new(12 / 12f),
+		["run"] = new(6 / 10f),
+		["hurt"] = new(5 / 10f),
+		["death"] = new(23 / 10f)
+	};
+
 	public TheNightborne()
 	{
 		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.SanctumOfStarsTier][0];
@@ -92,7 +98,7 @@ public partial class TheNightborne : EnemyCharacter
 	BossNightborneNightVeilSpell _nightVeilSpell;
 	BossNightborneUmbralEruptionSpell _umbralEruptionSpell;
 
-	AnimatedSprite2D _sprite;
+	CharacterVisual _visual = null!;
 	AudioStreamPlayer _riserPlayer;
 
 	enum PendingAttack
@@ -119,7 +125,6 @@ public partial class TheNightborne : EnemyCharacter
 	PendingAttack _pendingAttack;
 	Character _pendingTarget;
 
-	const string FrameBase = "res://assets/enemies/the-nightborne/frames/";
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -147,10 +152,9 @@ public partial class TheNightborne : EnemyCharacter
 		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.DeflectRiserSoundPath);
 		AddChild(_riserPlayer);
 
-		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		SetupAnimations();
-		_sprite.AnimationFinished += OnAnimationFinished;
-		_sprite.Play("idle");
+		_visual = CharacterVisual.Attach(this, Clips);
+		_visual.AnimationFinished += OnAnimationFinished;
+		_visual.Play("idle");
 		ApplyRuneModifiers();
 	}
 
@@ -219,7 +223,7 @@ public partial class TheNightborne : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.ShadowStrike;
-		_sprite.Play("attack");
+		_visual.Play("attack");
 	}
 
 	void CastVoidLance()
@@ -229,7 +233,7 @@ public partial class TheNightborne : EnemyCharacter
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.VoidLance;
 		RaiseBossSpellTargets(target.CharacterName);
-		_sprite.Play("attack");
+		_visual.Play("attack");
 	}
 
 	void CastNightVeil()
@@ -239,7 +243,7 @@ public partial class TheNightborne : EnemyCharacter
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.NightVeil;
 		RaiseBossSpellTargets(target.CharacterName);
-		_sprite.Play("attack");
+		_visual.Play("attack");
 	}
 
 	void BeginUmbralEruption()
@@ -249,7 +253,7 @@ public partial class TheNightborne : EnemyCharacter
 		ParryWindowManager.OpenWindow(_umbralEruptionSpell.Name, _umbralEruptionSpell.Icon, UmbralWindupDuration);
 		EmitSignalCastWindupStarted(_umbralEruptionSpell.Name, _umbralEruptionSpell.Icon, UmbralWindupDuration);
 		_pendingAttack = PendingAttack.None; // wind-up timer drives this, not animation finish
-		_sprite.Play("run"); // charge-up visual: the knight surges forward
+		_visual.Play("run"); // charge-up visual: the knight surges forward
 	}
 
 	void ExecuteUmbralEruption()
@@ -259,7 +263,7 @@ public partial class TheNightborne : EnemyCharacter
 		if (ParryWindowManager.ConsumeResult())
 		{
 			GD.Print("[TheNightborne] Umbral Eruption was deflected!");
-			_sprite.Play("idle");
+			_visual.Play("idle");
 			return;
 		}
 
@@ -267,7 +271,7 @@ public partial class TheNightborne : EnemyCharacter
 		if (anyTarget != null)
 			SpellPipeline.Cast(_umbralEruptionSpell, this, anyTarget);
 
-		_sprite.Play("idle");
+		_visual.Play("idle");
 	}
 
 	void OnAnimationFinished()
@@ -290,7 +294,7 @@ public partial class TheNightborne : EnemyCharacter
 
 		// Don't return to idle during the death animation or Night's Advance strikes.
 		if (IsAlive && _nightsAdvancePhase == NightsAdvancePhase.None)
-			_sprite.Play("idle");
+			_visual.Play("idle");
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
@@ -327,7 +331,7 @@ public partial class TheNightborne : EnemyCharacter
 		// Notify the UI so the cast bar is displayed (not parryable — the player
 		// counter-play is shielding or healing targets before the cast ends).
 		EmitSignalCastWindupStarted("Night's Advance", null, NightsAdvanceWindupDuration);
-		_sprite.Play("idle"); // no dedicated cast animation — boss broods in place
+		_visual.Play("idle"); // no dedicated cast animation — boss broods in place
 	}
 
 	/// <summary>Called every frame while Night's Advance is active.</summary>
@@ -368,7 +372,7 @@ public partial class TheNightborne : EnemyCharacter
 		// Teleport the boss to the target's position, slightly behind them.
 		GlobalPosition = target.GlobalPosition + new Vector2(-40f, 0f);
 		SpawnStarDust(target.GlobalPosition);
-		_sprite.Play("attack");
+		_visual.Play("attack");
 
 		if (target.IsAlive)
 		{
@@ -398,7 +402,7 @@ public partial class TheNightborne : EnemyCharacter
 		_nightsAdvanceTargets.Clear();
 		_nightsAdvancePhase = NightsAdvancePhase.None;
 		GlobalPosition = _nightsAdvanceOrigin;
-		_sprite.Play("idle");
+		_visual.Play("idle");
 		// Clear spell-target highlight; the default melee (Templar) outline resumes.
 		RaiseBossSpellTargets();
 	}
@@ -444,12 +448,6 @@ public partial class TheNightborne : EnemyCharacter
 		tween.TweenCallback(Callable.From(dust.QueueFree));
 	}
 
-	// ── animation setup ───────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Builds SpriteFrames from individual PNGs extracted from the source GIFs.
-	/// Path pattern: res://assets/enemies/the-nightborne/frames/{anim}/{anim}_{n}.png
-	/// </summary>
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
@@ -460,32 +458,4 @@ public partial class TheNightborne : EnemyCharacter
 		NightsAdvanceInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-	void SetupAnimations()
-	{
-		var frames = new SpriteFrames();
-		frames.RemoveAnimation("default");
-
-		AddAnimFromFiles(frames, "idle", 9, 8f, true);
-		AddAnimFromFiles(frames, "attack", 12, 12f, false);
-		AddAnimFromFiles(frames, "run", 6, 10f, false);
-		AddAnimFromFiles(frames, "hurt", 5, 10f, false);
-		AddAnimFromFiles(frames, "death", 23, 10f, false);
-
-		_sprite.SpriteFrames = frames;
-		_sprite.Scale = new Vector2(1.2f, 1.2f);
-	}
-
-	static void AddAnimFromFiles(SpriteFrames frames, string animName,
-		int count, float fps, bool loop)
-	{
-		frames.AddAnimation(animName);
-		frames.SetAnimationLoop(animName, loop);
-		frames.SetAnimationSpeed(animName, fps);
-		for (var i = 1; i <= count; i++)
-		{
-			var path = $"{FrameBase}{animName}/{animName}_{i}.png";
-			var texture = GD.Load<Texture2D>(path);
-			frames.AddFrame(animName, texture);
-		}
-	}
 }

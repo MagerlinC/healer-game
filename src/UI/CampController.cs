@@ -32,8 +32,7 @@ public partial class CampController : LoadoutController
 
 	protected override bool PersistSpellLoadout => false;
 
-	protected override bool UseLastLightScene => true;
-	protected override bool LastLightBonfire => true;
+	protected override bool HasBonfire => true;
 
 	// ── Virtual config overrides (Camp layout differs slightly from Overworld) ─
 
@@ -44,7 +43,7 @@ public partial class CampController : LoadoutController
 
 	protected override void SetupScene()
 	{
-		var (bgLeft, bgRight) = SetupBackground(AssetConstants.CampBackgroundPath);
+		var (bgLeft, bgRight) = SetupBackground();
 
 		// ── Armory overlay panel ──────────────────────────────────────────────
 		// Built before the interactibles so the panel reference is ready to wire.

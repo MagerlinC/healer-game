@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
@@ -58,18 +59,20 @@ using healerfantasy.SpellSystem;
 ///   the entire party, 20 damage/sec for 10 seconds. Dramatically amplifies
 ///   the healing burden — and therefore the Blood Covenant siphon.
 /// • Blood Covenant siphon (40% of all healing received by party).
-///
-/// ════════════════════════════════════════════════════════════════════════════
-/// ANIMATIONS
-/// ════════════════════════════════════════════════════════════════════════════
-/// Loaded from res://assets/enemies/the-blood-prince/.
-///
-///   "idle"   — idle1–idle3   (looping, 4 fps)
-///   "attack" — attack1–attack4 (one-shot → idle, 10 fps)
-///   "cast"   — cast1–cast4   (one-shot → idle, 6 fps)
 /// </summary>
 public partial class TheBloodPrince : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(3 / 4f, Loop: true),
+		["attack"] = new(4 / 10f),
+		["cast"] = new(4 / 6f)
+	};
+
 	public TheBloodPrince()
 	{
 		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.CastleOfBloodTier][2];
@@ -151,7 +154,7 @@ public partial class TheBloodPrince : EnemyCharacter
 	BossBloodPrinceSanguineSiphonSpell _siphonSpell;
 	BossBloodPrinceVoidDrainSpell _voidDrainSpell;
 
-	AnimatedSprite2D _sprite;
+	CharacterVisual _visual = null!;
 
 	bool _phaseTwoActive;
 
@@ -183,7 +186,6 @@ public partial class TheBloodPrince : EnemyCharacter
 	PendingAttack _pendingAttack;
 	Character _pendingTarget;
 
-	const string AssetBase = "res://assets/enemies/the-blood-prince/";
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -211,11 +213,9 @@ public partial class TheBloodPrince : EnemyCharacter
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(SanguineHealthTargetSet));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(SanguineHealthTargetCleared));
 
-		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		_sprite.Scale = new Vector2(0.4f, 0.4f);
-		SetupAnimations();
-		_sprite.AnimationFinished += OnAnimationFinished;
-		_sprite.Play("idle");
+		_visual = CharacterVisual.Attach(this, Clips);
+		_visual.AnimationFinished += OnAnimationFinished;
+		_visual.Play("idle");
 		ApplyRuneModifiers();
 
 		// Seed the health snapshot so the first frame has valid previous values.
@@ -351,7 +351,7 @@ public partial class TheBloodPrince : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Slash;
-		_sprite.Play("attack");
+		_visual.Play("attack");
 	}
 
 	void CastBloodBolt()
@@ -360,7 +360,7 @@ public partial class TheBloodPrince : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.BloodBolt;
-		_sprite.Play("cast");
+		_visual.Play("cast");
 	}
 
 	/// <summary>
@@ -376,7 +376,7 @@ public partial class TheBloodPrince : EnemyCharacter
 		// Use the first target as the animation pivot; the spell resolves all targets.
 		_pendingTarget = _siphonTargets[0];
 		_pendingAttack = PendingAttack.Siphon;
-		_sprite.Play("cast");
+		_visual.Play("cast");
 
 		// Highlight siphon targets immediately — the player has the 1-second cast
 		// window to react before drain begins.
@@ -440,7 +440,7 @@ public partial class TheBloodPrince : EnemyCharacter
 		_pendingAttack = PendingAttack.None;
 
 		if (IsAlive)
-			_sprite.Play("idle");
+			_visual.Play("idle");
 	}
 
 	// ── Sanguine Siphon channel callbacks ────────────────────────────────────
@@ -479,7 +479,6 @@ public partial class TheBloodPrince : EnemyCharacter
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-
 	/// <summary>
 	/// Picks mark targets: one in Phase 1, two distinct members in Phase 2.
 	/// Shuffles the living party list and takes the first N.
@@ -502,17 +501,6 @@ public partial class TheBloodPrince : EnemyCharacter
 		return alive.GetRange(0, count);
 	}
 
-	// ── animation setup ───────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Loads individual PNG frames from res://assets/enemies/the-blood-prince/.
-	///
-	/// CURRENT ASSETS: only idle1–3 exist.
-	///
-	/// "attack" and "cast" are placeholders that reuse idle frames as one-shot
-	/// animations. Replace the placeholder blocks below with real asset paths
-	/// once the attack and cast sprite sheets are finalised.
-	/// </summary>
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
@@ -520,18 +508,6 @@ public partial class TheBloodPrince : EnemyCharacter
 		BloodBoltInterval /= GameConstants.RuneTimeHasteMultiplier;
 		SiphonInterval /= GameConstants.RuneTimeHasteMultiplier;
 		VoidDrainInterval /= GameConstants.RuneTimeHasteMultiplier;
-	}
-
-	void SetupAnimations()
-	{
-		var frames = new SpriteFrames();
-		frames.RemoveAnimation("default");
-
-		AddAnimFromFiles(frames, "idle", AssetBase + "idle", 3, 4f, true);
-		AddAnimFromFiles(frames, "attack", AssetBase + "attack", 4, 10f, false);
-		AddAnimFromFiles(frames, "cast", AssetBase + "cast", 4, 6f, false);
-
-		_sprite.SpriteFrames = frames;
 	}
 
 }

@@ -1,47 +1,6 @@
 [gd_scene format=3 uid="uid://rgui8intvs0v"]
 
-[ext_resource type="Texture2D" uid="uid://bbq2chohjwba1" path="res://assets/characters/healer/cast1.png" id="2_bg8ov"]
-[ext_resource type="Texture2D" uid="uid://biu7b007ncwn0" path="res://assets/characters/healer/cast2.png" id="3_0x02o"]
-[ext_resource type="Texture2D" uid="uid://b8btvvmluo1to" path="res://assets/characters/healer/cast3.png" id="4_e0bdv"]
-[ext_resource type="Texture2D" uid="uid://dfd8epagovy53" path="res://assets/characters/healer/cast4.png" id="5_dsttt"]
-[ext_resource type="Texture2D" uid="uid://2rdsvuefnqii" path="res://assets/characters/healer/idle1.png" id="6_faooq"]
-[ext_resource type="Texture2D" uid="uid://b17cltds5cmq4" path="res://assets/characters/healer/idle2.png" id="7_47485"]
-[ext_resource type="Texture2D" uid="uid://cv78w7fko1ruh" path="res://assets/characters/healer/idle3.png" id="8_lrkey"]
 [ext_resource type="Script" uid="uid://bkua5fxmutm7j" path="res://src/Characters/Player.cs" id="Script_player"]
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_healer"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": ExtResource("2_bg8ov")
-}, {
-"duration": 1.0,
-"texture": ExtResource("3_0x02o")
-}, {
-"duration": 1.0,
-"texture": ExtResource("4_e0bdv")
-}, {
-"duration": 1.0,
-"texture": ExtResource("5_dsttt")
-}],
-"loop": true,
-"name": &"cast",
-"speed": 4.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": ExtResource("6_faooq")
-}, {
-"duration": 1.0,
-"texture": ExtResource("7_47485")
-}, {
-"duration": 1.0,
-"texture": ExtResource("8_lrkey")
-}],
-"loop": true,
-"name": &"idle",
-"speed": 8.0
-}]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_player"]
 radius = 6.0
@@ -49,12 +8,6 @@ height = 12.0
 
 [node name="Player" type="CharacterBody2D" unique_id=2031914750]
 script = ExtResource("Script_player")
-
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1665185305]
-sprite_frames = SubResource("SpriteFrames_healer")
-animation = &"idle"
-autoplay = "idle"
-speed_scale = 0.5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=109809528]
 position = Vector2(0, 4)

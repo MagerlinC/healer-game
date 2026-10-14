@@ -1,5 +1,6 @@
 using Godot;
 using healerfantasy;
+using healerfantasy.LastLight;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
@@ -32,14 +33,18 @@ public partial class Templar : PartyMember
 
 	float _attackTimer;
 	TemplarShieldBashSpell _shieldBash;
-	AnimatedSprite2D _sprite = null!;
+	CharacterVisual _visual = null!;
 
 	public override void _Ready()
 	{
 		base._Ready();
-		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		_sprite.Play("idle");
-		_sprite.AnimationFinished += OnAnimationFinished;
+		// Clip lengths from the original sprite animations (frames / fps).
+		_visual = CharacterVisual.Attach(this, new()
+		{
+			["idle"] = new(2 / 4f, Loop: true),
+			["attack"] = new(2 / 6f)
+		});
+		_visual.AnimationFinished += OnAnimationFinished;
 		// Stagger the first attack slightly so all three members don't hit at t=0.
 		_attackTimer = AttackInterval * 0.4f;
 		_shieldBash = new TemplarShieldBashSpell();
@@ -47,8 +52,8 @@ public partial class Templar : PartyMember
 
 	void OnAnimationFinished()
 	{
-		if (_sprite.Animation == "attack")
-			_sprite.Play("idle");
+		if (_visual.Animation == "attack")
+			_visual.Play("idle");
 	}
 
 	public override void _Process(double delta)
@@ -97,26 +102,13 @@ public partial class Templar : PartyMember
 	{
 		var boss = FindPreferredBoss();
 		if (boss == null) return;
-		_sprite.Play("attack");
+		_visual.Play("attack");
 		SpellPipeline.Cast(_shieldBash, this, boss);
 	}
 
 	protected override void ApplyDeathVisuals()
 	{
-		_sprite.Stop();
-		_sprite.Rotation = Mathf.Pi / 2f;
-
-		var shader = new Shader();
-		shader.Code = """
-		              shader_type canvas_item;
-		              void fragment() {
-		              	vec4 col = texture(TEXTURE, UV);
-		              	float grey = dot(col.rgb, vec3(0.299, 0.587, 0.114));
-		              	COLOR = vec4(grey, grey, grey, col.a);
-		              }
-		              """;
-		var mat = new ShaderMaterial();
-		mat.Shader = shader;
-		_sprite.Material = mat;
+		// The rig topples the figure and lets the darkness take it.
+		_visual.Stop();
 	}
 }

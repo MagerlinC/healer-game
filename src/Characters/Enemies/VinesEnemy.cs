@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 using healerfantasy.Effects;
 using healerfantasy.SpellResources;
@@ -17,6 +19,15 @@ using healerfantasy.SpellResources;
 /// </summary>
 public partial class VinesEnemy : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(3 / 3f, Loop: true)
+	};
+
 	// ── public state ──────────────────────────────────────────────────────────
 
 	/// <summary>The party-member character this vine is currently latched onto.</summary>
@@ -33,7 +44,7 @@ public partial class VinesEnemy : EnemyCharacter
 	/// <summary>Cached effect ID so we can remove it in <see cref="_ExitTree"/>.</summary>
 	string _graspedEffectId = "";
 
-	AnimatedSprite2D _sprite = null!;
+	CharacterVisual _visual = null!;
 
 	// ── ctor ──────────────────────────────────────────────────────────────────
 
@@ -53,30 +64,8 @@ public partial class VinesEnemy : EnemyCharacter
 		base._Ready();
 		AddToGroup(GameConstants.VinesGroupName);
 
-		// ── sprite (3-frame grow animation) ──────────────────────────────────
-		_sprite = new AnimatedSprite2D();
-		var frames = new SpriteFrames();
-
-		frames.AddAnimation("idle");
-		frames.SetAnimationLoop("idle", true);
-		frames.SetAnimationSpeed("idle", 3f);
-
-		for (var i = 1; i <= 3; i++)
-		{
-			var path = i switch
-			{
-				1 => AssetConstants.VinesFrame1Path,
-				2 => AssetConstants.VinesFrame2Path,
-				_ => AssetConstants.VinesFrame3Path
-			};
-			var tex = GD.Load<Texture2D>(path);
-			frames.AddFrame("idle", tex);
-		}
-
-		_sprite.SpriteFrames = frames;
-		_sprite.Scale = new Vector2(0.2f, 0.2f);
-		AddChild(_sprite);
-		_sprite.Play("idle");
+		// ── visual ─────────────────────────────────────────────────────────
+		_visual = CharacterVisual.Attach(this, Clips);
 
 		// Position near the attached target if possible, else use zero.
 		if (AttachedTarget != null)
@@ -125,7 +114,7 @@ public partial class VinesEnemy : EnemyCharacter
 
 	protected override void ApplyDeathVisuals()
 	{
-		if (_sprite != null) _sprite.Modulate = new Color(0.5f, 0.5f, 0.5f);
+		if (_visual != null) _visual.Modulate = new Color(0.5f, 0.5f, 0.5f);
 		// Remove from scene shortly after death so the health bar can clean up.
 		var timer = new Timer { WaitTime = 0.8f, OneShot = true, Autostart = true };
 		AddChild(timer);

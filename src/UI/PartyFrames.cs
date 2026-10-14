@@ -17,12 +17,12 @@ using healerfantasy;
 public partial class PartyFrames : Control
 {
 	// ── per-member config ─────────────────────────────────────────────────────
-	static readonly (string Name, Color BarColor, float MaxHp)[] MemberDefs =
+	static readonly (string Name, float MaxHp)[] MemberDefs =
 	{
-		(GameConstants.TemplarName, new Color(0.88f, 0.30f, 0.50f), 180f), // rose-red
-		(GameConstants.HealerName, new Color(0.35f, 0.78f, 0.22f), 120f), // poison-green
-		(GameConstants.AssassinName, new Color(0.85f, 0.78f, 0.15f), 100f), // golden-yellow
-		(GameConstants.WizardName, new Color(0.20f, 0.50f, 0.95f), 100f) // sapphire-blue
+		(GameConstants.TemplarName, 180f),
+		(GameConstants.HealerName, 120f),
+		(GameConstants.AssassinName, 100f),
+		(GameConstants.WizardName, 100f)
 	};
 
 	// ── node refs ─────────────────────────────────────────────────────────────
@@ -65,11 +65,11 @@ public partial class PartyFrames : Control
 
 		for (var i = 0; i < MemberDefs.Length; i++)
 		{
-			var (name, barColor, maxHp) = MemberDefs[i];
+			var (name, maxHp) = MemberDefs[i];
 			// Enable the item-effect bar only on the healer frame so that
 			// item procs are clearly shown as player-owned effects.
 			var showItemEffects = name == GameConstants.HealerName;
-			_frames[i] = new PartyFrame(name, barColor, maxHp, showItemEffects);
+			_frames[i] = new PartyFrame(name, maxHp, showItemEffects);
 			// Bottom-align each frame so all health panels stay flush at the same
 			// vertical position when effect rows cause individual frames to grow taller.
 			_frames[i].SizeFlagsVertical = SizeFlags.ShrinkEnd;

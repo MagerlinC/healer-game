@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 using healerfantasy.CombatLog;
 using healerfantasy.SpellResources;
@@ -26,16 +27,23 @@ using healerfantasy.SpellSystem;
 ///   Deals <see cref="JumpSlamDamage"/> on landing.
 ///
 /// The fight ends only when BOTH this boss and the Queen are dead.
-///
-/// Animations (res://assets/enemies/the-frozen-terror/):
-///   "idle"   — idle1–4     (looping)
-///   "attack" — attack1–5   (one-shot → idle)
-///   "charge" — charge1–3   (looping while charging)
-///   "jump"   — jump1–4     (one-shot for take-off; jump4 held during hang time)
-///   "land"   — land1–2     (one-shot → idle)
 /// </summary>
 public partial class TheFrozenTerror : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(4 / 5f, Loop: true),
+		["attack"] = new(5 / 10f),
+		["charge"] = new(3 / 8f, Loop: true),
+		["jump"] = new(4 / 8f),
+		["jump_hang"] = new(1 / 1f, Loop: true),
+		["land"] = new(2 / 6f)
+	};
+
 	public TheFrozenTerror()
 	{
 		MaxHealth = 2500f; // purposely lower than the Queen — a dangerous add, not a full mirror
@@ -80,7 +88,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 	float _chargeTimer;
 	float _jumpSlamTimer;
 
-	AnimatedSprite2D _sprite;
+	CharacterVisual _visual = null!;
 
 	// ── ability state machines ────────────────────────────────────────────────
 
@@ -115,7 +123,6 @@ public partial class TheFrozenTerror : EnemyCharacter
 	// Jump SFX
 	AudioStreamPlayer _sfxPlayer;
 
-	const string AssetBase = "res://assets/enemies/the-frozen-terror/";
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -133,17 +140,14 @@ public partial class TheFrozenTerror : EnemyCharacter
 
 		// This boss is spawned programmatically (not from a .tscn), so we create
 		// the sprite and collision shape ourselves rather than fetching them via GetNode.
-		_sprite = new AnimatedSprite2D();
-		_sprite.Scale = new Vector2(0.30f, 0.30f);
-		AddChild(_sprite);
+		_visual = CharacterVisual.Attach(this, Clips);
 
 		var col = new CollisionShape2D();
 		col.Shape = new CapsuleShape2D { Radius = 14f, Height = 36f };
 		AddChild(col);
 
-		SetupAnimations();
-		_sprite.AnimationFinished += OnAnimationFinished;
-		_sprite.Play("idle");
+		_visual.AnimationFinished += OnAnimationFinished;
+		_visual.Play("idle");
 
 		_sfxPlayer = new AudioStreamPlayer();
 		var sfx = GD.Load<AudioStream>(AssetConstants.LandingImpactSoundPath);
@@ -222,7 +226,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 		var target = SelectCurrentMeleeTarget();
 		if (target == null) return;
 		_state = BossState.Melee;
-		_sprite.Play("attack");
+		_visual.Play("attack");
 		// Damage is applied in OnAnimationFinished when the attack animation completes.
 		// Store target in a field:
 		_meleeTarget = target;
@@ -246,7 +250,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 			// Done with all charges — return to normal
 			_state = BossState.Normal;
 			_meleeTimer = Mathf.Max(_meleeTimer, MeleeAttackInterval * 0.5f);
-			_sprite.Play("idle");
+			_visual.Play("idle");
 			return;
 		}
 
@@ -282,7 +286,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 		};
 		GetParent().AddChild(_chargeLine);
 
-		_sprite.Play("charge");
+		_visual.Play("charge");
 
 		// After the wind-up delay, execute the charge
 		GetTree().CreateTimer(ChargeWindupDuration).Timeout += ExecuteCharge;
@@ -349,7 +353,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 		if (!IsAlive || _state != BossState.Charging) return;
 
 		// Brief pause between charges, then start the next one
-		_sprite.Play("idle");
+		_visual.Play("idle");
 		GetTree().CreateTimer(0.4f).Timeout += StartNextCharge;
 	}
 
@@ -425,7 +429,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 		{
 			// All targets visited — return to normal
 			_state = BossState.Normal;
-			_sprite.Play("idle");
+			_visual.Play("idle");
 			_meleeTimer = Mathf.Max(_meleeTimer, MeleeAttackInterval * 0.5f);
 			return;
 		}
@@ -441,7 +445,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 		}
 
 		// Step 1: Play take-off frames (jump1–3)
-		_sprite.Play("jump");
+		_visual.Play("jump");
 		GetTree().CreateTimer(JumpTakeoffDuration).Timeout += () => BeginHangTime(target);
 	}
 
@@ -451,7 +455,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 
 		// Switch to the single-frame looping animation so the boss holds the
 		// "jump4" hang-time pose while tweening toward the target.
-		_sprite.Play("jump_hang");
+		_visual.Play("jump_hang");
 
 		// Tween to a position just above the target
 		var landPos = target.GlobalPosition + new Vector2(0f, -10f);
@@ -465,7 +469,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 	{
 		if (!IsAlive) return;
 
-		_sprite.Play("land");
+		_visual.Play("land");
 		// Damage fires halfway through the land animation (after land1)
 		GetTree().CreateTimer(JumpLandDuration * 0.5f).Timeout += () => ApplyJumpSlamDamage(target);
 		GetTree().CreateTimer(JumpLandDuration).Timeout += OnLandingComplete;
@@ -494,7 +498,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 	{
 		if (!IsAlive) return;
 		// Brief pause between slams before jumping to next target
-		_sprite.Play("idle");
+		_visual.Play("idle");
 		_sfxPlayer.Play();
 		GetTree().CreateTimer(0.5f).Timeout += JumpToNextTarget;
 	}
@@ -505,7 +509,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 	{
 		if (!IsAlive) return;
 
-		switch (_sprite.Animation)
+		switch (_visual.Animation)
 		{
 			case "attack":
 				// Melee attack animation done — deal damage then return to normal
@@ -529,61 +533,35 @@ public partial class TheFrozenTerror : EnemyCharacter
 
 				_meleeTarget = null;
 				_state = BossState.Normal;
-				_sprite.Play("idle");
+				_visual.Play("idle");
 				break;
 
 			case "land":
 				// Landing handled via timers above; guard return to idle
 				if (_state == BossState.Normal)
-					_sprite.Play("idle");
+					_visual.Play("idle");
 				break;
 		}
 	}
 
 	// ── targeting helpers ──────────────────────────────────────────────────────
 
-
 	// ── public animation API (called by FrozenTerrorJumpInPhase) ─────────────
 
 	/// <summary>Plays the jump take-off animation from frame 1. Used during the entrance sequence.</summary>
 	public void PlayJumpAnim()
 	{
-		_sprite?.Play("jump");
+		_visual?.Play("jump");
 	}
 
 	/// <summary>Plays the landing animation. Used during the entrance sequence.</summary>
 	public void PlayLandAnim()
 	{
-		_sprite?.Play("land");
+		_visual?.Play("land");
 		_sfxPlayer.Play();
 	}
 
 	// ── animation setup ───────────────────────────────────────────────────────
-
-	void SetupAnimations()
-	{
-		var frames = new SpriteFrames();
-		frames.RemoveAnimation("default");
-
-		AddAnimFromFiles(frames, "idle", AssetBase + "idle", 4, 5f, true);
-		AddAnimFromFiles(frames, "attack", AssetBase + "attack", 5, 10f, false);
-		AddAnimFromFiles(frames, "charge", AssetBase + "charge", 3, 8f, true);
-
-		// Jump: frames 1–4 as a one-shot. We stop on frame 4 ("jump4") for hang time.
-		AddAnimFromFiles(frames, "jump", AssetBase + "jump", 4, 8f, false);
-
-		// jump_hang: single frame (jump4), looping — used while airborne over target.
-		frames.AddAnimation("jump_hang");
-		frames.SetAnimationLoop("jump_hang", true);
-		frames.SetAnimationSpeed("jump_hang", 1f);
-		var hangTex = GD.Load<Texture2D>(AssetBase + "jump4.png");
-		if (hangTex != null) frames.AddFrame("jump_hang", hangTex);
-
-		// land: frames 1–2, one-shot.
-		AddAnimFromFiles(frames, "land", AssetBase + "land", 2, 6f, false);
-
-		_sprite.SpriteFrames = frames;
-	}
 
 }
 

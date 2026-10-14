@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
@@ -28,17 +29,22 @@ using healerfantasy.SpellSystem;
 /// instant the PLAYER deals damage to the OTHER twin, which also causes the party
 /// to switch focus.  This forces repeated target-swapping throughout the fight.
 ///
-/// The "shielded" animation frame is displayed while the immunity is active.
-///
-/// Animations loaded from individual PNGs at runtime:
-///   res://assets/enemies/astral-twins/{frame}.png
-///   "idle"    — idle1–idle3      (looping)
-///   "attack"  — attack1–attack3  (one-shot → idle)
-///   "casting" — casting1–casting4 (one-shot → idle)
-///   "shielded"— shielded.png     (single frame, looping)
+/// The twin holds its "shielded" pose while the immunity is active.
 /// </summary>
 public partial class AstralTwin : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(3 / 6f, Loop: true),
+		["attack"] = new(3 / 10f),
+		["casting"] = new(4 / 8f),
+		["shielded"] = new(1 / 1f, Loop: true)
+	};
+
 	public AstralTwin()
 	{
 		// Each twin has half the health pool
@@ -84,7 +90,7 @@ public partial class AstralTwin : EnemyCharacter
 	BossAstralStarfallSpell _starfallSpell;
 	BossCelestialConvergenceSpell _novaSpell;
 
-	AnimatedSprite2D _sprite;
+	CharacterVisual _visual = null!;
 	AudioStreamPlayer _riserPlayer;
 
 	enum PendingAttack
@@ -114,7 +120,6 @@ public partial class AstralTwin : EnemyCharacter
 
 	DiedEventHandler _siblingDiedHandler;
 
-	const string AssetBase = "res://assets/enemies/astral-twins/";
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -137,10 +142,9 @@ public partial class AstralTwin : EnemyCharacter
 		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.DeflectRiserSoundPath);
 		AddChild(_riserPlayer);
 
-		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		SetupAnimations();
-		_sprite.AnimationFinished += OnAnimationFinished;
-		_sprite.Play("idle");
+		_visual = CharacterVisual.Attach(this, Clips);
+		_visual.AnimationFinished += OnAnimationFinished;
+		_visual.Play("idle");
 		ApplyRuneModifiers();
 
 		// Wire sibling reference after all nodes in the scene are ready.
@@ -262,7 +266,7 @@ public partial class AstralTwin : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Strike;
-		_sprite.Play("attack");
+		_visual.Play("attack");
 	}
 
 	void CastStarfall()
@@ -271,7 +275,7 @@ public partial class AstralTwin : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Starfall;
-		_sprite.Play("casting");
+		_visual.Play("casting");
 	}
 
 	void BeginConvergence()
@@ -291,7 +295,7 @@ public partial class AstralTwin : EnemyCharacter
 		}
 
 		_pendingAttack = PendingAttack.None;
-		_sprite.Play("casting");
+		_visual.Play("casting");
 	}
 
 	void ExecuteConvergence()
@@ -305,7 +309,7 @@ public partial class AstralTwin : EnemyCharacter
 			{
 				GD.Print($"[AstralTwin] Celestial Convergence was deflected!");
 				_ownsConvergenceWindow = false;
-				_sprite.Play("idle");
+				_visual.Play("idle");
 				return;
 			}
 
@@ -316,7 +320,7 @@ public partial class AstralTwin : EnemyCharacter
 			_ownsConvergenceWindow = false;
 		}
 
-		_sprite.Play("idle");
+		_visual.Play("idle");
 	}
 
 	void OnAnimationFinished()
@@ -337,7 +341,7 @@ public partial class AstralTwin : EnemyCharacter
 		_pendingAttack = PendingAttack.None;
 
 		if (IsAlive)
-			_sprite.Play(_isPhaseShielded ? "shielded" : "idle");
+			_visual.Play(_isPhaseShielded ? "shielded" : "idle");
 	}
 
 	// ── phase-shield helpers ──────────────────────────────────────────────────
@@ -387,21 +391,21 @@ public partial class AstralTwin : EnemyCharacter
 			}
 		}
 
-		_sprite.Play("shielded");
+		_visual.Play("shielded");
 		GD.Print($"[AstralTwin] {CharacterName} has raised a phase shield! Attack the other twin to break it.");
 	}
 
 	void ClearPhaseShield()
 	{
 		_isPhaseShielded = false;
-		_sprite.Play("idle");
+		_visual.Play("idle");
 		GD.Print($"[AstralTwin] {CharacterName}'s phase shield has been broken!");
 	}
 
 	public override void _ExitTree()
 	{
-		if (_sprite != null)
-			_sprite.AnimationFinished -= OnAnimationFinished;
+		if (_visual != null)
+			_visual.AnimationFinished -= OnAnimationFinished;
 
 		if (IsInstanceValid(_sibling) && _siblingDiedHandler != null)
 			_sibling.Died -= _siblingDiedHandler;
@@ -411,38 +415,12 @@ public partial class AstralTwin : EnemyCharacter
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-
-	// ── animation setup ───────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Loads individual PNG frames from res://assets/enemies/astral-twins/.
-	/// idle1–3, attack1–3, casting1–4, shielded (single static frame).
-	/// </summary>
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
 		StrikeInterval /= GameConstants.RuneTimeHasteMultiplier;
 		StarfallInterval /= GameConstants.RuneTimeHasteMultiplier;
 		ConvergenceInterval /= GameConstants.RuneTimeHasteMultiplier;
-	}
-
-	void SetupAnimations()
-	{
-		var frames = new SpriteFrames();
-		frames.RemoveAnimation("default");
-
-		AddAnimFromFiles(frames, "idle", AssetBase + "idle", 3, 6f, true);
-		AddAnimFromFiles(frames, "attack", AssetBase + "attack", 3, 10f, false);
-		AddAnimFromFiles(frames, "casting", AssetBase + "casting", 4, 8f, false);
-
-		// Shielded: single static frame, looping so the sprite stays on it.
-		frames.AddAnimation("shielded");
-		frames.SetAnimationLoop("shielded", true);
-		frames.SetAnimationSpeed("shielded", 1f);
-		frames.AddFrame("shielded", GD.Load<Texture2D>(AssetBase + "shielded.png"));
-
-		_sprite.SpriteFrames = frames;
-		_sprite.Scale = new Vector2(0.3f, 0.3f);
 	}
 
 }

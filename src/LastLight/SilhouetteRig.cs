@@ -4,16 +4,13 @@ using Godot;
 namespace healerfantasy.LastLight;
 
 /// <summary>
-/// Draws a <see cref="RigDefinition"/> on top of an existing character and
-/// animates it procedurally.
+/// Draws a <see cref="RigDefinition"/> for a character and animates it procedurally.
 ///
-/// The character's original <see cref="AnimatedSprite2D"/> keeps running —
-/// hidden — so every gameplay hook (Play("attack"), AnimationFinished, cast
-/// speed scaling, FlipH, the healer's float offset) keeps working untouched.
-/// Each frame the rig reads that sprite's state and poses itself:
+/// The character drives a <see cref="CharacterVisual"/> (its animation clock: Play("attack"),
+/// AnimationFinished, facing, offset); each frame the rig reads that state and poses itself:
 ///   idle   → breathing and small sways
 ///   move   → bob + lean (detected from the character actually moving)
-///   attack / cleave → wind-up, strike and lunge, timed to the sprite's frames
+///   attack / cleave → wind-up, strike and lunge, timed to the clip
 ///   cast / spell    → arms raised and lifted for as long as the cast lasts
 ///   dead   → party topples and is fully consumed; darkness sinks and fades
 /// </summary>
@@ -24,7 +21,7 @@ public partial class SilhouetteRig : CanvasGroup
 	RigDefinition _def = null!;
 	Node2D _owner = null!;
 	Character _character; // null for puppets (menu, overworld)
-	AnimatedSprite2D _src;
+	CharacterVisual _src;
 	ShaderMaterial _mat = null!;
 
 	sealed class JointState
@@ -47,17 +44,24 @@ public partial class SilhouetteRig : CanvasGroup
 
 	float _t, _seed, _facing = 1f, _move, _consumed, _deathT;
 	Vector2 _srcBaseScale = Vector2.One;
+	bool _isLightSource = true;
 	Vector2 _lastPos;
 	Vector2 _feetOffset;
 
-	/// <summary>Adds a rig to <paramref name="owner"/> and hides its sprite.</summary>
-	public static SilhouetteRig Attach(Node2D owner, RigDefinition def, AnimatedSprite2D source = null)
+	/// <summary>
+	/// Adds a rig to <paramref name="owner"/>, driven by its <see cref="CharacterVisual"/>.
+	/// A light rig that is not the light source (e.g. a Mirror Image) glows but does not
+	/// move the scene's light.
+	/// </summary>
+	public static SilhouetteRig Attach(Node2D owner, RigDefinition def, CharacterVisual source = null,
+		bool isLightSource = true)
 	{
 		var rig = new SilhouetteRig
 		{
 			_def = def, _owner = owner, _character = owner as Character, Name = "SilhouetteRig"
 		};
-		rig._src = source ?? owner.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
+		rig._src = source ?? owner.GetNodeOrNull<CharacterVisual>(CharacterVisual.NodeName);
+		rig._isLightSource = isLightSource;
 		owner.AddChild(rig);
 		return rig;
 	}
@@ -183,10 +187,6 @@ public partial class SilhouetteRig : CanvasGroup
 
 		if (_src != null)
 		{
-			_src.SelfModulate = new Color(1, 1, 1, 0);
-			// Death visuals swap in a shader that ignores modulate and would show the
-			// old sprite again; the hidden sprite never needs a material.
-			if (_src.Material != null) _src.Material = null;
 			if (_deathT <= 0f) Modulate = _src.Modulate;
 
 			// Follow the sprite's visibility (e.g. the Countess vanishing among her clones).
@@ -195,7 +195,7 @@ public partial class SilhouetteRig : CanvasGroup
 			if (_glow != null) _glow.Visible = _src.Visible;
 		}
 
-		Position = _feetOffset + (_src?.Position ?? Vector2.Zero);
+		Position = _feetOffset + (_src != null ? _src.Position + _src.Offset : Vector2.Zero);
 
 		UpdateFacing(dt);
 		UpdateMovement(dt);
@@ -210,7 +210,7 @@ public partial class SilhouetteRig : CanvasGroup
 		var target = _facing;
 		if (_def.Mode == RigMode.Light)
 		{
-			// The old healer art faced left, so FlipH = true means facing right.
+			// The healer's facing flag: true = facing right.
 			if (_src != null) target = _src.FlipH ? 1f : -1f;
 		}
 		else if (IsAlive)
@@ -220,18 +220,18 @@ public partial class SilhouetteRig : CanvasGroup
 				target = Mathf.Sign(p.X - _owner.GlobalPosition.X);
 		}
 
-		_facing = Mathf.MoveToward(_facing, target, dt * 9f);
-		// Never collapse to zero width mid-turn.
-		var fx = Mathf.Abs(_facing) < 0.15f ? 0.15f * Mathf.Sign(target) : _facing;
+		// Snap to the new direction: easing the flip squashes the flat figure through
+		// zero width, which reads as spinning a 3D object rather than turning around.
+		_facing = target;
 		var pulse = _src != null && _srcBaseScale.X > 0f ? Mathf.Abs(_src.Scale.X) / _srcBaseScale.X : 1f;
-		Scale = new Vector2(_def.Scale * fx, _def.Scale) * pulse;
+		Scale = new Vector2(_def.Scale * _facing, _def.Scale) * pulse;
 	}
 
 	void UpdateMovement(float dt)
 	{
 		var speed = (_owner.GlobalPosition - _lastPos).Length() / Mathf.Max(dt, 0.0001f);
 		_lastPos = _owner.GlobalPosition;
-		var target = speed > 6f || PoseFor(_src?.Animation.ToString() ?? "") == "move" ? 1f : 0f;
+		var target = speed > 6f || PoseFor(_src?.Animation ?? "") == "move" ? 1f : 0f;
 		_move = Mathf.MoveToward(_move, target, dt * 5f);
 	}
 
@@ -290,9 +290,9 @@ public partial class SilhouetteRig : CanvasGroup
 		root.RotTarget = 0.08f * _move;
 
 		// ── attack / cast, timed by the hidden sprite ──
-		var anim = _src?.Animation.ToString() ?? "idle";
+		var anim = _src?.Animation ?? "idle";
 		var pose = PoseFor(anim);
-		var p = AnimProgress();
+		var p = _src?.Progress ?? 0f;
 
 		if (pose == "attack")
 		{
@@ -392,6 +392,7 @@ public partial class SilhouetteRig : CanvasGroup
 				              * Mathf.Sqrt(LightMechanics.LightMultiplier(_character));
 			}
 
+			if (!_isLightSource) return;
 			var canvas = _owner.GetGlobalTransformWithCanvas();
 			var size = GetViewport().GetVisibleRect().Size;
 			LastLightStyle.LightUv = canvas * light / size;
@@ -450,17 +451,6 @@ public partial class SilhouetteRig : CanvasGroup
 
 	JointState Get(string name) =>
 		_jointIndex.TryGetValue(name, out var i) && name != "" ? _joints[i] : null;
-
-	float AnimProgress()
-	{
-		if (_src?.SpriteFrames == null) return 0f;
-		var anim = _src.Animation;
-		if (!_src.SpriteFrames.HasAnimation(anim)) return 0f;
-		var count = _src.SpriteFrames.GetFrameCount(anim);
-		if (count <= 0) return 0f;
-		if (!_src.IsPlaying() && !_src.SpriteFrames.GetAnimationLoop(anim)) return 1f;
-		return Mathf.Clamp((_src.Frame + _src.FrameProgress) / count, 0f, 1f);
-	}
 
 	static float Smooth(float a, float b, float x)
 	{

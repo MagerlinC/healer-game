@@ -22,7 +22,7 @@ public partial class GenericActionBar : HBoxContainer
 	readonly List<SlotInfo> _slots = new();
 
 	// Slightly purple-tinged border to visually distinguish from the regular bar.
-	static readonly Color BorderDefault = LastLightStyle.Enabled ? LastLightHud.Iron : new(0.32f, 0.24f, 0.36f);
+	static readonly Color BorderDefault = LastLightHud.Iron;
 
 	/// <summary>
 	/// The Dispel slot panel — used by <see cref="healerfantasy.UI.CombatTutorialManager"/>
@@ -97,8 +97,8 @@ public partial class GenericActionBar : HBoxContainer
 		panel.CustomMinimumSize = new Vector2(52, 52);
 
 		var border = new StyleBoxFlat();
-		border.BgColor = LastLightStyle.Enabled ? LastLightHud.Soot : new Color(0.10f, 0.08f, 0.12f, 0.95f);
-		border.SetCornerRadiusAll(LastLightStyle.Enabled ? 0 : 4);
+		border.BgColor = LastLightHud.Soot;
+		border.SetCornerRadiusAll(0);
 		border.SetBorderWidthAll(2);
 		border.BorderColor = BorderDefault;
 		border.ContentMarginLeft = 3f;
@@ -122,7 +122,7 @@ public partial class GenericActionBar : HBoxContainer
 			iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 			iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			iconRect.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-			if (LastLightStyle.Enabled) iconRect.Material = LastLightHud.IconMaterialFor(iconRect.Texture);
+			iconRect.Material = LastLightHud.IconMaterialFor(iconRect.Texture);
 			inner.AddChild(iconRect);
 		}
 

@@ -35,12 +35,7 @@ public partial class World : Node2D
 		// ── Arena background ──────────────────────────────────────────────────
 		var bgLayer = new CanvasLayer { Layer = -10 };
 		AddChild(bgLayer);
-		var bgRect = new TextureRect();
-		bgRect.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		bgRect.Texture = GD.Load<Texture2D>(dungeon.ArenaBackgroundPaths[bossIndex]);
-		bgRect.StretchMode = TextureRect.StretchModeEnum.Scale;
-		bgRect.MouseFilter = Control.MouseFilterEnum.Ignore;
-		bgLayer.AddChild(bgRect);
+		bgLayer.AddChild(new LastLightBackground { BackgroundPreset = LastLightStyle.ArenaPreset(dungeon) });
 
 		// Tooltip singleton must be added first so it is available to all UI nodes.
 		AddChild(new GameTooltip());
@@ -91,8 +86,6 @@ public partial class World : Node2D
 		foreach (var b in bossCharacters)
 			fctManager.Register(b);
 
-		// ── Last Light art direction ──────────────────────────────────────────
-		LastLightStyle.ApplyArena(dungeon, bgRect);
 
 		// Register boss character refs for hover-targeting and health bar management.
 		ui.SetBossCharacters(

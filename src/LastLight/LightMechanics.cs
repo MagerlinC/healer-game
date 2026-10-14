@@ -14,8 +14,7 @@ namespace healerfantasy.LastLight;
 ///                         darkness creeps faster (+damage taken per stack). The trade-off.
 ///   Wick (Chronomancy)  — the flame gutters, then flares.
 ///
-/// Gloom is gameplay and always applies. Everything else is visual feedback and only
-/// shows with <see cref="LastLightStyle.Enabled"/>.
+/// Gloom is gameplay; the rest is visual feedback.
 /// </summary>
 public static class LightMechanics
 {
@@ -44,7 +43,7 @@ public static class LightMechanics
 				break;
 
 			case SpellSchool.Nature:
-				if (LastLightStyle.Enabled && ctx.Tags.HasFlag(SpellTags.Healing) && ctx.Targets != null)
+				if (ctx.Tags.HasFlag(SpellTags.Healing) && ctx.Targets != null)
 					foreach (var target in ctx.Targets)
 						if (target is { IsFriendly: true } && GodotObject.IsInstanceValid(target))
 							EmberPocket.SpawnUnder(target);

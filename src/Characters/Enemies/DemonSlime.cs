@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
@@ -21,14 +22,21 @@ using healerfantasy.SpellSystem;
 ///   telegraphed AoE that hits all party members for 50 damage unless
 ///   the player deflects; uses the "cleave" animation as wind-up visual.
 ///
-/// Animations use individual PNG frames loaded at runtime from:
-///   res://assets/enemies/demon-slime/individual sprites/
-///
 ///   "idle"   — 6 frames  (01_demon_idle/demon_idle_{n}.png),   looping
 ///   "cleave" — 15 frames (03_demon_cleave/demon_cleave_{n}.png), one-shot → idle
 /// </summary>
 public partial class DemonSlime : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(6 / 8f, Loop: true),
+		["cleave"] = new(15 / 12f)
+	};
+
 	// ── signals ───────────────────────────────────────────────────────────────
 
 	public DemonSlime()
@@ -69,7 +77,7 @@ public partial class DemonSlime : EnemyCharacter
 	BossToxicNovaSpell _novaSpell;
 	BossDetonationZoneSpell _detonationZoneSpell;
 
-	AnimatedSprite2D _sprite;
+	CharacterVisual _visual = null!;
 	AudioStreamPlayer _riserPlayer;
 
 	enum PendingAttack
@@ -84,8 +92,6 @@ public partial class DemonSlime : EnemyCharacter
 	PendingAttack _pendingAttack;
 	Character _pendingTarget;
 
-	const string IdlePath = "res://assets/enemies/demon-slime/individual sprites/01_demon_idle/demon_idle_";
-	const string CleavePath = "res://assets/enemies/demon-slime/individual sprites/03_demon_cleave/demon_cleave_";
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 	public override void _Ready()
@@ -112,10 +118,9 @@ public partial class DemonSlime : EnemyCharacter
 		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.DeflectRiserSoundPath);
 		AddChild(_riserPlayer);
 
-		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		SetupAnimations();
-		_sprite.AnimationFinished += OnAnimationFinished;
-		_sprite.Play("idle");
+		_visual = CharacterVisual.Attach(this, Clips);
+		_visual.AnimationFinished += OnAnimationFinished;
+		_visual.Play("idle");
 		ApplyRuneModifiers();
 	}
 
@@ -177,7 +182,7 @@ public partial class DemonSlime : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Melee;
-		_sprite.Play("cleave");
+		_visual.Play("cleave");
 	}
 
 	void CastAcidSpit()
@@ -186,7 +191,7 @@ public partial class DemonSlime : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.AcidSpit;
-		_sprite.Play("cleave");
+		_visual.Play("cleave");
 	}
 
 	void CastOoze()
@@ -195,7 +200,7 @@ public partial class DemonSlime : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Ooze;
-		_sprite.Play("cleave");
+		_visual.Play("cleave");
 	}
 
 	void CastDetonationZone()
@@ -206,7 +211,7 @@ public partial class DemonSlime : EnemyCharacter
 		if (anyTarget == null) return;
 		_pendingTarget = anyTarget;
 		_pendingAttack = PendingAttack.DetonationZone;
-		_sprite.Play("cleave");
+		_visual.Play("cleave");
 	}
 
 	void BeginNova()
@@ -216,7 +221,7 @@ public partial class DemonSlime : EnemyCharacter
 		ParryWindowManager.OpenWindow(_novaSpell.Name, _novaSpell.Icon, NovaWindupDuration);
 		EmitSignalCastWindupStarted(_novaSpell.Name, _novaSpell.Icon, NovaWindupDuration);
 		_pendingAttack = PendingAttack.None;
-		_sprite.Play("cleave");
+		_visual.Play("cleave");
 	}
 
 	void ExecuteNova()
@@ -252,11 +257,8 @@ public partial class DemonSlime : EnemyCharacter
 
 		_pendingTarget = null;
 		_pendingAttack = PendingAttack.None;
-		_sprite.Play("idle");
+		_visual.Play("idle");
 	}
-
-
-	// ── animation setup ───────────────────────────────────────────────────────
 
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
@@ -268,28 +270,4 @@ public partial class DemonSlime : EnemyCharacter
 		DetonationZoneInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-	void SetupAnimations()
-	{
-		var frames = new SpriteFrames();
-		frames.RemoveAnimation("default");
-
-		AddAnimFromFiles(frames, "idle", IdlePath, 6, 8f, true);
-		AddAnimFromFiles(frames, "cleave", CleavePath, 15, 12f, false);
-
-		_sprite.SpriteFrames = frames;
-		_sprite.Scale = new Vector2(1.1f, 1.1f);
-	}
-
-	static void AddAnimFromFiles(SpriteFrames frames, string animName, string basePath,
-		int count, float fps, bool loop)
-	{
-		frames.AddAnimation(animName);
-		frames.SetAnimationLoop(animName, loop);
-		frames.SetAnimationSpeed(animName, fps);
-		for (var i = 1; i <= count; i++)
-		{
-			var texture = GD.Load<Texture2D>($"{basePath}{i}.png");
-			frames.AddFrame(animName, texture);
-		}
-	}
 }

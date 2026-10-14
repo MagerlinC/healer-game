@@ -10,13 +10,10 @@ namespace healerfantasy.LastLight;
 /// hostile is darkness.
 ///
 /// Characters get rigs automatically (<see cref="InstallAutoRigs"/>); <see cref="World"/>
-/// calls <see cref="ApplyArena"/> to swap in the dungeon's backdrop.
+/// picks each dungeon's backdrop with <see cref="ArenaPreset"/>.
 /// </summary>
 public static class LastLightStyle
 {
-	/// <summary>Master switch. Set to false to get the original art back.</summary>
-	public const bool Enabled = true;
-
 	// Written each frame by the healer's rig, read by every other rig and the background.
 	public static Vector2 LightUv = new(0.5f, 0.5f);
 	public static Vector2 LightFeetUv = new(0.5f, 0.55f);
@@ -82,7 +79,7 @@ public static class LastLightStyle
 	/// <summary>Attach a rig to every known character type as it enters the tree.</summary>
 	public static void InstallAutoRigs(SceneTree tree)
 	{
-		if (!Enabled || _rigsInstalled) return;
+		if (_rigsInstalled) return;
 		_rigsInstalled = true;
 		tree.NodeAdded += node =>
 		{
@@ -96,11 +93,7 @@ public static class LastLightStyle
 		};
 	}
 
-	/// <summary>Replaces the arena background for dungeons that have a Last Light preset.</summary>
-	public static void ApplyArena(DungeonDefinition dungeon, TextureRect arenaBackground)
-	{
-		if (!Enabled || !Backgrounds.TryGetValue(dungeon.Name, out var preset)) return;
-		arenaBackground.Visible = false;
-		arenaBackground.GetParent().AddChild(new LastLightBackground { BackgroundPreset = preset });
-	}
+	/// <summary>The backdrop preset for a dungeon's arena.</summary>
+	public static LastLightBackground.Preset ArenaPreset(DungeonDefinition dungeon) =>
+		Backgrounds.TryGetValue(dungeon.Name, out var preset) ? preset : LastLightBackground.Preset.AncientKeep;
 }

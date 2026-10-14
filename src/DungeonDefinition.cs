@@ -23,7 +23,6 @@ public class DungeonDefinition
 	public Vector2 MapPosition { get; init; }
 
 	public string[] BossScenePaths { get; init; } = Array.Empty<string>();
-	public string[] ArenaBackgroundPaths { get; init; } = Array.Empty<string>();
 
 	/// <summary>
 	/// Display names for each boss encounter, used by <see cref="RunState.CurrentBossName"/>
@@ -45,7 +44,6 @@ public class DungeonDefinition
 			Tier = GameConstants.AncientKeepTier,
 			MapPosition = new Vector2(260f, 730f),
 			BossScenePaths = GameConstants.BossScenePaths,
-			ArenaBackgroundPaths = AssetConstants.AncientKeepArenaBackgroundPaths,
 			BossNames = new[]
 			{
 				GameConstants.Boss1Name,
@@ -59,7 +57,6 @@ public class DungeonDefinition
 			Tier = GameConstants.ForsakenCitadelTier,
 			MapPosition = new Vector2(880f, 490f),
 			BossScenePaths = GameConstants.ForsakenCitadelBossScenePaths,
-			ArenaBackgroundPaths = AssetConstants.ForsakenCitadelArenaBackgroundPaths,
 			BossNames = new[]
 			{
 				GameConstants.ForsakenBoss1Name, // "Flying Demon"
@@ -73,7 +70,6 @@ public class DungeonDefinition
 			Tier = GameConstants.CastleOfBloodTier,
 			MapPosition = new Vector2(880f, 490f),
 			BossScenePaths = GameConstants.CastleOfBloodBossScenePaths,
-			ArenaBackgroundPaths = AssetConstants.CastleOfBloodArenaBackgroundPaths,
 			BossNames = new[]
 			{
 				GameConstants.CastleBoss1Name, // "Blood Knight"
@@ -87,7 +83,6 @@ public class DungeonDefinition
 			Tier = GameConstants.SanctumOfStarsTier,
 			MapPosition = new Vector2(1540f, 240f),
 			BossScenePaths = GameConstants.SanctumBossScenePaths,
-			ArenaBackgroundPaths = AssetConstants.SpaceArenaBackgroundPaths,
 			BossNames = new[]
 			{
 				GameConstants.SanctumBoss1Name, // "The Nightborne"
@@ -101,7 +96,6 @@ public class DungeonDefinition
 			Tier = GameConstants.FrozenPeakTier,
 			MapPosition = new Vector2(960f, 120f), // centre-top of the world map — the final destination
 			BossScenePaths = GameConstants.FrozenPeakBossScenePaths,
-			ArenaBackgroundPaths = AssetConstants.FrozenPeakArenaBackgroundPaths,
 			BossNames = new[]
 			{
 				GameConstants.FrozenPeakBossName // "Queen of the Frozen Wastes"

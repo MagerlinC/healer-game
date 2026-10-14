@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
@@ -21,10 +22,6 @@ using healerfantasy.SpellSystem;
 ///   3.5-second telegraphed AoE that hits all party members for 45 damage
 ///   unless the player casts Deflect in time; uses the "spell" animation.
 ///
-/// Animations use individual PNG frames loaded at runtime from:
-///   res://assets/enemies/bringer-of-death/Individual Sprite/{Anim}/
-///   Bringer-of-Death_{Anim}_{n}.png
-///
 ///   "idle"   — 8 frames, looping
 ///   "attack" — 10 frames, one-shot → idle
 ///   "cast"   — 9 frames, one-shot → idle
@@ -32,6 +29,18 @@ using healerfantasy.SpellSystem;
 /// </summary>
 public partial class BringerOfDeath : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(8 / 8f, Loop: true),
+		["attack"] = new(10 / 12f),
+		["cast"] = new(9 / 10f),
+		["spell"] = new(16 / 10f)
+	};
+
 	public BringerOfDeath()
 	{
 		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.AncientKeepTier][1];
@@ -67,7 +76,7 @@ public partial class BringerOfDeath : EnemyCharacter
 	BossDeathMarkSpell _deathMarkSpell;
 	BossEmbraceOfDeathSpell _embraceSpell;
 
-	AnimatedSprite2D _sprite;
+	CharacterVisual _visual = null!;
 	AudioStreamPlayer _riserPlayer;
 
 	enum PendingAttack
@@ -84,7 +93,6 @@ public partial class BringerOfDeath : EnemyCharacter
 	readonly string _riserSoundPath = AssetConstants.DeflectRiserSoundPath;
 
 	// Individual-sprite base path
-	const string SpritePath = "res://assets/enemies/bringer-of-death/Individual Sprite/";
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 	public override void _Ready()
@@ -110,11 +118,9 @@ public partial class BringerOfDeath : EnemyCharacter
 		_riserPlayer.Stream = GD.Load<AudioStream>(_riserSoundPath);
 		AddChild(_riserPlayer);
 
-		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		_sprite.Scale = new Vector2(1.5f, 1.5f);
-		SetupAnimations();
-		_sprite.AnimationFinished += OnAnimationFinished;
-		_sprite.Play("idle");
+		_visual = CharacterVisual.Attach(this, Clips);
+		_visual.AnimationFinished += OnAnimationFinished;
+		_visual.Play("idle");
 		ApplyRuneModifiers();
 	}
 
@@ -170,7 +176,7 @@ public partial class BringerOfDeath : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Melee;
-		_sprite.Play("attack");
+		_visual.Play("attack");
 	}
 
 	void CastSoulRend()
@@ -179,7 +185,7 @@ public partial class BringerOfDeath : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.SoulRend;
-		_sprite.Play("cast");
+		_visual.Play("cast");
 	}
 
 	void CastDeathMark()
@@ -188,7 +194,7 @@ public partial class BringerOfDeath : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.DeathMark;
-		_sprite.Play("spell");
+		_visual.Play("spell");
 	}
 
 	void BeginEmbrace()
@@ -198,7 +204,7 @@ public partial class BringerOfDeath : EnemyCharacter
 		ParryWindowManager.OpenWindow(_embraceSpell.Name, _embraceSpell.Icon, EmbraceWindupDuration);
 		EmitSignalCastWindupStarted(_embraceSpell.Name, _embraceSpell.Icon, EmbraceWindupDuration);
 		_pendingAttack = PendingAttack.None;
-		_sprite.Play("spell");
+		_visual.Play("spell");
 	}
 
 	void ExecuteEmbrace()
@@ -233,18 +239,11 @@ public partial class BringerOfDeath : EnemyCharacter
 
 		_pendingTarget = null;
 		_pendingAttack = PendingAttack.None;
-		_sprite.Play("idle");
+		_visual.Play("idle");
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-
-	// ── animation setup ───────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Builds SpriteFrames from individual PNG files at runtime.
-	/// File pattern: {SpritePath}{AnimName}/Bringer-of-Death_{AnimName}_{n}.png
-	/// </summary>
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
@@ -254,31 +253,4 @@ public partial class BringerOfDeath : EnemyCharacter
 		EmbraceInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-	void SetupAnimations()
-	{
-		var frames = new SpriteFrames();
-		frames.RemoveAnimation("default");
-
-		AddAnimFromFiles(frames, "idle", "Idle", 8, 8f, true);
-		AddAnimFromFiles(frames, "attack", "Attack", 10, 12f, false);
-		AddAnimFromFiles(frames, "cast", "Cast", 9, 10f, false);
-		AddAnimFromFiles(frames, "spell", "Spell", 16, 10f, false);
-
-		_sprite.SpriteFrames = frames;
-		_sprite.Scale = new Vector2(1.2f, 1.2f);
-	}
-
-	static void AddAnimFromFiles(SpriteFrames frames, string animName, string folderName,
-		int count, float fps, bool loop)
-	{
-		frames.AddAnimation(animName);
-		frames.SetAnimationLoop(animName, loop);
-		frames.SetAnimationSpeed(animName, fps);
-		for (var i = 1; i <= count; i++)
-		{
-			var path = $"{SpritePath}{folderName}/Bringer-of-Death_{folderName}_{i}.png";
-			var texture = GD.Load<Texture2D>(path);
-			frames.AddFrame(animName, texture);
-		}
-	}
 }

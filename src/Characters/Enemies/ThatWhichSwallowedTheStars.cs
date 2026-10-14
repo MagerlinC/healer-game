@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 using healerfantasy.Runes;
 using healerfantasy.SpellResources;
@@ -39,17 +40,21 @@ using healerfantasy.SpellSystem;
 ///
 ///   The "cast" animation, cast bar, and riser sound all fire for EACH wave,
 ///   so each hit looks and sounds identical to a normal parryable boss cast.
-///
-/// Animations loaded from individual PNGs at runtime:
-///   res://assets/enemies/that-which-swallowed-the-stars/
-///   "idle"    — idle1–idle2         (looping)
-///   "beam"    — beam1–beam3         (one-shot → idle)
-///   "cast"    — cast1–cast3         (used for melee, wind-up, and inter-hit)
-///   "default" — default.png         (single static frame, used for the initial
-///                                    reveal beat; falls through to idle in-fight)
 /// </summary>
 public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(2 / 4f, Loop: true),
+		["beam"] = new(3 / 10f),
+		["cast"] = new(3 / 8f),
+		["reveal"] = new(1 / 1f)
+	};
+
 	public ThatWhichSwallowedTheStars()
 	{
 		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.SanctumOfStarsTier][2] -
@@ -94,7 +99,7 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 	BossTwstsVoidCataclysmSpell _cataclysmSpell;
 	AudioStreamOggVorbis _phaseTwoMusic;
 
-	AnimatedSprite2D _sprite;
+	CharacterVisual _visual = null!;
 	AudioStreamPlayer _riserPlayer;
 	AudioStreamPlayer _worldMusicPlayer;
 	Camera2D _fightCamera;
@@ -126,7 +131,6 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 	Vector2 _cameraBaseOffset;
 	ThatWhichSwallowedTheStarsMemoryGame _memoryGame;
 
-	const string AssetBase = "res://assets/enemies/that-which-swallowed-the-stars/";
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -158,11 +162,9 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 		_phaseTwoMusic = GD.Load<AudioStreamOggVorbis>(AssetConstants.FinalBossPhase2MusicPath);
 		_phaseTwoMusic.Loop = true;
 
-		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		_sprite.Scale = new Vector2(1.5f, 1.5f);
-		SetupAnimations();
-		_sprite.AnimationFinished += OnAnimationFinished;
-		_sprite.Play("idle");
+		_visual = CharacterVisual.Attach(this, Clips);
+		_visual.AnimationFinished += OnAnimationFinished;
+		_visual.Play("idle");
 		ApplyRuneModifiers();
 
 		_fightCamera = GetViewport().GetCamera2D();
@@ -271,7 +273,7 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 		if (target == null) return;
 		_meleeTarget = target;
 		_meleePending = true;
-		_sprite.Play("cast"); // brief one-shot swipe animation
+		_visual.Play("cast"); // brief one-shot swipe animation
 	}
 
 	void PerformBeam()
@@ -280,7 +282,7 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 		if (target == null) return;
 		_beamTarget = target;
 		_beamPending = true;
-		_sprite.Play("beam");
+		_visual.Play("beam");
 	}
 
 	void CastConsume()
@@ -326,7 +328,7 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 				ResolveCataclysmHit(3);
 				_riserPlayer.Stop(); // cataclysm is over — silence any riser tail
 				_cataclysmPhase = CataclysmPhase.None;
-				_sprite.Play("idle");
+				_visual.Play("idle");
 				break;
 		}
 	}
@@ -349,7 +351,7 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 
 		EmitSignalCastWindupStarted(_cataclysmSpell.Name, _cataclysmSpell.Icon, CataclysmHitWindow);
 		ParryWindowManager.OpenWindow(_cataclysmSpell.Name, _cataclysmSpell.Icon, CataclysmHitWindow);
-		_sprite.Play("cast");
+		_visual.Play("cast");
 	}
 
 	/// <summary>Resolves one Cataclysm hit — deflected or lands for full damage.</summary>
@@ -390,11 +392,10 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 
 		// Return to idle only when no cataclysm is running (it manages the sprite directly).
 		if (_cataclysmPhase == CataclysmPhase.None && IsAlive)
-			_sprite.Play("idle");
+			_visual.Play("idle");
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
-
 
 	void TriggerPhaseTwoTransition()
 	{
@@ -430,7 +431,7 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 			_worldMusicPlayer.Play();
 		}
 
-		_sprite.Play("reveal");
+		_visual.Play("reveal");
 
 		if (_fightCamera == null)
 			_fightCamera = GetViewport().GetCamera2D();
@@ -457,7 +458,7 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 			_worldMusicPlayer.ProcessMode = ProcessModeEnum.Inherit;
 		SetCurrentHealthDirect(MaxHealth);
 		RestoreCamera();
-		_sprite.Play("idle");
+		_visual.Play("idle");
 	}
 
 	void BeginMemoryGame()
@@ -494,17 +495,6 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 			_fightCamera.Offset = _cameraBaseOffset;
 	}
 
-
-	// ── animation setup ───────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Loads individual PNG frames from:
-	///   res://assets/enemies/that-which-swallowed-the-stars/
-	///
-	/// idle1–2 (looping), beam1–3 (one-shot), cast1–3 (one-shot).
-	/// "default" frame is added as a single-frame "default" animation for the
-	/// reveal beat; the boss transitions straight to "idle" during normal combat.
-	/// </summary>
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
@@ -513,26 +503,6 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 		ConsumeInterval /= GameConstants.RuneTimeHasteMultiplier;
 		CataclysmInterval /= GameConstants.RuneTimeHasteMultiplier;
 		MemoryGameInterval /= GameConstants.RuneTimeHasteMultiplier;
-	}
-
-	void SetupAnimations()
-	{
-		var frames = new SpriteFrames();
-		frames.RemoveAnimation("default");
-
-		AddAnimFromFiles(frames, "idle", AssetBase + "idle", 2, 4f, true);
-		AddAnimFromFiles(frames, "beam", AssetBase + "beam", 3, 10f, false);
-		AddAnimFromFiles(frames, "cast", AssetBase + "cast", 3, 8f, false);
-
-		// Single-frame "default" pose for the initial reveal.
-		var defaultAnim = "reveal";
-		frames.AddAnimation(defaultAnim);
-		frames.SetAnimationLoop(defaultAnim, false);
-		frames.SetAnimationSpeed(defaultAnim, 1f);
-		frames.AddFrame(defaultAnim, GD.Load<Texture2D>(AssetBase + "default.png"));
-
-		_sprite.SpriteFrames = frames;
-		_sprite.Scale = new Vector2(0.35f, 0.35f);
 	}
 
 }

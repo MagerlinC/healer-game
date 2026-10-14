@@ -23,7 +23,6 @@ public partial class OverworldController : LoadoutController
 {
 	RuneTablePanel? _runeTablePanel;
 
-	protected override bool UseLastLightScene => true;
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -37,7 +36,7 @@ public partial class OverworldController : LoadoutController
 
 	protected override void SetupScene()
 	{
-		var (bgLeft, bgRight) = SetupBackground(AssetConstants.CampBackgroundPath);
+		var (bgLeft, bgRight) = SetupBackground();
 
 		// ── Common interactibles (Spell Tome, Talent Board, Map, News Board) ──
 		SetupCommonInteractibles();

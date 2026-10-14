@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using healerfantasy;
+using healerfantasy.LastLight;
 using healerfantasy.Items;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellResources.Void;
 using healerfantasy.SpellSystem;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
-
 
 /// <summary>
 /// The player-controlled healer.
@@ -115,7 +115,7 @@ public partial class Player : Character
 	readonly Dictionary<SpellResource, float> _spellCooldowns = new();
 
 	// ── animation ─────────────────────────────────────────────────────────────
-	AnimatedSprite2D _sprite = null!;
+	CharacterVisual _visual = null!;
 
 	// ── float lift (mirrors OverworldPlayer) ──────────────────────────────────
 	float _liftOffset = 0f;
@@ -129,8 +129,7 @@ public partial class Player : Character
 	CpuParticles2D? _ultimateParticles;
 
 	/// <summary>
-	/// Duration of the cast animation at SpeedScale 1.0.
-	/// Matches 4 frames at 4 FPS defined in the SpriteFrames resource.
+	/// Duration of the "cast" clip at SpeedScale 1.0; stretched to each spell's cast time.
 	/// </summary>
 	const float CastAnimBaseDuration = 1.0f;
 
@@ -142,22 +141,14 @@ public partial class Player : Character
 	public override void _Ready()
 	{
 		base._Ready();
-		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		_sprite.Scale = new Vector2(GameConstants.HealerSpriteScale, GameConstants.HealerSpriteScale);
-
-		// Add the float animation to the existing SpriteFrames (which already
-		// contains "idle" and "cast" from the scene file).
-		var frames = _sprite.SpriteFrames;
-		if (!frames.HasAnimation("walk"))
+		// Clip lengths from the original sprite animations (frames / fps ÷ the old 0.5 speed scale).
+		// "cast" is stretched to each spell's cast time via SpeedScale.
+		_visual = CharacterVisual.Attach(this, new()
 		{
-			frames.AddAnimation("walk");
-			frames.SetAnimationSpeed("walk", 4.0);
-			frames.SetAnimationLoop("walk", true);
-			foreach (var i in new[] { 1, 2, 3 })
-				frames.AddFrame("walk", GD.Load<Texture2D>($"res://assets/characters/healer/float{i}.png"));
-		}
-
-		_sprite.Play("idle");
+			["idle"] = new(3 / 8f / 0.5f, Loop: true),
+			["walk"] = new(3 / 4f / 0.5f, Loop: true),
+			["cast"] = new(CastAnimBaseDuration, Loop: true)
+		});
 		CharacterName = GameConstants.HealerName;
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastCancelled));
@@ -306,9 +297,9 @@ public partial class Player : Character
 		_isCasting = false;
 		_castingAudioPlayer.Stop();
 		_castFinishedAudioPlayer.Play();
-		_sprite.SpeedScale = 1.0f;
-		_sprite.Play("idle");
-		_sprite.Position = new Vector2(0f, _liftOffset); // keep lift smooth; _PhysicsProcess descends it
+		_visual.SpeedScale = 1.0f;
+		_visual.Play("idle");
+		_visual.Position = new Vector2(0f, _liftOffset); // keep lift smooth; _PhysicsProcess descends it
 
 		// Tell party members which enemy to focus when the player attacks one directly.
 		// Checks IsFriendly rather than BossGroupName so adds like BloodRune are included.
@@ -432,7 +423,6 @@ public partial class Player : Character
 			return;
 		}
 
-
 		var canCast = IsAlive && _globalCooldownTimer == 0f;
 		if (!canCast) return;
 
@@ -465,8 +455,8 @@ public partial class Player : Character
 				_isCasting = true;
 				_castTimer = adjustedCastTime;
 				_castingAudioPlayer.Play();
-				_sprite.SpeedScale = CastAnimBaseDuration / adjustedCastTime;
-				_sprite.Play("cast");
+				_visual.SpeedScale = CastAnimBaseDuration / adjustedCastTime;
+				_visual.Play("cast");
 			}
 
 			var adjustedGcd = Mathf.Max(GlobalCooldown * (1f - stats.IncreasedHaste), 0.1f);
@@ -517,8 +507,8 @@ public partial class Player : Character
 
 					// Scale the cast animation so one full cycle = adjustedCastTime.
 					// Longer casts play slower; shorter casts (or hasted casts) play faster.
-					_sprite.SpeedScale = CastAnimBaseDuration / adjustedCastTime;
-					_sprite.Play("cast");
+					_visual.SpeedScale = CastAnimBaseDuration / adjustedCastTime;
+					_visual.Play("cast");
 				}
 
 				var adjustedGcd = Mathf.Max(GlobalCooldown * (1f - stats.IncreasedHaste), 0.1f);
@@ -578,9 +568,9 @@ public partial class Player : Character
 		_isCasting = false;
 		_castingAudioPlayer.Stop();
 		EmitSignalCastCancelled();
-		_sprite.SpeedScale = 1.0f;
-		_sprite.Play("idle");
-		_sprite.Position = new Vector2(0f, _liftOffset); // keep lift smooth; _PhysicsProcess descends it
+		_visual.SpeedScale = 1.0f;
+		_visual.Play("idle");
+		_visual.Position = new Vector2(0f, _liftOffset); // keep lift smooth; _PhysicsProcess descends it
 		_castSpell = null;
 		_castTarget = null;
 		_castTimer = 0f;
@@ -592,25 +582,8 @@ public partial class Player : Character
 		_isCasting = false;
 		_castingAudioPlayer?.Stop();
 
-		// Stop the animation where it is.
-		_sprite.Stop();
-
-		// Rotate 90° clockwise so the character appears to fall/lie on the ground.
-		_sprite.Rotation = Mathf.Pi / 2f;
-
-		// Apply a greyscale shader to indicate death.
-		var shader = new Shader();
-		shader.Code = """
-		              shader_type canvas_item;
-		              void fragment() {
-		              	vec4 col = texture(TEXTURE, UV);
-		              	float grey = dot(col.rgb, vec3(0.299, 0.587, 0.114));
-		              	COLOR = vec4(grey, grey, grey, col.a);
-		              }
-		              """;
-		var mat = new ShaderMaterial();
-		mat.Shader = shader;
-		_sprite.Material = mat;
+		// The rig topples the healer and gutters the light.
+		_visual.Stop();
 	}
 
 	public override void _PhysicsProcess(double delta)
@@ -625,26 +598,26 @@ public partial class Player : Character
 			// Flip sprite to face horizontal movement direction.
 			// The healer sprite is drawn facing left, so FlipH=true → right.
 			if (dir.X != 0f)
-				_sprite.FlipH = dir.X > 0f;
+				_visual.FlipH = dir.X > 0f;
 
 			// Switch to float animation while moving, but don't interrupt a cast.
-			if (!_isCasting && _sprite.Animation != "walk")
-				_sprite.Play("walk");
+			if (!_isCasting && _visual.Animation != "walk")
+				_visual.Play("walk");
 
 			// Slowly ascend.
 			_liftOffset = Mathf.Lerp(_liftOffset, -FloatHeight, LiftSpeed * dt);
 			_bobPhase += BobSpeed * Mathf.Tau * dt;
-			_sprite.Position = new Vector2(0f, _liftOffset + Mathf.Sin(_bobPhase) * BobAmplitude);
+			_visual.Position = new Vector2(0f, _liftOffset + Mathf.Sin(_bobPhase) * BobAmplitude);
 		}
 		else
 		{
 			// Return to idle only when not casting (cast animation takes priority).
-			if (!_isCasting && _sprite.Animation != "idle")
-				_sprite.Play("idle");
+			if (!_isCasting && _visual.Animation != "idle")
+				_visual.Play("idle");
 
 			// Slowly descend back to the ground.
 			_liftOffset = Mathf.Lerp(_liftOffset, 0f, LiftSpeed * dt);
-			_sprite.Position = new Vector2(0f, _liftOffset);
+			_visual.Position = new Vector2(0f, _liftOffset);
 		}
 
 		var stats = GetCharacterStats();

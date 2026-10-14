@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 using healerfantasy.Runes;
 using healerfantasy.SpellResources;
@@ -27,15 +28,20 @@ using healerfantasy.SpellSystem;
 ///   waves across the screen one at a time. Each wave has a small gap the party
 ///   must stand in to avoid <see cref="WavesDamage"/> void damage per wave;
 ///   uses the "cast" animation.
-///
-/// Animations use individual PNG frames from:
-///   res://assets/enemies/flying-skull/{anim}{n}.png
-///   idle   (3 frames, looping)
-///   attack (5 frames, one-shot → idle)
-///   cast   (4 frames, one-shot → idle)
 /// </summary>
 public partial class FlyingSkull : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(3 / 6f, Loop: true),
+		["attack"] = new(5 / 10f),
+		["cast"] = new(4 / 8f)
+	};
+
 	public FlyingSkull()
 	{
 		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.ForsakenCitadelTier][2];
@@ -109,7 +115,7 @@ public partial class FlyingSkull : EnemyCharacter
 	/// <summary>Alternates wave direction each cast (horizontal / vertical).</summary>
 	bool _nextWaveIsHorizontal = true;
 
-	AnimatedSprite2D _sprite;
+	CharacterVisual _visual = null!;
 	AudioStreamPlayer _riserPlayer;
 
 	enum PendingAttack
@@ -124,7 +130,6 @@ public partial class FlyingSkull : EnemyCharacter
 	PendingAttack _pendingAttack;
 	Character _pendingTarget;
 
-	const string BasePath = "res://assets/enemies/flying-skull/";
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -152,10 +157,9 @@ public partial class FlyingSkull : EnemyCharacter
 		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.DeflectRiserSoundPath);
 		AddChild(_riserPlayer);
 
-		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		SetupAnimations();
-		_sprite.AnimationFinished += OnAnimationFinished;
-		_sprite.Play("idle");
+		_visual = CharacterVisual.Attach(this, Clips);
+		_visual.AnimationFinished += OnAnimationFinished;
+		_visual.Play("idle");
 		ApplyRuneModifiers();
 	}
 
@@ -208,7 +212,6 @@ public partial class FlyingSkull : EnemyCharacter
 		else if (_wavesTimer <= 0f && !_wavesActive)
 		{
 
-
 			_wavesTimer = WavesInterval;
 			BeginNecroticWaves();
 
@@ -223,7 +226,7 @@ public partial class FlyingSkull : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Melee;
-		_sprite.Play("attack");
+		_visual.Play("attack");
 	}
 
 	void CastVoidScreech()
@@ -232,7 +235,7 @@ public partial class FlyingSkull : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.VoidScreech;
-		_sprite.Play("cast");
+		_visual.Play("cast");
 	}
 
 	void CastNecroticPool()
@@ -243,7 +246,7 @@ public partial class FlyingSkull : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.NecroticPool;
-		_sprite.Play("cast");
+		_visual.Play("cast");
 	}
 
 	void BeginWail()
@@ -253,7 +256,7 @@ public partial class FlyingSkull : EnemyCharacter
 		ParryWindowManager.OpenWindow(_bansheeWailSpell.Name, _bansheeWailSpell.Icon, WailWindup);
 		EmitSignalCastWindupStarted(_bansheeWailSpell.Name, _bansheeWailSpell.Icon, WailWindup);
 		_pendingAttack = PendingAttack.None;
-		_sprite.Play("cast");
+		_visual.Play("cast");
 	}
 
 	void ExecuteWail()
@@ -289,7 +292,7 @@ public partial class FlyingSkull : EnemyCharacter
 
 		_pendingTarget = null;
 		_pendingAttack = PendingAttack.None;
-		_sprite.Play("idle");
+		_visual.Play("idle");
 	}
 
 	// ── Necrotic Waves ────────────────────────────────────────────────────────
@@ -304,7 +307,7 @@ public partial class FlyingSkull : EnemyCharacter
 		// Show a cast-bar for the wind-up phase.
 		EmitSignalCastWindupStarted(_necroticWavesSpell.Name, _necroticWavesSpell.Icon, WavesCastTime);
 
-		_sprite.Play("cast");
+		_visual.Play("cast");
 	}
 
 	/// <summary>
@@ -342,8 +345,8 @@ public partial class FlyingSkull : EnemyCharacter
 			// All waves fired — end the sequence.
 			_wavesActive = false;
 			_wavesFired = 0;
-			if (_sprite.Animation == "cast")
-				_sprite.Play("idle");
+			if (_visual.Animation == "cast")
+				_visual.Play("idle");
 		}
 	}
 
@@ -403,9 +406,6 @@ public partial class FlyingSkull : EnemyCharacter
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-
-	// ── animation setup ───────────────────────────────────────────────────────
-
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
@@ -416,28 +416,4 @@ public partial class FlyingSkull : EnemyCharacter
 		WavesInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-	void SetupAnimations()
-	{
-		var frames = new SpriteFrames();
-		frames.RemoveAnimation("default");
-
-		AddAnimFromFiles(frames, "idle", 3, 6f, true);
-		AddAnimFromFiles(frames, "attack", 5, 10f, false);
-		AddAnimFromFiles(frames, "cast", 4, 8f, false);
-
-		_sprite.SpriteFrames = frames;
-	}
-
-	void AddAnimFromFiles(SpriteFrames frames, string animName, int count, float fps, bool loop)
-	{
-		frames.AddAnimation(animName);
-		frames.SetAnimationLoop(animName, loop);
-		frames.SetAnimationSpeed(animName, fps);
-		for (var i = 1; i <= count; i++)
-		{
-			var path = $"{BasePath}{animName}{i}.png";
-			var texture = GD.Load<Texture2D>(path);
-			frames.AddFrame(animName, texture);
-		}
-	}
 }

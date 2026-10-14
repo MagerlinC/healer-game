@@ -79,9 +79,7 @@ public partial class MainMenuUI : Node2D
 		LoadKeybinds();
 		LoadDisplaySettings();
 		LoadAudioSettings();
-		MenuFont = LastLightStyle.Enabled
-			? healerfantasy.LastLight.Hud.LastLightHud.Serif
-			: GD.Load<Font>(AssetConstants.CinzelFontPath);
+		MenuFont = healerfantasy.LastLight.Hud.LastLightHud.Serif;
 
 		var canvas = new CanvasLayer();
 		AddChild(canvas);
@@ -94,35 +92,9 @@ public partial class MainMenuUI : Node2D
 		bg.MouseFilter = Control.MouseFilterEnum.Stop;
 
 
-		var bgRect = new TextureRect();
-		bgRect.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		bgRect.Texture = GD.Load<Texture2D>(AssetConstants.MainMenuPath);
-		// ExpandMode.IgnoreSize lets the rect shrink/grow freely regardless of
-		// the texture's native resolution, so the anchors can fill the viewport.
-		// KeepAspectCovered scales the image to cover the full rect while
-		// maintaining aspect ratio, centering it and trimming equally from both
-		// sides — giving correct behaviour for any aspect ratio narrower than 21:9.
-		bgRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
-		bgRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered;
-		bgRect.MouseFilter = Control.MouseFilterEnum.Ignore;
-		bg.AddChild(bgRect);
-
 		canvas.AddChild(bg);
 
-		if (LastLightStyle.Enabled)
-		{
-			bgRect.Visible = false;
-			BuildLastLightScene(bg);
-		}
-		else
-		{
-			// ── Mist layers ───────────────────────────────────────────────────
-			var mistTex = GD.Load<Texture2D>(AssetConstants.MistTexturePath);
-			var mistShader = BuildMistShader();
-			AddMistLayer(bg, mistTex, mistShader, 0.015f, -0.003f, 0.11f, 0f);
-			AddMistLayer(bg, mistTex, mistShader, -0.010f, 0.002f, 0.09f, 17f);
-			AddMistLayer(bg, mistTex, mistShader, 0.020f, -0.001f, 0.07f, 33f);
-		}
+		BuildLastLightScene(bg);
 
 		// ── Title region (top ~24 % of the screen) ───────────────────────────
 		var titleRegion = new CenterContainer();
@@ -663,7 +635,6 @@ public partial class MainMenuUI : Node2D
 		return (slotLabel, keyLabel, rebindBtn);
 	}
 
-
 	// ── rebind input ──────────────────────────────────────────────────────────
 
 	public override void _UnhandledInput(InputEvent @event)
@@ -972,90 +943,5 @@ public partial class MainMenuUI : Node2D
 
 	// ── mist helpers ──────────────────────────────────────────────────────────
 
-	/// <summary>
-	/// Builds the shared canvas_item shader used by all mist layers.
-	///
-	/// Technique — eliminates square tiling seams and creates organic cloud shapes:
-	///
-	///   Detail sample A  — tiled UV, fades to 0 near its own tile edges.
-	///   Detail sample B  — same tile count but offset +0.5 in both axes, so its
-	///                      seams never align with A's.  Also fades near its edges.
-	///   max(A, B)        — wherever A is at a seam (dark), B is in its bright
-	///                      centre, and vice-versa.  The result has no hard edges.
-	///   Shape mask       — a third, very slow sample at ~3× zoom sculpts the mist
-	///                      into organic blob outlines instead of a uniform band.
-	///   Screen fades     — smooth vertical + horizontal falloff keeps mist in the
-	///                      centre of the screen and away from all four edges.
-	/// </summary>
-	static Shader BuildMistShader()
-	{
-		var s = new Shader();
-		s.Code = @"
-shader_type canvas_item;
-uniform float scroll_x    = 0.015;
-uniform float scroll_y    = 0.0;
-uniform float alpha_scale = 0.07;
-uniform float time_offset = 0.0;
 
-void fragment() {
-    float t  = TIME + time_offset;
-    vec2  uv = vec2(UV.x * 2.5 + scroll_x * t, UV.y * 1.2 + scroll_y * t);
-
-    // ── Detail sample A (main tile) ──────────────────────────────────────
-    vec2  fA  = fract(uv);
-    float lumA = dot(texture(TEXTURE, fA).rgb, vec3(0.299, 0.587, 0.114));
-    // Fade to 0 near every tile edge so the wrap seam is invisible
-    float eA = smoothstep(0.0, 0.30, fA.x) * (1.0 - smoothstep(0.70, 1.0, fA.x))
-             * smoothstep(0.0, 0.30, fA.y) * (1.0 - smoothstep(0.70, 1.0, fA.y));
-
-	// ── Detail sample B (half-tile offset — seams staggered from A's) ───
-	vec2  fB  = fract(uv + vec2(0.5, 0.5));
-	float lumB = dot(texture(TEXTURE, fB).rgb, vec3(0.299, 0.587, 0.114));
-	float eB = smoothstep(0.0, 0.30, fB.x) * (1.0 - smoothstep(0.70, 1.0, fB.x))
-			 * smoothstep(0.0, 0.30, fB.y) * (1.0 - smoothstep(0.70, 1.0, fB.y));
-
-	// ── Cloud-shape mask (slow, large-scale sample) ──────────────────────
-	// Scrolls at 20 % of the detail speed so the cloud outlines evolve
-	// independently, giving organic varying density rather than a uniform band.
-	vec2  fS    = fract(vec2(UV.x * 0.85 + scroll_x * 0.2 * t,
-							 UV.y * 0.55 + scroll_y * 0.2 * t));
-	float shape = smoothstep(0.18, 0.55,
-							 dot(texture(TEXTURE, fS).rgb, vec3(0.299, 0.587, 0.114)));
-
-	float mist = max(lumA * eA, lumB * eB) * shape;
-
-	// ── Screen-space soft fades ──────────────────────────────────────────
-	float vm = smoothstep(0.20, 0.42, UV.y) * (1.0 - smoothstep(0.68, 0.90, UV.y));
-	float hm = smoothstep(0.0,  0.12, UV.x) * (1.0 - smoothstep(0.88, 1.0,  UV.x));
-
-	COLOR = vec4(0.72, 0.79, 0.88, mist * alpha_scale * vm * hm);
-}
-";
-		return s;
-	}
-
-	/// <summary>
-	/// Adds a single full-screen mist TextureRect with its own ShaderMaterial
-	/// so it scrolls independently from the other layers.
-	/// </summary>
-	static void AddMistLayer(
-		Control parent, Texture2D tex, Shader shader,
-		float scrollX, float scrollY, float alpha, float timeOffset)
-	{
-		var mat = new ShaderMaterial();
-		mat.Shader = shader;
-		mat.SetShaderParameter("scroll_x", scrollX);
-		mat.SetShaderParameter("scroll_y", scrollY);
-		mat.SetShaderParameter("alpha_scale", alpha);
-		mat.SetShaderParameter("time_offset", timeOffset);
-
-		var rect = new TextureRect();
-		rect.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		rect.Texture = tex;
-		rect.StretchMode = TextureRect.StretchModeEnum.Scale;
-		rect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
-		rect.MouseFilter = Control.MouseFilterEnum.Ignore;
-		rect.Material = mat;
-		parent.AddChild(rect);
-	}
 }

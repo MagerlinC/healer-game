@@ -50,7 +50,7 @@ public static class LastLightIcons
 	/// <summary>The icon for a spell, or null if it has none (falls back to the original art).</summary>
 	public static Texture2D ForSpell(SpellResource spell)
 	{
-		if (!LastLightStyle.Enabled || spell == null) return null;
+		if (spell == null) return null;
 		EnsureGlyphs();
 		var key = spell.GetType().Name;
 		return SpellGlyphs.TryGetValue(key, out var glyph) ? Render("spell:" + key, spell.School, glyph, false) : null;
@@ -59,7 +59,7 @@ public static class LastLightIcons
 	/// <summary>The icon for a talent, or null if it has none.</summary>
 	public static Texture2D ForTalent(string name, SpellSchool school)
 	{
-		if (!LastLightStyle.Enabled || name == null) return null;
+		if (name == null) return null;
 		EnsureGlyphs();
 		return TalentGlyphs.TryGetValue(name, out var glyph) ? Render("talent:" + name, school, glyph, true) : null;
 	}
@@ -67,7 +67,6 @@ public static class LastLightIcons
 	/// <summary>The Gloom debuff badge.</summary>
 	public static Texture2D Gloom()
 	{
-		if (!LastLightStyle.Enabled) return null;
 		EnsureGlyphs();
 		return Render("effect:gloom", SpellSchool.Void, GloomGlyph, false);
 	}

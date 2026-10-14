@@ -22,9 +22,9 @@ namespace healerfantasy.UI;
 public partial class BossHealthBar : CharacterFrame
 {
 	// ── constants ─────────────────────────────────────────────────────────────
-	static readonly Color BorderDefault = LastLightStyle.Enabled ? new Color(0f, 0f, 0f, 0f) : new(0.32f, 0.26f, 0.26f);
-	static readonly Color BorderHovered = LastLightStyle.Enabled ? LastLightHud.IronLit : new(0.90f, 0.80f, 0.20f);
-	static readonly Color BarTextColor = LastLightStyle.Enabled ? LastLightHud.Text : new(0.95f, 0.90f, 0.85f);
+	static readonly Color BorderDefault = new Color(0f, 0f, 0f, 0f);
+	static readonly Color BorderHovered = LastLightHud.IronLit;
+	static readonly Color BarTextColor = LastLightHud.Text;
 
 	/// <summary>
 	/// Horizontal inset shared by both the health panel and the effect-badge row.
@@ -280,12 +280,9 @@ public partial class BossHealthBar : CharacterFrame
 		panelStyle.ContentMarginRight = 8f;
 		panelStyle.ContentMarginTop = 6f;
 		panelStyle.ContentMarginBottom = 6f;
-		if (LastLightStyle.Enabled)
-		{
-			// Souls-style: no box, just the name over a long thin bar.
-			panelStyle.BgColor = new Color(0f, 0f, 0f, 0f);
-			panelStyle.SetCornerRadiusAll(0);
-		}
+		// Souls-style: no box, just the name over a long thin bar.
+		panelStyle.BgColor = new Color(0f, 0f, 0f, 0f);
+		panelStyle.SetCornerRadiusAll(0);
 
 		_innerPanel = new PanelContainer();
 		_innerPanel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
@@ -300,7 +297,6 @@ public partial class BossHealthBar : CharacterFrame
 		margin.AddThemeConstantOverride("margin_top", 8);
 		margin.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		AddChild(margin);
-
 
 		margin.AddChild(_innerPanel);
 
@@ -408,8 +404,7 @@ public partial class BossHealthBar : CharacterFrame
 		_currentHealthLabel.MouseFilter = MouseFilterEnum.Ignore;
 		overlay.AddChild(_currentHealthLabel);
 
-		if (LastLightStyle.Enabled)
-			ApplyLastLightLook(overlay);
+		ApplyLastLightLook(overlay);
 	}
 
 	/// <summary>

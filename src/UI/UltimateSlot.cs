@@ -26,7 +26,7 @@ namespace healerfantasy.UI;
 public partial class UltimateSlot : Control
 {
 	// ── colours ──────────────────────────────────────────────────────────────
-	static readonly Color BgColor = LastLightStyle.Enabled ? LastLightHud.Soot : new(0.10f, 0.07f, 0.14f, 0.95f);
+	static readonly Color BgColor = LastLightHud.Soot;
 	static readonly Color OverlayDim = new(0f, 0f, 0f, 0.42f);
 
 	// ── child refs ───────────────────────────────────────────────────────────
@@ -64,10 +64,10 @@ public partial class UltimateSlot : Control
 		public SlotState State = SlotState.Empty;
 		public float PulseTimer = 0f;
 
-		static readonly Color TrackColor = LastLightStyle.Enabled ? new(0.15f, 0.13f, 0.11f, 0.8f) : new(0.20f, 0.14f, 0.28f, 0.5f); // dim track
-		static readonly Color FillColor = LastLightStyle.Enabled ? new(0.88f, 0.39f, 0.16f, 0.9f) : new(0.65f, 0.22f, 0.90f, 0.85f); // progress fill (ember / purple)
-		static readonly Color ReadyColor = LastLightStyle.Enabled ? LastLightHud.Light : new(0.95f, 0.80f, 0.10f, 1.0f); // gold
-		static readonly Color ActiveColor = LastLightStyle.Enabled ? new(1f, 0.97f, 0.9f, 1f) : new(0.65f, 0.22f, 0.90f, 1.0f); // white-hot / arcane purple
+		static readonly Color TrackColor = new(0.15f, 0.13f, 0.11f, 0.8f); // dim track
+		static readonly Color FillColor = new(0.88f, 0.39f, 0.16f, 0.9f); // progress fill (ember / purple)
+		static readonly Color ReadyColor = LastLightHud.Light; // gold
+		static readonly Color ActiveColor = new(1f, 0.97f, 0.9f, 1f); // white-hot / arcane purple
 
 		const float BW = 3.5f; // border stroke width
 
@@ -167,7 +167,7 @@ public partial class UltimateSlot : Control
 
 		_border = new StyleBoxFlat();
 		_border.BgColor = BgColor;
-		_border.SetCornerRadiusAll(LastLightStyle.Enabled ? 0 : 5);
+		_border.SetCornerRadiusAll(0);
 		_border.SetBorderWidthAll(0); // all border drawing is done by BorderOverlay
 		_border.ContentMarginLeft = 3f;
 		_border.ContentMarginRight = 3f;

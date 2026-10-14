@@ -10,52 +10,17 @@ public static class AssetConstants
 	{
 		return SchoolInfo.Color(school);
 	}
-	public static readonly string EnemyAssets = "res://assets/enemies/";
 	public static readonly string SpellIconAssets = "res://assets/spell-icons/";
 	public static readonly string TalentIconAssets = "res://assets/talent-icons/";
 
 	public static readonly string FinalBossPhase2MusicPath = "res://assets/music/boss-battle.ogg";
 
-	public static readonly string MainMenuPath = "res://assets/backgrounds/main-menu/background.png";
 	public static readonly string MistTexturePath = "res://assets/textures/mist.png";
 
-	static readonly string BackgroundBasePath = "res://assets/backgrounds/";
-
-	/// <summary>Arena background image paths, one per boss encounter (0–2).</summary>
-	public static readonly string[] SpaceArenaBackgroundPaths =
-	{
-		BackgroundBasePath + "space/1.png",
-		BackgroundBasePath + "space/2.png",
-		BackgroundBasePath + "space/3.png"
-	};
-
-	public static readonly string[] ForsakenCitadelArenaBackgroundPaths =
-	{
-		BackgroundBasePath + "forsaken-citadel/1.png",
-		BackgroundBasePath + "forsaken-citadel/1.png",
-		BackgroundBasePath + "forsaken-citadel/1.png"
-	};
 
 
-	public static readonly string[] AncientKeepArenaBackgroundPaths =
-	{
-		BackgroundBasePath + "ancient-keep/1.png",
-		BackgroundBasePath + "ancient-keep/1.png",
-		BackgroundBasePath + "ancient-keep/1.png"
-	};
 
-	public static readonly string[] CastleOfBloodArenaBackgroundPaths =
-	{
-		BackgroundBasePath + "castle-of-blood/1.png",
-		BackgroundBasePath + "castle-of-blood/1.png",
-		BackgroundBasePath + "castle-of-blood/1.png"
-	};
 
-	/// <summary>Single background for the Frozen Peak — the final boss arena.</summary>
-	public static readonly string[] FrozenPeakArenaBackgroundPaths =
-	{
-		BackgroundBasePath + "the-frozen-peak/background.png"
-	};
 
 
 	// ── Interactible assets ───────────────────────────────────────────────────
@@ -140,7 +105,6 @@ public static class AssetConstants
 	public static readonly string LandingImpactSoundPath = "res://assets/sound-effects/landing-impact.wav";
 	public static readonly string VictorySoundPath = "res://assets/music/victory.mp3";
 
-
 	public static readonly string ButtonClickPath = "res://assets/sound-effects/button-impact.wav";
 
 	public static readonly string RuneSfxPath = "res://assets/sound-effects/rune.wav";
@@ -163,10 +127,6 @@ public static class AssetConstants
 
 	// ── Vines enemy assets ────────────────────────────────────────────────────
 
-	static readonly string VinesBasePath = "res://assets/enemies/vines/";
-	public static readonly string VinesFrame1Path = VinesBasePath + "grow1.png";
-	public static readonly string VinesFrame2Path = VinesBasePath + "grow2.png";
-	public static readonly string VinesFrame3Path = VinesBasePath + "grow3.png";
 
 	// ── Equipment UI assets ───────────────────────────────────────────────────
 	public static readonly string EquipmentSlotFramePath = "res://assets/frames/equipment-slot.png";
@@ -194,8 +154,6 @@ public static class AssetConstants
 
 	// ── Scene backgrounds ─────────────────────────────────────────────────────
 
-	public static readonly string CampBackgroundPath = BackgroundBasePath + "camp/camp.png";
-	public static readonly string MapBackgroundPath = BackgroundBasePath + "map/world-map.png";
 
 	public static readonly string CinzelFontPath = "res://assets/fonts/cinzel/Cinzel-VariableFont_wght.ttf";
 }

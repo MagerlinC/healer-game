@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
@@ -20,17 +21,22 @@ using healerfantasy.SpellSystem;
 /// • Every <see cref="EruptionInterval"/> seconds — Infernal Eruption: a
 ///   3-second telegraphed AoE that scorches all party members for 60 damage
 ///   unless the player casts Deflect in time; uses the "cast" animation.
-///
-/// Animations use individual PNG frames from:
-///   res://assets/enemies/flying-demon/{anim}{n}.png
-///   idle   (4 frames, looping)
-///   attack (8 frames, one-shot → idle)
-///   cast   (4 frames, one-shot → idle)
-///   hurt   (4 frames, one-shot → idle)
-///   death  (6 frames, one-shot)
 /// </summary>
 public partial class FlyingDemon : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(4 / 8f, Loop: true),
+		["attack"] = new(8 / 12f),
+		["cast"] = new(4 / 8f),
+		["hurt"] = new(4 / 10f),
+		["death"] = new(6 / 8f)
+	};
+
 	public FlyingDemon()
 	{
 		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.ForsakenCitadelTier][0];
@@ -69,7 +75,7 @@ public partial class FlyingDemon : EnemyCharacter
 	BossFelBurnSpell _felBurnSpell;
 	BossInfernalEruptionSpell _eruptionSpell;
 
-	AnimatedSprite2D _sprite;
+	CharacterVisual _visual = null!;
 	AudioStreamPlayer _riserPlayer;
 
 	enum PendingAttack
@@ -83,7 +89,6 @@ public partial class FlyingDemon : EnemyCharacter
 	PendingAttack _pendingAttack;
 	Character _pendingTarget;
 
-	const string BasePath = "res://assets/enemies/flying-demon/";
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -109,10 +114,9 @@ public partial class FlyingDemon : EnemyCharacter
 		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.DeflectRiserSoundPath);
 		AddChild(_riserPlayer);
 
-		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		SetupAnimations();
-		_sprite.AnimationFinished += OnAnimationFinished;
-		_sprite.Play("idle");
+		_visual = CharacterVisual.Attach(this, Clips);
+		_visual.AnimationFinished += OnAnimationFinished;
+		_visual.Play("idle");
 		ApplyRuneModifiers();
 	}
 
@@ -167,7 +171,7 @@ public partial class FlyingDemon : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Melee;
-		_sprite.Play("attack");
+		_visual.Play("attack");
 	}
 
 	void CastHellfireBolt()
@@ -176,7 +180,7 @@ public partial class FlyingDemon : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.HellfireBolt;
-		_sprite.Play("cast");
+		_visual.Play("cast");
 	}
 
 	void CastFelBurn()
@@ -185,7 +189,7 @@ public partial class FlyingDemon : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.FelBurn;
-		_sprite.Play("cast");
+		_visual.Play("cast");
 	}
 
 	void BeginEruption()
@@ -195,7 +199,7 @@ public partial class FlyingDemon : EnemyCharacter
 		ParryWindowManager.OpenWindow(_eruptionSpell.Name, _eruptionSpell.Icon, EruptionWindup);
 		EmitSignalCastWindupStarted(_eruptionSpell.Name, _eruptionSpell.Icon, EruptionWindup);
 		_pendingAttack = PendingAttack.None;
-		_sprite.Play("cast");
+		_visual.Play("cast");
 	}
 
 	void ExecuteEruption()
@@ -231,18 +235,11 @@ public partial class FlyingDemon : EnemyCharacter
 
 		_pendingTarget = null;
 		_pendingAttack = PendingAttack.None;
-		_sprite.Play("idle");
+		_visual.Play("idle");
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-
-	// ── animation setup ───────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Builds SpriteFrames from individual PNG files at runtime.
-	/// File pattern: res://assets/enemies/flying-demon/{anim}{n}.png
-	/// </summary>
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
@@ -252,30 +249,4 @@ public partial class FlyingDemon : EnemyCharacter
 		EruptionInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-	void SetupAnimations()
-	{
-		var frames = new SpriteFrames();
-		frames.RemoveAnimation("default");
-
-		AddAnimFromFiles(frames, "idle", 4, 8f, true);
-		AddAnimFromFiles(frames, "attack", 8, 12f, false);
-		AddAnimFromFiles(frames, "cast", 4, 8f, false);
-		AddAnimFromFiles(frames, "hurt", 4, 10f, false);
-		AddAnimFromFiles(frames, "death", 6, 8f, false);
-
-		_sprite.SpriteFrames = frames;
-	}
-
-	void AddAnimFromFiles(SpriteFrames frames, string animName, int count, float fps, bool loop)
-	{
-		frames.AddAnimation(animName);
-		frames.SetAnimationLoop(animName, loop);
-		frames.SetAnimationSpeed(animName, fps);
-		for (var i = 1; i <= count; i++)
-		{
-			var path = $"{BasePath}{animName}{i}.png";
-			var texture = GD.Load<Texture2D>(path);
-			frames.AddFrame(animName, texture);
-		}
-	}
 }

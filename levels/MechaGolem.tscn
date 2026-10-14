@@ -11,8 +11,6 @@ script = ExtResource("Script_mecha_golem")
 CharacterName = "Mecha Golem"
 MaxMana = 200.0
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1435147411]
-
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1487878879]
 position = Vector2(0, 8)
 shape = SubResource("CapsuleShape2D_1")

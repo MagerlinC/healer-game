@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
@@ -22,18 +23,23 @@ using healerfantasy.SpellSystem;
 ///   telegraphed AoE during which the Golem raises its shield and builds a
 ///   catastrophic charge. If not deflected, all party members take 70 damage;
 ///   uses the "shield" animation as the telegraph.
-///
-/// Animations use individual PNG frames from:
-///   res://assets/enemies/mecha-golem/{anim}{n}.png
-///   idle   (4 frames, looping)
-///   attack (7 frames, one-shot → idle)
-///   cast   (7 frames, one-shot → idle)
-///   shield (8 frames, one-shot → idle)   ← used for Overload wind-up
-///   hurt   (8 frames, one-shot → idle)
-///   death  (23 frames, one-shot)
 /// </summary>
 public partial class MechaGolem : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(4 / 8f, Loop: true),
+		["attack"] = new(7 / 12f),
+		["cast"] = new(7 / 10f),
+		["shield"] = new(8 / 8f),
+		["hurt"] = new(8 / 12f),
+		["death"] = new(23 / 8f)
+	};
+
 	public MechaGolem()
 	{
 		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.ForsakenCitadelTier][1];
@@ -72,7 +78,7 @@ public partial class MechaGolem : EnemyCharacter
 	BossCrushedSpell _crushedSpell;
 	BossSystemOverloadSpell _systemOverloadSpell;
 
-	AnimatedSprite2D _sprite;
+	CharacterVisual _visual = null!;
 	AudioStreamPlayer _riserPlayer;
 
 	enum PendingAttack
@@ -86,7 +92,6 @@ public partial class MechaGolem : EnemyCharacter
 	PendingAttack _pendingAttack;
 	Character _pendingTarget;
 
-	const string BasePath = "res://assets/enemies/mecha-golem/";
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -113,11 +118,9 @@ public partial class MechaGolem : EnemyCharacter
 		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.DeflectRiserSoundPath);
 		AddChild(_riserPlayer);
 
-		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		_sprite.Scale = new Vector2(1.5f, 1.5f);
-		SetupAnimations();
-		_sprite.AnimationFinished += OnAnimationFinished;
-		_sprite.Play("idle");
+		_visual = CharacterVisual.Attach(this, Clips);
+		_visual.AnimationFinished += OnAnimationFinished;
+		_visual.Play("idle");
 		ApplyRuneModifiers();
 	}
 
@@ -172,7 +175,7 @@ public partial class MechaGolem : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Melee;
-		_sprite.Play("attack");
+		_visual.Play("attack");
 	}
 
 	void CastRocketBarrage()
@@ -183,7 +186,7 @@ public partial class MechaGolem : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.RocketBarrage;
-		_sprite.Play("cast");
+		_visual.Play("cast");
 	}
 
 	void CastMagneticPulse()
@@ -192,7 +195,7 @@ public partial class MechaGolem : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.MagneticPulse;
-		_sprite.Play("cast");
+		_visual.Play("cast");
 	}
 
 	/// <summary>
@@ -207,7 +210,7 @@ public partial class MechaGolem : EnemyCharacter
 		ParryWindowManager.OpenWindow(_systemOverloadSpell.Name, _systemOverloadSpell.Icon, OverloadWindup);
 		EmitSignalCastWindupStarted(_systemOverloadSpell.Name, _systemOverloadSpell.Icon, OverloadWindup);
 		_pendingAttack = PendingAttack.None;
-		_sprite.Play("shield");
+		_visual.Play("shield");
 	}
 
 	void ExecuteOverload()
@@ -243,13 +246,10 @@ public partial class MechaGolem : EnemyCharacter
 
 		_pendingTarget = null;
 		_pendingAttack = PendingAttack.None;
-		_sprite.Play("idle");
+		_visual.Play("idle");
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
-
-
-	// ── animation setup ───────────────────────────────────────────────────────
 
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
@@ -260,31 +260,4 @@ public partial class MechaGolem : EnemyCharacter
 		OverloadInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-	void SetupAnimations()
-	{
-		var frames = new SpriteFrames();
-		frames.RemoveAnimation("default");
-
-		AddAnimFromFiles(frames, "idle", 4, 8f, true);
-		AddAnimFromFiles(frames, "attack", 7, 12f, false);
-		AddAnimFromFiles(frames, "cast", 7, 10f, false);
-		AddAnimFromFiles(frames, "shield", 8, 8f, false);
-		AddAnimFromFiles(frames, "hurt", 8, 12f, false);
-		AddAnimFromFiles(frames, "death", 23, 8f, false);
-
-		_sprite.SpriteFrames = frames;
-	}
-
-	void AddAnimFromFiles(SpriteFrames frames, string animName, int count, float fps, bool loop)
-	{
-		frames.AddAnimation(animName);
-		frames.SetAnimationLoop(animName, loop);
-		frames.SetAnimationSpeed(animName, fps);
-		for (var i = 1; i <= count; i++)
-		{
-			var path = $"{BasePath}{animName}{i}.png";
-			var texture = GD.Load<Texture2D>(path);
-			frames.AddFrame(animName, texture);
-		}
-	}
 }

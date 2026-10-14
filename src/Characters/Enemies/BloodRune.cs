@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 using healerfantasy.SpellResources;
 
@@ -32,6 +34,15 @@ using healerfantasy.SpellResources;
 /// </summary>
 public partial class BloodRune : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(1 / 1f, Loop: true)
+	};
+
 	// ── public state ──────────────────────────────────────────────────────────
 
 	/// <summary>Display name shown on the compact health bar.</summary>
@@ -81,10 +92,9 @@ public partial class BloodRune : EnemyCharacter
 
 	readonly BossBloodBurstSpell _burstSpell = new();
 
-	AnimatedSprite2D _sprite = null!;
+	CharacterVisual _visual = null!;
 
 	const string BloodRuneGroupName = "blood_rune";
-	const string BloodRuneSpritePath = "res://assets/enemies/blood-knight/blood-rune.png";
 
 	// ── ctor ──────────────────────────────────────────────────────────────────
 
@@ -106,17 +116,9 @@ public partial class BloodRune : EnemyCharacter
 		RemoveFromGroup(GameConstants.BossGroupName);
 		AddToGroup(BloodRuneGroupName);
 
-		// ── sprite ───────────────────────────────────────────────────────────
-		_sprite = new AnimatedSprite2D();
-		var frames = new SpriteFrames();
-		frames.AddAnimation("idle");
-		frames.SetAnimationLoop("idle", true);
-		frames.SetAnimationSpeed("idle", 1f);
-		frames.AddFrame("idle", GD.Load<Texture2D>(BloodRuneSpritePath));
-		_sprite.SpriteFrames = frames;
-		_sprite.Scale        = new Vector2(0.25f, 0.25f);
-		AddChild(_sprite);
-		_sprite.Play("idle");
+		// ── visual (the rig follows its hover offset and scale pulse) ────────
+		_visual = CharacterVisual.Attach(this, Clips);
+		_visual.Scale = new Vector2(0.25f, 0.25f); // base scale; the pulse is relative to this
 
 		// ── begin casting Blood Burst immediately ─────────────────────────────
 		// Start the countdown timer now. The cast bar is started via the CastBar
@@ -150,14 +152,14 @@ public partial class BloodRune : EnemyCharacter
 	/// </summary>
 	void UpdateVisualEffects()
 	{
-		if (_sprite == null) return;
+		if (_visual == null) return;
 
 		var t = Time.GetTicksMsec() / 1000f;
 
 		// Hover: slow sine wave offset on the Y axis.
 		const float HoverAmplitude = 5f;
 		const float HoverFrequency = 0.9f;
-		_sprite.Offset = new Vector2(0f, Mathf.Sin(t * HoverFrequency * Mathf.Tau) * HoverAmplitude);
+		_visual.Offset = new Vector2(0f, Mathf.Sin(t * HoverFrequency * Mathf.Tau) * HoverAmplitude);
 
 		// Pulse: scale breathes between base and a larger value; frequency and
 		// amplitude ramp up as the cast progresses to signal mounting threat.
@@ -166,7 +168,7 @@ public partial class BloodRune : EnemyCharacter
 		var pulseAmplitude = Mathf.Lerp(0.02f, 0.08f, castProgress);
 		var pulse          = Mathf.Sin(t * pulseFrequency * Mathf.Tau) * 0.5f + 0.5f; // 0 → 1
 		var scale          = 0.25f + pulse * pulseAmplitude;
-		_sprite.Scale = new Vector2(scale, scale);
+		_visual.Scale = new Vector2(scale, scale);
 	}
 
 	// ── casting ───────────────────────────────────────────────────────────────
@@ -193,8 +195,8 @@ public partial class BloodRune : EnemyCharacter
 		// Cancel any active cast when the rune is killed.
 		_castBar?.StopCast();
 
-		if (_sprite != null)
-			_sprite.Modulate = new Color(0.4f, 0.1f, 0.1f, 0.5f);
+		if (_visual != null)
+			_visual.Modulate = new Color(0.4f, 0.1f, 0.1f, 0.5f);
 
 		var timer = GetTree().CreateTimer(0.6);
 		timer.Timeout += Despawn;

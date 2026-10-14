@@ -1,5 +1,6 @@
 using Godot;
 using healerfantasy;
+using healerfantasy.LastLight;
 
 namespace healerfantasy.Effects;
 
@@ -16,68 +17,39 @@ public partial class MirrorImageClone : Node2D
 	/// <summary>Horizontal offset from the parent character, in local space.</summary>
 	const float XOffset = -30f;
 
-	AnimatedSprite2D _sprite = null!;
+	/// <summary>Ghostly wax-blue tint (the Wick school) and a gentle shimmer.</summary>
+	static readonly Color Tint = new(0.62f, 0.8f, 1f, 0.6f);
+	const float PulseSpeed = 1.8f;
+	const float PulseStrength = 0.12f;
+
+	CharacterVisual _visual = null!;
+	float _t;
 
 	public override void _Ready()
 	{
-		_sprite = new AnimatedSprite2D();
-		_sprite.Scale = new Vector2(GameConstants.HealerSpriteScale, GameConstants.HealerSpriteScale);
+		// The same flame-headed figure as the healer, facing the other way. It glows,
+		// but is not the light source — the real healer keeps the scene's light.
+		_visual = CharacterVisual.Attach(this, new()
+		{
+			["idle"] = new(3 / 8f, Loop: true),
+			["cast"] = new(4 / 4f)
+		});
+		_visual.FlipH = true;
+		_visual.AnimationFinished += OnAnimationFinished;
+		SilhouetteRig.Attach(this, RigLibrary.Healer(), _visual, isLightSource: false);
 
-		// Face the opposite direction to the player for a true mirror-image look.
-		// The healer sprite is drawn facing left, so FlipH=true makes it face right.
-		_sprite.FlipH = true;
-
-		// Build SpriteFrames from the same healer assets the Player uses.
-		var frames = new SpriteFrames();
-
-		// SpriteFrames ships with one "default" animation — rename isn't exposed in
-		// the C# API so we add ours separately. The unused "default" is harmless.
-		frames.AddAnimation("idle");
-		frames.SetAnimationSpeed("idle", 8.0);
-		frames.SetAnimationLoop("idle", true);
-		foreach (var i in new[] { 1, 2, 3 })
-			frames.AddFrame("idle", GD.Load<Texture2D>($"res://assets/characters/healer/idle{i}.png"));
-
-		frames.AddAnimation("cast");
-		frames.SetAnimationSpeed("cast", 4.0);
-		frames.SetAnimationLoop("cast", false); // one-shot; returns to idle on finish
-		foreach (var i in new[] { 1, 2, 3, 4 })
-			frames.AddFrame("cast", GD.Load<Texture2D>($"res://assets/characters/healer/cast{i}.png"));
-
-		_sprite.SpriteFrames = frames;
-		_sprite.Play("idle");
-		_sprite.AnimationFinished += OnAnimationFinished;
-
-		// ── Ghostly chronomancy shader ────────────────────────────────────────────
-		// Blue-cyan tint with ~60% opacity so the clone reads as ethereal.
-		// A sine-wave pulse on alpha gives it a faint breathing / shimmering effect.
-		var shader = new Shader();
-		shader.Code = """
-		              shader_type canvas_item;
-		              uniform float pulse_speed : hint_range(0.5, 4.0) = 1.8;
-		              uniform float pulse_strength : hint_range(0.0, 0.3) = 0.12;
-		              uniform float base_alpha : hint_range(0.0, 1.0) = 0.58;
-		              uniform vec3 tint_color : source_color = vec3(0.35, 0.72, 1.0);
-		              uniform float tint_strength : hint_range(0.0, 1.0) = 0.52;
-		              void fragment() {
-		              	vec4 col = texture(TEXTURE, UV);
-		              	col.rgb = mix(col.rgb, tint_color, tint_strength * col.a);
-		              	float pulse = sin(TIME * pulse_speed) * pulse_strength;
-		              	col.a *= clamp(base_alpha + pulse, 0.0, 1.0);
-		              	COLOR = col;
-		              }
-		              """;
-
-		var mat = new ShaderMaterial();
-		mat.Shader = shader;
-		_sprite.Material = mat;
-
-		AddChild(_sprite);
+		Modulate = Tint;
 
 		// Offset so the clone hovers to the side of the caster, not on top of them.
 		Position = new Vector2(XOffset, 0f);
 
 		ZIndex = -1; // render behind the player
+	}
+
+	public override void _Process(double delta)
+	{
+		_t += (float)delta;
+		Modulate = new Color(Tint, Mathf.Clamp(Tint.A + Mathf.Sin(_t * PulseSpeed) * PulseStrength, 0f, 1f));
 	}
 
 	/// <summary>
@@ -86,13 +58,13 @@ public partial class MirrorImageClone : Node2D
 	/// </summary>
 	public void PlayCast()
 	{
-		_sprite?.Play("cast");
+		_visual?.Play("cast");
 	}
 
 	void OnAnimationFinished()
 	{
 		// Cast is a one-shot; return to the idle loop when it completes.
-		if (_sprite?.Animation == "cast")
-			_sprite.Play("idle");
+		if (_visual?.Animation == "cast")
+			_visual.Play("idle");
 	}
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 using healerfantasy.Runes;
 using healerfantasy.SpellResources;
@@ -22,15 +23,20 @@ using healerfantasy.SpellSystem;
 ///   second wind-up for Structural Crush. Plays a riser sound and opens a parry
 ///   window. If the player casts Deflect during the wind-up, the attack is
 ///   negated; otherwise all party members take 35 damage on resolution.
-///
-/// Animations are driven by a padded uniform sprite sheet
-/// (crystal_knight_sheet.png, 80×80 frames):
-///   Row 0 — "idle"   (4 frames, looping)
-///   Row 1 — "attack" (5 frames, one-shot → returns to idle)
-///   Row 2 — "spell"  (2 frames, one-shot → returns to idle)
 /// </summary>
 public partial class CrystalKnight : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(4 / 8f, Loop: true),
+		["attack"] = new(5 / 10f),
+		["spell"] = new(2 / 4f)
+	};
+
 	public CrystalKnight()
 	{
 		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.AncientKeepTier][0];
@@ -74,7 +80,7 @@ public partial class CrystalKnight : EnemyCharacter
 	BossCrystalDecaySpell _decaySpell;
 	BossStructuralCrushSpell _crushSpell;
 
-	AnimatedSprite2D _sprite;
+	CharacterVisual _visual = null!;
 	AudioStreamPlayer _riserPlayer;
 
 	// Tracks which attack animation is in flight so OnAnimationFinished knows
@@ -91,7 +97,6 @@ public partial class CrystalKnight : EnemyCharacter
 	Character _pendingTarget;
 
 	// ── constants ─────────────────────────────────────────────────────────────
-	const int FrameSize = 80; // uniform cell size in crystal_knight_sheet.png
 
 	const string RiserSoundPath = "res://assets/sound-effects/riser.mp3";
 
@@ -122,11 +127,9 @@ public partial class CrystalKnight : EnemyCharacter
 		AddChild(_riserPlayer);
 
 		// ── sprite setup ──────────────────────────────────────────────────────
-		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		_sprite.Scale = new Vector2(1.5f, 1.5f);
-		SetupAnimations();
-		_sprite.AnimationFinished += OnAnimationFinished;
-		_sprite.Play("idle");
+		_visual = CharacterVisual.Attach(this, Clips);
+		_visual.AnimationFinished += OnAnimationFinished;
+		_visual.Play("idle");
 		ApplyRuneModifiers();
 	}
 
@@ -193,7 +196,7 @@ public partial class CrystalKnight : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Melee;
-		_sprite.Play("attack");
+		_visual.Play("attack");
 	}
 
 	void CastCrystalBlast()
@@ -205,7 +208,7 @@ public partial class CrystalKnight : EnemyCharacter
 		// Highlight the target immediately so the player sees who will be hit
 		// before the animation completes and damage lands.
 		RaiseBossSpellTargets(target.CharacterName);
-		_sprite.Play("spell");
+		_visual.Play("spell");
 	}
 
 	void CastCrystalDecay()
@@ -216,7 +219,7 @@ public partial class CrystalKnight : EnemyCharacter
 		_pendingAttack = PendingAttack.CrystalDecay;
 		// Same: announce the target so the player can start preparing a dispel.
 		RaiseBossSpellTargets(target.CharacterName);
-		_sprite.Play("spell");
+		_visual.Play("spell");
 	}
 
 	/// <summary>
@@ -234,7 +237,7 @@ public partial class CrystalKnight : EnemyCharacter
 		// Play the spell animation as a visual telegraph; the actual hit comes
 		// from the wind-up timer rather than OnAnimationFinished.
 		_pendingAttack = PendingAttack.None; // animation finish won't fire a spell
-		_sprite.Play("spell");
+		_visual.Play("spell");
 	}
 
 	/// <summary>
@@ -279,22 +282,11 @@ public partial class CrystalKnight : EnemyCharacter
 
 		_pendingTarget = null;
 		_pendingAttack = PendingAttack.None;
-		_sprite.Play("idle");
+		_visual.Play("idle");
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-
-	// ── animation setup ───────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Builds the SpriteFrames resource from crystal_knight_sheet.png at runtime.
-	///
-	/// Sheet layout (each cell is 80×80 px):
-	///   Row 0 — idle   (4 frames)
-	///   Row 1 — attack (5 frames)
-	///   Row 2 — spell  (2 frames)
-	/// </summary>
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
@@ -304,33 +296,4 @@ public partial class CrystalKnight : EnemyCharacter
 		CrushInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-	void SetupAnimations()
-	{
-		var texture = GD.Load<Texture2D>(AssetConstants.EnemyAssets + "/crystal-knight/crystal_knight_sheet.png");
-		var frames = new SpriteFrames();
-		frames.RemoveAnimation("default");
-
-		AddAnim(frames, "idle", texture, 0, 4, 8f, true);
-		AddAnim(frames, "attack", texture, 1, 5, 10f, false);
-		AddAnim(frames, "spell", texture, 2, 2, 4f, false);
-
-		_sprite.SpriteFrames = frames;
-	}
-
-	static void AddAnim(SpriteFrames frames, string name, Texture2D texture,
-		int row, int count, float fps, bool loop)
-	{
-		frames.AddAnimation(name);
-		frames.SetAnimationLoop(name, loop);
-		frames.SetAnimationSpeed(name, fps);
-		for (var i = 0; i < count; i++)
-		{
-			var atlas = new AtlasTexture
-			{
-				Atlas = texture,
-				Region = new Rect2(i * FrameSize, row * FrameSize, FrameSize, FrameSize)
-			};
-			frames.AddFrame(name, atlas);
-		}
-	}
 }

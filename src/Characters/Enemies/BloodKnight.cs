@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
@@ -30,14 +31,20 @@ using healerfantasy.UI;
 /// • Enrage at 30% HP — once the Blood Knight falls below 30% health he
 ///   enters a bloodlust frenzy, permanently increasing melee and cleave
 ///   damage by 40%.
-///
-/// Animations (individual PNGs in res://assets/enemies/blood-knight/):
-///   "idle"   — idle1–idle3   (looping)
-///   "attack" — attack1–attack3 (one-shot → idle)
-///   "cast"   — cast1–cast3   (one-shot → idle; also used during Blood Drain wind-up)
 /// </summary>
 public partial class BloodKnight : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(3 / 4f, Loop: true),
+		["attack"] = new(3 / 10f),
+		["cast"] = new(3 / 6f)
+	};
+
 	public BloodKnight()
 	{
 		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.CastleOfBloodTier][0];
@@ -82,7 +89,7 @@ public partial class BloodKnight : EnemyCharacter
 	BossBloodKnightCleaveSpell _cleaveSpell;
 	BossBloodDrainSpell _drainSpell;
 
-	AnimatedSprite2D _sprite;
+	CharacterVisual _visual = null!;
 	AudioStreamPlayer _riserPlayer;
 
 	bool _enraged;
@@ -104,7 +111,6 @@ public partial class BloodKnight : EnemyCharacter
 	PendingAttack _pendingAttack;
 	Character _pendingTarget;
 
-	const string AssetBase = "res://assets/enemies/blood-knight/";
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -129,11 +135,9 @@ public partial class BloodKnight : EnemyCharacter
 		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.DeflectRiserSoundPath);
 		AddChild(_riserPlayer);
 
-		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		_sprite.Scale = new Vector2(0.4f, 0.4f);
-		SetupAnimations();
-		_sprite.AnimationFinished += OnAnimationFinished;
-		_sprite.Play("idle");
+		_visual = CharacterVisual.Attach(this, Clips);
+		_visual.AnimationFinished += OnAnimationFinished;
+		_visual.Play("idle");
 		ApplyRuneModifiers();
 
 		// Auto-discover the GameUI from the parent World scene.
@@ -212,7 +216,7 @@ public partial class BloodKnight : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Melee;
-		_sprite.Play("attack");
+		_visual.Play("attack");
 	}
 
 	void PerformCleave()
@@ -230,7 +234,7 @@ public partial class BloodKnight : EnemyCharacter
 		for (var i = 0; i < cleaveTargets.Count; i++)
 			names[i] = cleaveTargets[i].CharacterName;
 		RaiseBossSpellTargets(names);
-		_sprite.Play("attack");
+		_visual.Play("attack");
 	}
 
 	/// <summary>
@@ -245,7 +249,7 @@ public partial class BloodKnight : EnemyCharacter
 		ParryWindowManager.OpenWindow(_drainSpell.Name, _drainSpell.Icon, DrainWindupDuration);
 		EmitSignalCastWindupStarted(_drainSpell.Name, _drainSpell.Icon, DrainWindupDuration);
 		_pendingAttack = PendingAttack.None; // animation finish won't fire a spell
-		_sprite.Play("cast");
+		_visual.Play("cast");
 	}
 
 	/// <summary>
@@ -295,7 +299,7 @@ public partial class BloodKnight : EnemyCharacter
 		_pendingAttack = PendingAttack.None;
 
 		if (IsAlive)
-			_sprite.Play("idle");
+			_visual.Play("idle");
 	}
 
 	// ── Blood Rune management ─────────────────────────────────────────────────
@@ -349,34 +353,12 @@ public partial class BloodKnight : EnemyCharacter
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-
-	// ── animation setup ───────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Loads individual PNG frames from res://assets/enemies/blood-knight/.
-	///
-	/// idle1–3  (looping, 4 fps)
-	/// attack1–3 (one-shot, 10 fps)
-	/// cast1–3   (one-shot, 6 fps; used for Blood Drain wind-up)
-	/// </summary>
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
 		MeleeAttackInterval /= GameConstants.RuneTimeHasteMultiplier;
 		CleaveInterval /= GameConstants.RuneTimeHasteMultiplier;
 		DrainInterval /= GameConstants.RuneTimeHasteMultiplier;
-	}
-
-	void SetupAnimations()
-	{
-		var frames = new SpriteFrames();
-		frames.RemoveAnimation("default");
-
-		AddAnimFromFiles(frames, "idle", AssetBase + "idle", 3, 4f, true);
-		AddAnimFromFiles(frames, "attack", AssetBase + "attack", 3, 10f, false);
-		AddAnimFromFiles(frames, "cast", AssetBase + "cast", 3, 6f, false);
-
-		_sprite.SpriteFrames = frames;
 	}
 
 }

@@ -65,7 +65,6 @@ public abstract partial class LoadoutController : Node2D
 		(SpellSchool.Sanguimancy, SchoolInfo.Name(SpellSchool.Sanguimancy))
 	};
 
-
 	protected static readonly (SpellSchool School, string Name, Color Accent)[] TalentSchoolOrder =
 	{
 		(SpellSchool.Generic, "General", new Color(0.70f, 0.65f, 0.60f)),
@@ -353,69 +352,38 @@ public abstract partial class LoadoutController : Node2D
 	/// The sprite keeps its bottom edge aligned with the camera so wider/taller
 	/// aspect ratios crop from the top instead of hiding the floor.
 	/// </summary>
+	/// <summary>Place a bonfire (a second light that holds the dark back) at the camp fire.</summary>
+	protected virtual bool HasBonfire => false;
+
 	/// <summary>
-	/// When true (and <see cref="LastLightStyle.Enabled"/>), the scene is drawn in
-	/// the Last Light style: a sanctuary of broken stones, the healer as the only
-	/// light, and darkness creeping in around it.
+	/// Builds the sanctuary backdrop and the darkness that creeps in on the healer's light,
+	/// and returns the world-space left and right edges of the visible area for player clamping.
 	/// </summary>
-	protected virtual bool UseLastLightScene => false;
-
-	/// <summary>Last Light scenes only: place a bonfire (a second light) at the camp fire.</summary>
-	protected virtual bool LastLightBonfire => false;
-
-	bool LastLightScene => LastLightStyle.Enabled && UseLastLightScene;
-
-	protected (float BgLeft, float BgRight) SetupBackground(string texturePath)
+	protected (float BgLeft, float BgRight) SetupBackground()
 	{
 		var camera = GetNode<Camera2D>("Camera2D");
 		var viewSize = GetViewport().GetVisibleRect().Size;
 		var worldW = viewSize.X / camera.Zoom.X;
 		var worldH = viewSize.Y / camera.Zoom.Y;
 
-		if (LastLightScene)
+		var backLayer = new CanvasLayer { Layer = -10 };
+		AddChild(backLayer);
+		backLayer.AddChild(new LastLightBackground { BackgroundPreset = LastLightBackground.Preset.Sanctuary });
+
+		// Above the world, below the HUD (5) and overlay panels (10).
+		var darkLayer = new CanvasLayer { Layer = 1 };
+		AddChild(darkLayer);
+		darkLayer.AddChild(new CreepingDarkness { Radius = 0.34f, MaxDark = 0.88f });
+
+		if (HasBonfire)
 		{
-			var backLayer = new CanvasLayer { Layer = -10 };
-			AddChild(backLayer);
-			backLayer.AddChild(new LastLightBackground { BackgroundPreset = LastLightBackground.Preset.Sanctuary });
-
-			// Above the world, below the HUD (5) and overlay panels (10).
-			var darkLayer = new CanvasLayer { Layer = 1 };
-			AddChild(darkLayer);
-			darkLayer.AddChild(new CreepingDarkness { Radius = 0.34f, MaxDark = 0.88f });
-
-			if (LastLightBonfire)
+			AddChild(new Bonfire
 			{
-				AddChild(new Bonfire
-				{
-					Position = BonfireSmokePosition(camera.Position) + new Vector2(0f, 16f),
-					Scale = new Vector2(1.6f, 1.6f)
-				});
-				SetupBonfireSmoke(camera.Position);
-			}
-
-			return (camera.Position.X - worldW / 2f, camera.Position.X + worldW / 2f);
+				Position = BonfireSmokePosition(camera.Position) + new Vector2(0f, 16f),
+				Scale = new Vector2(1.6f, 1.6f)
+			});
+			SetupBonfireSmoke(camera.Position);
 		}
-
-		var bg = new Sprite2D
-		{
-			Texture = GD.Load<Texture2D>(texturePath),
-			Centered = true,
-			Position = camera.Position
-		};
-		var bgScale = Mathf.Max(worldW / bg.Texture.GetWidth(), worldH / bg.Texture.GetHeight());
-		bg.Scale = new Vector2(bgScale, bgScale);
-
-		var scaledHeight = bg.Texture.GetHeight() * bgScale;
-		bg.Position = new Vector2(
-			camera.Position.X,
-			camera.Position.Y - (scaledHeight - worldH) / 2f);
-
-		AddChild(bg);
-
-		// ── Bonfire smoke ─────────────────────────────────────────────────────
-		// Spawn (or pick up an editor-placed) BonfireSmoke node right after the
-		// background so it renders behind interactibles and the player.
-		SetupBonfireSmoke(camera.Position);
 
 		return (camera.Position.X - worldW / 2f, camera.Position.X + worldW / 2f);
 	}
@@ -476,7 +444,6 @@ public abstract partial class LoadoutController : Node2D
 		};
 		AddChild(_player);
 
-		if (LastLightScene)
 		{
 			// Start a little up from the floor edge so the whole circle of light is on screen.
 			_player.Position = new Vector2(xPosition, FloorHeight - 110f);

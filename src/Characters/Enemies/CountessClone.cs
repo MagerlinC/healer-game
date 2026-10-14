@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 
 /// <summary>
@@ -29,6 +31,15 @@ using healerfantasy;
 /// </summary>
 public partial class CountessClone : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(2 / 3f, Loop: true)
+	};
+
 	// ── Construction ──────────────────────────────────────────────────────────
 
 	/// <summary>True for the one clone that actually ends the mechanic when found.</summary>
@@ -49,12 +60,11 @@ public partial class CountessClone : EnemyCharacter
 
 	// ── Visuals ───────────────────────────────────────────────────────────────
 
-	const string AssetBase = "res://assets/enemies/the-countess/";
 
 	/// <summary>Modulate applied when the mouse is over the sprite.</summary>
 	static readonly Color HoverModulate = new(2.0f, 1.8f, 0.5f);
 
-	AnimatedSprite2D _sprite;
+	CharacterVisual _visual = null!;
 	bool _isHovered;
 
 	// ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -70,11 +80,8 @@ public partial class CountessClone : EnemyCharacter
 			: "Reflection_" + GetInstanceId();
 
 		// ── Sprite ────────────────────────────────────────────────────────────
-		_sprite = new AnimatedSprite2D();
-		_sprite.Scale = new Vector2(0.4f, 0.4f);
-		AddChild(_sprite);
-		SetupAnimations();
-		_sprite.Play("idle");
+		_visual = CharacterVisual.Attach(this, Clips);
+		_visual.Play("idle");
 
 		// ── Body-entered detector (player walking into clone) ─────────────────
 		var bodyDetector = new Area2D();
@@ -112,7 +119,7 @@ public partial class CountessClone : EnemyCharacter
 		if (nowHovered != _isHovered)
 		{
 			_isHovered = nowHovered;
-			_sprite.Modulate = _isHovered ? HoverModulate : Colors.White;
+			_visual.Modulate = _isHovered ? HoverModulate : Colors.White;
 		}
 
 		CourtOfReflectionsRegistry.SetHovered(this, _isHovered);
@@ -157,21 +164,4 @@ public partial class CountessClone : EnemyCharacter
 
 	// ── Animation setup ───────────────────────────────────────────────────────
 
-	/// <summary>Mirrors TheCountess's idle animation so clones look identical.</summary>
-	void SetupAnimations()
-	{
-		var frames = new SpriteFrames();
-		frames.RemoveAnimation("default");
-
-		frames.AddAnimation("idle");
-		frames.SetAnimationLoop("idle", true);
-		frames.SetAnimationSpeed("idle", 3f);
-		for (var i = 1; i <= 2; i++)
-		{
-			var tex = GD.Load<Texture2D>(AssetBase + $"idle{i}.png");
-			frames.AddFrame("idle", tex);
-		}
-
-		_sprite.SpriteFrames = frames;
-	}
 }

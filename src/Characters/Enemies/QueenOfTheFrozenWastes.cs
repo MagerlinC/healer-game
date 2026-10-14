@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 using healerfantasy.Effects;
 using healerfantasy.Runes;
@@ -7,6 +9,18 @@ using healerfantasy.SpellSystem;
 
 public partial class QueenOfTheFrozenWastes : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(3 / 4f, Loop: true),
+		["attack"] = new(4 / 10f),
+		["cast"] = new(4 / 6f),
+		["ice_block"] = new(1 / 1f, Loop: true)
+	};
+
 	public QueenOfTheFrozenWastes()
 	{
 		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.FrozenPeakTier][0];
@@ -87,7 +101,7 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 	BossQueenIceBlockSpell _iceBlockSpell;
 	BossQueenAbsoluteZeroSpell _absoluteZeroSpell;
 
-	AnimatedSprite2D _sprite;
+	CharacterVisual _visual = null!;
 
 	enum PendingCast
 	{
@@ -100,7 +114,6 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 
 	PendingCast _pendingCast;
 
-	const string AssetBase = "res://assets/enemies/queen-of-the-frozen-wastes/";
 
 	// ── invulnerability ───────────────────────────────────────────────────────
 
@@ -145,11 +158,9 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(SnowstormChannelStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(SnowstormChannelEnded));
 
-		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		_sprite.Scale = new Vector2(0.4f, 0.4f);
-		SetupAnimations();
-		_sprite.AnimationFinished += OnAnimationFinished;
-		_sprite.Play("idle");
+		_visual = CharacterVisual.Attach(this, Clips);
+		_visual.AnimationFinished += OnAnimationFinished;
+		_visual.Play("idle");
 		ApplyRuneModifiers();
 	}
 
@@ -267,7 +278,7 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 	{
 		_pendingCast = PendingCast.Snowstorm;
 		_castWindupTimer = _snowstormSpell.CastTime;
-		_sprite.Play("cast");
+		_visual.Play("cast");
 		EmitSignalCastWindupStarted("Snowstorm", _snowstormSpell.Icon, _snowstormSpell.CastTime);
 	}
 
@@ -279,7 +290,7 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 	{
 		_pendingCast = PendingCast.BurstOfWinter;
 		_castWindupTimer = _burstOfWinterSpell.CastTime;
-		_sprite.Play("cast");
+		_visual.Play("cast");
 		EmitSignalCastWindupStarted("Burst of Winter", _burstOfWinterSpell.Icon, _burstOfWinterSpell.CastTime);
 	}
 
@@ -291,7 +302,7 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 	{
 		_pendingCast = PendingCast.Icicle;
 		_castWindupTimer = _icicleSpell.CastTime;
-		_sprite.Play("attack");
+		_visual.Play("attack");
 		EmitSignalCastWindupStarted("Volatile Icicle", _icicleSpell.Icon, _icicleSpell.CastTime);
 	}
 
@@ -321,7 +332,7 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 		_absoluteZeroTimer = AbsoluteZeroDuration;
 
 		AddShield(shieldAmount);
-		_sprite.Play("ice_block");
+		_visual.Play("ice_block");
 
 		// Show an Absolute Zero cast bar (8 seconds, fills from 0 → 1).
 		EmitSignalCastWindupStarted("Absolute Zero", _absoluteZeroSpell.Icon, AbsoluteZeroDuration);
@@ -360,7 +371,7 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 
 		// Return to idle animation.
 		if (IsAlive)
-			_sprite.Play("idle");
+			_visual.Play("idle");
 	}
 
 	// ── Snowstorm channel callbacks ───────────────────────────────────────────
@@ -437,7 +448,7 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 		_pendingCast = PendingCast.None;
 
 		if (IsAlive && !_isInIceBlock)
-			_sprite.Play(_isSnowstormChanneling ? "cast" : "idle");
+			_visual.Play(_isSnowstormChanneling ? "cast" : "idle");
 	}
 
 	// ── animation callbacks ───────────────────────────────────────────────────
@@ -448,13 +459,13 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 		// the boss visually holds the casting pose for the full CastTime duration.
 		if (_pendingCast != PendingCast.None)
 		{
-			_sprite.Play(_sprite.Animation);
+			_visual.Play(_visual.Animation);
 			return;
 		}
 
 		// No cast in progress — return to idle (or channel anim / ice block).
 		if (IsAlive && !_isInIceBlock)
-			_sprite.Play(_isSnowstormChanneling ? "cast" : "idle");
+			_visual.Play(_isSnowstormChanneling ? "cast" : "idle");
 	}
 
 	// ── Frozen Terror phase ───────────────────────────────────────────────────
@@ -521,7 +532,7 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 		_iceBlockTimer = Mathf.Max(_iceBlockTimer, 10f);
 
 		if (IsAlive)
-			_sprite.Play("idle");
+			_visual.Play("idle");
 	}
 
 	// ── Cone of Cold phase ───────────────────────────────────────────────────
@@ -589,7 +600,7 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 		_iceBlockTimer = Mathf.Max(_iceBlockTimer, 12f);
 
 		if (IsAlive)
-			_sprite.Play("idle");
+			_visual.Play("idle");
 	}
 
 	// ── combat actions (melee) ────────────────────────────────────────────────
@@ -602,7 +613,7 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 	{
 		_pendingCast = PendingCast.Melee;
 		_castWindupTimer = 0.5f; // visual delay; matches attack animation length
-		_sprite.Play("attack");
+		_visual.Play("attack");
 	}
 
 	// ── Frostbite helpers ─────────────────────────────────────────────────────
@@ -663,8 +674,6 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 		GD.Print($"[QueenOfTheFrozenWastes] Frostbite — stacks: {_frostbiteEffect.CurrentStacks} (moving: {isMoving}).");
 	}
 
-	// ── animation setup ───────────────────────────────────────────────────────
-
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
@@ -675,23 +684,4 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 		IceBlockInterval /= GameConstants.RuneTimeHasteMultiplier;
 	}
 
-	void SetupAnimations()
-	{
-		var frames = new SpriteFrames();
-		frames.RemoveAnimation("default");
-
-		AddAnimFromFiles(frames, "idle", AssetBase + "idle", 3, 4f, true);
-		AddAnimFromFiles(frames, "attack", AssetBase + "attack", 4, 10f, false);
-		AddAnimFromFiles(frames, "cast", AssetBase + "cast", 4, 6f, false);
-
-		// Ice Block — single static frame; looping so it holds indefinitely.
-		frames.AddAnimation("ice_block");
-		frames.SetAnimationLoop("ice_block", true);
-		frames.SetAnimationSpeed("ice_block", 1f);
-		var iceBlockTex = GD.Load<Texture2D>(AssetBase + "queen-ice-block.png");
-		if (iceBlockTex != null)
-			frames.AddFrame("ice_block", iceBlockTex);
-
-		_sprite.SpriteFrames = frames;
-	}
 }

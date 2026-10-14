@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight;
 using healerfantasy;
 using healerfantasy.Effects;
 using healerfantasy.SpellResources;
@@ -41,14 +42,20 @@ using healerfantasy.SpellSystem;
 /// must identify and interact with the real Countess (by walking into her or
 /// dispelling her) to end the mechanic. Interacting with a copy removes only
 /// that copy. Hovering over any copy glows it gold as a targeting indicator.
-///
-/// Animations (individual PNGs in res://assets/enemies/the-countess/):
-///   "idle"    — idle1–idle2     (looping)
-///   "attack"  — attack1–attack4 (one-shot → idle)
-///   "casting" — casting1–casting3 (one-shot → idle; used for spells and Nova wind-up)
 /// </summary>
 public partial class TheCountess : EnemyCharacter
 {
+	/// <summary>
+	/// Animation clips (frames / fps from the original sprites). These are gameplay:
+	/// an attack's spell is cast when its clip finishes, so a clip's length is its wind-up.
+	/// </summary>
+	static readonly Dictionary<string, CharacterVisual.Clip> Clips = new()
+	{
+		["idle"] = new(2 / 3f, Loop: true),
+		["attack"] = new(4 / 10f),
+		["casting"] = new(3 / 6f)
+	};
+
 	public TheCountess()
 	{
 		MaxHealth = GameConstants.BossHealthBaseValuesByDungeonTier[GameConstants.CastleOfBloodTier][1];
@@ -105,7 +112,7 @@ public partial class TheCountess : EnemyCharacter
 	BossCountessSanguineNovaSpell _novaSpell;
 	BossCountessBloodShieldSpell _shieldSpell;
 
-	AnimatedSprite2D _sprite;
+	CharacterVisual _visual = null!;
 	AudioStreamPlayer _riserPlayer;
 
 	bool _bloodShieldUsed;
@@ -154,7 +161,6 @@ public partial class TheCountess : EnemyCharacter
 	PendingAttack _pendingAttack;
 	Character _pendingTarget;
 
-	const string AssetBase = "res://assets/enemies/the-countess/";
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -184,11 +190,9 @@ public partial class TheCountess : EnemyCharacter
 		_riserPlayer.Stream = GD.Load<AudioStream>(AssetConstants.DeflectRiserSoundPath);
 		AddChild(_riserPlayer);
 
-		_sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		_sprite.Scale = new Vector2(0.4f, 0.4f);
-		SetupAnimations();
-		_sprite.AnimationFinished += OnAnimationFinished;
-		_sprite.Play("idle");
+		_visual = CharacterVisual.Attach(this, Clips);
+		_visual.AnimationFinished += OnAnimationFinished;
+		_visual.Play("idle");
 		ApplyRuneModifiers();
 	}
 
@@ -306,7 +310,7 @@ public partial class TheCountess : EnemyCharacter
 		_pendingTarget = null;
 
 		// Hide the boss sprite — she "vanishes".
-		_sprite.Visible = false;
+		_visual.Visible = false;
 
 		// Notify UI to hide the boss health bar.
 		EmitSignalCourtOfReflectionsStarted();
@@ -386,8 +390,8 @@ public partial class TheCountess : EnemyCharacter
 				c.RemoveEffect("CourtOfReflections");
 
 		// Make the Countess visible and attackable again.
-		_sprite.Visible = true;
-		_sprite.Play("idle");
+		_visual.Visible = true;
+		_visual.Play("idle");
 
 		// Notify UI to re-show the boss health bar.
 		EmitSignalCourtOfReflectionsEnded();
@@ -409,7 +413,7 @@ public partial class TheCountess : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Melee;
-		_sprite.Play("attack");
+		_visual.Play("attack");
 	}
 
 	void CastBloodBolt()
@@ -418,7 +422,7 @@ public partial class TheCountess : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.BloodBolt;
-		_sprite.Play("casting");
+		_visual.Play("casting");
 	}
 
 	void CastCrimsonCurse()
@@ -427,7 +431,7 @@ public partial class TheCountess : EnemyCharacter
 		if (target == null) return;
 		_pendingTarget = target;
 		_pendingAttack = PendingAttack.Curse;
-		_sprite.Play("casting");
+		_visual.Play("casting");
 	}
 
 	/// <summary>
@@ -441,7 +445,7 @@ public partial class TheCountess : EnemyCharacter
 		ParryWindowManager.OpenWindow(_novaSpell.Name, _novaSpell.Icon, NovaWindupDuration);
 		EmitSignalCastWindupStarted(_novaSpell.Name, _novaSpell.Icon, NovaWindupDuration);
 		_pendingAttack = PendingAttack.None;
-		_sprite.Play("casting");
+		_visual.Play("casting");
 	}
 
 	/// <summary>
@@ -484,21 +488,11 @@ public partial class TheCountess : EnemyCharacter
 		_pendingAttack = PendingAttack.None;
 
 		if (IsAlive)
-			_sprite.Play("idle");
+			_visual.Play("idle");
 	}
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-
-	// ── animation setup ───────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Loads individual PNG frames from res://assets/enemies/the-countess/.
-	///
-	/// idle1–2     (looping, 3 fps)
-	/// attack1–4   (one-shot, 10 fps)
-	/// casting1–3  (one-shot, 6 fps; used for spells and Nova wind-up)
-	/// </summary>
 	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
@@ -506,18 +500,6 @@ public partial class TheCountess : EnemyCharacter
 		BloodBoltInterval /= GameConstants.RuneTimeHasteMultiplier;
 		CurseInterval /= GameConstants.RuneTimeHasteMultiplier;
 		NovaInterval /= GameConstants.RuneTimeHasteMultiplier;
-	}
-
-	void SetupAnimations()
-	{
-		var frames = new SpriteFrames();
-		frames.RemoveAnimation("default");
-
-		AddAnimFromFiles(frames, "idle", AssetBase + "idle", 2, 3f, true);
-		AddAnimFromFiles(frames, "attack", AssetBase + "attack", 4, 10f, false);
-		AddAnimFromFiles(frames, "casting", AssetBase + "casting", 3, 6f, false);
-
-		_sprite.SpriteFrames = frames;
 	}
 
 }
