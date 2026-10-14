@@ -17,7 +17,7 @@ public class CrystalRing : EquippableItem
 	public CrystalRing()
 	{
 		Name = "Crystal ring";
-		Description = "+20 maximum mana.";
+		Description = "+20 maximum kindling.";
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Ring1;
 		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(5));

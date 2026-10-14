@@ -132,7 +132,7 @@ public partial class ActionBar : HBoxContainer
 
 	void SetIconShadingBasedOnCharacterDeath(Character character)
 	{
-		if (character.Name != GameConstants.HealerName) return;
+		if (character.CharacterName != GameConstants.HealerName) return;
 		_isPlayerDead = true;
 	}
 

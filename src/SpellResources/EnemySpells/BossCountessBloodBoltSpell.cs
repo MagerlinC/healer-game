@@ -16,7 +16,7 @@ public partial class BossCountessBloodBoltSpell : SpellResource
 		Name = "Blood Bolt";
 		Description = "A condensed bolt of cursed blood hurled at a random party member.";
 		Tags = SpellTags.Damage;
-		School = SpellSchool.Kindling;
+		School = SpellSchool.Pyre;
 		ManaCost = 0f;
 		CastTime = 0f;
 		TargetingType = TargetingType.Enemy;

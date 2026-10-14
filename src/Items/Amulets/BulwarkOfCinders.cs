@@ -13,7 +13,7 @@ public class BulwarkOfCinders : EquippableItem
 	public BulwarkOfCinders()
 	{
 		Name = "Bulwark of Cinders";
-		Description = $"{100 * ShieldConversion:F0}% of overhealing is turned into shield.";
+		Description = $"{100 * ShieldConversion:F0}% of light that overflows a full target is turned into shield.";
 		Rarity = ItemRarity.Epic;
 		Slot = EquipSlot.Amulet;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(2));

@@ -23,7 +23,7 @@ public partial class DripSpell : SpellResource
 	{
 		Name = "Drip";
 		Description =
-			$"Traps an ally in an slow drip of wax. After {Delay}s, the wax falls, restoring {ManaAmount} mana.";
+			$"Traps an ally in a slow drip of wax. After {Delay}s, the wax falls, restoring {ManaAmount} kindling.";
 		ManaCost = 8f;
 		CastTime = 0.0f;
 		Cooldown = 8f;

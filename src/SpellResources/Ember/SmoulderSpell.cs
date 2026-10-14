@@ -15,7 +15,7 @@ public partial class SmoulderSpell : SpellResource
 	public SmoulderSpell()
 	{
 		Name = "Smoulder";
-		Description = $"Heals the target for {HealPerTick} every {TickInterval}s for {EffectDuration}s.";
+		Description = $"Restores {HealPerTick} light to the target every {TickInterval}s for {EffectDuration}s.";
 		ManaCost = 6f;
 		CastTime = 0.0f;
 		School = SpellSchool.Ember;

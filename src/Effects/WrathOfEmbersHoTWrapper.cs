@@ -46,7 +46,7 @@ public partial class WrathOfEmbersHoTWrapper : HealOverTimeEffect
 				Icon = Icon,
 				SourceCharacterName = SourceCharacterName,
 				AbilityName = "Wrath of Embers",
-				Description = "Wrath of Embers: converted from an expiring heal-over-time effect."
+				Description = "Wrath of Embers: converted from an expiring lingering light effect."
 			});
 		}
 	}

@@ -884,7 +884,7 @@ public partial class VictoryScreen : CanvasLayer
 		var bossNameLbl = Stat(enc.BossName, new Color(0.88f, 0.84f, 0.78f));
 		bossNameLbl.CustomMinimumSize = new Vector2(130f, 0f);
 		row.AddChild(bossNameLbl);
-		row.AddChild(Stat($"Healing: {enc.TotalHealing:N0}", new Color(0.40f, 0.85f, 0.55f)));
+		row.AddChild(Stat($"Light restored: {enc.TotalHealing:N0}", new Color(0.40f, 0.85f, 0.55f)));
 		row.AddChild(Stat($"Damage dealt: {enc.TotalDamageDealt:N0}", new Color(0.88f, 0.44f, 0.28f)));
 		row.AddChild(Stat($"Damage taken: {enc.TotalDamageTaken:N0}", new Color(0.88f, 0.44f, 0.28f)));
 
@@ -1021,7 +1021,7 @@ public partial class VictoryScreen : CanvasLayer
 		statsRow.AddThemeConstantOverride("separation", 48);
 		_detailModalContent.AddChild(statsRow);
 
-		statsRow.AddChild(MakeStatPill("Healing Done", $"{enc.TotalHealing:N0}", new Color(0.35f, 0.80f, 0.50f)));
+		statsRow.AddChild(MakeStatPill("Light Restored", $"{enc.TotalHealing:N0}", new Color(0.35f, 0.80f, 0.50f)));
 		statsRow.AddChild(MakeStatPill("Damage Dealt", $"{enc.TotalDamageDealt:N0}", new Color(0.88f, 0.55f, 0.28f)));
 		statsRow.AddChild(MakeStatPill("Damage Taken", $"{enc.TotalDamageTaken:N0}", new Color(0.85f, 0.28f, 0.22f)));
 
@@ -1101,7 +1101,7 @@ public partial class VictoryScreen : CanvasLayer
 		var sectionHeader = new Label();
 		sectionHeader.Text = section switch
 		{
-			DetailSection.Healing => "HEALING DONE",
+			DetailSection.Healing => "LIGHT RESTORED",
 			DetailSection.DamageDealt => "DAMAGE DEALT",
 			DetailSection.DamageTaken => "DAMAGE TAKEN",
 			_ => ""
@@ -1118,7 +1118,7 @@ public partial class VictoryScreen : CanvasLayer
 		parent.AddChild(table);
 
 		var ctxHeader = isHealing ? "Target" : "Source";
-		var totalHeader = isHealing ? "Total Healed" : "Total Dmg";
+		var totalHeader = isHealing ? "Total Restored" : "Total Dmg";
 
 		table.AddChild(MakeDetailRow("Ability", ctxHeader, "Hits", "Crits", totalHeader,
 			true, isHealing: isHealing));

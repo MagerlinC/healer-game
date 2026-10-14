@@ -10,7 +10,7 @@ public partial class RekindleSpell : SpellResource
 	{
 		Name = "Rekindle";
 		Description =
-			$"Instantly restores {HealAmount} health to the target and refreshes the duration of all beneficial buffs which were applied by the caster on the target.";
+			$"Instantly restores {HealAmount} light to the target and refreshes the duration of all beneficial buffs which were applied by the caster on the target.";
 		ManaCost = 5f;
 		CastTime = 0.0f;
 		Cooldown = 4f;

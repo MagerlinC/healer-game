@@ -20,7 +20,7 @@ public class EmberkeepersClasp : EquippableItem
 	public EmberkeepersClasp()
 	{
 		Name = "Emberkeeper's Clasp";
-		Description = $"{Math.Round(Bonus * 100)}% increased Ember spell damage & healing.";
+		Description = $"{Math.Round(Bonus * 100)}% increased Ember spell damage & light restored.";
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Amulet;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(1));

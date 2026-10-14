@@ -20,7 +20,7 @@ public class StaffOfEternalFlame : EquippableItem
 	public StaffOfEternalFlame()
 	{
 		Name = "Staff of the Eternal Flame";
-		Description = "20% increased healing.\nCritical healing strikes restore 5 mana.";
+		Description = "20% more light restored.\nCritical strikes that restore light also return 5 kindling.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Staff;
 		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(5));

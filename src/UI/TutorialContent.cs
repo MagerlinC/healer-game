@@ -36,8 +36,8 @@ public static class TutorialContent
 
 		vbox.AddChild(MakeSection(
 			"⚔  Gameplay",
-			"As the Healer, your role is to keep your party alive through boss fights. " +
-			"Cast healing and shielding spells on your allies — hover over a party member's frame " +
+			"As the Lightkeeper, your role is to keep your party's light burning through every boss fight. " +
+			"Restore your allies' light and shield them with your spells — hover over a party member's frame " +
 			"and cast to target them individually, or use group spells to help everyone at once.\n\n" +
 			"You can also contribute to the fight with offensive spells, dealing damage to the boss " +
 			"alongside your party."));

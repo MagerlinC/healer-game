@@ -26,9 +26,9 @@ public class WrathOfEmbers : EquippableItem
 	public WrathOfEmbers()
 	{
 		Name = "Wrath of Embers";
-		Description = "Whenever a heal-over-time effect expires, it converts into a " +
+		Description = "Whenever a lingering light effect expires, it converts into a " +
 		              "damage-over-time on the boss, dealing the same damage per tick " +
-		              "as it healed.";
+		              "as the light it restored.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Staff;
 		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(9));

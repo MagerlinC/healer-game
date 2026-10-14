@@ -16,7 +16,7 @@ public partial class SwallowingDarkSpell : SpellResource
 	{
 		Name = SpellName;
 		Description =
-			$"Consume all healing-over-time effects on your party, dealing {BaseDamage:F0} umbral damage to your target, plus and additional {AddedDamagePerConsumedHoT:F0} per effect consumed.";
+			$"Consume all lingering light effects on your party, dealing {BaseDamage:F0} umbral damage to your target, plus an additional {AddedDamagePerConsumedHoT:F0} per effect consumed.";
 		ManaCost = 10f;
 		CastTime = 1.0f;
 		School = SpellSchool.Umbra;

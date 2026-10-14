@@ -12,7 +12,7 @@ public partial class SignetOfTheOak : EquippableItem
 	public SignetOfTheOak()
 	{
 		Name = "Signet of the Oak";
-		Description = $"+{HealthBonus:F0} Maximum Health";
+		Description = $"+{HealthBonus:F0} Maximum Light";
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Ring1;
 		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(1));

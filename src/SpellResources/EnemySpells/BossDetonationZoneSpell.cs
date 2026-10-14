@@ -24,7 +24,7 @@ public partial class BossDetonationZoneSpell : SpellResource
 	public BossDetonationZoneSpell()
 	{
 		Name = "Detonation Zone";
-		Description = "Marks the healer's position with an unstable zone of volatile energy. "
+		Description = "Marks the Lightkeeper's position with an unstable zone of volatile energy. "
 		              + "After 2.5 seconds the zone detonates, dealing heavy damage to anyone still inside.";
 		// Duration tag prevents the pipeline from emitting instant floating combat
 		// text or a combat-log record — the DetonationZone node handles those itself

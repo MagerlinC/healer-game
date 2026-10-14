@@ -21,20 +21,20 @@ public class TheBloodCane : EquippableItem
 	{
 		Name = "The Blood Cane";
 		Description =
-			$"Kindling spells have {100 * LifeCostMultiplier:F0}% increased life cost, but also do {100 * LifeCostMultiplier:F0}% more damage and healing";
+			$"Pyre spells burn {100 * LifeCostMultiplier:F0}% more of your own light, but also deal {100 * LifeCostMultiplier:F0}% more damage and restore {100 * LifeCostMultiplier:F0}% more light";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Staff;
 		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(8));
-		CharacterModifiers.Add(new KindlingEffect());
+		CharacterModifiers.Add(new PyreEffect());
 	}
 
-	class KindlingEffect : ICharacterModifier
+	class PyreEffect : ICharacterModifier
 	{
 		public void Modify(CharacterStats stats)
 		{
 			stats.LifeCostMultiplier *= 1f + LifeCostMultiplier;
-			stats.SpellSchoolIncreasedDamage[SpellSchool.Kindling] += LifeCostMultiplier;
-			stats.SpellSchoolIncreasedHealing[SpellSchool.Kindling] += LifeCostMultiplier;
+			stats.SpellSchoolIncreasedDamage[SpellSchool.Pyre] += LifeCostMultiplier;
+			stats.SpellSchoolIncreasedHealing[SpellSchool.Pyre] += LifeCostMultiplier;
 		}
 	}
 }

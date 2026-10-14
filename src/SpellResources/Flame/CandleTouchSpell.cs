@@ -12,7 +12,7 @@ public partial class CandleTouchSpell : SpellResource
 	public CandleTouchSpell()
 	{
 		Name = "Candle Touch";
-		Description = $"Restores {HealAmount} health to the target.";
+		Description = $"Restores {HealAmount} light to the target.";
 		ManaCost = 6f;
 		CastTime = 1.5f;
 		Tags = SpellTags.Healing;

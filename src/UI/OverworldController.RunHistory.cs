@@ -215,7 +215,7 @@ public partial class OverworldController
 				row.AddChild(bossName);
 
 				var healLabel = new Label();
-				healLabel.Text = $"Healing: {enc.TotalHealing:N0}";
+				healLabel.Text = $"Light restored: {enc.TotalHealing:N0}";
 				healLabel.AddThemeFontSizeOverride("font_size", 13);
 				healLabel.AddThemeColorOverride("font_color", new Color(0.40f, 0.85f, 0.55f));
 				healLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
@@ -510,7 +510,7 @@ public partial class OverworldController
 		statsRow.AddThemeConstantOverride("separation", 48);
 		_detailModalContent.AddChild(statsRow);
 
-		statsRow.AddChild(MakeStatPill("Healing Done", $"{enc.TotalHealing:N0}", new Color(0.35f, 0.80f, 0.50f)));
+		statsRow.AddChild(MakeStatPill("Light Restored", $"{enc.TotalHealing:N0}", new Color(0.35f, 0.80f, 0.50f)));
 		statsRow.AddChild(MakeStatPill("Damage Dealt", $"{enc.TotalDamageDealt:N0}", new Color(0.88f, 0.55f, 0.28f)));
 		statsRow.AddChild(MakeStatPill("Damage Taken", $"{enc.TotalDamageTaken:N0}", new Color(0.85f, 0.28f, 0.22f)));
 
@@ -604,7 +604,7 @@ public partial class OverworldController
 		var sectionHeader = new Label();
 		sectionHeader.Text = section switch
 		{
-			DetailSection.Healing => "HEALING DONE",
+			DetailSection.Healing => "LIGHT RESTORED",
 			DetailSection.DamageDealt => "DAMAGE DEALT",
 			DetailSection.DamageTaken => "DAMAGE TAKEN"
 		};
@@ -621,7 +621,7 @@ public partial class OverworldController
 		parent.AddChild(table);
 
 		var contextColHeader = isHealing ? "Target" : "Source";
-		var totalColHeader = isHealing ? "Total Healed" : "Total Dmg";
+		var totalColHeader = isHealing ? "Total Restored" : "Total Dmg";
 
 		table.AddChild(MakeDetailRow("Ability", contextColHeader, "Hits", "Crits", totalColHeader,
 			true, isHealing: isHealing));

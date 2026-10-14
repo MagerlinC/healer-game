@@ -34,7 +34,7 @@ public partial class RuneTablePanel : CanvasLayer
 	static readonly RuneInfo[] Runes =
 	{
 		new(RuneIndex.Void, "Rune of the Void",
-			"Seeps the world in the energy of the void, making enemy damage apply a Healing Absorption equal to 10% of the damage dealt to the target.\nHealing cannot restore health until the absorption is fully consumed."),
+			"Seeps the world in the energy of the void, making enemy damage apply a Light Absorption equal to 10% of the damage dealt to the target.\nRestored light is swallowed until the absorption is fully consumed."),
 		new(RuneIndex.Nature, "Rune of Nature",
 			"Embraces the violent growth of nature, causing Growing Vines to appear, attaching to party members and dealing damage until killed."),
 		new(RuneIndex.Time, "Rune of Time",

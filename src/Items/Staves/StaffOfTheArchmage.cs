@@ -21,7 +21,7 @@ public class StaffOfTheArchmage : EquippableItem
 	{
 		Name = "Staff of the Archmage";
 		Description =
-			$"+{MaxManaIncrease:F0} maximum mana. +{ManaRegenIncrease:F} mana regenerated per second. Spells cost {100 * ManaCostIncreasePercent:F0}% more mana.";
+			$"+{MaxManaIncrease:F0} maximum kindling. +{ManaRegenIncrease:F} kindling gathered per second. Spells cost {100 * ManaCostIncreasePercent:F0}% more kindling.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Staff;
 		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(7));

@@ -10,7 +10,7 @@ public class BandOfArcaneRecovery : EquippableItem
 	public BandOfArcaneRecovery()
 	{
 		Name = "Band of Arcane Recovery";
-		Description = $"Healing a target refunds mana equal to {100 * ManaRestorationRate:F0}% of the amount healed.";
+		Description = $"Restoring light to a target refunds kindling equal to {100 * ManaRestorationRate:F0}% of the light restored.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Ring1;
 		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(6));

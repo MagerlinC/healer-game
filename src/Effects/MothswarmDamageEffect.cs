@@ -37,6 +37,6 @@ public partial class MothswarmHealingEffect : HealOverTimeEffect
 	{
 		EffectId = "MothswarmHealingEffect";
 		School = SpellSchool.Ember;
-		Description = $"Healing for {healingPerTick} per second for {duration}s.";
+		Description = $"Restoring {healingPerTick} light per second for {duration}s.";
 	}
 }

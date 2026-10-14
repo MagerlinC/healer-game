@@ -4,7 +4,7 @@ using healerfantasy.SpellResources.Wick;
 using healerfantasy.SpellResources.Generic;
 using healerfantasy.SpellResources.Flame;
 using healerfantasy.SpellResources.Ember;
-using healerfantasy.SpellResources.Kindling;
+using healerfantasy.SpellResources.Pyre;
 using healerfantasy.SpellResources.Umbra;
 using UltimateSpellResource = healerfantasy.SpellResources.Umbra.UltimateSpellResource;
 
@@ -80,7 +80,7 @@ public static class SpellRegistry
 		new BecomeTheSunSpell()
 	];
 
-	public static readonly List<SpellResource> KindlingSpells =
+	public static readonly List<SpellResource> PyreSpells =
 	[
 		new BurningPactSpell(),
 		new LifeflameSpell(),
@@ -95,6 +95,6 @@ public static class SpellRegistry
 		.Concat(WickSpells)
 		.Concat(EmberSpells)
 		.Concat(FlameSpells)
-		.Concat(KindlingSpells)
+		.Concat(PyreSpells)
 		.ToList();
 }

@@ -20,7 +20,7 @@ public enum SpellSchool
 	Flame,
 	Wick,
 	Generic,
-	Kindling
+	Pyre
 }
 
 [GlobalClass]
@@ -67,7 +67,7 @@ public partial class SpellResource : Resource
 
 	/// <summary>
 	/// The health cost of this spell, paid by the caster when the spell is applied.
-	/// 0 for spells that use mana instead. Kindling spells override this.
+	/// 0 for spells that use mana instead. Pyre spells override this.
 	/// Readable by talents via <see cref="SpellSystem.SpellContext.Spell"/>.
 	/// </summary>
 	/// <summary>

@@ -636,7 +636,7 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 		_frostbiteEffect = new FrostbiteEffect
 		{
 			AbilityName = "Frostbite",
-			Description = "The Queen's icy presence seeps into the healer's bones. " +
+			Description = "The Queen's icy presence seeps into the Lightkeeper's bones. " +
 			              "Deals 5 damage per second per stack. " +
 			              "Gains a stack each second spent standing still; " +
 			              "loses a stack each second spent moving (minimum 1 stack).",

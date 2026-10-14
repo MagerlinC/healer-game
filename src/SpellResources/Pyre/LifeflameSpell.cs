@@ -2,14 +2,14 @@ using System.Collections.Generic;
 using Godot;
 using healerfantasy.SpellSystem;
 
-namespace healerfantasy.SpellResources.Kindling;
+namespace healerfantasy.SpellResources.Pyre;
 
 /// <summary>
 /// Transfuses the caster's own life force directly into an ally.
 ///
 /// Costs health instead of mana — useful when mana runs dry but comes at the
 /// risk of the caster's own survival.  Converts at a 1:2+ ratio, making it the
-/// most health-efficient heal in the Kindling school.
+/// most health-efficient heal in the Pyre school.
 ///
 /// The HP cost is taken via <see cref="Character.TakeDamage"/> and is therefore
 /// subject to the caster's own shields and damage-reduction buffs.
@@ -25,12 +25,12 @@ public partial class LifeflameSpell : SpellResource
 	{
 		Name = "Lifeflame";
 		Description =
-			$"Sacrifice {HpCostAmount} health to transfuse your life force into an ally, restoring {HealAmount} health. Cannot target the caster.";
+			$"Burn {HpCostAmount} of your own light to pass your flame to an ally, restoring {HealAmount} light. Cannot target the caster.";
 		ManaCost = 0f;
 		HealthCost = HpCostAmount;
 		CastTime = 1.5f;
 		Cooldown = 2f;
-		School = SpellSchool.Kindling;
+		School = SpellSchool.Pyre;
 		Tags = SpellTags.Healing;
 		TargetingType = TargetingType.Ally;
 		RequiredSchoolPoints = 0;

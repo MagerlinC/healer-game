@@ -11,7 +11,7 @@ namespace healerfantasy.SpellResources;
 ///   Ember    — light that lingers: smoulders, cinders, moths.
 ///   Umbra    — borrowing the dark: powerful, but it dims your light.
 ///   Wick     — time measured by a burning candle.
-///   Kindling — burning your own life as fuel.
+///   Pyre — burning your own life as fuel.
 /// </summary>
 public static class SchoolInfo
 {
@@ -21,7 +21,7 @@ public static class SchoolInfo
 		SpellSchool.Ember => "Ember",
 		SpellSchool.Umbra => "Umbra",
 		SpellSchool.Wick => "Wick",
-		SpellSchool.Kindling => "Kindling",
+		SpellSchool.Pyre => "Pyre",
 		_ => "General"
 	};
 
@@ -31,7 +31,7 @@ public static class SchoolInfo
 
 	/// <summary>
 	/// Parses a stored school name, including the pre-rename names
-	/// (Holy, Nature, Void, Chronomancy, Sanguimancy) found in older saves.
+	/// (Holy, Nature, Void, Chronomancy, Sanguimancy, Kindling) found in older saves.
 	/// </summary>
 	public static bool TryParse(string storedSchool, out SpellSchool school)
 	{
@@ -45,7 +45,8 @@ public static class SchoolInfo
 		["Nature"] = SpellSchool.Ember,
 		["Void"] = SpellSchool.Umbra,
 		["Chronomancy"] = SpellSchool.Wick,
-		["Sanguimancy"] = SpellSchool.Kindling
+		["Sanguimancy"] = SpellSchool.Pyre,
+		["Kindling"] = SpellSchool.Pyre
 	};
 
 	/// <summary>
@@ -57,14 +58,14 @@ public static class SchoolInfo
 		SpellSchool.Flame => ("The light itself, burning at its brightest.",
 			"Casting Flame brightens your light and burns away a stack of Gloom."),
 		SpellSchool.Ember => ("Light that lingers long after the fire.",
-			"Ember heals leave a pocket of smouldering light beneath the ally."),
+			"Ember spells that restore light leave a pocket of smouldering embers beneath the ally."),
 		SpellSchool.Umbra => ("Power borrowed from the dark, at a price.",
 			"Casting Umbra adds Gloom to the party: +4% damage taken per stack (max 5, 10s). Flame burns it away."),
 		SpellSchool.Wick => ("Time, measured by a burning candle.",
-			"Wick spells bend time: haste, wax that resolves later, health that rewinds. Your flame gutters, then flares."),
-		SpellSchool.Kindling => ("Your own life, fed to the fire.",
-			"Kindling spells cost health instead of mana, trading your life for power."),
-		_ => ("The basics of any healer's craft.", "")
+			"Wick spells bend time: haste, wax that resolves later, light that rewinds. Your flame gutters, then flares."),
+		SpellSchool.Pyre => ("Your own light, fed to the fire.",
+			"Pyre spells burn your own light instead of kindling, trading it for power."),
+		_ => ("The basics of any Lightkeeper's craft.", "")
 	};
 
 	public static Color Color(SpellSchool school) => school switch
@@ -73,7 +74,7 @@ public static class SchoolInfo
 		SpellSchool.Ember => new Color(0.95f, 0.52f, 0.22f),   // ember orange
 		SpellSchool.Umbra => new Color(0.62f, 0.48f, 0.88f),     // black-violet
 		SpellSchool.Wick => new Color(0.72f, 0.84f, 0.95f), // pale wax-blue
-		SpellSchool.Kindling => new Color(0.86f, 0.24f, 0.17f), // burning red
+		SpellSchool.Pyre => new Color(0.86f, 0.24f, 0.17f), // burning red
 		_ => new Color(0.7f, 0.65f, 0.6f)
 	};
 

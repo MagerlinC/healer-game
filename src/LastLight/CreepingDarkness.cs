@@ -8,6 +8,9 @@ public sealed class LightPocket
 {
 	public Vector2 Uv;
 	public float Radius;
+
+	/// <summary>0 = a ragged, smouldering pocket; 1 = a faint round glow with no edge.</summary>
+	public float Soft;
 }
 
 /// <summary>
@@ -18,7 +21,7 @@ public sealed class LightPocket
 /// </summary>
 public partial class CreepingDarkness : ColorRect
 {
-	const int MaxLights = 8;
+	const int MaxLights = 12;
 
 	/// <summary>Radius of the healer's lit area, in screen heights.</summary>
 	public float Radius = 0.32f;
@@ -35,6 +38,7 @@ public partial class CreepingDarkness : ColorRect
 	ShaderMaterial _mat = null!;
 	readonly Vector2[] _uvs = new Vector2[MaxLights];
 	readonly float[] _radii = new float[MaxLights];
+	readonly float[] _soft = new float[MaxLights];
 
 	public override void _Ready()
 	{
@@ -59,18 +63,28 @@ public partial class CreepingDarkness : ColorRect
 			// Centre the pocket on the floor just under the flame; it shrinks when the flame dips.
 			_uvs[count] = LastLightStyle.LightFeetUv.Lerp(LastLightStyle.LightUv, 0.35f);
 			_radii[count] = Radius * Mathf.Lerp(0.9f, 1f, Mathf.Clamp(LastLightStyle.LightStrength, 0f, 1.2f));
+			_soft[count] = 0f;
 			count++;
 		}
 		foreach (var pocket in LastLightStyle.Pockets)
-			if (count < MaxLights) { _uvs[count] = pocket.Uv; _radii[count] = pocket.Radius; count++; }
+			if (count < MaxLights) Add(pocket, ref count);
 		foreach (var pocket in Extra)
-			if (count < MaxLights) { _uvs[count] = pocket.Uv; _radii[count] = pocket.Radius; count++; }
+			if (count < MaxLights) Add(pocket, ref count);
 
 		var size = Size;
 		_mat.SetShaderParameter("light_count", count);
 		_mat.SetShaderParameter("light_uvs", _uvs);
 		_mat.SetShaderParameter("light_radii", _radii);
+		_mat.SetShaderParameter("light_soft", _soft);
 		_mat.SetShaderParameter("aspect", size.Y > 0f ? size.X / size.Y : 1.7778f);
 		_mat.SetShaderParameter("max_dark", MaxDark);
+	}
+
+	void Add(LightPocket pocket, ref int count)
+	{
+		_uvs[count] = pocket.Uv;
+		_radii[count] = pocket.Radius;
+		_soft[count] = pocket.Soft;
+		count++;
 	}
 }

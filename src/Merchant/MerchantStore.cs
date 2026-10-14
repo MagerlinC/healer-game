@@ -118,7 +118,7 @@ public static class MerchantStore
             "stone_of_rebirth",
             icon,
             "Stone of Rebirth",
-            "The next character who falls in battle is revived at 50% health.");
+            "The next character who falls in battle is revived at 50% light.");
     }
 
     /// <summary>

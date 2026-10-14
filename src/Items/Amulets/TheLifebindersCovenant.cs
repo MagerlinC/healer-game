@@ -26,7 +26,7 @@ public class TheLifebindersCovenant : EquippableItem
 	public TheLifebindersCovenant()
 	{
 		Name = "The Lifebinder's Covenant";
-		Description = $"Group healing spells restore {_manaPerTarget} mana per friendly target healed.";
+		Description = $"Group restoring spells return {_manaPerTarget} kindling per ally they reach.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Amulet;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(4));

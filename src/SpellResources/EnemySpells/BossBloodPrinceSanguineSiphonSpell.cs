@@ -65,7 +65,7 @@ public partial class BossBloodPrinceSanguineSiphonSpell : SpellResource
 	{
 		Name = "Sanguine Siphon";
 		Description = $"The Blood Prince links his blood to nearby enemies, " +
-		              $"draining {LifeLeechedPerTick:F0} life per second from each. " +
+		              $"draining {LifeLeechedPerTick:F0} light per second from each. " +
 		              $"Deal enough damage to break the channel.";
 		Tags = SpellTags.Damage | SpellTags.Duration;
 		School = SpellSchool.Umbra;

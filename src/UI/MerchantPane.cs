@@ -62,7 +62,7 @@ public partial class MerchantPane : Control
 
 		// Flavour quote
 		var quote = new Label();
-		quote.Text = "\"Ah, a weary healer! Fine wares for the discerning adventurer...\"";
+		quote.Text = "\"Ah, a weary Lightkeeper! Fine wares for the discerning adventurer...\"";
 		quote.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 		quote.HorizontalAlignment = HorizontalAlignment.Center;
 		quote.AddThemeFontSizeOverride("font_size", 13);
@@ -285,7 +285,7 @@ public partial class MerchantPane : Control
 
 		// Description
 		var desc = new Label();
-		desc.Text = "The next character who falls in battle is revived at 50% health.";
+		desc.Text = "The next character who falls in battle is revived at 50% light.";
 		desc.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 		desc.AddThemeFontSizeOverride("font_size", 12);
 		desc.AddThemeColorOverride("font_color", HintColor);

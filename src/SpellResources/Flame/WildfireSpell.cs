@@ -17,7 +17,7 @@ public partial class WildfireSpell : SpellResource
 	public WildfireSpell()
 	{
 		Name = "Wildfire";
-		Description = $"Restores {HealAmount} health to all party members.";
+		Description = $"Restores {HealAmount} light to all party members.";
 		ManaCost = 20f;
 		CastTime = 2f;
 		Cooldown = 8f;

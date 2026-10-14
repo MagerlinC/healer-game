@@ -30,7 +30,7 @@ BaseCritChance = 0.1
 
 [node name="Healer" parent="." unique_id=1338505269 instance=ExtResource("Scene_player")]
 position = Vector2(35, 36)
-CharacterName = "Healer"
+CharacterName = "Lightkeeper"
 MaxHealth = 120.0
 
 [node name="PartyUI" parent="." unique_id=955504976 instance=ExtResource("Scene_partyui")]

@@ -103,7 +103,9 @@ public static class RunHistoryStore
 			return [];
 
 		using var saveFile = FileAccess.Open(FileSavePath, FileAccess.ModeFlags.Read);
-		var jsonString = saveFile.GetAsText();
+		// The player character was called "Healer" before it became the Lightkeeper;
+		// older runs keep that name in their combat events and need it to add up.
+		var jsonString = saveFile.GetAsText().Replace("\"Healer\"", $"\"{GameConstants.HealerName}\"");
 
 		return JsonSerializer.Deserialize<List<RunRecord>>(jsonString) ?? [];
 	}

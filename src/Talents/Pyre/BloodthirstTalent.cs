@@ -1,10 +1,10 @@
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
-namespace healerfantasy.Talents.Kindling;
+namespace healerfantasy.Talents.Pyre;
 
 /// <summary>
-/// Kindling spells are 25 % more effective — both their damage output and
+/// Pyre spells are 25 % more effective — both their damage output and
 /// their healing output are amplified.
 ///
 /// This is the school's core damage/healing multiplier, rewarding players who
@@ -22,7 +22,7 @@ public class BloodthirstTalent : ISpellModifier
 
 	public void OnCalculate(SpellContext ctx)
 	{
-		if (!ctx.IsSpellOfSchool(SpellSchool.Kindling)) return;
+		if (!ctx.IsSpellOfSchool(SpellSchool.Pyre)) return;
 		ctx.FinalValue *= 1f + Bonus;
 	}
 

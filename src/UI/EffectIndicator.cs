@@ -227,7 +227,7 @@ public partial class EffectIndicator : PanelContainer
 
 	/// <summary>
 	/// Converts a PascalCase effect ID into a space-separated display name.
-	/// "KindledWard" → "Kindled Ward"
+	/// "PyreWard" → "Pyre Ward"
 	/// The <c>_Mirror</c> suffix is stripped before formatting; callers that
 	/// want "(Mirror)" in the display string append it themselves.
 	/// </summary>

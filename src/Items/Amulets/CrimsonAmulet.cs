@@ -14,7 +14,7 @@ public partial class CrimsonAmulet : EquippableItem
 	{
 
 		Name = "Crimson Amulet";
-		Description = $"{100 * LeechRate:F0}% of damage leeched as life.";
+		Description = $"{100 * LeechRate:F0}% of damage dealt is restored to you as light.";
 		Rarity = ItemRarity.Epic;
 		Slot = EquipSlot.Amulet;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(7));

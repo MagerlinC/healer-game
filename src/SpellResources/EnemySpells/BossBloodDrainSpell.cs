@@ -25,7 +25,7 @@ public partial class BossBloodDrainSpell : SpellResource
 	{
 		Name = "Blood Drain";
 		Description =
-			"The Blood Knight drains the life-force from a victim, healing himself for the damage dealt. Deflect to interrupt.";
+			"The Blood Knight drains the light from a victim, healing himself for the damage dealt. Deflect to interrupt.";
 		Tags = SpellTags.Damage | SpellTags.Duration;
 		ManaCost = 0f;
 		CastTime = 0f;

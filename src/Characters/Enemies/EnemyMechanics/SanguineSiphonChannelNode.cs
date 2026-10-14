@@ -119,7 +119,7 @@ public partial class SanguineSiphonChannelNode : Node2D
 				Boss = _boss,
 				AbilityName = "Sanguine Siphon",
 				Description =
-					$"Linked by blood magic — {_lifeLeechPerTick:F0} health drained per second until the link is broken by breaking the boss out of channeling.",
+					$"Linked by blood magic — {_lifeLeechPerTick:F0} light drained per second until the link is broken by breaking the boss out of channeling.",
 				SourceCharacterName = _boss.CharacterName,
 				Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/the-blood-prince/sanguine-siphon.png")
 			});

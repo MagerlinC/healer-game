@@ -27,7 +27,7 @@ public class RingOfTriage : EquippableItem
 	{
 		Name = "Ring of Triage";
 		Description =
-			$"Single-target heals on targets below {Math.Round(_hpThreshold * 100)}% health do {Math.Round(_bonusMultiplier * 100)}% increased healing.";
+			$"Single-target spells restore {Math.Round(_bonusMultiplier * 100)}% more light to allies below {Math.Round(_hpThreshold * 100)}% light.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Ring1;
 		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(4));

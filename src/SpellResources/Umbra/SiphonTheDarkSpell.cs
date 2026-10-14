@@ -24,7 +24,7 @@ public partial class SiphonTheDarkSpell : SpellResource
 	{
 		Name = "Siphon the Dark";
 		Description =
-			$"Siphons the darkness from the target, dealing {DamagePerTick} umbral damage every {TickRate}s over {Duration}s and healing yourself for {(int)(HealFraction * 100)}% of damage dealt.";
+			$"Siphons the darkness from the target, dealing {DamagePerTick} umbral damage every {TickRate}s over {Duration}s and restoring {(int)(HealFraction * 100)}% of the damage dealt to yourself as light.";
 		ManaCost = 10f;
 		CastTime = 0.0f;
 		Cooldown = 4f;

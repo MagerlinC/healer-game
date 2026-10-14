@@ -2,14 +2,14 @@ using System.Collections.Generic;
 using Godot;
 using healerfantasy.SpellSystem;
 
-namespace healerfantasy.SpellResources.Kindling;
+namespace healerfantasy.SpellResources.Pyre;
 
 /// <summary>
 /// Tears vitality from the enemy and disperses it across the whole party.
 ///
 /// The caster bleeds a small amount to open the siphon channel, deals significant
 /// damage to the boss, and the stolen essence washes over all living allies as
-/// a burst of healing.  This is the Kindling school's primary sustain tool —
+/// a burst of healing.  This is the Pyre school's primary sustain tool —
 /// offence and group recovery in a single bloody rite.
 ///
 /// ResolveTargets returns the boss so the pipeline logs and amplifies the damage
@@ -26,12 +26,12 @@ public partial class DrawTheHeatSpell : SpellResource
 	{
 		Name = "Draw the Heat";
 		Description =
-			$"Spend {HpCostAmount} health to siphon vitality from the enemy, dealing {DamageAmount} damage and healing all allies for {HealPerAlly} health.";
+			$"Burn {HpCostAmount} of your own light to draw the heat from the enemy, dealing {DamageAmount} damage and restoring {HealPerAlly} light to all allies.";
 		ManaCost = 0f;
 		HealthCost = HpCostAmount;
 		CastTime = 1.5f;
 		Cooldown = 8f;
-		School = SpellSchool.Kindling;
+		School = SpellSchool.Pyre;
 		TargetingType = TargetingType.Enemy;
 		Tags = SpellTags.Damage | SpellTags.Healing | SpellTags.GroupSpell;
 		RequiredSchoolPoints = 1;

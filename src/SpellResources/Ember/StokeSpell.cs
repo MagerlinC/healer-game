@@ -31,7 +31,7 @@ public partial class StokeSpell : SpellResource
 	{
 		Name = "Stoke";
 		Description =
-			$"Heals the target for {HealAmount} HP. Heals for {100 * (HotBonusMultiplier - 1f):F0}% more if the target has a ember heal-over-time effect active.";
+			$"Restores {HealAmount} light to the target, or {100 * (HotBonusMultiplier - 1f):F0}% more if the target has a lingering Ember light active.";
 		ManaCost = 10f;
 		CastTime = 2.0f;
 		Cooldown = 0f;

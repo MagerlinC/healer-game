@@ -29,7 +29,7 @@ public partial class IconSheet : CanvasLayer
 		foreach (var school in new[]
 		         {
 			         SpellSchool.Flame, SpellSchool.Ember, SpellSchool.Umbra, SpellSchool.Wick,
-			         SpellSchool.Kindling, SpellSchool.Generic
+			         SpellSchool.Pyre, SpellSchool.Generic
 		         })
 		{
 			var row = new HBoxContainer();

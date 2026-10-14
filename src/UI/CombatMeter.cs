@@ -117,7 +117,7 @@ public partial class CombatMeter : PanelContainer
 
 		// Title
 		var title = new Label();
-		title.Text = _type == MeterType.Healing ? "HEALING" : "DAMAGE";
+		title.Text = _type == MeterType.Healing ? "LIGHT RESTORED" : "DAMAGE";
 		title.HorizontalAlignment = HorizontalAlignment.Center;
 		title.AddThemeFontSizeOverride("font_size", 11);
 		title.AddThemeColorOverride("font_color", TitleColor);
@@ -260,7 +260,7 @@ public partial class CombatMeter : PanelContainer
 		var now = Time.GetTicksMsec() / 1000.0;
 		var type = _type == MeterType.Healing ? CombatEventType.Healing : CombatEventType.Damage;
 		var breakdown = CombatLog.GetBreakdown(sourceName, type, now);
-		var label = _type == MeterType.Healing ? "HPS" : "DPS";
+		var label = _type == MeterType.Healing ? "light/s" : "DPS";
 		var title = $"{sourceName}  ({label}, last {CombatLog.DefaultWindow:F0}s)";
 
 		if (breakdown.Count == 0)

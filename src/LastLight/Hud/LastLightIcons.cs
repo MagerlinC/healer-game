@@ -353,21 +353,21 @@ public static class LastLightIcons
 		// Wick
 		["Acceleration"] = Path("M12,18 L26,32 L12,46", "none", "{C}", 4) + Path("M26,18 L40,32 L26,46", "none", "{H}", 4) + Flame(50, 33, 0.38f),
 		["Temporal Flow"] = Hourglass(32, 32, 1.35f),
-		["Mana Rift"] = Drop(32, 34, 1.6f) + Path("M30,14 L35,26 L28,34 L34,46", "none", "{K}", 3),
+		["Kindling Rift"] = Drop(32, 34, 1.6f) + Path("M30,14 L35,26 L28,34 L34,46", "none", "{K}", 3),
 		["Future Sight"] = Eye(32, 32, 1.2f),
 		["Temporal Momentum"] = Flame(24, 34, 0.75f) + Arrow(38, 32, 58, 32, 3.5f),
 
 		// General
 		["Critical Amplifier"] = Star(28, 34, 4, 20, 5) + Line(50, 10, 50, 22, 3, "{H}") + Line(44, 16, 56, 16, 3, "{H}"),
 		["Critical Recharge"] = ArcArrow(32, 32, 22, -40, 260, 3) + Star(32, 32, 4, 13, 3.5f, "{H}"),
-		["Mana Recovery"] = Drop(32, 36, 1.2f) + ArcArrow(32, 32, 24, 200, 470, 3, "{H}"),
+		["Gathered Kindling"] = Drop(32, 36, 1.2f) + ArcArrow(32, 32, 24, 200, 470, 3, "{H}"),
 		["Arcane Hunger"] = Drop(30, 36, 1.6f) + Circle(46, 26, 9, "{K}") + Poly("38,22 42,30 44,22", "{H}") + Poly("44,30 48,36 50,28", "{H}"),
 		["Critical Infusion"] = Star(24, 34, 4, 18, 4.5f) + Flame(46, 34, 0.55f),
 
-		// Kindling
+		// Pyre
 		["Crimson Rebound"] = Heart(30, 36, 1.2f) + ArcArrow(32, 32, 24, 220, 470, 3, "{H}"),
 		["Bloodthirst"] = Drop(32, 38, 1.45f) + Poly("22,10 28,10 25,22", "{H}") + Poly("36,10 42,10 39,22", "{H}"),
-		["Kindled Ward"] = Shield(32, 32, 1.5f, "none", "{C}") + Heart(32, 34, 0.75f)
+		["Pyre Ward"] = Shield(32, 32, 1.5f, "none", "{C}") + Heart(32, 34, 0.75f)
 	};
 
 	/// <summary>Gloom: a flame being eclipsed by the dark.</summary>

@@ -14,7 +14,7 @@ public partial class MothswarmSpell : SpellResource
 	{
 		Name = "Mothswarm";
 		Description =
-			$"Send out a swarm of moths, dealing {ValuePerTick:F0} ember damage per second for {BuffDuration}s. When this effect expires, the moths scatter to all allies, healing them for {ValuePerTick:F0} per second for {BuffDuration}s.";
+			$"Send out a swarm of moths, dealing {ValuePerTick:F0} ember damage per second for {BuffDuration}s. When this effect expires, the moths scatter to all allies, restoring {ValuePerTick:F0} light per second for {BuffDuration}s.";
 		ManaCost = 8f;
 		CastTime = 0.0f;
 		Cooldown = 12f;

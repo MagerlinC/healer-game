@@ -137,11 +137,11 @@ public partial class GameTooltip : CanvasLayer
 			: $"{spell.CastTime:F1}s";
 
 		var healthCost = spell.HealthCost > 0f
-			? $"{(int)spell.HealthCost} Health"
+			? $"{(int)spell.HealthCost} Light"
 			: "";
 
 		var manaCost = spell.ManaCost > 0f
-			? $"{(int)spell.ManaCost} Mana"
+			? $"{(int)spell.ManaCost} Kindling"
 			: "";
 
 		return (spell.Name,

@@ -4,7 +4,11 @@ namespace healerfantasy;
 
 public static class GameConstants
 {
-	public const string HealerName = "Healer";
+	/// <summary>
+	/// The player character's name: shown in party frames, meters and combat logs, and
+	/// used to identify the player in combat events. (The scene node is still "Healer".)
+	/// </summary>
+	public const string HealerName = "Lightkeeper";
 
 
 	public const string TemplarName = "Templar";

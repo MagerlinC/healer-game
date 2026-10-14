@@ -39,7 +39,7 @@ public static class AssetConstants
 	public static readonly string TalentTomeEmberPath = "res://assets/interactibles/talent-tome-nature.png";
 	public static readonly string TalentTomeUmbraPath = "res://assets/interactibles/talent-tome-void.png";
 	public static readonly string TalentTomeWickPath = "res://assets/interactibles/talent-tome-chronomancy.png";
-	public static readonly string TalentTomeKindlingPath = "res://assets/interactibles/talent-tome-sanguimancy.png";
+	public static readonly string TalentTomePyrePath = "res://assets/interactibles/talent-tome-sanguimancy.png";
 
 	/// <summary>Returns the res:// path for the talent tome icon of the given spell school.</summary>
 	public static string TalentTomePath(SpellSchool school)
@@ -50,7 +50,7 @@ public static class AssetConstants
 			SpellSchool.Ember => TalentTomeEmberPath,
 			SpellSchool.Umbra => TalentTomeUmbraPath,
 			SpellSchool.Wick => TalentTomeWickPath,
-			SpellSchool.Kindling => TalentTomeKindlingPath,
+			SpellSchool.Pyre => TalentTomePyrePath,
 			_ => TalentTomeFlamePath
 		};
 	}
@@ -75,7 +75,7 @@ public static class AssetConstants
 		SpellSchool.Ember => "nature",
 		SpellSchool.Umbra => "void",
 		SpellSchool.Wick => "chronomancy",
-		SpellSchool.Kindling => "sanguimancy",
+		SpellSchool.Pyre => "sanguimancy",
 		_ => "generic"
 	};
 

@@ -28,7 +28,7 @@ public partial class BossBloodPrinceVoidDrainSpell : SpellResource
 	{
 		Name = "Void Drain";
 		Description =
-			"Ancient blood magic drains the life from the entire party simultaneously, " +
+			"Ancient blood magic drains the light from the entire party simultaneously, " +
 			"dealing 20 damage per second for 10 seconds. This curse cannot be dispelled.";
 		Tags = SpellTags.Damage | SpellTags.Duration;
 		School = SpellSchool.Umbra;

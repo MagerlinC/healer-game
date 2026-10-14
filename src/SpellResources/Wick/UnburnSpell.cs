@@ -12,7 +12,7 @@ public partial class UnburnSpell : SpellResource
 	{
 		Name = "Unburn";
 		Description =
-			$"Mark the party's health in the wax, causing it to rewind back after {EffectDuration} seconds.";
+			$"Mark the party's light in the wax, causing it to rewind back after {EffectDuration} seconds.";
 		ManaCost = 6f;
 		CastTime = 0.0f;
 		Cooldown = 8f;

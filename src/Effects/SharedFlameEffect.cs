@@ -6,7 +6,7 @@ using healerfantasy.Talents;
 namespace healerfantasy.Effects;
 
 /// <summary>
-/// Applied by Shared Flame (Kindling ultimate).
+/// Applied by Shared Flame (Pyre ultimate).
 ///
 /// While active (10 s by default):
 ///   • Every second, all living party members lose <see cref="_drainPerSecond"/> HP.

@@ -18,7 +18,7 @@ public class StaffOfRestoration : EquippableItem
 	public StaffOfRestoration()
 	{
 		Name = "Staff of Restoration";
-		Description = $"{100 * HealingIncrease:F0}% increased healing";
+		Description = $"{100 * HealingIncrease:F0}% more light restored";
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Staff;
 		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(2));

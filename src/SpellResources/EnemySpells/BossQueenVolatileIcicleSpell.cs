@@ -32,7 +32,7 @@ public partial class BossQueenVolatileIcicleSpell : SpellResource
 	public BossQueenVolatileIcicleSpell()
 	{
 		Name = "Volatile Icicle";
-		Description = "The Queen conjures a shard of volatile ice that floats toward the healer. " +
+		Description = "The Queen conjures a shard of volatile ice that floats toward the Lightkeeper. " +
 		              "On impact it explodes, leaving a frozen zone that deals damage over time " +
 		              "to anyone standing within it.";
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/queen-of-the-frozen-wastes/volatile-icicle.png");

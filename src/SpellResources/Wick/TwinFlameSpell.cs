@@ -22,7 +22,7 @@ public partial class TwinFlameSpell : UltimateSpellResource
 	{
 		Name = "Twin Flame";
 		Description =
-			$"Split your flame in two, lighting a twin of yourself. Each time you cast a spell while Twin Flame is active, your twin mimics that spell, dealing 50% of the damage or healing to a random target within range. Lasts {Duration:F0}s.";
+			$"Split your flame in two, lighting a twin of yourself. Each time you cast a spell while Twin Flame is active, your twin mimics that spell, dealing 50% of the damage or restoring 50% of the light to a random target within range. Lasts {Duration:F0}s.";
 		ActivationDescription = "Accumulate a total of 12 seconds of Wick buff duration across all targets.";
 		ManaCost = 0f;
 		CastTime = 0.0f;

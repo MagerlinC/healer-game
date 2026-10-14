@@ -17,7 +17,7 @@ public class CrystalStaff : EquippableItem
     public CrystalStaff()
     {
         Name        = "Crystal Staff";
-        Description = "+25 maximum mana.";
+        Description = "+25 maximum kindling.";
         Rarity      = ItemRarity.Rare;
         Slot        = EquipSlot.Staff;
         Icon        = GD.Load<Texture2D>(AssetConstants.StaveIconPath(1));

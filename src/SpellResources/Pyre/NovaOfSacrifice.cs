@@ -2,7 +2,7 @@
 using Godot;
 using healerfantasy.SpellSystem;
 
-namespace healerfantasy.SpellResources.Kindling;
+namespace healerfantasy.SpellResources.Pyre;
 
 public partial class NovaOfSacrifice : SpellResource
 {
@@ -13,12 +13,12 @@ public partial class NovaOfSacrifice : SpellResource
 	{
 		Name = "Nova of Sacrifice";
 		Description =
-			$"Erupt in a nova of blood, sacrificing {hpCost} health to apply a blood shield to all allies lasting 8 seconds. The shield absorbs damage equal to twice the health sacrificed";
+			$"Erupt in a nova of blood, burning {hpCost} of your own light to apply a blood shield to all allies lasting 8 seconds. The shield absorbs damage equal to twice the light burned";
 		ManaCost = 0f;
 		HealthCost = hpCost;
 		CastTime = 2.0f;
 		Cooldown = 8f;
-		School = SpellSchool.Kindling;
+		School = SpellSchool.Pyre;
 		TargetingType = TargetingType.None;
 		Tags = SpellTags.Healing;
 		RequiredSchoolPoints = 2;

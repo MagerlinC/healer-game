@@ -22,8 +22,8 @@ public partial class BecomeTheSunSpell : UltimateSpellResource
 	{
 		Name = "Become the Sun";
 		Description =
-			$"Burn as bright as the sun for {BuffDuration:F0}s, making all spells free and increasing Flame spell healing by {100 * HealingIncrease:F0}%. Overhealing a target causes the excess healing to heal all allies and damage all enemies.";
-		ActivationDescription = "Spend a total of 50 mana on Flame spells.";
+			$"Burn as bright as the sun for {BuffDuration:F0}s, making all spells free and increasing light restored by Flame spells by {100 * HealingIncrease:F0}%. Light that overflows a full target spreads to all allies and burns all enemies.";
+		ActivationDescription = "Spend a total of 50 kindling on Flame spells.";
 		ManaCost = 10f;
 		CastTime = 0.0f;
 		Cooldown = 0f;
@@ -43,7 +43,7 @@ public partial class BecomeTheSunSpell : UltimateSpellResource
 			SourceCharacterName = ctx.Caster.CharacterName,
 			AbilityName = Name,
 			Description =
-				$"Flame spells are free and do {100 * HealingIncrease:F0}% increased healing. Overhealing a target causes the excess healing to heal all allies and damage all enemies."
+				$"Flame spells are free and restore {100 * HealingIncrease:F0}% more light. Light that overflows a full target spreads to all allies and burns all enemies."
 		});
 	}
 

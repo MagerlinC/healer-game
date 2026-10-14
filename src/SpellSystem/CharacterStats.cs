@@ -42,7 +42,7 @@ public class CharacterStats
 		{ SpellSchool.Umbra, 0.0f },
 		{ SpellSchool.Wick, 0.0f },
 		{ SpellSchool.Generic, 0.0f },
-		{ SpellSchool.Kindling, 0.0f }
+		{ SpellSchool.Pyre, 0.0f }
 	};
 
 	public Dictionary<SpellSchool, float> SpellSchoolIncreasedHealing = new()
@@ -52,7 +52,7 @@ public class CharacterStats
 		{ SpellSchool.Umbra, 0.0f },
 		{ SpellSchool.Wick, 0.0f },
 		{ SpellSchool.Generic, 0.0f },
-		{ SpellSchool.Kindling, 0.0f }
+		{ SpellSchool.Pyre, 0.0f }
 	};
 
 	/// <summary>

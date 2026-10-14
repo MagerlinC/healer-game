@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using Godot;
 using healerfantasy.SpellSystem;
 
-namespace healerfantasy.SpellResources.Kindling;
+namespace healerfantasy.SpellResources.Pyre;
 
 /// <summary>
-/// The ultimate Kindling nuke — tears the blood from every living party
+/// The ultimate Pyre nuke — tears the blood from every living party
 /// member (including the caster) and hurls the combined life force at the boss.
 ///
 /// Damage scales with how many allies are alive and how much they can afford to
@@ -32,12 +32,12 @@ public partial class FeedThePyreSpell : SpellResource
 	{
 		Name = "Feed the Pyre";
 		Description =
-			$"Extract {DrainPerMember} health from each living party member (non-lethal), dealing twice the total as damage to the boss.";
+			$"Take {DrainPerMember} light from each living party member (non-lethal), dealing twice the total as damage to the boss.";
 		ManaCost = 0f;
 		CastTime = 2.5f;
 		HealthCost = 5f;
 		Cooldown = 12f;
-		School = SpellSchool.Kindling;
+		School = SpellSchool.Pyre;
 		TargetingType = TargetingType.None;
 		Tags = SpellTags.Damage;
 		RequiredSchoolPoints = 2;

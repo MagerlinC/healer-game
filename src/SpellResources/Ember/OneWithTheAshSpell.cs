@@ -23,8 +23,8 @@ public partial class OneWithTheAshSpell : UltimateSpellResource
 	{
 		Name = "One With the Ash";
 		Description =
-			$"Become one with the ash for {BuffDuration:F0}s, making all spells instant cast and increasing Ember spell healing by {100 * HealingIncrease:F0}%. Directly healing a target causes all beneficial nature effects on that target to refresh their duration.";
-		ActivationDescription = "Accumulate a total of 16 seconds of Ember heal-over-time duration across all targets.";
+			$"Become one with the ash for {BuffDuration:F0}s, making all spells instant cast and increasing light restored by Ember spells by {100 * HealingIncrease:F0}%. Directly restoring light to a target refreshes the duration of all beneficial Ember effects on it.";
+		ActivationDescription = "Accumulate a total of 16 seconds of lingering Ember light across all targets.";
 		ManaCost = 10f;
 		CastTime = 0.0f;
 		Cooldown = 0f;
@@ -44,7 +44,7 @@ public partial class OneWithTheAshSpell : UltimateSpellResource
 			SourceCharacterName = ctx.Caster.CharacterName,
 			AbilityName = Name,
 			Description =
-				$"Ember healing spells are instant and do {100 * HealingIncrease:F0}% increased healing. Beneficial Ember effects on targets you directly heal refresh their duration."
+				$"Ember restoring spells are instant and restore {100 * HealingIncrease:F0}% more light. Beneficial Ember effects on targets you directly restore refresh their duration."
 		});
 	}
 

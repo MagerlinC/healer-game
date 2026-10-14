@@ -62,7 +62,7 @@ public abstract partial class LoadoutController : Node2D
 		(SpellSchool.Ember, SchoolInfo.Name(SpellSchool.Ember)),
 		(SpellSchool.Umbra, SchoolInfo.Name(SpellSchool.Umbra)),
 		(SpellSchool.Wick, SchoolInfo.Name(SpellSchool.Wick)),
-		(SpellSchool.Kindling, SchoolInfo.Name(SpellSchool.Kindling))
+		(SpellSchool.Pyre, SchoolInfo.Name(SpellSchool.Pyre))
 	};
 
 	protected static readonly (SpellSchool School, string Name, Color Accent)[] TalentSchoolOrder =
@@ -72,7 +72,7 @@ public abstract partial class LoadoutController : Node2D
 		(SpellSchool.Flame, SchoolInfo.Name(SpellSchool.Flame), SchoolInfo.Color(SpellSchool.Flame)),
 		(SpellSchool.Ember, SchoolInfo.Name(SpellSchool.Ember), SchoolInfo.Color(SpellSchool.Ember)),
 		(SpellSchool.Umbra, SchoolInfo.Name(SpellSchool.Umbra), SchoolInfo.Color(SpellSchool.Umbra)),
-		(SpellSchool.Kindling, SchoolInfo.Name(SpellSchool.Kindling), SchoolInfo.Color(SpellSchool.Kindling))
+		(SpellSchool.Pyre, SchoolInfo.Name(SpellSchool.Pyre), SchoolInfo.Color(SpellSchool.Pyre))
 	};
 
 	// ── shared interactible state (common to Overworld and Camp) ─────────────
@@ -607,7 +607,7 @@ public abstract partial class LoadoutController : Node2D
 
 		var availableSchools = PlayerProgressStore.HasDefeatedCastleOfBlood
 			? SpellSchoolTabs
-			: SpellSchoolTabs.Where(s => s.School != SpellSchool.Kindling).ToArray();
+			: SpellSchoolTabs.Where(s => s.School != SpellSchool.Pyre).ToArray();
 
 		foreach (var (school, name) in availableSchools)
 		{
@@ -726,11 +726,11 @@ public abstract partial class LoadoutController : Node2D
 	/// Clicking it toggles that school as the active school affinity; a gold
 	/// border shows the currently selected school.
 	///
-	/// Kindling is shown locked until the Castle of Blood has been defeated.
+	/// Pyre is shown locked until the Castle of Blood has been defeated.
 	/// </summary>
 	Control BuildAffinityToggle(SpellSchool school, string schoolName)
 	{
-		var isLocked = school == SpellSchool.Kindling && !PlayerProgressStore.HasDefeatedCastleOfBlood;
+		var isLocked = school == SpellSchool.Pyre && !PlayerProgressStore.HasDefeatedCastleOfBlood;
 		var isSelected = RunState.Instance.SchoolAffinity == school;
 		var (_, _, accent) = TalentSchoolOrder.First(e => e.School == school);
 
@@ -776,7 +776,7 @@ public abstract partial class LoadoutController : Node2D
 
 		if (isLocked)
 		{
-			// ── Locked (Kindling before Castle of Blood) ───────────────────
+			// ── Locked (Pyre before Castle of Blood) ───────────────────
 			var lockLabel = new Label();
 			lockLabel.Text = "🔒";
 			lockLabel.HorizontalAlignment = HorizontalAlignment.Center;
@@ -1023,14 +1023,14 @@ public abstract partial class LoadoutController : Node2D
 	// ── spell lock helpers ────────────────────────────────────────────────────
 
 	/// <summary>
-	/// A spell is locked if its school has not been unlocked yet (e.g. Kindling
+	/// A spell is locked if its school has not been unlocked yet (e.g. Pyre
 	/// requires the Castle of Blood to have been defeated), or if the player has not
 	/// yet acquired enough school talents this run.
 	/// </summary>
 	bool IsSpellLocked(SpellResource spell)
 	{
 		// School-wide unlock check.
-		if (spell.School == SpellSchool.Kindling && !PlayerProgressStore.HasDefeatedCastleOfBlood)
+		if (spell.School == SpellSchool.Pyre && !PlayerProgressStore.HasDefeatedCastleOfBlood)
 			return true;
 
 		if (spell.RequiredSchoolPoints <= 0) return false;
@@ -1040,10 +1040,10 @@ public abstract partial class LoadoutController : Node2D
 
 	(string title, string desc) GetLockedSpellTooltip(SpellResource spell)
 	{
-		// School unlock tooltip for Kindling.
-		if (spell.School == SpellSchool.Kindling && !PlayerProgressStore.HasDefeatedCastleOfBlood)
+		// School unlock tooltip for Pyre.
+		if (spell.School == SpellSchool.Pyre && !PlayerProgressStore.HasDefeatedCastleOfBlood)
 			return (spell.Name,
-				$"{spell.Description}\n\n🔒 Kindling is locked.\nDefeat The Blood Prince in the Castle of Blood to unlock this school.");
+				$"{spell.Description}\n\n🔒 Pyre is locked.\nDefeat The Blood Prince in the Castle of Blood to unlock this school.");
 
 		var invested = RunState.Instance.SelectedTalentDefs.Count(d => d.School == spell.School);
 		var ultIndicator = spell is UltimateSpellResource ? " (Ultimate)" : "";
@@ -1533,7 +1533,7 @@ public abstract partial class LoadoutController : Node2D
 		cardRow.AddThemeConstantOverride("separation", 16);
 		center.AddChild(cardRow);
 
-		// Schools eligible for affinity (Generic excluded; Kindling gated on progress).
+		// Schools eligible for affinity (Generic excluded; Pyre gated on progress).
 		var schools = new List<SpellSchool>
 		{
 			SpellSchool.Wick,
@@ -1542,7 +1542,7 @@ public abstract partial class LoadoutController : Node2D
 			SpellSchool.Umbra
 		};
 		if (PlayerProgressStore.HasDefeatedCastleOfBlood)
-			schools.Add(SpellSchool.Kindling);
+			schools.Add(SpellSchool.Pyre);
 
 		// Keep references to update borders on click without rebuilding nodes.
 		var cardEntries = new List<(SpellSchool School, StyleBoxFlat Style)>();

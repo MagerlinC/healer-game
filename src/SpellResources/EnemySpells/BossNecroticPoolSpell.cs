@@ -26,7 +26,7 @@ public partial class BossNecroticPoolSpell : SpellResource
 	{
 		Name = "Necrotic Pool";
 		Description =
-			$"Summons a swirling pool of void energy beneath the healer that pulses for {DamagePerPulse} void damage per second to anyone standing inside. Lasts 4 seconds.";
+			$"Summons a swirling pool of void energy beneath the Lightkeeper that pulses for {DamagePerPulse} void damage per second to anyone standing inside. Lasts 4 seconds.";
 		Tags = SpellTags.Damage | SpellTags.Duration;
 		School = SpellSchool.Umbra;
 		ManaCost = 0f;

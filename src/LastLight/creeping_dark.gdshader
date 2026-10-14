@@ -3,11 +3,12 @@
 // outside them, thin tendrils reach inward now and then, and the edges smoulder.
 shader_type canvas_item;
 
-const int MAX_LIGHTS = 8;
+const int MAX_LIGHTS = 12;
 
 uniform int light_count = 1;
-uniform vec2 light_uvs[8];
-uniform float light_radii[8];     // in screen heights
+uniform vec2 light_uvs[12];
+uniform float light_radii[12];     // in screen heights
+uniform float light_soft[12];      // 0 = ragged smouldering pocket, 1 = faint round glow
 
 uniform float aspect = 1.7778;
 uniform float squash = 1.5;       // >1 flattens each pocket onto the floor
@@ -24,7 +25,7 @@ float noise(vec2 p) {
 }
 
 // Distance from the ragged edge of one light's pocket (negative = inside the light).
-float edge_distance(vec2 uv, vec2 light_uv, float radius, float seed) {
+float edge_distance(vec2 uv, vec2 light_uv, float radius, float seed, float soft) {
 	vec2 q = uv - light_uv;
 	q.x *= aspect;
 	q.y *= squash;
@@ -42,8 +43,9 @@ float edge_distance(vec2 uv, vec2 light_uv, float radius, float seed) {
 
 	// Edge features shrink with small pockets so they stay ragged, not shredded.
 	float scale = clamp(radius / 0.3, 0.35, 1.2);
-	float r = radius + ((wob - 0.5) * 0.08 + (teeth - 0.5) * 0.05 + (fine - 0.5) * 0.015 + breathe) * scale
+	float rag = ((wob - 0.5) * 0.08 + (teeth - 0.5) * 0.05 + (fine - 0.5) * 0.015) * scale
 		- tendril * radius * 0.75;
+	float r = radius + breathe * scale + rag * (1.0 - soft);
 	return d - r;
 }
 
@@ -54,12 +56,16 @@ void fragment() {
 	int n = min(light_count, MAX_LIGHTS);
 
 	for (int i = 0; i < n; i++) {
-		float e = edge_distance(UV, light_uvs[i], light_radii[i], float(i) * 0.37);
+		float soft = light_soft[i];
+		float e = edge_distance(UV, light_uvs[i], light_radii[i], float(i) * 0.37, soft);
 		float r = light_radii[i];
 		// A hard ragged front, then smoke thickening into full dark behind it.
 		float a = smoothstep(0.0, 0.01, e) * 0.72 + smoothstep(0.0, 0.14, e) * (max_dark - 0.72);
 		// The light also thins toward its edge.
 		a = max(a, smoothstep(-r * 0.55, 0.0, e) * 0.3);
+		// Soft lights never fully clear the dark: a faint glow fading out smoothly.
+		float glow = mix(0.12, max_dark, smoothstep(-r * 0.45, r * 0.7, e));
+		a = mix(a, glow, soft);
 		alphas[i] = a;
 		edges[i] = e;
 		alpha = min(alpha, a);
@@ -74,7 +80,7 @@ void fragment() {
 				others = min(others, smoothstep(0.0, 0.5, alphas[j]));
 			}
 		}
-		seam = max(seam, (1.0 - smoothstep(0.0, 0.004, abs(edges[i]))) * others);
+		seam = max(seam, (1.0 - smoothstep(0.0, 0.004, abs(edges[i]))) * others * (1.0 - light_soft[i]));
 	}
 	float flick = 0.6 + 0.4 * noise(UV * vec2(aspect, 1.0) * 60.0 + vec2(TIME * 1.5, 0.0));
 

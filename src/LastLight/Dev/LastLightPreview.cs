@@ -91,7 +91,7 @@ public partial class LastLightPreview : Node
 					if (i < layers.Count) layers[i].Visible = true;
 				}
 				else if (action == "tooltip")
-					GameTooltip.Show("Renewing Light", "Heals the target for 40 over 12 seconds. Costs 12 mana.");
+					GameTooltip.Show("Renewing Light", "Restores 40 light to the target over 12 seconds. Costs 12 kindling.");
 				else if (action.StartsWith("mouse:"))
 				{
 					// mouse:x;y — moves the cursor to a screen position (e.g. to hover an interactible).

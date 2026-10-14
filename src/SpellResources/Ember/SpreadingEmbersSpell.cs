@@ -19,7 +19,7 @@ public partial class SpreadingEmbersSpell : SpellResource
 	{
 		Name = "Spreading Embers";
 		Description =
-			$"Scatters glowing embers across the party, healing each member for {HealPerTick} every {TickInterval}s for {EffectDuration}s.";
+			$"Scatters glowing embers across the party, restoring {HealPerTick} light to each member every {TickInterval}s for {EffectDuration}s.";
 		ManaCost = 14f;
 		CastTime = 1.0f;
 		Cooldown = 8f;

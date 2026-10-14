@@ -3,16 +3,25 @@ using Godot;
 namespace healerfantasy.LastLight;
 
 /// <summary>
-/// A small steady light someone else is carrying (e.g. the camp merchant's lantern):
-/// a flickering warm glow that holds back a little of the dark around it
-/// (registered in <see cref="LastLightStyle.Pockets"/>).
+/// A small steady light that isn't the Lightkeeper's: the camp merchant's lantern, or
+/// the glow that marks something you can interact with. A flickering warm glow that
+/// holds back a little of the dark around it (registered in <see cref="LastLightStyle.Pockets"/>).
 /// </summary>
 public partial class LanternLight : Node2D
 {
 	/// <summary>Pocket radius, as a fraction of the screen (the healer's light is ~0.3).</summary>
 	public float Radius = 0.16f;
 
-	readonly LightPocket _pocket = new();
+	/// <summary>Opacity and size of the visible glow sprite.</summary>
+	public float GlowAlpha = 1f, GlowScale = 0.55f;
+
+	/// <summary>Multiplier on the pocket and glow, eased towards (e.g. brighter while hovered).</summary>
+	public float Boost = 1f;
+
+	float _boost = 1f;
+
+	// Carried lights glow softly; only the Lightkeeper and fires get ragged, smouldering edges.
+	readonly LightPocket _pocket = new() { Soft = 1f };
 	Sprite2D _glow = null!;
 	float _t;
 
@@ -33,7 +42,7 @@ public partial class LanternLight : Node2D
 				FillFrom = new Vector2(0.5f, 0.5f), FillTo = new Vector2(0.5f, 0f)
 			},
 			Material = new CanvasItemMaterial { BlendMode = CanvasItemMaterial.BlendModeEnum.Add },
-			Scale = new Vector2(0.55f, 0.55f)
+			Scale = new Vector2(GlowScale, GlowScale)
 		};
 		AddChild(_glow);
 	}
@@ -44,9 +53,11 @@ public partial class LanternLight : Node2D
 	public override void _Process(double delta)
 	{
 		_t += (float)delta;
-		var flick = 0.88f + 0.07f * Mathf.Sin(_t * 7.3f) + 0.05f * Mathf.Sin(_t * 13.1f + 1f);
+		_boost = Mathf.Lerp(_boost, Boost, 1f - Mathf.Exp(-10f * (float)delta));
+		var flick = (0.88f + 0.07f * Mathf.Sin(_t * 7.3f) + 0.05f * Mathf.Sin(_t * 13.1f + 1f)) * _boost;
 
-		_glow.Modulate = new Color(1f, 1f, 1f, flick);
+		_glow.Modulate = new Color(1f, 1f, 1f, Mathf.Min(GlowAlpha * flick, 1f));
+		_glow.Scale = Vector2.One * GlowScale * Mathf.Sqrt(_boost);
 
 		var size = GetViewport().GetVisibleRect().Size;
 		_pocket.Uv = GetGlobalTransformWithCanvas().Origin / size;

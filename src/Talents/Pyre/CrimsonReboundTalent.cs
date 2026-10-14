@@ -3,10 +3,10 @@ using healerfantasy.Effects;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
-namespace healerfantasy.Talents.Kindling;
+namespace healerfantasy.Talents.Pyre;
 
 /// <summary>
-/// After casting a Kindling spell that costs health, the caster's body
+/// After casting a Pyre spell that costs health, the caster's body
 /// fights back — recovering 40 % of the health cost as a heal-over-time
 /// over 5 seconds (5 ticks of 8 % each).
 ///
@@ -32,7 +32,7 @@ public class CrimsonReboundTalent : ISpellModifier
 
 	public void OnAfterCast(SpellContext ctx)
 	{
-		if (!ctx.IsSpellOfSchool(SpellSchool.Kindling)) return;
+		if (!ctx.IsSpellOfSchool(SpellSchool.Pyre)) return;
 		if (ctx.Spell.HealthCost <= 0f) return;
 
 		var healPerTick = ctx.Spell.HealthCost * RecoveryFraction / (Duration / TickInterval);
@@ -40,10 +40,10 @@ public class CrimsonReboundTalent : ISpellModifier
 		ctx.Caster.ApplyEffect(new HealOverTimeEffect(healPerTick, Duration, TickInterval)
 		{
 			Icon = EffectIcon,
-			School = SpellSchool.Kindling,
+			School = SpellSchool.Pyre,
 			SourceCharacterName = ctx.Caster.CharacterName,
 			AbilityName = "Crimson Rebound",
-			Description = "Recovering health spent on kindling."
+			Description = "Recovering light burned on Pyre spells."
 		});
 	}
 }

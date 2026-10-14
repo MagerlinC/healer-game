@@ -23,8 +23,8 @@ public partial class BossCountessCrimsonCurseSpell : SpellResource
 	{
 		Name = "Crimson Curse";
 		Description =
-			"A vampiric hex that saps the target's blood and corrupts healing magic, " +
-			"dealing 15 damage per second and reducing healing received by 50% for 10 seconds. Dispellable.";
+			"A vampiric hex that saps the target's blood and smothers restoring magic, " +
+			"dealing 15 damage per second and reducing light restored to them by 50% for 10 seconds. Dispellable.";
 		Tags = SpellTags.Damage | SpellTags.Duration;
 		School = SpellSchool.Umbra;
 		ManaCost = 0f;

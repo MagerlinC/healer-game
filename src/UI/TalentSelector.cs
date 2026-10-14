@@ -43,7 +43,7 @@ public partial class TalentSelector : CanvasLayer
 		(SpellSchool.Ember, SchoolInfo.Name(SpellSchool.Ember), SchoolInfo.Color(SpellSchool.Ember)),
 		(SpellSchool.Umbra, SchoolInfo.Name(SpellSchool.Umbra), SchoolInfo.Color(SpellSchool.Umbra)),
 		(SpellSchool.Wick, SchoolInfo.Name(SpellSchool.Wick), SchoolInfo.Color(SpellSchool.Wick)),
-		(SpellSchool.Kindling, SchoolInfo.Name(SpellSchool.Kindling), SchoolInfo.Color(SpellSchool.Kindling)),
+		(SpellSchool.Pyre, SchoolInfo.Name(SpellSchool.Pyre), SchoolInfo.Color(SpellSchool.Pyre)),
 	};
 
 	// ── state ─────────────────────────────────────────────────────────────────

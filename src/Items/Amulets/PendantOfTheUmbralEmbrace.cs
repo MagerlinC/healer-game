@@ -32,7 +32,7 @@ public class PendantOfTheUmbralEmbrace : EquippableItem
 	public PendantOfTheUmbralEmbrace()
 	{
 		Name = "Pendant of the Umbral Embrace";
-		Description = $"After casting an Umbra damage spell, the next healing spell heals for {Math.Round(_healingBonus * 100)}% more.";
+		Description = $"After casting an Umbra damage spell, the next restoring spell restores {Math.Round(_healingBonus * 100)}% more light.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Amulet;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(5));
@@ -40,7 +40,7 @@ public class PendantOfTheUmbralEmbrace : EquippableItem
 			_healingBonus,
 			Icon,
 			Name,
-			$"Next healing spell heals for {Math.Round(_healingBonus * 100)}% more."
+			$"Next restoring spell restores {Math.Round(_healingBonus * 100)}% more light."
 		));
 	}
 

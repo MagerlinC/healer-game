@@ -65,6 +65,12 @@ public partial class InteractibleObject : Area2D
     /// </summary>
     [Export] public string SfxPath { get; set; } = "";
 
+    /// <summary>
+    /// Radius of the small light that marks this object in the dark (screen heights;
+    /// 0 = none). Only sprite-based objects get one; rigged figures carry their own.
+    /// </summary>
+    [Export] public float BeaconRadius { get; set; } = 0.12f;
+
     // ── Runtime nodes — created in _Ready ─────────────────────────────────────
 
     Sprite2D? _sprite;
@@ -78,6 +84,7 @@ public partial class InteractibleObject : Area2D
 
     AudioStreamPlayer? _sfxPlayer;
     Tween? _glowTween;
+    healerfantasy.LastLight.LanternLight? _beacon;
 
     /// <summary>
     /// Shared across all instances so the shader is compiled only once.
@@ -146,6 +153,16 @@ public partial class InteractibleObject : Area2D
             // Main sprite on top — reuses the already-loaded Texture2D reference.
             _sprite = new Sprite2D { Texture = tex, Scale = SpriteScale };
             AddChild(_sprite);
+
+            // A soft light so the object can be found in the dark; brightens on hover.
+            if (BeaconRadius > 0f)
+            {
+                _beacon = new healerfantasy.LastLight.LanternLight
+                {
+                    Radius = BeaconRadius, GlowAlpha = 0.4f, GlowScale = 1.2f, ZIndex = -1
+                };
+                AddChild(_beacon);
+            }
         }
 
         // ── Collision ─────────────────────────────────────────────────────────
@@ -188,6 +205,7 @@ public partial class InteractibleObject : Area2D
     void OnHoverEnter()
     {
         Input.SetDefaultCursorShape(Input.CursorShape.PointingHand);
+        if (_beacon != null) _beacon.Boost = 1.3f;
 
         if (_glowSprite == null) return;
         _glowTween?.Kill();
@@ -198,6 +216,7 @@ public partial class InteractibleObject : Area2D
     void OnHoverExit()
     {
         Input.SetDefaultCursorShape(Input.CursorShape.Arrow);
+        if (_beacon != null) _beacon.Boost = 1f;
 
         if (_glowSprite == null) return;
         _glowTween?.Kill();

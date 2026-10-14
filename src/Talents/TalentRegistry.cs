@@ -7,7 +7,7 @@ using healerfantasy.Talents.Wick;
 using healerfantasy.Talents.Generic;
 using healerfantasy.Talents.Flame;
 using healerfantasy.Talents.Ember;
-using healerfantasy.Talents.Kindling;
+using healerfantasy.Talents.Pyre;
 using healerfantasy.Talents.Umbra;
 
 namespace healerfantasy.Talents;
@@ -49,7 +49,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Siphoning Dark",
-			Description = "Dealing umbral damage restores 1 mana.",
+			Description = "Dealing umbral damage restores 1 kindling.",
 			IconPath = AssetConstants.TalentIconAssets + "void/siphoning-void.png",
 			TalentRow = 2,
 			School = SpellSchool.Umbra,
@@ -83,7 +83,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Shielding Rekindle",
-			Description = "Healing a target grants a 5s shield equal to 20% of the healing done.",
+			Description = "Restoring light to a target grants a 5s shield equal to 20% of the light restored.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_17.png",
 			School = SpellSchool.Flame,
 			TalentRow = 0,
@@ -93,7 +93,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Sacred Ground",
-			Description = "Healing spells restore 2 mana for each target healed.",
+			Description = "Restoring spells return 2 kindling for each target they reach.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_2.png",
 			School = SpellSchool.Flame,
 			TalentRow = 1,
@@ -103,7 +103,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Sacred Momentum",
-			Description = "Flame spells are 15% more effective when the target is below 50% health.",
+			Description = "Flame spells are 15% more effective when the target is below 50% light.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_3.png",
 			School = SpellSchool.Flame,
 			TalentRow = 2,
@@ -113,7 +113,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Radiant Infusion",
-			Description = "Healing spells grant a 6s buff that increases the target's damage by 15%.",
+			Description = "Restoring spells grant a 6s buff that increases the target's damage by 15%.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_15.png",
 			School = SpellSchool.Flame,
 			TalentRow = 3,
@@ -123,7 +123,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Illumination",
-			Description = "Healing critical strikes refund 50% of the spell's mana cost.",
+			Description = "Critical strikes that restore light refund 50% of the spell's kindling cost.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_16.png",
 			School = SpellSchool.Flame,
 			TalentRow = 3,
@@ -137,7 +137,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Banked Embers",
-			Description = "Ember healing spells are 20% more effective.",
+			Description = "Ember restoring spells are 20% more effective.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_6.png",
 			School = SpellSchool.Ember,
 			TalentRow = 0,
@@ -158,7 +158,7 @@ public static class TalentRegistry
 		{
 			Name = "Spreading Warmth",
 			Description =
-				"Casting a healing spell on a target causes the most-injured party member to be healed for 8 HP.",
+				"Casting a restoring spell on a target also restores 8 light to the party member with the least light.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_8.png",
 			School = SpellSchool.Ember,
 			TalentRow = 2,
@@ -168,7 +168,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Deep Coals",
-			Description = "Casting a HoT on a target that already has one active restores 4 mana.",
+			Description = "Casting lingering light on a target that already has lingering light active returns 4 kindling.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_18.png",
 			School = SpellSchool.Ember,
 			TalentRow = 3,
@@ -178,7 +178,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Overburn",
-			Description = "HoT spells tick for 20% more on targets above 75% health.",
+			Description = "Lingering light ticks for 20% more on targets above 75% light.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_19.png",
 			School = SpellSchool.Ember,
 			TalentRow = 3,
@@ -212,8 +212,8 @@ public static class TalentRegistry
 		},
 		new()
 		{
-			Name = "Mana Rift",
-			Description = "Wick spells have a 20% chance to refund their full mana cost.",
+			Name = "Kindling Rift",
+			Description = "Wick spells have a 20% chance to refund their full kindling cost.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_14.png",
 			School = SpellSchool.Wick,
 			TalentRow = 2,
@@ -268,7 +268,7 @@ public static class TalentRegistry
 		{
 			Name = "Critical Recharge",
 			Description =
-				"Critical hits restore 10 mana.",
+				"Critical hits restore 10 kindling.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_21.png",
 			School = SpellSchool.Generic,
 			TalentRow = 0,
@@ -277,9 +277,9 @@ public static class TalentRegistry
 		},
 		new()
 		{
-			Name = "Mana Recovery",
+			Name = "Gathered Kindling",
 			Description =
-				"Regenerate 2 additional mana per second.",
+				"Gather 2 additional kindling per second.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_29.png",
 			School = SpellSchool.Generic,
 			TalentRow = 0,
@@ -290,7 +290,7 @@ public static class TalentRegistry
 		{
 			Name = "Arcane Hunger",
 			Description =
-				"When casting a spell, spend up to 10% of maximum mana to increase its damage or healing by 1% per 1 mana spent (maximum of 50%).",
+				"When casting a spell, spend up to 10% of maximum kindling to increase its damage or light restored by 1% per 1 kindling spent (maximum of 50%).",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_13.png",
 			School = SpellSchool.Generic,
 			TalentRow = 1,
@@ -300,7 +300,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Critical Infusion",
-			Description = "Critical hits grant a 10s buff amplifying the damage and healing of the next spell by 30%.",
+			Description = "Critical hits grant a 10s buff amplifying the next spell's damage and light restored by 30%.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_23.png",
 			School = SpellSchool.Generic,
 			TalentRow = 1,
@@ -309,14 +309,14 @@ public static class TalentRegistry
 		}
 	];
 
-	public static readonly List<TalentDefinition> KindlingTalents =
+	public static readonly List<TalentDefinition> PyreTalents =
 	[
 		new()
 		{
 			Name = "Crimson Rebound",
-			Description = "After casting a Kindling spell, recover 40% of its health cost as healing over 5 seconds.",
+			Description = "After casting a Pyre spell, recover 40% of the light it burned over 5 seconds.",
 			IconPath = AssetConstants.TalentIconAssets + "sanguimancy/crimson-rebound.png",
-			School = SpellSchool.Kindling,
+			School = SpellSchool.Pyre,
 			TalentRow = 0,
 			Configure = (t, icon) =>
 				t.SpellModifiers.Add(new CrimsonReboundTalent { EffectIcon = icon })
@@ -324,29 +324,29 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Bloodthirst",
-			Description = "Kindling spells deal and heal 25% more.",
+			Description = "Pyre spells deal 25% more damage and restore 25% more light.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_9.png",
-			School = SpellSchool.Kindling,
+			School = SpellSchool.Pyre,
 			TalentRow = 1,
 			Configure = (t, _) =>
 				t.SpellModifiers.Add(new BloodthirstTalent())
 		},
 		new()
 		{
-			Name = "Kindled Ward",
+			Name = "Pyre Ward",
 			Description =
-				"When you spend health on a Kindling spell, all living allies gain a shield equal to the health cost for 10 seconds.",
+				"When you burn your own light on a Pyre spell, all living allies gain a shield equal to the light burned for 10 seconds.",
 			IconPath = AssetConstants.TalentIconAssets + "sanguimancy/sanguine-ward.png",
-			School = SpellSchool.Kindling,
+			School = SpellSchool.Pyre,
 			TalentRow = 2,
 			Configure = (t, icon) =>
-				t.SpellModifiers.Add(new KindledWardTalent { EffectIcon = icon })
+				t.SpellModifiers.Add(new PyreWardTalent { EffectIcon = icon })
 		}
 	];
 
 	public static readonly List<TalentDefinition> AllTalents =
 		GenericTalents.Concat(UmbraTalents).Concat(FlameTalents).Concat(EmberTalents).Concat(WickTalents)
-			.Concat(KindlingTalents).ToList();
+			.Concat(PyreTalents).ToList();
 
 	/// <summary>
 	/// Returns up to <paramref name="count"/> random talent offers for the victory screen.
@@ -383,8 +383,8 @@ public static class TalentRegistry
 		var eligible = AllTalents.Where(t =>
 		{
 			if (acquiredNames.Contains(t.Name)) return false;
-			// Kindling requires the Castle of Blood to have been defeated in a previous run.
-			if (t.School == SpellSchool.Kindling && !PlayerProgressStore.HasDefeatedCastleOfBlood)
+			// Pyre requires the Castle of Blood to have been defeated in a previous run.
+			if (t.School == SpellSchool.Pyre && !PlayerProgressStore.HasDefeatedCastleOfBlood)
 				return false;
 			if (t.TalentRow == 0) return true;
 			// Requires at least one talent from the previous row in the same school.

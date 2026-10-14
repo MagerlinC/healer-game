@@ -25,11 +25,11 @@ public partial class BurningPactSpell : SpellResource
 	{
 		Name = "Burning Pact";
 		Description =
-			$"Sacrifice {HpCost} HP to restore {ManaGained} mana instantly.";
+			$"Burn {HpCost} of your own light to restore {ManaGained} kindling instantly.";
 		ManaCost = 0f;
 		CastTime = 0.0f;
 		Cooldown = 14f;
-		School = SpellSchool.Kindling;
+		School = SpellSchool.Pyre;
 		RequiredSchoolPoints = 1;
 		TargetingType = TargetingType.Self;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/sanguine-pact.png");

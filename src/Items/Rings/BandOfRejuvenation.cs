@@ -13,7 +13,7 @@ public class BandOfRejuvenation : EquippableItem
 	public BandOfRejuvenation()
 	{
 		Name = "Band of Rejuvenation";
-		Description = $"Heal over time effects last {_durationExtension}s longer";
+		Description = $"Lingering light effects last {_durationExtension}s longer";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Ring1;
 		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(2));
