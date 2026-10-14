@@ -15,7 +15,7 @@ namespace healerfantasy.UI;
 ///   var fct = new FloatingCombatTextManager();
 ///   AddChild(fct);
 ///   fct.Register(player);
-///   fct.Register(templar);
+///   fct.Register(dawnwarden);
 ///   // …
 /// </code>
 /// </summary>

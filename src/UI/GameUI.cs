@@ -284,7 +284,7 @@ public partial class GameUI : CanvasLayer
 			nameof(Character.ManaChanged),
 			Callable.From((string characterName, float current, float max) =>
 			{
-				if (characterName == GameConstants.HealerName) _actionBar.SetIconShadingBasedOnPlayerMana(current, max);
+				if (characterName == GameConstants.LightkeeperName) _actionBar.SetIconShadingBasedOnPlayerMana(current, max);
 			}));
 	}
 
@@ -292,7 +292,7 @@ public partial class GameUI : CanvasLayer
 
 	/// <summary>
 	/// Associate a Character with a UI slot for hover-targeting and combat meters.
-	/// Slot order must match PartyFrames.MemberDefs: 0=Templar, 1=Healer, 2=Assassin, 3=Wizard.
+	/// Slot order must match PartyFrames.MemberDefs: 0=Dawnwarden, 1=Healer, 2=Duskblade, 3=Starcaller.
 	/// </summary>
 	public override void _Process(double delta)
 	{

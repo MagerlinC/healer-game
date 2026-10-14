@@ -15,11 +15,11 @@ using healerfantasy.UI;
 /// Behaviour
 /// ─────────
 /// • Every <see cref="MeleeAttackInterval"/> seconds — Bloodthirst:
-///   a savage melee strike at the tank (Templar). Falls back to a random
-///   party member if the Templar is dead.
+///   a savage melee strike at the tank (Dawnwarden). Falls back to a random
+///   party member if the Dawnwarden is dead.
 ///
 /// • Every <see cref="CleaveInterval"/> seconds — Crimson Strike:
-///   a wide cleave that simultaneously hits the Templar and the Assassin
+///   a wide cleave that simultaneously hits the Dawnwarden and the Duskblade
 ///   (both frontline melee characters).
 ///
 /// • Every <see cref="DrainInterval"/> seconds — Blood Drain:

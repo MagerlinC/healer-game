@@ -12,17 +12,17 @@ using healerfantasy;
 ///
 /// Slot order (must match the order passed to <see cref="BindCharacter"/> from
 /// World._Ready):
-///   0 = Templar | 1 = Healer (Player) | 2 = Assassin | 3 = Wizard
+///   0 = Dawnwarden | 1 = Healer (Player) | 2 = Duskblade | 3 = Starcaller
 /// </summary>
 public partial class PartyFrames : Control
 {
 	// ── per-member config ─────────────────────────────────────────────────────
 	static readonly (string Name, float MaxHp)[] MemberDefs =
 	{
-		(GameConstants.TemplarName, 180f),
-		(GameConstants.HealerName, 120f),
-		(GameConstants.AssassinName, 100f),
-		(GameConstants.WizardName, 100f)
+		(GameConstants.DawnwardenName, 180f),
+		(GameConstants.LightkeeperName, 120f),
+		(GameConstants.DuskbladeName, 100f),
+		(GameConstants.StarcallerName, 100f)
 	};
 
 	// ── node refs ─────────────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ public partial class PartyFrames : Control
 	Character? _defaultTarget;
 
 	// The exact party member currently selected by the boss for melee attacks.
-	string? _currentBossMeleeTargetName = GameConstants.TemplarName;
+	string? _currentBossMeleeTargetName = GameConstants.DawnwardenName;
 
 	// ── spell-target tracking ─────────────────────────────────────────────────
 	// Names of party members currently highlighted as boss spell targets.
@@ -68,7 +68,7 @@ public partial class PartyFrames : Control
 			var (name, maxHp) = MemberDefs[i];
 			// Enable the item-effect bar only on the healer frame so that
 			// item procs are clearly shown as player-owned effects.
-			var showItemEffects = name == GameConstants.HealerName;
+			var showItemEffects = name == GameConstants.LightkeeperName;
 			_frames[i] = new PartyFrame(name, maxHp, showItemEffects);
 			// Bottom-align each frame so all health panels stay flush at the same
 			// vertical position when effect rows cause individual frames to grow taller.
@@ -84,7 +84,7 @@ public partial class PartyFrames : Control
 		// Keep the exact current boss melee target outlined in red between spells.
 		UpdateTargetHighlight();
 
-		// ── Templar death tracking ───────────────────────────────────────────
+		// ── Dawnwarden death tracking ───────────────────────────────────────────
 		// Re-evaluate the highlight whenever a party member dies so the UI never
 		// keeps a dead frame marked as the boss's target.
 		GlobalAutoLoad.SubscribeToSignal(

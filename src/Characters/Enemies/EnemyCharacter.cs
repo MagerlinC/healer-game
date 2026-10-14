@@ -11,7 +11,7 @@ using healerfantasy;
 ///
 /// Targeting helpers
 /// ─────────────────
-/// <see cref="FindTank"/>               — alive Templar, or null
+/// <see cref="FindTank"/>               — alive Dawnwarden, or null
 /// <see cref="FindHealer"/>             — alive Healer (player), or null
 /// <see cref="PickRandomPartyMember"/>  — uniformly random alive party member, or null
 /// <see cref="CollectAlivePartyMembers"/> — all alive party members, shuffled
@@ -29,23 +29,23 @@ public abstract partial class EnemyCharacter : Character
 	// ── Targeting helpers ──────────────────────────────────────────────────────
 
 	/// <summary>
-	/// Returns the alive party member named "Templar" (the tank), or null.
+	/// Returns the alive Dawnwarden (the tank), or null.
 	/// </summary>
 	protected Character FindTank()
 	{
 		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.CharacterName == GameConstants.TemplarName && c.IsAlive)
+			if (node is Character c && c.CharacterName == GameConstants.DawnwardenName && c.IsAlive)
 				return c;
 		return null;
 	}
 
 	/// <summary>
-	/// Returns the alive party member named "Healer" (the player), or null.
+	/// Returns the alive Lightkeeper (the player), or null.
 	/// </summary>
 	protected Character FindHealer()
 	{
 		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.CharacterName == GameConstants.HealerName && c.IsAlive)
+			if (node is Character c && c.CharacterName == GameConstants.LightkeeperName && c.IsAlive)
 				return c;
 		return null;
 	}

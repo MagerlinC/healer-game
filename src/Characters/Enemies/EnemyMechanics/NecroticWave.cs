@@ -264,9 +264,9 @@ public partial class NecroticWave : Node2D
 			if (node is not Character target || !target.IsAlive) continue;
 			if (_alreadyHit.Contains(target)) continue;
 
-			// NPC party members (Templar, Assassin, Wizard) cannot dodge, so
+			// NPC party members (Dawnwarden, Duskblade, Starcaller) cannot dodge, so
 			// they are immune to Necrotic Waves — only the player takes damage.
-			if (target.CharacterName != GameConstants.HealerName) continue;
+			if (target.CharacterName != GameConstants.LightkeeperName) continue;
 
 			// Coordinate of this character on the travel axis and the perp axis.
 			var travelCoord = _isHorizontal ? target.GlobalPosition.X : target.GlobalPosition.Y;

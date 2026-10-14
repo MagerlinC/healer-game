@@ -471,7 +471,7 @@ public partial class TheBloodPrince : EnemyCharacter
 		_isSiphonChanneling = false;
 		EmitSignalSanguineChannelEnded();
 		EmitSignalSanguineHealthTargetCleared();
-		// Clear the spell-target highlight; melee (Templar) outline resumes.
+		// Clear the spell-target highlight; melee (Dawnwarden) outline resumes.
 		RaiseBossSpellTargets();
 
 		GD.Print("[BloodPrince] Sanguine Siphon channel ended.");

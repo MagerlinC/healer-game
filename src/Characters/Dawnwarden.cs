@@ -5,33 +5,34 @@ using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
 /// <summary>
-/// The Assassin — a fast melee damage dealer.
-/// On combat start, dashes forward to melee range before attacking.
-/// Attacks every <see cref="AttackInterval"/> seconds with Sinister Strike.
-/// Lower damage per hit than the Templar, but attacks nearly twice as often.
+/// The Dawnwarden — a defensive frontliner who keeps aggro on the boss.
+/// On combat start, marches forward to melee range before attacking.
+/// Attacks every <see cref="AttackInterval"/> seconds with Shield Bash,
+/// dealing a moderate melee hit. Hits less frequently than the Duskblade
+/// but with higher damage per swing.
 /// </summary>
-public partial class Assassin : PartyMember
+public partial class Dawnwarden : PartyMember
 {
-	public Assassin()
+	public Dawnwarden()
 	{
-		MaxHealth = 100f;
+		MaxHealth = 180f;
 	}
 
-	/// <summary>Seconds between each Sinister Strike.</summary>
-	[Export] public float AttackInterval = 1.2f;
+	/// <summary>Seconds between each Shield Bash.</summary>
+	[Export] public float AttackInterval = 2.5f;
 
 	/// <summary>Movement speed in pixels per second while closing to melee range.</summary>
-	[Export] public float MoveSpeed = 100f;
+	[Export] public float MoveSpeed = 80f;
 
 	/// <summary>
-	/// Distance from the boss centre at which the Assassin stops and begins
-	/// attacking. Should account for the boss sprite radius so the Assassin
+	/// Distance from the boss centre at which the Dawnwarden stops and begins
+	/// attacking. Should account for the boss sprite radius so the Dawnwarden
 	/// stops just outside the boss rather than overlapping it.
 	/// </summary>
 	[Export] public float MeleeRange = 50f;
 
 	float _attackTimer;
-	AssassinSinisterStrikeSpell _sinisterStrike;
+	DawnwardenShieldBashSpell _shieldBash;
 	CharacterVisual _visual = null!;
 
 	public override void _Ready()
@@ -44,9 +45,9 @@ public partial class Assassin : PartyMember
 			["attack"] = new(2 / 6f)
 		});
 		_visual.AnimationFinished += OnAnimationFinished;
-		// Stagger first attack so it doesn't sync with the Templar.
-		_attackTimer = AttackInterval * 0.7f;
-		_sinisterStrike = new AssassinSinisterStrikeSpell();
+		// Stagger the first attack slightly so all three members don't hit at t=0.
+		_attackTimer = AttackInterval * 0.4f;
+		_shieldBash = new DawnwardenShieldBashSpell();
 	}
 
 	void OnAnimationFinished()
@@ -93,16 +94,16 @@ public partial class Assassin : PartyMember
 		if (_attackTimer <= 0f)
 		{
 			_attackTimer = GetHasteAdjustedAttackInterval(AttackInterval);
-			PerformSinisterStrike();
+			PerformShieldBash();
 		}
 	}
 
-	void PerformSinisterStrike()
+	void PerformShieldBash()
 	{
 		var boss = FindPreferredBoss();
 		if (boss == null) return;
 		_visual.Play("attack");
-		SpellPipeline.Cast(_sinisterStrike, this, boss);
+		SpellPipeline.Cast(_shieldBash, this, boss);
 	}
 
 	protected override void ApplyDeathVisuals()

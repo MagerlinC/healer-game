@@ -49,7 +49,7 @@ public partial class BossDetonationZoneSpell : SpellResource
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)
 	{
 		foreach (var node in caster.GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive && c.CharacterName == GameConstants.HealerName)
+			if (node is Character c && c.IsAlive && c.CharacterName == GameConstants.LightkeeperName)
 				return new List<Character> { c };
 
 		// Fallback — should not happen in normal play.

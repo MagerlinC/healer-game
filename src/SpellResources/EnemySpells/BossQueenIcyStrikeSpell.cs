@@ -4,7 +4,7 @@ namespace healerfantasy.SpellResources;
 
 /// <summary>
 /// Queen of the Frozen Wastes — Icy Strike.
-/// A swift melee auto-attack directed at the tank (Templar).
+/// A swift melee auto-attack directed at the tank (Dawnwarden).
 /// Deals instant physical damage; no cast time or mana cost.
 /// </summary>
 [Godot.GlobalClass]

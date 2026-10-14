@@ -159,7 +159,9 @@ public partial class InteractibleObject : Area2D
             {
                 _beacon = new healerfantasy.LastLight.LanternLight
                 {
-                    Radius = BeaconRadius, GlowAlpha = 0.4f, GlowScale = 1.2f, ZIndex = -1
+                    Radius = BeaconRadius, GlowAlpha = 0.4f, GlowScale = 1.2f, ZIndex = -1,
+                    // a steady glow: barely moving, and slowly
+                    FlickerAmount = 0.2f, FlickerSpeed = 0.12f
                 };
                 AddChild(_beacon);
             }

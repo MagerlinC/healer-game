@@ -1,25 +1,24 @@
-using Godot.Collections;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;
 
 /// <summary>
-/// The Wizard's basic damage spell — slower but hits harder than the melee attacks.
-/// Deals instant magic damage to the boss.
+/// The Dawnwarden's basic melee attack.
+/// Deals instant physical damage to the boss.
 /// </summary>
 [Godot.GlobalClass]
-public partial class WizardArcaneBlastSpell : SpellResource
+public partial class DawnwardenShieldBashSpell : SpellResource
 {
-	public float DamageAmount = 35f;
+	public float DamageAmount = 20f;
 
-	public WizardArcaneBlastSpell()
+	public DawnwardenShieldBashSpell()
 	{
-		Name = "Arcane Blast";
-		Description = "A focused bolt of arcane energy hurled at the enemy.";
+		Name = "Shield Bash";
+		Description = "The Dawnwarden crashes their shield into the enemy with full force.";
 		Tags = SpellTags.Damage | SpellTags.Attack;
 		ManaCost = 0f;
 		CastTime = 0f;
-		School = SpellSchool.Umbra;
+		School = SpellSchool.Generic;
 		TargetingType = TargetingType.Enemy;
 	}
 
@@ -27,7 +26,6 @@ public partial class WizardArcaneBlastSpell : SpellResource
 	{
 		return DamageAmount;
 	}
-
 
 	public override void Apply(SpellContext ctx)
 	{

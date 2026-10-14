@@ -92,7 +92,7 @@ public partial class VolatileIcicleProjectile : Node2D
 	Character FindHealer()
 	{
 		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive && c.CharacterName == GameConstants.HealerName)
+			if (node is Character c && c.IsAlive && c.CharacterName == GameConstants.LightkeeperName)
 				return c;
 		return null;
 	}

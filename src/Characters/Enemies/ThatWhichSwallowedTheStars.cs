@@ -16,8 +16,8 @@ using healerfantasy.SpellSystem;
 /// Behaviour
 /// ─────────
 /// • Every <see cref="MeleeAttackInterval"/> seconds — Void Tendril Strike:
-///   a melee swipe at the tank (Templar), falling back to a random party
-///   member if the Templar is dead. Uses the "cast" animation.
+///   a melee swipe at the tank (Dawnwarden), falling back to a random party
+///   member if the Dawnwarden is dead. Uses the "cast" animation.
 ///
 /// • Every <see cref="BeamInterval"/> seconds — Stellar Beam: fires a sustained
 ///   beam of void-star energy at a random party member for heavy damage;

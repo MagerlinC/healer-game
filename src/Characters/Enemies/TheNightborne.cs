@@ -403,7 +403,7 @@ public partial class TheNightborne : EnemyCharacter
 		_nightsAdvancePhase = NightsAdvancePhase.None;
 		GlobalPosition = _nightsAdvanceOrigin;
 		_visual.Play("idle");
-		// Clear spell-target highlight; the default melee (Templar) outline resumes.
+		// Clear spell-target highlight; the default melee (Dawnwarden) outline resumes.
 		RaiseBossSpellTargets();
 	}
 

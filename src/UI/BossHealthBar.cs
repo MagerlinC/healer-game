@@ -39,7 +39,7 @@ public partial class BossHealthBar : CharacterFrame
 	/// <summary>
 	/// Label text set by <see cref="Init"/>.  When set, this takes priority over
 	/// the <c>charName</c> argument in <see cref="UpdateProgress"/> so that a
-	/// human-readable display name (e.g. "Vine (Templar)") is preserved even when
+	/// human-readable display name (e.g. "Vine (Dawnwarden)") is preserved even when
 	/// subsequent <see cref="Character.HealthChanged"/> signals carry the raw
 	/// <see cref="Character.CharacterName"/> (e.g. "Vines_1").
 	/// </summary>

@@ -149,7 +149,7 @@ public partial class Player : Character
 			["walk"] = new(3 / 4f / 0.5f, Loop: true),
 			["cast"] = new(CastAnimBaseDuration, Loop: true)
 		});
-		CharacterName = GameConstants.HealerName;
+		CharacterName = GameConstants.LightkeeperName;
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastStarted));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CastCancelled));
 		GlobalAutoLoad.RegisterSignalEmitter(this, nameof(CooldownStarted));

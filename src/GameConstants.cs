@@ -6,14 +6,15 @@ public static class GameConstants
 {
 	/// <summary>
 	/// The player character's name: shown in party frames, meters and combat logs, and
-	/// used to identify the player in combat events. (The scene node is still "Healer".)
+	/// used to identify the player in combat events and as the player's node name in World.tscn.
 	/// </summary>
-	public const string HealerName = "Lightkeeper";
+	public const string LightkeeperName = "Lightkeeper";
 
 
-	public const string TemplarName = "Templar";
-	public const string AssassinName = "Assassin";
-	public const string WizardName = "Wizard";
+	// Party members (formerly the Templar, Assassin and Wizard).
+	public const string DawnwardenName = "Dawnwarden";
+	public const string DuskbladeName = "Duskblade";
+	public const string StarcallerName = "Starcaller";
 
 	// ── Boss names — Ancient Keep ─────────────────────────────────────────────
 	public const int AncientKeepTier = 1;

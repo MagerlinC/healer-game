@@ -38,7 +38,7 @@ public partial class ManaOrb : Control
 			nameof(Character.ManaChanged),
 			Callable.From((string characterName, float current, float max) =>
 			{
-				if (characterName == GameConstants.HealerName) OnManaChanged(current, max);
+				if (characterName == GameConstants.LightkeeperName) OnManaChanged(current, max);
 			})
 		);
 	}

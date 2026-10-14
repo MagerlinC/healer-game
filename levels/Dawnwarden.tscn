@@ -1,14 +1,14 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" uid="uid://dua1de63tjorp" path="res://src/Characters/Templar.cs" id="Script_templar"]
+[ext_resource type="Script" uid="uid://dua1de63tjorp" path="res://src/Characters/Dawnwarden.cs" id="Script_dawnwarden"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
 radius = 8.0
 height = 12.0
 
-[node name="Templar" type="CharacterBody2D"]
-script = ExtResource("Script_templar")
-CharacterName = "Templar"
+[node name="Dawnwarden" type="CharacterBody2D"]
+script = ExtResource("Script_dawnwarden")
+CharacterName = "Dawnwarden"
 MaxHealth = 150.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

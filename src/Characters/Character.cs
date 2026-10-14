@@ -470,7 +470,7 @@ public abstract partial class Character : CharacterBody2D
 			: _effects.Values;
 
 		var nonUltPlayerEffects = effectsForSchool.Where(effect =>
-			effect.SourceCharacterName == GameConstants.HealerName && !effect.IsUltimateEffect);
+			effect.SourceCharacterName == GameConstants.LightkeeperName && !effect.IsUltimateEffect);
 
 		foreach (var effect in nonUltPlayerEffects)
 		{
@@ -494,7 +494,7 @@ public abstract partial class Character : CharacterBody2D
 			: _effects.Values;
 
 		var nonUltPlayerEffects = effectsForSchool.Where(effect =>
-			effect.SourceCharacterName == GameConstants.HealerName && !effect.IsUltimateEffect);
+			effect.SourceCharacterName == GameConstants.LightkeeperName && !effect.IsUltimateEffect);
 
 		foreach (var effect in nonUltPlayerEffects)
 		{
@@ -523,8 +523,8 @@ public abstract partial class Character : CharacterBody2D
 			MaxHealth = MaxHealth,
 			MaxMana = MaxMana,
 			CritChance = BaseCritChance,
-			// Templar damage reduction
-			DamageTakenMultiplier = Name == GameConstants.TemplarName ? 0.8f : 1.0f
+			// Dawnwarden damage reduction
+			DamageTakenMultiplier = CharacterName == GameConstants.DawnwardenName ? 0.8f : 1.0f
 		};
 
 		foreach (var talent in Talents)

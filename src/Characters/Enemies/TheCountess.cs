@@ -15,7 +15,7 @@ using healerfantasy.SpellSystem;
 /// Behaviour
 /// ─────────
 /// • Every <see cref="MeleeAttackInterval"/> seconds — Noble Strike:
-///   a swift melee attack at the tank (Templar).
+///   a swift melee attack at the tank (Dawnwarden).
 ///
 /// • Every <see cref="BloodBoltInterval"/> seconds — Blood Bolt:
 ///   a ranged crimson projectile hurled at a random party member.

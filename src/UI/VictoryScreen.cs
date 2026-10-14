@@ -54,10 +54,10 @@ public partial class VictoryScreen : CanvasLayer
 
 	static readonly HashSet<string> PartyMemberNames = new()
 	{
-		GameConstants.HealerName,
-		GameConstants.TemplarName,
-		GameConstants.AssassinName,
-		GameConstants.WizardName
+		GameConstants.LightkeeperName,
+		GameConstants.DawnwardenName,
+		GameConstants.DuskbladeName,
+		GameConstants.StarcallerName
 	};
 
 	AudioStreamPlayer _audioPlayer = new();

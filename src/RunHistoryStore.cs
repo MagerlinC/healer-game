@@ -28,7 +28,7 @@ public static class RunHistoryStore
 	const string FileSavePath = "user://run-history.save";
 
 	static readonly List<string> PartyNames =
-		[GameConstants.HealerName, GameConstants.WizardName, GameConstants.AssassinName, GameConstants.TemplarName];
+		[GameConstants.LightkeeperName, GameConstants.StarcallerName, GameConstants.DuskbladeName, GameConstants.DawnwardenName];
 
 	/// <summary>Immutable snapshot of a single spell in the player's loadout at run end.</summary>
 	public sealed record SpellSnapshot(string Name, string School);
@@ -83,6 +83,15 @@ public static class RunHistoryStore
 
 	// ── state ─────────────────────────────────────────────────────────────────
 
+	// Must be initialised before _history, which uses it while loading.
+	static readonly (string Old, string Current)[] LegacyPartyNames =
+	[
+		("Healer", GameConstants.LightkeeperName),
+		("Templar", GameConstants.DawnwardenName),
+		("Assassin", GameConstants.DuskbladeName),
+		("Wizard", GameConstants.StarcallerName)
+	];
+
 	static readonly List<RunRecord> _history = LoadRunHistoryFromDisk();
 	static readonly List<BossEncounterRecord> _currentEncounters = new();
 	static DateTime _runStartTime = default;
@@ -103,9 +112,11 @@ public static class RunHistoryStore
 			return [];
 
 		using var saveFile = FileAccess.Open(FileSavePath, FileAccess.ModeFlags.Read);
-		// The player character was called "Healer" before it became the Lightkeeper;
-		// older runs keep that name in their combat events and need it to add up.
-		var jsonString = saveFile.GetAsText().Replace("\"Healer\"", $"\"{GameConstants.HealerName}\"");
+		// The party had other names before the Last Light rename; older runs keep
+		// those in their combat events and need the current ones to add up.
+		var jsonString = saveFile.GetAsText();
+		foreach (var (old, current) in LegacyPartyNames)
+			jsonString = jsonString.Replace($"\"{old}\"", $"\"{current}\"");
 
 		return JsonSerializer.Deserialize<List<RunRecord>>(jsonString) ?? [];
 	}

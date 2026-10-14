@@ -13,8 +13,8 @@ using healerfantasy.SpellSystem;
 /// ─────────
 /// • Stands still (no movement).
 /// • Every <see cref="MeleeAttackInterval"/> seconds, performs a melee attack
-///   (Crystal Slash) against the tank — the party member named "Templar".
-///   Falls back to any alive party member if the Templar is dead.
+///   (Crystal Slash) against the tank — the Dawnwarden (<see cref="GameConstants.DawnwardenName"/>).
+///   Falls back to any alive party member if the Dawnwarden is dead.
 /// • Every <see cref="SpellCastInterval"/> seconds, fires Crystal Blast at a
 ///   randomly chosen alive party member.
 /// • Every <see cref="DecayInterval"/> seconds, applies Crystal Decay (a 10 HP/sec

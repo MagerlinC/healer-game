@@ -21,7 +21,7 @@ using healerfantasy.UI;
 /// group and registers each one individually for FCT and health bars.
 ///
 /// Slot order matches PartyUI.MemberDefs:
-///   0 = Templar | 1 = Healer (Player) | 2 = Assassin | 3 = Wizard
+///   0 = Dawnwarden | 1 = Lightkeeper (Player) | 2 = Duskblade | 3 = Starcaller
 /// </summary>
 public partial class World : Node2D
 {
@@ -51,10 +51,10 @@ public partial class World : Node2D
 		RunState.Instance.LockRuneSelection();
 
 		var ui = GetNode<GameUI>("PartyUI");
-		var player = GetNode<Player>("Healer");
-		var templar = GetNode<Character>("Templar");
-		var assassin = GetNode<Character>("Assassin");
-		var wizard = GetNode<Character>("Wizard");
+		var player = GetNode<Player>("Lightkeeper");
+		var dawnwarden = GetNode<Character>("Dawnwarden");
+		var duskblade = GetNode<Character>("Duskblade");
+		var starcaller = GetNode<Character>("Starcaller");
 
 		// ── Boss — instantiated from current dungeon definition ───────────────
 		var bossScene = GD.Load<PackedScene>(dungeon.BossScenePaths[bossIndex]);
@@ -98,14 +98,14 @@ public partial class World : Node2D
 			ui.ShowSecondaryBossBar(bossCharacters[1]);
 
 		fctManager.Register(player);
-		fctManager.Register(templar);
-		fctManager.Register(assassin);
-		fctManager.Register(wizard);
+		fctManager.Register(dawnwarden);
+		fctManager.Register(duskblade);
+		fctManager.Register(starcaller);
 
-		ui.BindCharacter(0, templar);
+		ui.BindCharacter(0, dawnwarden);
 		ui.BindCharacter(1, player);
-		ui.BindCharacter(2, assassin);
-		ui.BindCharacter(3, wizard);
+		ui.BindCharacter(2, duskblade);
+		ui.BindCharacter(3, starcaller);
 
 		player.GameUI = ui;
 
@@ -124,7 +124,7 @@ public partial class World : Node2D
 		{
 			var vinesManager = new VinesManager();
 			AddChild(vinesManager);
-			vinesManager.Init(new[] { templar, (Character)player, assassin, wizard }, ui);
+			vinesManager.Init(new[] { dawnwarden, (Character)player, duskblade, starcaller }, ui);
 		}
 
 		// ── Talent selector ───────────────────────────────────────────────────

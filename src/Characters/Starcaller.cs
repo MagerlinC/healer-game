@@ -5,21 +5,21 @@ using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
 /// <summary>
-/// The Wizard — a ranged spellcaster dealing damage from the back line.
-/// Casts Arcane Blast every <see cref="CastInterval"/> seconds.
+/// The Starcaller — a ranged spellcaster dealing damage from the back line.
+/// Casts Starshard every <see cref="CastInterval"/> seconds.
 /// Slowest cadence of the three but highest damage per hit.
 /// </summary>
-public partial class Wizard : PartyMember
+public partial class Starcaller : PartyMember
 {
 
-	/// <summary>Seconds between each Arcane Blast.</summary>
+	/// <summary>Seconds between each Starshard.</summary>
 	[Export] public float CastInterval = 2.5f;
 
 	float _castTimer;
-	WizardArcaneBlastSpell _arcaneBlast;
+	StarcallerStarshardSpell _starshard;
 	CharacterVisual _visual = null!;
 
-	public Wizard()
+	public Starcaller()
 	{
 		MaxHealth = 100f;
 	}
@@ -36,7 +36,7 @@ public partial class Wizard : PartyMember
 		_visual.AnimationFinished += OnAnimationFinished;
 		// Stagger first cast so it doesn't overlap with the melee members.
 		_castTimer = CastInterval * 0.6f;
-		_arcaneBlast = new WizardArcaneBlastSpell();
+		_starshard = new StarcallerStarshardSpell();
 	}
 
 	void OnAnimationFinished()
@@ -55,16 +55,16 @@ public partial class Wizard : PartyMember
 		if (_castTimer <= 0f)
 		{
 			_castTimer = GetHasteAdjustedAttackInterval(CastInterval);
-			CastArcaneBlast();
+			CastStarshard();
 		}
 	}
 
-	void CastArcaneBlast()
+	void CastStarshard()
 	{
 		var boss = FindPreferredBoss();
 		if (boss == null) return;
 		_visual.Play("attack");
-		SpellPipeline.Cast(_arcaneBlast, this, boss);
+		SpellPipeline.Cast(_starshard, this, boss);
 	}
 
 	protected override void ApplyDeathVisuals()

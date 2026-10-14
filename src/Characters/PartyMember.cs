@@ -2,7 +2,7 @@ using Godot;
 using healerfantasy;
 
 /// <summary>
-/// A non-player party member (Templar, Assassin, Wizard).
+/// A non-player party member (Dawnwarden, Duskblade, Starcaller).
 ///
 /// Target tracking
 /// ───────────────
@@ -25,7 +25,7 @@ public partial class PartyMember : Character
 	/// <summary>
 	/// Seconds of movement pause remaining after a knockback. While this is
 	/// greater than zero <see cref="IsKnockedBack"/> returns true and the
-	/// Templar/Assassin movement loops should skip their advance logic.
+	/// Dawnwarden/Duskblade movement loops should skip their advance logic.
 	/// Ticked down in <see cref="_Process"/>.
 	/// </summary>
 	float _knockbackStunTimer;

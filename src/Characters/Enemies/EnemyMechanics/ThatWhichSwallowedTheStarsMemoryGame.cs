@@ -249,7 +249,7 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 		foreach (var node in GetTree().GetNodesInGroup("party"))
 			if (node is Character character
 			    && character.IsAlive
-			    && character.CharacterName == GameConstants.HealerName)
+			    && character.CharacterName == GameConstants.LightkeeperName)
 				return character;
 
 		return null;

@@ -103,7 +103,7 @@ public partial class ConeOfColdPhase : Node2D
 	{
 		foreach (var node in _boss.GetTree().GetNodesInGroup("party"))
 			if (node is PartyMember pm && pm.IsAlive &&
-			    pm.CharacterName != GameConstants.HealerName)
+			    pm.CharacterName != GameConstants.LightkeeperName)
 				_encased.Add(pm);
 
 		var anchor = SlotPosition();
@@ -223,7 +223,7 @@ public partial class ConeOfColdPhase : Node2D
 		Character healer = null;
 		foreach (var node in _boss.GetTree().GetNodesInGroup("party"))
 			if (node is Character c && c.IsAlive &&
-			    c.CharacterName == GameConstants.HealerName)
+			    c.CharacterName == GameConstants.LightkeeperName)
 			{
 				healer = c;
 				break;

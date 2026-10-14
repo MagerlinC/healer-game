@@ -12,7 +12,7 @@ using healerfantasy.SpellSystem;
 ///
 /// Behaviour
 /// ─────────
-/// • Walks toward the Templar and auto-attacks every <see cref="MeleeAttackInterval"/>
+/// • Walks toward the Dawnwarden and auto-attacks every <see cref="MeleeAttackInterval"/>
 ///   seconds with a melee strike (attack frames).
 ///
 /// • Every <see cref="ChargeInterval"/> seconds — Triple Charge:
@@ -194,7 +194,7 @@ public partial class TheFrozenTerror : EnemyCharacter
 			return;
 		}
 
-		// ── Movement: walk toward Templar ──────────────────────────────────
+		// ── Movement: walk toward Dawnwarden ──────────────────────────────────
 		var target = SelectCurrentMeleeTarget();
 		if (target != null)
 		{

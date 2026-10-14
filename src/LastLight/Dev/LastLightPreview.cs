@@ -100,14 +100,14 @@ public partial class LastLightPreview : Node
 				}
 				else if (action == "pause")
 					Input.ParseInputEvent(new InputEventKey { PhysicalKeycode = Key.Escape, Keycode = Key.Escape, Pressed = true });
-				else if (action.StartsWith("cast:") && scene?.GetNodeOrNull<Character>("Healer") is { } healer)
+				else if (action.StartsWith("cast:") && scene?.GetNodeOrNull<Character>("Lightkeeper") is { } healer)
 				{
-					// cast:Umbral_Bolt — enemy spells hit the boss, the rest land on the Templar.
+					// cast:Umbral_Bolt — enemy spells hit the boss, the rest land on the Dawnwarden.
 					var name = action.Substring(5).Replace('_', ' ');
 					var spell = healerfantasy.SpellResources.SpellRegistry.AllSpells.Find(s => s.Name == name);
 					var target = spell?.TargetingType == healerfantasy.SpellResources.TargetingType.Enemy
 						? GetTree().GetFirstNodeInGroup(GameConstants.BossGroupName) as Character
-						: scene.GetNodeOrNull<Character>("Templar");
+						: scene.GetNodeOrNull<Character>("Dawnwarden");
 					if (spell != null && target != null)
 						healerfantasy.SpellSystem.SpellPipeline.Cast(spell, healer, target);
 					else GD.PrintErr($"[preview] could not cast '{name}'");
@@ -144,9 +144,9 @@ public partial class LastLightPreview : Node
 					if (node is not Character c) continue;
 					var fraction = c.CharacterName switch
 					{
-						"Templar" => 0.35f,
-						"Assassin" => 0.7f,
-						"Wizard" => 0.15f,
+						"Dawnwarden" => 0.35f,
+						"Duskblade" => 0.7f,
+						"Starcaller" => 0.15f,
 						_ => 0f
 					};
 					if (fraction > 0f) c.TakeDamage(c.MaxHealth * fraction);
@@ -156,7 +156,7 @@ public partial class LastLightPreview : Node
 			if (_index < _shots.Count && _t > _shots[_index])
 			{
 				// Make the healer cast for the later shots so that pose is covered too.
-				if (_index == 2 && GetTree().CurrentScene?.GetNodeOrNull<CharacterVisual>("Healer/" + CharacterVisual.NodeName) is { } healer)
+				if (_index == 2 && GetTree().CurrentScene?.GetNodeOrNull<CharacterVisual>("Lightkeeper/" + CharacterVisual.NodeName) is { } healer)
 					healer.Play("cast");
 
 				var img = GetViewport().GetTexture().GetImage();

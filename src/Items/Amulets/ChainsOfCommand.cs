@@ -22,8 +22,8 @@ public partial class ChainsOfCommand : EquippableItem
 	}
 
 	// IPartySpellModifier causes SpellPipeline to inject this modifier into
-	// NPC party member casts, so the bonus applies to the Assassin, Templar,
-	// and Wizard even though they don't equip items themselves.
+	// NPC party member casts, so the bonus applies to the Duskblade, Dawnwarden,
+	// and Starcaller even though they don't equip items themselves.
 	class PartyBoostingModifier : IPartySpellModifier
 	{
 		public ModifierPriority Priority { get; } = ModifierPriority.BASE;

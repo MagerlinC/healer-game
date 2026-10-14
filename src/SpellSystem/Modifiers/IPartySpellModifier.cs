@@ -2,7 +2,7 @@ namespace healerfantasy.SpellSystem;
 
 /// <summary>
 /// An <see cref="ISpellModifier"/> that also applies to spell casts made by
-/// NPC party members (Templar, Assassin, Wizard).
+/// NPC party members (Dawnwarden, Duskblade, Starcaller).
 ///
 /// Normal <see cref="ISpellModifier"/>s on the player's equipped items only
 /// run when the player casts. Implement this interface instead (or in addition)

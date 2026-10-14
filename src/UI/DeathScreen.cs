@@ -21,10 +21,10 @@ public partial class DeathScreen : CanvasLayer
 	/// <summary>The four friendly party member names used to filter damage-taken events.</summary>
 	static readonly HashSet<string> PartyMemberNames = new()
 	{
-		GameConstants.HealerName,
-		GameConstants.TemplarName,
-		GameConstants.AssassinName,
-		GameConstants.WizardName
+		GameConstants.LightkeeperName,
+		GameConstants.DawnwardenName,
+		GameConstants.DuskbladeName,
+		GameConstants.StarcallerName
 	};
 
 	readonly HashSet<string> _deadPartyMembers = new();

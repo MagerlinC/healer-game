@@ -7,7 +7,7 @@ namespace healerfantasy.SpellResources;
 /// <summary>
 /// Blood Knight's Crimson Strike — a sweeping cleave that hits both frontliners.
 ///
-/// Targets the Templar and the Assassin simultaneously (the two melee party members).
+/// Targets the Dawnwarden and the Duskblade simultaneously (the two melee party members).
 /// Falls back to any alive party members if either is dead.
 /// </summary>
 [GlobalClass]
@@ -31,7 +31,7 @@ public partial class BossBloodKnightCleaveSpell : SpellResource
 	}
 
 	/// <summary>
-	/// Targets the Templar and Assassin by name. Falls back to the full living
+	/// Targets the Dawnwarden and Duskblade by name. Falls back to the full living
 	/// party if neither frontliner can be found.
 	/// </summary>
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)
@@ -40,8 +40,8 @@ public partial class BossBloodKnightCleaveSpell : SpellResource
 		foreach (var node in caster.GetTree().GetNodesInGroup("party"))
 		{
 			if (node is not Character c || !c.IsAlive) continue;
-			if (c.CharacterName == GameConstants.TemplarName ||
-			    c.CharacterName == GameConstants.AssassinName)
+			if (c.CharacterName == GameConstants.DawnwardenName ||
+			    c.CharacterName == GameConstants.DuskbladeName)
 				targets.Add(c);
 		}
 

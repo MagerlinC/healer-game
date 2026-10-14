@@ -29,9 +29,9 @@ public static class LastLightStyle
 	static readonly Dictionary<Type, Func<Character, RigDefinition>> Rigs = new()
 	{
 		// the party
-		[typeof(Templar)] = _ => RigLibrary.Templar(),
-		[typeof(Assassin)] = _ => RigLibrary.Assassin(),
-		[typeof(Wizard)] = _ => RigLibrary.Wizard(),
+		[typeof(Dawnwarden)] = _ => RigLibrary.Dawnwarden(),
+		[typeof(Duskblade)] = _ => RigLibrary.Duskblade(),
+		[typeof(Starcaller)] = _ => RigLibrary.Starcaller(),
 		[typeof(Player)] = _ => RigLibrary.Healer(),
 
 		// The Ancient Keep

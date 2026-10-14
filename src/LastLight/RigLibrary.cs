@@ -29,9 +29,9 @@ public static partial class RigLibrary
 	// PARTY
 	// ═════════════════════════════════════════════════════════════════════════
 
-	public static RigDefinition Templar() => new RigDefinition
+	public static RigDefinition Dawnwarden() => new RigDefinition
 		{
-			Id = "templar", Mode = RigMode.Party, Height = 182f, Width = 80f, Scale = 0.3f,
+			Id = "dawnwarden", Mode = RigMode.Party, Height = 182f, Width = 80f, Scale = 0.3f,
 			SwingAngle = 1.9f, Lunge = 6f
 		}
 		.Joint("body", "", 0, -50)
@@ -57,9 +57,9 @@ public static partial class RigLibrary
 		.Part("off", G(0.55f), "39,-122 45,-122 45,-46 39,-46", 1)
 		.Part("off", G(0.55f), "26,-104 58,-104 58,-98 26,-98", 1);
 
-	public static RigDefinition Assassin() => new RigDefinition
+	public static RigDefinition Duskblade() => new RigDefinition
 		{
-			Id = "assassin", Mode = RigMode.Party, Height = 118f, Width = 70f, Scale = 0.36f,
+			Id = "duskblade", Mode = RigMode.Party, Height = 118f, Width = 70f, Scale = 0.36f,
 			SwingAngle = 1.4f, Lunge = 12f
 		}
 		.Joint("body", "", 0, -40)
@@ -86,9 +86,9 @@ public static partial class RigLibrary
 		.Part("arm", G(1f), "24,-92 48,-86 48,-79 26,-82", 1)
 		.Part("arm", G(0.9f), "46,-88 84,-94 48,-76", 1);
 
-	public static RigDefinition Wizard() => new RigDefinition
+	public static RigDefinition Starcaller() => new RigDefinition
 		{
-			Id = "wizard", Mode = RigMode.Party, Height = 178f, Width = 64f, Scale = 0.3f,
+			Id = "starcaller", Mode = RigMode.Party, Height = 178f, Width = 64f, Scale = 0.3f,
 			SwingAngle = -0.7f, Lunge = 2f, CastRaise = 1.0f
 		}
 		.Joint("body", "", 0, -20)

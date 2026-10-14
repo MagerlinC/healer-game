@@ -27,10 +27,10 @@ public partial class OverworldController
 
 	static readonly HashSet<string> PartyMemberNames = new()
 	{
-		GameConstants.HealerName,
-		GameConstants.TemplarName,
-		GameConstants.AssassinName,
-		GameConstants.WizardName
+		GameConstants.LightkeeperName,
+		GameConstants.DawnwardenName,
+		GameConstants.DuskbladeName,
+		GameConstants.StarcallerName
 	};
 
 	// ── panel open ────────────────────────────────────────────────────────────

@@ -1,11 +1,11 @@
 [gd_scene format=3 uid="uid://kh347p4xi7l"]
 
 [ext_resource type="AudioStream" uid="uid://s3dj1tr8v1x4" path="res://assets/music/Loops/ogg/8. Throne of Storms.ogg" id="8_rw0xj"]
-[ext_resource type="PackedScene" path="res://levels/Assassin.tscn" id="Scene_assassin"]
+[ext_resource type="PackedScene" path="res://levels/Duskblade.tscn" id="Scene_duskblade"]
 [ext_resource type="PackedScene" uid="uid://djg1i0kxk4dmt" path="res://levels/PartyUI.tscn" id="Scene_partyui"]
 [ext_resource type="PackedScene" uid="uid://rgui8intvs0v" path="res://levels/Player.tscn" id="Scene_player"]
-[ext_resource type="PackedScene" path="res://levels/Templar.tscn" id="Scene_templar"]
-[ext_resource type="PackedScene" path="res://levels/Wizard.tscn" id="Scene_wizard"]
+[ext_resource type="PackedScene" path="res://levels/Dawnwarden.tscn" id="Scene_dawnwarden"]
+[ext_resource type="PackedScene" path="res://levels/Starcaller.tscn" id="Scene_starcaller"]
 [ext_resource type="Script" uid="uid://ct87sljy13km8" path="res://src/World.cs" id="Script_world"]
 
 [node name="World" type="Node2D" unique_id=1427998329]
@@ -14,21 +14,21 @@ script = ExtResource("Script_world")
 [node name="Camera2D" type="Camera2D" parent="." unique_id=847291634]
 zoom = Vector2(3, 3)
 
-[node name="Templar" parent="." unique_id=1231423954 instance=ExtResource("Scene_templar")]
+[node name="Dawnwarden" parent="." unique_id=1231423954 instance=ExtResource("Scene_dawnwarden")]
 position = Vector2(-168, 1)
 MaxHealth = 180.0
 
-[node name="Assassin" parent="." unique_id=613426860 instance=ExtResource("Scene_assassin")]
+[node name="Duskblade" parent="." unique_id=613426860 instance=ExtResource("Scene_duskblade")]
 position = Vector2(93, -67)
 MaxHealth = 100.0
 BaseCritChance = 0.1
 
-[node name="Wizard" parent="." unique_id=2015225033 instance=ExtResource("Scene_wizard")]
+[node name="Starcaller" parent="." unique_id=2015225033 instance=ExtResource("Scene_starcaller")]
 position = Vector2(128, 3)
 MaxHealth = 100.0
 BaseCritChance = 0.1
 
-[node name="Healer" parent="." unique_id=1338505269 instance=ExtResource("Scene_player")]
+[node name="Lightkeeper" parent="." unique_id=1338505269 instance=ExtResource("Scene_player")]
 position = Vector2(35, 36)
 CharacterName = "Lightkeeper"
 MaxHealth = 120.0

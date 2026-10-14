@@ -1,24 +1,25 @@
+using Godot.Collections;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources;
 
 /// <summary>
-/// The Templar's basic melee attack.
-/// Deals instant physical damage to the boss.
+/// The Starcaller's basic damage spell — slower but hits harder than the melee attacks.
+/// Deals instant magic damage to the boss.
 /// </summary>
 [Godot.GlobalClass]
-public partial class TemplarShieldBashSpell : SpellResource
+public partial class StarcallerStarshardSpell : SpellResource
 {
-	public float DamageAmount = 20f;
+	public float DamageAmount = 35f;
 
-	public TemplarShieldBashSpell()
+	public StarcallerStarshardSpell()
 	{
-		Name = "Shield Bash";
-		Description = "The Templar crashes their shield into the enemy with full force.";
+		Name = "Starshard";
+		Description = "A shard of cold starlight hurled at the enemy.";
 		Tags = SpellTags.Damage | SpellTags.Attack;
 		ManaCost = 0f;
 		CastTime = 0f;
-		School = SpellSchool.Generic;
+		School = SpellSchool.Umbra;
 		TargetingType = TargetingType.Enemy;
 	}
 
@@ -26,6 +27,7 @@ public partial class TemplarShieldBashSpell : SpellResource
 	{
 		return DamageAmount;
 	}
+
 
 	public override void Apply(SpellContext ctx)
 	{

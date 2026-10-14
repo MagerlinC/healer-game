@@ -15,6 +15,9 @@ public partial class LanternLight : Node2D
 	/// <summary>Opacity and size of the visible glow sprite.</summary>
 	public float GlowAlpha = 1f, GlowScale = 0.55f;
 
+	/// <summary>How much (0..1) and how fast (1 = a lively flame) the light flickers.</summary>
+	public float FlickerAmount = 1f, FlickerSpeed = 1f;
+
 	/// <summary>Multiplier on the pocket and glow, eased towards (e.g. brighter while hovered).</summary>
 	public float Boost = 1f;
 
@@ -52,9 +55,10 @@ public partial class LanternLight : Node2D
 
 	public override void _Process(double delta)
 	{
-		_t += (float)delta;
+		_t += (float)delta * FlickerSpeed;
 		_boost = Mathf.Lerp(_boost, Boost, 1f - Mathf.Exp(-10f * (float)delta));
-		var flick = (0.88f + 0.07f * Mathf.Sin(_t * 7.3f) + 0.05f * Mathf.Sin(_t * 13.1f + 1f)) * _boost;
+		var wobble = 0.07f * Mathf.Sin(_t * 7.3f) + 0.05f * Mathf.Sin(_t * 13.1f + 1f);
+		var flick = (1f - FlickerAmount * (0.12f - wobble)) * _boost;
 
 		_glow.Modulate = new Color(1f, 1f, 1f, Mathf.Min(GlowAlpha * flick, 1f));
 		_glow.Scale = Vector2.One * GlowScale * Mathf.Sqrt(_boost);

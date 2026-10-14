@@ -19,7 +19,7 @@ public partial class GlobalAutoLoad : Node
 	static readonly Dictionary<string, List<Callable>> PendingSubscriptions = new();
 
 	// ── party-slot signal registry ────────────────────────────────────────────
-	// Maps each party-member node to its UI slot index (0 = Templar … 3 = Wizard).
+	// Maps each party-member node to its UI slot index (0 = Dawnwarden … 3 = Starcaller).
 	static readonly Dictionary<Node, int> PartySlotMap = new();
 
 	// Buffers slot-aware subscriptions so GameUI can subscribe in its own

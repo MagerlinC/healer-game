@@ -45,7 +45,8 @@ float edge_distance(vec2 uv, vec2 light_uv, float radius, float seed, float soft
 	float scale = clamp(radius / 0.3, 0.35, 1.2);
 	float rag = ((wob - 0.5) * 0.08 + (teeth - 0.5) * 0.05 + (fine - 0.5) * 0.015) * scale
 		- tendril * radius * 0.75;
-	float r = radius + breathe * scale + rag * (1.0 - soft);
+	// Soft glows barely breathe; the ragged pockets heave.
+	float r = radius + breathe * scale * (1.0 - 0.85 * soft) + rag * (1.0 - soft);
 	return d - r;
 }
 
