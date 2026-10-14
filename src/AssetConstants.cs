@@ -26,17 +26,6 @@ public static class AssetConstants
 	// ── Interactible assets ───────────────────────────────────────────────────
 
 	public static readonly string SpellTomeInteractiblePath = "res://assets/interactibles/spell-tome.png";
-	public static readonly string TalentBoardInteractiblePath = "res://assets/interactibles/talent-board.png";
-	public static readonly string TalentBoardFullInteractiblePath = "res://assets/interactibles/talent-board-full.png";
-
-	public static string GetTalentBoardPathForAffinity(SpellSchool? affinity)
-	{
-		var affinityString = affinity == null ? "" : "-" + affinity.ToString()!.ToLower();
-		return PlayerProgressStore.HasDefeatedCastleOfBlood
-			? $"res://assets/interactibles/talent-board-full{affinityString}.png"
-			: $"res://assets/interactibles/talent-board{affinityString}.png";
-	}
-
 	public static readonly string RunScrollInteractiblePath = "res://assets/interactibles/run-history-scroll.png";
 	public static readonly string MapInteractiblePath = "res://assets/interactibles/map.png";
 	public static readonly string ArmoryInteractiblePath = "res://assets/interactibles/armory.png";
@@ -46,23 +35,23 @@ public static class AssetConstants
 
 	// ── Talent tome assets (school affinity selector cards in the spellbook) ─
 
-	public static readonly string TalentTomeHolyPath = "res://assets/interactibles/talent-tome-holy.png";
-	public static readonly string TalentTomeNaturePath = "res://assets/interactibles/talent-tome-nature.png";
-	public static readonly string TalentTomeVoidPath = "res://assets/interactibles/talent-tome-void.png";
-	public static readonly string TalentTomeChronomancyPath = "res://assets/interactibles/talent-tome-chronomancy.png";
-	public static readonly string TalentTomeSanguimancyPath = "res://assets/interactibles/talent-tome-sanguimancy.png";
+	public static readonly string TalentTomeFlamePath = "res://assets/interactibles/talent-tome-holy.png";
+	public static readonly string TalentTomeEmberPath = "res://assets/interactibles/talent-tome-nature.png";
+	public static readonly string TalentTomeUmbraPath = "res://assets/interactibles/talent-tome-void.png";
+	public static readonly string TalentTomeWickPath = "res://assets/interactibles/talent-tome-chronomancy.png";
+	public static readonly string TalentTomeKindlingPath = "res://assets/interactibles/talent-tome-sanguimancy.png";
 
 	/// <summary>Returns the res:// path for the talent tome icon of the given spell school.</summary>
 	public static string TalentTomePath(SpellSchool school)
 	{
 		return school switch
 		{
-			SpellSchool.Holy => TalentTomeHolyPath,
-			SpellSchool.Nature => TalentTomeNaturePath,
-			SpellSchool.Void => TalentTomeVoidPath,
-			SpellSchool.Chronomancy => TalentTomeChronomancyPath,
-			SpellSchool.Sanguimancy => TalentTomeSanguimancyPath,
-			_ => TalentTomeHolyPath
+			SpellSchool.Flame => TalentTomeFlamePath,
+			SpellSchool.Ember => TalentTomeEmberPath,
+			SpellSchool.Umbra => TalentTomeUmbraPath,
+			SpellSchool.Wick => TalentTomeWickPath,
+			SpellSchool.Kindling => TalentTomeKindlingPath,
+			_ => TalentTomeFlamePath
 		};
 	}
 
@@ -75,9 +64,20 @@ public static class AssetConstants
 	/// </summary>
 	public static string GetSpellBookPathForAffinity(SpellSchool? affinity)
 	{
-		var suffix = affinity == null ? "" : "-" + affinity.ToString()!.ToLower();
+		var suffix = affinity == null ? "" : "-" + SchoolAssetSuffix(affinity.Value);
 		return $"res://assets/interactibles/spell-book/spell-book{suffix}.png";
 	}
+
+	/// <summary>School suffix used by the per-school image files, which keep their original names.</summary>
+	static string SchoolAssetSuffix(SpellSchool school) => school switch
+	{
+		SpellSchool.Flame => "holy",
+		SpellSchool.Ember => "nature",
+		SpellSchool.Umbra => "void",
+		SpellSchool.Wick => "chronomancy",
+		SpellSchool.Kindling => "sanguimancy",
+		_ => "generic"
+	};
 
 	// ── Merchant assets ───────────────────────────────────────────────────────
 	public static readonly string MerchantInteractiblePath = "res://assets/characters/merchant/merchant.png";

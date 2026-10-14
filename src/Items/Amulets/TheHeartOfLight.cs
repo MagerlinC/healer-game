@@ -9,14 +9,14 @@ namespace healerfantasy.Items.Amulets;
 /// <summary>
 /// The Heart of Light — Legendary amulet.
 ///
-/// Passive: while any Holy-school effect is active on a friendly character,
+/// Passive: while any Flame-school effect is active on a friendly character,
 /// that character takes <see cref="DamageReductionAmount"/> less damage.
 ///
-/// Implemented via an invisible <see cref="HolyProtectionWatcherEffect"/> watcher
+/// Implemented via an invisible <see cref="FlameProtectionWatcherEffect"/> watcher
 /// placed on every living party member on the first spell cast. The watcher
 /// subscribes to EffectApplied / EffectRemoved signals and toggles a visible
-/// <see cref="HolyProtectionActiveBuff"/> (which carries the icon and the
-/// actual stat modifier) whenever Holy effects come and go — so the indicator
+/// <see cref="FlameProtectionActiveBuff"/> (which carries the icon and the
+/// actual stat modifier) whenever Flame effects come and go — so the indicator
 /// on the party frame only lights up when the protection is genuinely active.
 /// </summary>
 public class TheHeartOfLight : EquippableItem
@@ -28,7 +28,7 @@ public class TheHeartOfLight : EquippableItem
 	{
 		Name = "The Heart of Light";
 		Description =
-			$"While any holy effect is active on the target, they take {Math.Round(DamageReductionAmount * 100)}% less damage.";
+			$"While any Flame effect is active on the target, they take {Math.Round(DamageReductionAmount * 100)}% less damage.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Amulet;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(2));
@@ -36,11 +36,11 @@ public class TheHeartOfLight : EquippableItem
 	}
 
 	/// <summary>
-	/// Ensures a <see cref="HolyProtectionWatcherEffect"/> watcher is active on the
+	/// Ensures a <see cref="FlameProtectionWatcherEffect"/> watcher is active on the
 	/// caster and every living party member before each spell is cast.
 	/// The watcher is infinite-duration so this is a no-op for characters that
 	/// already have one, and it runs before <c>Apply()</c> so the watcher is
-	/// connected in time to catch any Holy effects the spell is about to apply.
+	/// connected in time to catch any Flame effects the spell is about to apply.
 	/// </summary>
 	class DamageReductionModifier : ISpellModifier
 	{
@@ -70,8 +70,8 @@ public class TheHeartOfLight : EquippableItem
 		void EnsureWatcher(Character character)
 		{
 			if (!character.IsFriendly) return;
-			if (character.GetEffectById(HolyProtectionWatcherEffect.WatcherEffectId) == null)
-				character.ApplyEffect(new HolyProtectionWatcherEffect(_damageReductionAmount));
+			if (character.GetEffectById(FlameProtectionWatcherEffect.WatcherEffectId) == null)
+				character.ApplyEffect(new FlameProtectionWatcherEffect(_damageReductionAmount));
 		}
 	}
 }

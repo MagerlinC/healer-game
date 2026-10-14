@@ -22,7 +22,7 @@ public partial class CrimsonCurseEffect : DamageOverTimeEffect, ICharacterModifi
 	public CrimsonCurseEffect(float damagePerTick) : base(damagePerTick, 10f, 1f)
 	{
 		EffectId = "CrimsonCurse";
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		IsDispellable = true;
 		IsHarmful = true;
 	}

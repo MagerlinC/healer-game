@@ -377,7 +377,7 @@ public partial class TheNightborne : EnemyCharacter
 		if (target.IsAlive)
 		{
 			target.TakeDamage(NightsAdvanceDamage);
-			target.RaiseFloatingCombatText(NightsAdvanceDamage, false, (int)SpellSchool.Void, false);
+			target.RaiseFloatingCombatText(NightsAdvanceDamage, false, (int)SpellSchool.Umbra, false);
 			CombatLog.Record(new CombatEventRecord
 			{
 				Timestamp = Time.GetTicksMsec() / 1000.0,

@@ -36,7 +36,7 @@ public partial class CourtOfReflectionsEffect : CharacterEffect
 		EffectId = "CourtOfReflections";
 		AbilityName = "Court of Reflections";
 		Description = "A shifting hex binds you in its web. The longer it lingers, the deeper it burns.";
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/the-countess/court-of-reflections.png");
 		// Not dispellable — only resolving the mechanic removes this.
 		IsDispellable = false;

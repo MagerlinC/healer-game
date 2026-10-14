@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using healerfantasy.SpellResources.Chronomancy;
+using healerfantasy.SpellResources.Wick;
 using healerfantasy.SpellResources.Generic;
-using healerfantasy.SpellResources.Holy;
-using healerfantasy.SpellResources.Nature;
-using healerfantasy.SpellResources.Sanguimancy;
-using healerfantasy.SpellResources.Void;
-using UltimateSpellResource = healerfantasy.SpellResources.Void.UltimateSpellResource;
+using healerfantasy.SpellResources.Flame;
+using healerfantasy.SpellResources.Ember;
+using healerfantasy.SpellResources.Kindling;
+using healerfantasy.SpellResources.Umbra;
+using UltimateSpellResource = healerfantasy.SpellResources.Umbra.UltimateSpellResource;
 
 namespace healerfantasy.SpellResources;
 
@@ -29,72 +29,72 @@ public static class SpellRegistry
 	/// </summary>
 	public static readonly List<UltimateSpellResource> UltimateSpells =
 	[
-		new ArchangelOfLightSpell(),
-		new OneWithNatureSpell(),
-		new VoidsEmbraceSpell(),
-		new MirrorImage(),
-		new VampiricEmbrace()
+		new BecomeTheSunSpell(),
+		new OneWithTheAshSpell(),
+		new EmbraceTheDarkSpell(),
+		new TwinFlameSpell(),
+		new SharedFlameSpell()
 	];
 
-	public static readonly List<SpellResource> VoidSpells =
+	public static readonly List<SpellResource> UmbraSpells =
 	[
-		new ShadowBoltSpell(),
-		new VoidDrainSpell(),
+		new UmbralBoltSpell(),
+		new SiphonTheDarkSpell(),
 		new TouchOfAffliction(),
-		new DecaySpellResource(),
+		new RotSpell(),
 		new SoulShatterSpell(),
-		new ConsumingVoid(),
-		new VoidsEmbraceSpell()
+		new SwallowingDarkSpell(),
+		new EmbraceTheDarkSpell()
 	];
 
-	public static readonly List<SpellResource> ChronomancySpells =
+	public static readonly List<SpellResource> WickSpells =
 	[
-		new RewindSpell(),
-		new TimeWarpSpell(),
-		new TimeLoopSpell(),
-		new ManaLoopSpell(),
-		new HasteSpell(),
-		new TemporalWardSpell(),
-		new MirrorImage()
+		new UnburnSpell(),
+		new BurnBrightSpell(),
+		new RelightSpell(),
+		new DripSpell(),
+		new QuickenTheWickSpell(),
+		new WaxSealSpell(),
+		new TwinFlameSpell()
 	];
 
-	public static readonly List<SpellResource> NatureSpells =
+	public static readonly List<SpellResource> EmberSpells =
 	[
-		new RenewingBloomSpell(),
-		new WildGrowthSpell(),
-		new PoisonBoltSpell(),
-		new LeafShadeSpell(),
-		new SwarmOfTheForest(),
-		new NourishSpell(),
-		new OneWithNatureSpell()
+		new SmoulderSpell(),
+		new SpreadingEmbersSpell(),
+		new CinderSpell(),
+		new AshVeilSpell(),
+		new MothswarmSpell(),
+		new StokeSpell(),
+		new OneWithTheAshSpell()
 	];
 
-	public static readonly List<SpellResource> HolySpells =
+	public static readonly List<SpellResource> FlameSpells =
 	[
-		new BurstOfLightSpell(),
-		new ReinvigorateSpell(),
-		new TouchOfLightSpell(),
-		new WaveOfIncandescenceSpell(),
-		new DivineAegisSpell(),
-		new HolyNovaSpell(),
-		new ArchangelOfLightSpell()
+		new FlareSpell(),
+		new RekindleSpell(),
+		new CandleTouchSpell(),
+		new WildfireSpell(),
+		new LanternWardSpell(),
+		new FlashfireSpell(),
+		new BecomeTheSunSpell()
 	];
 
-	public static readonly List<SpellResource> SanguimancySpells =
+	public static readonly List<SpellResource> KindlingSpells =
 	[
-		new SanguinePact(),
-		new VitalSurgeSpell(),
-		new SanguineDrainSpell(),
-		new ExsanguinateSpell(),
+		new BurningPactSpell(),
+		new LifeflameSpell(),
+		new DrawTheHeatSpell(),
+		new FeedThePyreSpell(),
 		new NovaOfSacrifice(),
-		new VampiricEmbrace()
+		new SharedFlameSpell()
 	];
 
 	public static readonly List<SpellResource> AllSpells = new List<SpellResource>()
-		.Concat(VoidSpells)
-		.Concat(ChronomancySpells)
-		.Concat(NatureSpells)
-		.Concat(HolySpells)
-		.Concat(SanguimancySpells)
+		.Concat(UmbraSpells)
+		.Concat(WickSpells)
+		.Concat(EmberSpells)
+		.Concat(FlameSpells)
+		.Concat(KindlingSpells)
 		.ToList();
 }

@@ -11,8 +11,8 @@ public partial class TemporalMomentumEffect : CharacterEffect, ISpellModifier, I
 	{
 		EffectId = "TemporalMomentum";
 		Icon = Icon;
-		School = SpellSchool.Chronomancy;
-		Description = "Your next non-Chronomancy spell is instant.";
+		School = SpellSchool.Wick;
+		Description = "Your next non-Wick spell is instant.";
 	}
 
 	public ModifierPriority Priority { get; } = ModifierPriority.BASE;
@@ -38,10 +38,10 @@ public partial class TemporalMomentumEffect : CharacterEffect, ISpellModifier, I
 
 	public void OnAfterCast(SpellContext ctx)
 	{
-		// Only consume the buff when a non-Chronomancy spell is cast —
-		// Chronomancy spells are excluded from the instant-cast benefit in
+		// Only consume the buff when a non-Wick spell is cast —
+		// Wick spells are excluded from the instant-cast benefit in
 		// Player.cs, so casting one should not spend the charge.
-		if (ctx.Spell.School != SpellSchool.Chronomancy)
+		if (ctx.Spell.School != SpellSchool.Wick)
 			ctx.Caster.RemoveEffect(EffectId);
 	}
 }

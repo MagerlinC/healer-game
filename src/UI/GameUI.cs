@@ -4,7 +4,7 @@ using System.Linq;
 using Godot;
 using healerfantasy;
 using healerfantasy.Items;
-using healerfantasy.SpellResources.Void;
+using healerfantasy.SpellResources.Umbra;
 using healerfantasy.UI;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
 

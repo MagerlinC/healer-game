@@ -50,7 +50,7 @@ public partial class SilhouetteRig : CanvasGroup
 
 	/// <summary>
 	/// Adds a rig to <paramref name="owner"/>, driven by its <see cref="CharacterVisual"/>.
-	/// A light rig that is not the light source (e.g. a Mirror Image) glows but does not
+	/// A light rig that is not the light source (e.g. a Twin Flame) glows but does not
 	/// move the scene's light.
 	/// </summary>
 	public static SilhouetteRig Attach(Node2D owner, RigDefinition def, CharacterVisual source = null,

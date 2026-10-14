@@ -27,7 +27,7 @@ public partial class SanguineBloodLinkEffect : CharacterEffect
 	{
 		EffectId = "SanguineBloodLink";
 		Icon = Icon;
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		IsDispellable = false;
 		IsHarmful = true;
 		LifeLeechPerTick = leechPerTick;

@@ -150,7 +150,7 @@ public static class MerchantStore
         character.Revive(reviveAmount);
 
         // Show a golden heal number so the revival is visible.
-        character.RaiseFloatingCombatText(reviveAmount, true, (int)SpellSchool.Holy, false);
+        character.RaiseFloatingCombatText(reviveAmount, true, (int)SpellSchool.Flame, false);
 
         return true;
     }

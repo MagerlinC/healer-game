@@ -33,11 +33,11 @@ public static class ItemRegistry
 	static readonly List<(string? BossName, Func<EquippableItem> Factory)> LootTable =
 	[
 		// Staves
-		(null, () => new WrathOfNature()),
+		(null, () => new WrathOfEmbers()),
 		(null, () => new CrystalStaff()),
 		(null, () => new StaffOfRestoration()),
 		(null, () => new SlimewardenSceptre()),
-		(null, () => new VoidWeaver()),
+		(null, () => new Shadeweaver()),
 		(null, () => new ArcaneAccelerator()),
 		(null, () => new StaffOfEternalFlame()),
 		(null, () => new StaffOfTheArchmage()),
@@ -57,11 +57,11 @@ public static class ItemRegistry
 
 		// Amulets
 		(null, () => new TheHeartOfLight()),
-		(null, () => new NaturalistsClasp()),
+		(null, () => new EmberkeepersClasp()),
 		(null, () => new ShadowboundChain()),
 		(null, () => new TheLifebindersCovenant()),
-		(null, () => new PendantOfTheVoidsEmbrace()),
-		(null, () => new BulwarkOfOvergrowth()),
+		(null, () => new PendantOfTheUmbralEmbrace()),
+		(null, () => new BulwarkOfCinders()),
 		(null, () => new ChainOfReflection()),
 		(null, () => new CrimsonAmulet()),
 		(null, () => new ChainsOfCommand())

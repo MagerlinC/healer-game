@@ -1,6 +1,6 @@
 using healerfantasy.SpellSystem;
 
-namespace healerfantasy.SpellResources.Void;
+namespace healerfantasy.SpellResources.Umbra;
 
 /// <summary>
 /// Base class for all Ultimate spells.

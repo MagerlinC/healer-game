@@ -321,7 +321,7 @@ public partial class TheBloodPrince : EnemyCharacter
 				if (siphon > 0f && IsAlive)
 				{
 					Heal(siphon);
-					RaiseFloatingCombatText(siphon, true, (int)SpellSchool.Void, false);
+					RaiseFloatingCombatText(siphon, true, (int)SpellSchool.Umbra, false);
 				}
 			}
 

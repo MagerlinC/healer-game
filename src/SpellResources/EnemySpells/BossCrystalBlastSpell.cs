@@ -17,7 +17,7 @@ public partial class BossCrystalBlastSpell : SpellResource
 		Name = "Crystal Blast";
 		Description = "A shard of void crystal energy launched at a random target.";
 		Tags = SpellTags.Damage;
-		School = SpellSchool.Nature;
+		School = SpellSchool.Ember;
 		ManaCost = 20f;
 		CastTime = 0f;
 	}

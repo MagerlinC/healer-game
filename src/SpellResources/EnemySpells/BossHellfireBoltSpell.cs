@@ -17,7 +17,7 @@ public partial class BossHellfireBoltSpell : SpellResource
 		Name = "Hellfire Bolt";
 		Description = "A concentrated ball of fel fire hurled at a party member, dealing fire damage on impact.";
 		Tags = SpellTags.Damage;
-		School = SpellSchool.Nature;
+		School = SpellSchool.Ember;
 		ManaCost = 0f;
 		CastTime = 0f;
 	}

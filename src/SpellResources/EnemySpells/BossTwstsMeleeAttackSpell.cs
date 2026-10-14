@@ -18,7 +18,7 @@ public partial class BossTwstsMeleeAttackSpell : SpellResource
 		Name = "Void Tendril Strike";
 		Description = "A lashing strike from one of the star-devourer's vast cosmic tendrils.";
 		Tags = SpellTags.Damage | SpellTags.Attack;
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		ManaCost = 0f;
 		CastTime = 0f;
 	}

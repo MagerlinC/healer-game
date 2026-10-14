@@ -6,7 +6,7 @@ using healerfantasy;
 using healerfantasy.LastLight;
 using healerfantasy.Items;
 using healerfantasy.SpellResources;
-using healerfantasy.SpellResources.Void;
+using healerfantasy.SpellResources.Umbra;
 using healerfantasy.SpellSystem;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
 
@@ -440,7 +440,7 @@ public partial class Player : Character
 
 			var stats = GetCharacterStats();
 			var isInstant = ultimate.CastTime == 0.0f
-			                || stats.NextCastIsInstant && ultimate.School != SpellSchool.Chronomancy;
+			                || stats.NextCastIsInstant && ultimate.School != SpellSchool.Wick;
 
 			if (!isInstant && isMoving) return;
 
@@ -487,7 +487,7 @@ public partial class Player : Character
 				_castSpell = spellToCast;
 
 				var isInstant = spellToCast.CastTime == 0.0f
-				                || stats.NextCastIsInstant && spellToCast.School != SpellSchool.Chronomancy;
+				                || stats.NextCastIsInstant && spellToCast.School != SpellSchool.Wick;
 
 				if (!isInstant && isMoving) return;
 

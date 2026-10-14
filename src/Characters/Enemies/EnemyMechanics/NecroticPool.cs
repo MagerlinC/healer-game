@@ -109,7 +109,7 @@ public partial class NecroticPool : Node2D
 			target.RaiseFloatingCombatText(
 				DamagePerPulse,
 				false,
-				(int)SpellSchool.Void,
+				(int)SpellSchool.Umbra,
 				false);
 
 			CombatLog.Record(new CombatEventRecord

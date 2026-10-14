@@ -17,7 +17,7 @@ public partial class DeathMarkEffect : DamageOverTimeEffect, ICharacterModifier
 	public DeathMarkEffect(float damagePerTick) : base(damagePerTick, 12f, 1f)
 	{
 		EffectId = "DeathMark";
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 	}
 
 	// ── ICharacterModifier ─────────────────────────────────────────────────────

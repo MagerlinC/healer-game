@@ -20,7 +20,7 @@ public partial class BossCelestialConvergenceSpell : SpellResource
 		Description =
 			$"The twins channel their power in unison, unleashing a blinding burst of starlight that engulfs the whole party, dealing {DamageAmount} void damage unless deflected.";
 		Tags = SpellTags.Damage;
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Parryable = true;

@@ -51,7 +51,7 @@ public static class SpellPipeline
 		ctx.Targets = spell.ResolveTargets(caster, explicitTarget);
 
 		// ── 3b. Dynamic base-value adjustment ───────────────────────────────
-		// Spells whose damage/healing depends on world state (e.g. ConsumingVoid,
+		// Spells whose damage/healing depends on world state (e.g. SwallowingDarkSpell,
 		// TouchOfAffliction) override OnAfterTargetsResolved to update ctx.BaseValue
 		// here, so that all multipliers, crit, and the combat log all see the
 		// correct final value. The default implementation is a no-op.

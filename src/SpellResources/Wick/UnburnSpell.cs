@@ -1,0 +1,38 @@
+﻿using Godot;
+using healerfantasy.SpellSystem;
+
+namespace healerfantasy.SpellResources.Wick;
+
+public partial class UnburnSpell : SpellResource
+{
+
+	[Export] public float EffectDuration = 3f;
+
+	public UnburnSpell()
+	{
+		Name = "Unburn";
+		Description =
+			$"Mark the party's health in the wax, causing it to rewind back after {EffectDuration} seconds.";
+		ManaCost = 6f;
+		CastTime = 0.0f;
+		Cooldown = 8f;
+		Tags = SpellTags.Healing | SpellTags.Duration | SpellTags.GroupSpell;
+		TargetingType = TargetingType.None;
+		RequiredSchoolPoints = 2;
+		School = SpellSchool.Wick;
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/rewind.png");
+	}
+
+	public override void Apply(SpellContext ctx)
+	{
+
+		foreach (var target in ctx.Caster.CollectAlivePartyMembers())
+			target?.ApplyEffect(new Effects.UnburnEffect(EffectDuration)
+			{
+				Icon = Icon,
+				SourceCharacterName = ctx.Caster.CharacterName,
+				AbilityName = Name,
+				Description = Description
+			});
+	}
+}

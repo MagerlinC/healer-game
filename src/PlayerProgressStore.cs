@@ -81,7 +81,7 @@ public static class PlayerProgressStore
 
 	/// <summary>
 	/// True if the player has defeated The Blood Prince (the final boss of the
-	/// Castle of Blood) in any previous run.  Unlocks the Sanguimancy spell school.
+	/// Castle of Blood) in any previous run.  Unlocks the Kindling spell school.
 	///
 	/// Derived from run history so no separate flag is needed — the history already
 	/// persists to disk and survives game restarts.

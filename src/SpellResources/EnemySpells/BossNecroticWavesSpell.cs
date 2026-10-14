@@ -24,7 +24,7 @@ public partial class BossNecroticWavesSpell : SpellResource
 		Description =
 			"The Flying Skull channels necrotic energy and unleashes a series of void waves across the battlefield. Stand in the gap of each wave to avoid damage.";
 		Tags = SpellTags.Damage;
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Parryable = false;

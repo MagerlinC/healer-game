@@ -48,7 +48,7 @@ public abstract partial class Character : CharacterBody2D
 	/// Emitted whenever <see cref="CurrentHealAbsorption"/> changes.
 	/// Carries the remaining absorption and MaxHealth so the UI can draw a
 	/// proportional dark-purple overlay bar on the party frame.
-	/// Only meaningful for friendly characters (Rune of the Void).
+	/// Only meaningful for friendly characters (Rune of the Umbra).
 	/// </summary>
 	[Signal]
 	public delegate void HealAbsorptionChangedEventHandler(string characterName, float absorptionRemaining, float maxHealth);
@@ -107,7 +107,7 @@ public abstract partial class Character : CharacterBody2D
 	public float CurrentShield { get; private set; }
 
 	/// <summary>
-	/// Pending heal-absorption points (Rune of the Void).
+	/// Pending heal-absorption points (Rune of the Umbra).
 	/// When greater than zero, incoming heals are consumed by this amount first
 	/// before any health is actually restored.
 	/// </summary>
@@ -193,7 +193,7 @@ public abstract partial class Character : CharacterBody2D
 		var stats = GetCharacterStats();
 		amount *= stats.DamageTakenMultiplier;
 
-		// Rune of the Void: apply healing absorption equal to 10% of all
+		// Rune of the Umbra: apply healing absorption equal to 10% of all
 		// damage taken by friendly characters.
 		if (IsFriendly && amount > 0f &&
 		    RunState.Instance?.IsRuneActive(RuneIndex.Void) == true)
@@ -226,7 +226,7 @@ public abstract partial class Character : CharacterBody2D
 	/// Restore health, clamped at MaxHealth.
 	/// Applies any <see cref="CharacterStats.HealingReceivedMultiplier"/> from active
 	/// effects (e.g. Crimson Curse) before adding the amount.
-	/// If there is active heal-absorption (Rune of the Void), incoming healing
+	/// If there is active heal-absorption (Rune of the Umbra), incoming healing
 	/// is consumed by the absorption first before reaching health.
 	/// </summary>
 	public void Heal(float amount)
@@ -237,7 +237,7 @@ public abstract partial class Character : CharacterBody2D
 		amount *= Mathf.Max(0f, stats.HealingReceivedMultiplier);
 		if (amount <= 0f) return;
 
-		// Rune of the Void: consume heal absorption before the heal reaches health.
+		// Rune of the Umbra: consume heal absorption before the heal reaches health.
 		if (CurrentHealAbsorption > 0f)
 		{
 			var consumed = Mathf.Min(CurrentHealAbsorption, amount);
@@ -315,7 +315,7 @@ public abstract partial class Character : CharacterBody2D
 		EmitSignalShieldChanged(CharacterName, CurrentShield, MaxHealth);
 	}
 
-	// ── heal absorption (Rune of the Void) ───────────────────────────────────
+	// ── heal absorption (Rune of the Umbra) ───────────────────────────────────
 
 	/// <summary>
 	/// Adds <paramref name="amount"/> to the character's pending heal absorption.
@@ -378,7 +378,7 @@ public abstract partial class Character : CharacterBody2D
 	/// <summary>
 	/// When set, <see cref="ApplyEffect"/> appends this string to every incoming
 	/// effect's <see cref="CharacterEffect.EffectId"/> before storing it.
-	/// Used by <see cref="Effects.MirrorImageEffect"/> so the clone's copy of a
+	/// Used by <see cref="Effects.TwinFlameEffect"/> so the clone's copy of a
 	/// spell's effect never clobbers the player's original on the same target.
 	/// Always reset to <c>null</c> in a <c>finally</c> block after use.
 	/// </summary>
@@ -445,7 +445,7 @@ public abstract partial class Character : CharacterBody2D
 	/// Remove an active effect by id without invoking its
 	/// <see cref="CharacterEffect.OnExpired"/> callback.
 	/// Use when you intend to immediately replace the effect with a new one
-	/// and don't want the expiry logic to fire (e.g. Wrath of Nature swapping
+	/// and don't want the expiry logic to fire (e.g. Wrath of Embers swapping
 	/// a plain HoT for a wrapped version).
 	/// </summary>
 	public void RemoveEffectSilent(string effectId)
@@ -698,7 +698,7 @@ public abstract partial class Character : CharacterBody2D
 	/// <summary>
 	/// Returns all currently active effects on this character.
 	/// Used by talents that need to enumerate or consume active effects
-	/// (e.g. <see cref="Talents.Void.VoidResonanceTalent"/> consuming DoTs).
+	/// (e.g. <see cref="Talents.Umbra.UmbralResonanceTalent"/> consuming DoTs).
 	/// </summary>
 	public IEnumerable<CharacterEffect> GetAllEffects()
 	{

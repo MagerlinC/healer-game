@@ -2,7 +2,7 @@ using Godot;
 using healerfantasy;
 using healerfantasy.LastLight;
 using healerfantasy.LastLight.Hud;
-using healerfantasy.SpellResources.Void;
+using healerfantasy.SpellResources.Umbra;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
 
 namespace healerfantasy.UI;

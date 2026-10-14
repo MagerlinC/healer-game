@@ -45,7 +45,7 @@ public partial class BossTwstsConsumeEffect : CharacterEffect
 	public BossTwstsConsumeEffect() : base(30f, 1f)
 	{
 		EffectId = "Consume";
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		IsDispellable = true;
 		IsHarmful = true;
 		Icon = Icon;

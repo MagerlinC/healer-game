@@ -37,22 +37,22 @@ public class CharacterStats
 
 	public Dictionary<SpellSchool, float> SpellSchoolIncreasedDamage = new()
 	{
-		{ SpellSchool.Nature, 0.0f },
-		{ SpellSchool.Holy, 0.0f },
-		{ SpellSchool.Void, 0.0f },
-		{ SpellSchool.Chronomancy, 0.0f },
+		{ SpellSchool.Ember, 0.0f },
+		{ SpellSchool.Flame, 0.0f },
+		{ SpellSchool.Umbra, 0.0f },
+		{ SpellSchool.Wick, 0.0f },
 		{ SpellSchool.Generic, 0.0f },
-		{ SpellSchool.Sanguimancy, 0.0f }
+		{ SpellSchool.Kindling, 0.0f }
 	};
 
 	public Dictionary<SpellSchool, float> SpellSchoolIncreasedHealing = new()
 	{
-		{ SpellSchool.Nature, 0.0f },
-		{ SpellSchool.Holy, 0.0f },
-		{ SpellSchool.Void, 0.0f },
-		{ SpellSchool.Chronomancy, 0.0f },
+		{ SpellSchool.Ember, 0.0f },
+		{ SpellSchool.Flame, 0.0f },
+		{ SpellSchool.Umbra, 0.0f },
+		{ SpellSchool.Wick, 0.0f },
 		{ SpellSchool.Generic, 0.0f },
-		{ SpellSchool.Sanguimancy, 0.0f }
+		{ SpellSchool.Kindling, 0.0f }
 	};
 
 	/// <summary>
@@ -72,7 +72,7 @@ public class CharacterStats
 	/// <summary>
 	/// When true, the next non-instant spell cast by this character will be
 	/// fired immediately, bypassing the normal cast timer.
-	/// Set by talents such as <see cref="Talents.Chronomancy.TemporalMomentumTalent"/>.
+	/// Set by talents such as <see cref="Talents.Wick.TemporalMomentumTalent"/>.
 	/// </summary>
 	public bool NextCastIsInstant { get; set; } = false;
 

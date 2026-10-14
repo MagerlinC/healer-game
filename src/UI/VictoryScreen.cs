@@ -108,7 +108,7 @@ public partial class VictoryScreen : CanvasLayer
 
 				// For multi-boss encounters (e.g. The Astral Twins), only show the
 				// victory screen when ALL real bosses are dead.
-				// Vines (Rune of Nature) are in BossGroupName but are not real bosses —
+				// Vines (Rune of Ember) are in BossGroupName but are not real bosses —
 				// the fight ends when the actual boss dies regardless of vine state.
 				foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
 					if (node is Character c && c != character && c.IsAlive

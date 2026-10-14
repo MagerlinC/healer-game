@@ -16,7 +16,7 @@ public partial class BossBloodPrinceBloodBoltSpell : SpellResource
 		Name = "Blood Bolt";
 		Description = "A pressurised burst of the Prince's own blood, launched at a random target.";
 		Tags = SpellTags.Damage;
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		ManaCost = 0f;
 		CastTime = 0f;
 		TargetingType = TargetingType.Enemy;

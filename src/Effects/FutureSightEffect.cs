@@ -11,8 +11,8 @@ public partial class FutureSightEffect : CharacterEffect, ISpellModifier, IChara
 	{
 		EffectId = "FutureSight";
 		Icon = Icon;
-		School = SpellSchool.Chronomancy;
-		Description = "Your next non-Chronomancy spell will crit.";
+		School = SpellSchool.Wick;
+		Description = "Your next non-Wick spell will crit.";
 	}
 
 	public ModifierPriority Priority { get; } = ModifierPriority.BASE;

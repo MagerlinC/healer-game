@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
-using healerfantasy.Talents.Chronomancy;
+using healerfantasy.Talents.Wick;
 using healerfantasy.Talents.Generic;
-using healerfantasy.Talents.Holy;
-using healerfantasy.Talents.Nature;
-using healerfantasy.Talents.Sanguimancy;
-using healerfantasy.Talents.Void;
+using healerfantasy.Talents.Flame;
+using healerfantasy.Talents.Ember;
+using healerfantasy.Talents.Kindling;
+using healerfantasy.Talents.Umbra;
 
 namespace healerfantasy.Talents;
 
@@ -24,7 +24,7 @@ namespace healerfantasy.Talents;
 /// </summary>
 public static class TalentRegistry
 {
-	public static readonly List<TalentDefinition> VoidTalents =
+	public static readonly List<TalentDefinition> UmbraTalents =
 	[
 		new()
 		{
@@ -32,9 +32,9 @@ public static class TalentRegistry
 			Description = "20% increased umbral damage.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_5.png",
 			TalentRow = 0,
-			School = SpellSchool.Void,
+			School = SpellSchool.Umbra,
 			Configure = (t, _) =>
-				t.SpellModifiers.Add(new VoidSpecialistTalent())
+				t.SpellModifiers.Add(new UmbralSpecialistTalent())
 		},
 		new()
 		{
@@ -42,7 +42,7 @@ public static class TalentRegistry
 			Description = "Umbra spells have a 15% chance to deal double damage.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_9.png",
 			TalentRow = 1,
-			School = SpellSchool.Void,
+			School = SpellSchool.Umbra,
 			Configure = (t, _) =>
 				t.SpellModifiers.Add(new EntropicSurgeTalent())
 		},
@@ -52,9 +52,9 @@ public static class TalentRegistry
 			Description = "Dealing umbral damage restores 1 mana.",
 			IconPath = AssetConstants.TalentIconAssets + "void/siphoning-void.png",
 			TalentRow = 2,
-			School = SpellSchool.Void,
+			School = SpellSchool.Umbra,
 			Configure = (t, _) =>
-				t.SpellModifiers.Add(new SiphoningVoidTalent())
+				t.SpellModifiers.Add(new SiphoningDarkTalent())
 		},
 		new()
 		{
@@ -62,7 +62,7 @@ public static class TalentRegistry
 			Description = "Umbral damage spells have a 25% chance to apply a free 3-tick, 5-damage-per-tick DoT.",
 			IconPath = AssetConstants.TalentIconAssets + "void/necrotic-touch.png",
 			TalentRow = 3,
-			School = SpellSchool.Void,
+			School = SpellSchool.Umbra,
 			Configure = (t, _) =>
 				t.SpellModifiers.Add(new NecroticTouchTalent())
 		},
@@ -72,30 +72,30 @@ public static class TalentRegistry
 			Description = "Casting Umbral Bolt consumes all DoTs on the target, instantly dealing their remaining damage.",
 			IconPath = AssetConstants.TalentIconAssets + "void/void-resonance.png",
 			TalentRow = 3,
-			School = SpellSchool.Void,
+			School = SpellSchool.Umbra,
 			Configure = (t, _) =>
-				t.SpellModifiers.Add(new VoidResonanceTalent())
+				t.SpellModifiers.Add(new UmbralResonanceTalent())
 		}
 	];
 
-	public static readonly List<TalentDefinition> HolyTalents =
+	public static readonly List<TalentDefinition> FlameTalents =
 	[
 		new()
 		{
-			Name = "Shielding Reinvigoration",
+			Name = "Shielding Rekindle",
 			Description = "Healing a target grants a 5s shield equal to 20% of the healing done.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_17.png",
-			School = SpellSchool.Holy,
+			School = SpellSchool.Flame,
 			TalentRow = 0,
 			Configure = (t, icon) =>
-				t.SpellModifiers.Add(new ShieldingReinvigorationTalent { EffectIcon = icon })
+				t.SpellModifiers.Add(new ShieldingRekindleTalent { EffectIcon = icon })
 		},
 		new()
 		{
 			Name = "Sacred Ground",
 			Description = "Healing spells restore 2 mana for each target healed.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_2.png",
-			School = SpellSchool.Holy,
+			School = SpellSchool.Flame,
 			TalentRow = 1,
 			Configure = (t, _) =>
 				t.SpellModifiers.Add(new SacredGroundTalent())
@@ -105,7 +105,7 @@ public static class TalentRegistry
 			Name = "Sacred Momentum",
 			Description = "Flame spells are 15% more effective when the target is below 50% health.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_3.png",
-			School = SpellSchool.Holy,
+			School = SpellSchool.Flame,
 			TalentRow = 2,
 			Configure = (t, _) =>
 				t.SpellModifiers.Add(new SacredMomentumTalent())
@@ -115,7 +115,7 @@ public static class TalentRegistry
 			Name = "Radiant Infusion",
 			Description = "Healing spells grant a 6s buff that increases the target's damage by 15%.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_15.png",
-			School = SpellSchool.Holy,
+			School = SpellSchool.Flame,
 			TalentRow = 3,
 			Configure = (t, icon) =>
 				t.SpellModifiers.Add(new RadiantInfusionTalent { EffectIcon = icon })
@@ -125,34 +125,34 @@ public static class TalentRegistry
 			Name = "Illumination",
 			Description = "Healing critical strikes refund 50% of the spell's mana cost.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_16.png",
-			School = SpellSchool.Holy,
+			School = SpellSchool.Flame,
 			TalentRow = 3,
 			Configure = (t, _) =>
 				t.SpellModifiers.Add(new IlluminationTalent())
 		}
 	];
 
-	public static readonly List<TalentDefinition> NatureTalents =
+	public static readonly List<TalentDefinition> EmberTalents =
 	[
 		new()
 		{
 			Name = "Banked Embers",
 			Description = "Ember healing spells are 20% more effective.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_6.png",
-			School = SpellSchool.Nature,
+			School = SpellSchool.Ember,
 			TalentRow = 0,
 			Configure = (t, _) =>
-				t.SpellModifiers.Add(new VerdantStrengthTalent())
+				t.SpellModifiers.Add(new BankedEmbersTalent())
 		},
 		new()
 		{
 			Name = "Searing Cinders",
 			Description = "Ember damage spells deal 20% more damage.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_7.png",
-			School = SpellSchool.Nature,
+			School = SpellSchool.Ember,
 			TalentRow = 1,
 			Configure = (t, _) =>
-				t.SpellModifiers.Add(new ToxicPotencyTalent())
+				t.SpellModifiers.Add(new SearingCindersTalent())
 		},
 		new()
 		{
@@ -160,42 +160,42 @@ public static class TalentRegistry
 			Description =
 				"Casting a healing spell on a target causes the most-injured party member to be healed for 8 HP.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_8.png",
-			School = SpellSchool.Nature,
+			School = SpellSchool.Ember,
 			TalentRow = 2,
 			Configure = (t, _) =>
-				t.SpellModifiers.Add(new FlourishingTalent())
+				t.SpellModifiers.Add(new SpreadingWarmthTalent())
 		},
 		new()
 		{
 			Name = "Deep Coals",
 			Description = "Casting a HoT on a target that already has one active restores 4 mana.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_18.png",
-			School = SpellSchool.Nature,
+			School = SpellSchool.Ember,
 			TalentRow = 3,
 			Configure = (t, _) =>
-				t.SpellModifiers.Add(new DeepRootsTalent())
+				t.SpellModifiers.Add(new DeepCoalsTalent())
 		},
 		new()
 		{
 			Name = "Overburn",
 			Description = "HoT spells tick for 20% more on targets above 75% health.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_19.png",
-			School = SpellSchool.Nature,
+			School = SpellSchool.Ember,
 			TalentRow = 3,
 			Configure = (t, _) =>
-				t.SpellModifiers.Add(new OvergrowthTalent())
+				t.SpellModifiers.Add(new OverburnTalent())
 		}
 	];
 
-	public static readonly List<TalentDefinition> ChronomancyTalents =
+	public static readonly List<TalentDefinition> WickTalents =
 	[
 		new()
 		{
 			Name = "Acceleration",
 			Description =
-				"Casting a chronomancy spell increases haste for 10%. Stacks up to 3 times.",
+				"Casting a Wick spell increases haste for 10%. Stacks up to 3 times.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_15.png",
-			School = SpellSchool.Chronomancy,
+			School = SpellSchool.Wick,
 			TalentRow = 0,
 			Configure = (t, icon) =>
 				t.SpellModifiers.Add(new AccelerationTalent { EffectIcon = icon })
@@ -205,7 +205,7 @@ public static class TalentRegistry
 			Name = "Temporal Flow",
 			Description = "Passively increases haste by 15%.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_12.png",
-			School = SpellSchool.Chronomancy,
+			School = SpellSchool.Wick,
 			TalentRow = 1,
 			Configure = (t, _) =>
 				t.CharacterModifiers.Add(new TemporalFlowTalent())
@@ -215,7 +215,7 @@ public static class TalentRegistry
 			Name = "Mana Rift",
 			Description = "Wick spells have a 20% chance to refund their full mana cost.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_14.png",
-			School = SpellSchool.Chronomancy,
+			School = SpellSchool.Wick,
 			TalentRow = 2,
 			Configure = (t, _) =>
 				t.SpellModifiers.Add(new ManaRiftTalent())
@@ -226,7 +226,7 @@ public static class TalentRegistry
 			Description =
 				"Casting a Wick spell makes your next non-Wick spell always crit.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_24.png",
-			School = SpellSchool.Chronomancy,
+			School = SpellSchool.Wick,
 			TalentRow = 3,
 			Configure = (t, icon) =>
 				t.SpellModifiers.Add(new FutureSightTalent
@@ -239,7 +239,7 @@ public static class TalentRegistry
 			Name = "Temporal Momentum",
 			Description = "Casting a Wick spell makes your next non-Wick spell instant.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_25.png",
-			School = SpellSchool.Chronomancy,
+			School = SpellSchool.Wick,
 			TalentRow = 3,
 			Configure = (t, icon) =>
 			{
@@ -309,14 +309,14 @@ public static class TalentRegistry
 		}
 	];
 
-	public static readonly List<TalentDefinition> SanguimancyTalents =
+	public static readonly List<TalentDefinition> KindlingTalents =
 	[
 		new()
 		{
 			Name = "Crimson Rebound",
 			Description = "After casting a Kindling spell, recover 40% of its health cost as healing over 5 seconds.",
 			IconPath = AssetConstants.TalentIconAssets + "sanguimancy/crimson-rebound.png",
-			School = SpellSchool.Sanguimancy,
+			School = SpellSchool.Kindling,
 			TalentRow = 0,
 			Configure = (t, icon) =>
 				t.SpellModifiers.Add(new CrimsonReboundTalent { EffectIcon = icon })
@@ -326,7 +326,7 @@ public static class TalentRegistry
 			Name = "Bloodthirst",
 			Description = "Kindling spells deal and heal 25% more.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_9.png",
-			School = SpellSchool.Sanguimancy,
+			School = SpellSchool.Kindling,
 			TalentRow = 1,
 			Configure = (t, _) =>
 				t.SpellModifiers.Add(new BloodthirstTalent())
@@ -337,16 +337,16 @@ public static class TalentRegistry
 			Description =
 				"When you spend health on a Kindling spell, all living allies gain a shield equal to the health cost for 10 seconds.",
 			IconPath = AssetConstants.TalentIconAssets + "sanguimancy/sanguine-ward.png",
-			School = SpellSchool.Sanguimancy,
+			School = SpellSchool.Kindling,
 			TalentRow = 2,
 			Configure = (t, icon) =>
-				t.SpellModifiers.Add(new SanguineWardTalent { EffectIcon = icon })
+				t.SpellModifiers.Add(new KindledWardTalent { EffectIcon = icon })
 		}
 	];
 
 	public static readonly List<TalentDefinition> AllTalents =
-		GenericTalents.Concat(VoidTalents).Concat(HolyTalents).Concat(NatureTalents).Concat(ChronomancyTalents)
-			.Concat(SanguimancyTalents).ToList();
+		GenericTalents.Concat(UmbraTalents).Concat(FlameTalents).Concat(EmberTalents).Concat(WickTalents)
+			.Concat(KindlingTalents).ToList();
 
 	/// <summary>
 	/// Returns up to <paramref name="count"/> random talent offers for the victory screen.
@@ -383,8 +383,8 @@ public static class TalentRegistry
 		var eligible = AllTalents.Where(t =>
 		{
 			if (acquiredNames.Contains(t.Name)) return false;
-			// Sanguimancy requires the Castle of Blood to have been defeated in a previous run.
-			if (t.School == SpellSchool.Sanguimancy && !PlayerProgressStore.HasDefeatedCastleOfBlood)
+			// Kindling requires the Castle of Blood to have been defeated in a previous run.
+			if (t.School == SpellSchool.Kindling && !PlayerProgressStore.HasDefeatedCastleOfBlood)
 				return false;
 			if (t.TalentRow == 0) return true;
 			// Requires at least one talent from the previous row in the same school.

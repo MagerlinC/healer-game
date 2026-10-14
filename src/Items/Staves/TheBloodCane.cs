@@ -21,20 +21,20 @@ public class TheBloodCane : EquippableItem
 	{
 		Name = "The Blood Cane";
 		Description =
-			$"Sanguimancy spells have {100 * LifeCostMultiplier:F0}% increased life cost, but also do {100 * LifeCostMultiplier:F0}% more damage and healing";
+			$"Kindling spells have {100 * LifeCostMultiplier:F0}% increased life cost, but also do {100 * LifeCostMultiplier:F0}% more damage and healing";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Staff;
 		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(8));
-		CharacterModifiers.Add(new SanguimancyEffect());
+		CharacterModifiers.Add(new KindlingEffect());
 	}
 
-	class SanguimancyEffect : ICharacterModifier
+	class KindlingEffect : ICharacterModifier
 	{
 		public void Modify(CharacterStats stats)
 		{
 			stats.LifeCostMultiplier *= 1f + LifeCostMultiplier;
-			stats.SpellSchoolIncreasedDamage[SpellSchool.Sanguimancy] += LifeCostMultiplier;
-			stats.SpellSchoolIncreasedHealing[SpellSchool.Sanguimancy] += LifeCostMultiplier;
+			stats.SpellSchoolIncreasedDamage[SpellSchool.Kindling] += LifeCostMultiplier;
+			stats.SpellSchoolIncreasedHealing[SpellSchool.Kindling] += LifeCostMultiplier;
 		}
 	}
 }

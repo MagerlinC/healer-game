@@ -18,7 +18,7 @@ public partial class BossTwstsBeamSpell : SpellResource
 		Name = "Stellar Beam";
 		Description = "A searing beam of compressed starlight burns through a random party member.";
 		Tags = SpellTags.Damage;
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Parryable = false;

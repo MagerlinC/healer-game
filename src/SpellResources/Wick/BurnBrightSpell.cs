@@ -1,0 +1,54 @@
+using System.Collections.Generic;
+using Godot;
+using healerfantasy;
+using healerfantasy.SpellSystem;
+
+namespace healerfantasy.SpellResources.Wick;
+
+/// <summary>
+/// Accelerates the flow of time around the entire party, granting each member
+/// a +20% cast-speed buff for a short duration via <see cref="Effects.BurnBrightEffect"/>.
+/// </summary>
+[GlobalClass]
+public partial class BurnBrightSpell : SpellResource
+{
+	[Export] public float BuffDuration = 6f;
+	[Export] public float CastSpeedBonus = 0.20f;
+
+	public BurnBrightSpell()
+	{
+		Name = "Burn Bright";
+		Description =
+			$"Makes the whole party burn brighter, increasing haste by {(int)(CastSpeedBonus * 100)}% for {BuffDuration}s.";
+		ManaCost = 15f;
+		CastTime = 0.0f;
+		Cooldown = 10f;
+		School = SpellSchool.Wick;
+		RequiredSchoolPoints = 2;
+		Tags = SpellTags.Duration | SpellTags.GroupSpell;
+		TargetingType = TargetingType.None;
+		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/time-warp.png");
+	}
+
+	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)
+	{
+		var targets = new List<Character>();
+		foreach (var node in caster.GetTree().GetNodesInGroup("party"))
+			if (node is Character { IsAlive: true } c)
+				targets.Add(c);
+		return targets;
+	}
+
+	public override void Apply(SpellContext ctx)
+	{
+		foreach (var target in ctx.Targets)
+			target.ApplyEffect(new Effects.BurnBrightEffect(BuffDuration, CastSpeedBonus)
+			{
+				Icon = Icon,
+				School = SpellSchool.Wick,
+				SourceCharacterName = ctx.Caster.CharacterName,
+				AbilityName = Name,
+				Description = Description
+			});
+	}
+}

@@ -287,7 +287,7 @@ public partial class NecroticWave : Node2D
 			target.RaiseFloatingCombatText(
 				DamageAmount,
 				false,
-				(int)SpellSchool.Void,
+				(int)SpellSchool.Umbra,
 				false);
 
 			CombatLog.Record(new CombatEventRecord

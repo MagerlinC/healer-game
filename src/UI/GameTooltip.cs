@@ -1,6 +1,6 @@
 #nullable enable
 using Godot;
-using healerfantasy.SpellResources.Void;
+using healerfantasy.SpellResources.Umbra;
 using SpellResource = healerfantasy.SpellResources.SpellResource;
 
 /// <summary>

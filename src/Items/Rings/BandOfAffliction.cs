@@ -6,7 +6,7 @@ using healerfantasy.Talents;
 namespace healerfantasy.Items.Rings;
 
 /// <summary>
-/// Band of the Void — Legendary ring.
+/// Band of Affliction — Legendary ring.
 ///
 /// Passive: damage-over-time effects applied by the player last
 /// <see cref="_durationExtension"/> seconds longer.

@@ -60,7 +60,7 @@ public static class LastLightStyle
 		[typeof(QueenOfTheFrozenWastes)] = _ => RigLibrary.QueenOfTheFrozenWastes(),
 		[typeof(TheFrozenTerror)] = _ => RigLibrary.TheFrozenTerror(),
 
-		// Rune of Nature
+		// Rune of Ember
 		[typeof(VinesEnemy)] = _ => RigLibrary.Vines()
 	};
 

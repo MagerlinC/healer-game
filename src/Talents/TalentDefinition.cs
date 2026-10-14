@@ -21,7 +21,7 @@ public enum ModifierPriority
 ///
 /// <see cref="Configure"/> only needs to attach the right modifiers; it receives
 /// the talent being built and the already-loaded icon texture so modifiers that
-/// apply effects (e.g. <see cref="ShieldingReinvigorationTalent"/>) can store
+/// apply effects (e.g. <see cref="ShieldingRekindleTalent"/>) can store
 /// it without re-loading from disk.
 /// </summary>
 public class TalentDefinition

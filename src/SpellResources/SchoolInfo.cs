@@ -4,41 +4,76 @@ using Godot;
 namespace healerfantasy.SpellResources;
 
 /// <summary>
-/// Player-facing names and colours for the spell schools.
+/// Player-facing names, colours and descriptions for the spell schools.
 ///
 /// Every school is a different relationship with the healer's own flame:
-///   Flame    (Holy)        — the light itself: bright heals and searing bursts.
-///   Ember    (Nature)      — light that lingers: smoulders, cinders, moths.
-///   Umbra    (Void)        — borrowing the dark: powerful, but it dims your light.
-///   Wick     (Chronomancy) — time measured by a burning candle.
-///   Kindling (Sanguimancy) — burning your own life as fuel.
-///
-/// The <see cref="SpellSchool"/> enum keeps its original identifiers so saves,
-/// talents and modifiers are unaffected; only what the player reads changes.
+///   Flame    — the light itself: bright heals and searing bursts.
+///   Ember    — light that lingers: smoulders, cinders, moths.
+///   Umbra    — borrowing the dark: powerful, but it dims your light.
+///   Wick     — time measured by a burning candle.
+///   Kindling — burning your own life as fuel.
 /// </summary>
 public static class SchoolInfo
 {
 	public static string Name(SpellSchool school) => school switch
 	{
-		SpellSchool.Holy => "Flame",
-		SpellSchool.Nature => "Ember",
-		SpellSchool.Void => "Umbra",
-		SpellSchool.Chronomancy => "Wick",
-		SpellSchool.Sanguimancy => "Kindling",
+		SpellSchool.Flame => "Flame",
+		SpellSchool.Ember => "Ember",
+		SpellSchool.Umbra => "Umbra",
+		SpellSchool.Wick => "Wick",
+		SpellSchool.Kindling => "Kindling",
 		_ => "General"
 	};
 
 	/// <summary>Display name from a stored enum name (run history keeps <c>School.ToString()</c>).</summary>
 	public static string Name(string storedSchool) =>
-		System.Enum.TryParse<SpellSchool>(storedSchool, out var school) ? Name(school) : storedSchool;
+		TryParse(storedSchool, out var school) ? Name(school) : storedSchool;
+
+	/// <summary>
+	/// Parses a stored school name, including the pre-rename names
+	/// (Holy, Nature, Void, Chronomancy, Sanguimancy) found in older saves.
+	/// </summary>
+	public static bool TryParse(string storedSchool, out SpellSchool school)
+	{
+		if (storedSchool != null && LegacySchoolNames.TryGetValue(storedSchool, out school)) return true;
+		return System.Enum.TryParse(storedSchool, out school);
+	}
+
+	static readonly Dictionary<string, SpellSchool> LegacySchoolNames = new()
+	{
+		["Holy"] = SpellSchool.Flame,
+		["Nature"] = SpellSchool.Ember,
+		["Void"] = SpellSchool.Umbra,
+		["Chronomancy"] = SpellSchool.Wick,
+		["Sanguimancy"] = SpellSchool.Kindling
+	};
+
+	/// <summary>
+	/// Short flavour line plus the school's base mechanic, shown under the
+	/// school name in the Spellbook.
+	/// </summary>
+	public static (string Flavour, string Mechanic) Description(SpellSchool school) => school switch
+	{
+		SpellSchool.Flame => ("The light itself, burning at its brightest.",
+			"Casting Flame brightens your light and burns away a stack of Gloom."),
+		SpellSchool.Ember => ("Light that lingers long after the fire.",
+			"Ember heals leave a pocket of smouldering light beneath the ally."),
+		SpellSchool.Umbra => ("Power borrowed from the dark, at a price.",
+			"Casting Umbra adds Gloom to the party: +4% damage taken per stack (max 5, 10s). Flame burns it away."),
+		SpellSchool.Wick => ("Time, measured by a burning candle.",
+			"Wick spells bend time: haste, wax that resolves later, health that rewinds. Your flame gutters, then flares."),
+		SpellSchool.Kindling => ("Your own life, fed to the fire.",
+			"Kindling spells cost health instead of mana, trading your life for power."),
+		_ => ("The basics of any healer's craft.", "")
+	};
 
 	public static Color Color(SpellSchool school) => school switch
 	{
-		SpellSchool.Holy => new Color(1f, 0.87f, 0.58f),        // white-gold flame
-		SpellSchool.Nature => new Color(0.95f, 0.52f, 0.22f),   // ember orange
-		SpellSchool.Void => new Color(0.62f, 0.48f, 0.88f),     // black-violet
-		SpellSchool.Chronomancy => new Color(0.72f, 0.84f, 0.95f), // pale wax-blue
-		SpellSchool.Sanguimancy => new Color(0.86f, 0.24f, 0.17f), // burning red
+		SpellSchool.Flame => new Color(1f, 0.87f, 0.58f),        // white-gold flame
+		SpellSchool.Ember => new Color(0.95f, 0.52f, 0.22f),   // ember orange
+		SpellSchool.Umbra => new Color(0.62f, 0.48f, 0.88f),     // black-violet
+		SpellSchool.Wick => new Color(0.72f, 0.84f, 0.95f), // pale wax-blue
+		SpellSchool.Kindling => new Color(0.86f, 0.24f, 0.17f), // burning red
 		_ => new Color(0.7f, 0.65f, 0.6f)
 	};
 

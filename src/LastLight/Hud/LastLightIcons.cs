@@ -68,7 +68,7 @@ public static class LastLightIcons
 	public static Texture2D Gloom()
 	{
 		EnsureGlyphs();
-		return Render("effect:gloom", SpellSchool.Void, GloomGlyph, false);
+		return Render("effect:gloom", SpellSchool.Umbra, GloomGlyph, false);
 	}
 
 	/// <summary>True for icons made here — they are already in palette and must not be toned down.</summary>
@@ -260,64 +260,64 @@ public static class LastLightIcons
 	static Dictionary<string, string> BuildSpellGlyphs() => new()
 	{
 		// FLAME — the light itself
-		["BurstOfLightSpell"] = Star(32, 32, 8, 25, 9) + Circle(32, 32, 6, "{H}"),                        // Flare
-		["TouchOfLightSpell"] = Candle(32, 40, 1.15f),                                                    // Candle Touch
-		["DivineAegisSpell"] = Ring(32, 13, 4, 2.5f) + Poly("22,18 42,18 38,22 26,22") +                   // Lantern Ward
+		["FlareSpell"] = Star(32, 32, 8, 25, 9) + Circle(32, 32, 6, "{H}"),                        // Flare
+		["CandleTouchSpell"] = Candle(32, 40, 1.15f),                                                    // Candle Touch
+		["LanternWardSpell"] = Ring(32, 13, 4, 2.5f) + Poly("22,18 42,18 38,22 26,22") +                   // Lantern Ward
 		                        Path("M24,22 L40,22 L42,50 L22,50 Z", "none", "{C}", 3) + Line(20, 51, 44, 51, 3) +
 		                        Flame(32, 37, 0.5f),
-		["ReinvigorateSpell"] = Flame(32, 34, 0.85f) + ArcArrow(32, 32, 24, 150, 400, 3),                 // Rekindle
-		["HolyNovaSpell"] = Ring(32, 32, 9, 4, "{H}") + Rays(32, 32, 15, 27, 12, 3),                     // Flashfire
-		["WaveOfIncandescenceSpell"] = Flame(17, 41, 0.6f) + Flame(47, 41, 0.6f) + Flame(32, 33, 0.85f), // Wildfire
-		["ArchangelOfLightSpell"] = Rays(32, 32, 15, 29, 8, 3.5f) + Rays(32, 32, 15, 23, 8, 2.5f, "{C}", -67.5f) + // Become the Sun
+		["RekindleSpell"] = Flame(32, 34, 0.85f) + ArcArrow(32, 32, 24, 150, 400, 3),                 // Rekindle
+		["FlashfireSpell"] = Ring(32, 32, 9, 4, "{H}") + Rays(32, 32, 15, 27, 12, 3),                     // Flashfire
+		["WildfireSpell"] = Flame(17, 41, 0.6f) + Flame(47, 41, 0.6f) + Flame(32, 33, 0.85f), // Wildfire
+		["BecomeTheSunSpell"] = Rays(32, 32, 15, 29, 8, 3.5f) + Rays(32, 32, 15, 23, 8, 2.5f, "{C}", -67.5f) + // Become the Sun
 		                             Circle(32, 32, 11, "{H}") + Ring(32, 32, 11, 2),
 
 		// EMBER — light that lingers
-		["RenewingBloomSpell"] = Coal(32, 44, 1.5f) + Path("M27,46 L32,41 L37,46", "none", "{H}", 2) +      // Smoulder
+		["SmoulderSpell"] = Coal(32, 44, 1.5f) + Path("M27,46 L32,41 L37,46", "none", "{H}", 2) +      // Smoulder
 		                          Path("M26,30 C22,24 30,22 26,14", "none", "#8a7c72", 2.5f) +
 		                          Path("M37,30 C41,24 33,21 38,12", "none", "#8a7c72", 2.5f),
-		["WildGrowthSpell"] = Circle(32, 40, 6, "{H}") + Circle(17, 30, 4) + Circle(47, 28, 4.5f) +         // Spreading Embers
+		["SpreadingEmbersSpell"] = Circle(32, 40, 6, "{H}") + Circle(17, 30, 4) + Circle(47, 28, 4.5f) +         // Spreading Embers
 		                       Circle(22, 49, 3.5f) + Circle(44, 48, 3.5f) + Circle(32, 19, 3.5f) + Circle(12, 44, 2.5f) + Circle(53, 41, 2.5f),
-		["PoisonBoltSpell"] = Poly("36,18 10,47 15,52 44,29") + Circle(41, 23, 9, "{H}") + Circle(41, 23, 4.5f), // Cinder
-		["LeafShadeSpell"] = Shield(32, 32, 1.45f, "none", "{C}") + Circle(24, 26, 2, "#9a8e84") +           // Ash Veil
+		["CinderSpell"] = Poly("36,18 10,47 15,52 44,29") + Circle(41, 23, 9, "{H}") + Circle(41, 23, 4.5f), // Cinder
+		["AshVeilSpell"] = Shield(32, 32, 1.45f, "none", "{C}") + Circle(24, 26, 2, "#9a8e84") +           // Ash Veil
 		                      Circle(36, 22, 1.6f, "#9a8e84") + Circle(30, 36, 2.2f, "#9a8e84") + Circle(40, 33, 1.6f, "#9a8e84") +
 		                      Circle(34, 44, 1.8f, "#9a8e84") + Circle(25, 40, 1.4f, "#9a8e84"),
-		["SwarmOfTheForest"] = Moth(30, 32, 1.25f) + Moth(50, 16, 0.45f, "{H}") + Moth(14, 50, 0.4f, "{H}"),   // Mothswarm
-		["NourishSpell"] = Coal(32, 48, 1.25f) + Path("M21,30 L32,20 L43,30", "none", "{H}", 3.5f) +          // Stoke
+		["MothswarmSpell"] = Moth(30, 32, 1.25f) + Moth(50, 16, 0.45f, "{H}") + Moth(14, 50, 0.4f, "{H}"),   // Mothswarm
+		["StokeSpell"] = Coal(32, 48, 1.25f) + Path("M21,30 L32,20 L43,30", "none", "{H}", 3.5f) +          // Stoke
 		                    Path("M21,40 L32,30 L43,40", "none", "{C}", 3.5f),
-		["OneWithNatureSpell"] = Poly("32,12 46,48 18,48") + Circle(32, 26, 5, "{K}") + Circle(32, 26, 3, "{H}") + // One With the Ash
+		["OneWithTheAshSpell"] = Poly("32,12 46,48 18,48") + Circle(32, 26, 5, "{K}") + Circle(32, 26, 3, "{H}") + // One With the Ash
 		                          Circle(14, 30, 2.5f, "{H}") + Circle(50, 24, 2.5f, "{H}") + Circle(12, 16, 1.8f) + Circle(52, 40, 1.8f),
 
 		// UMBRA — borrowing the dark
-		["ShadowBoltSpell"] = Poly("44,8 20,34 31,34 19,56 46,26 35,26", "{U}", "{C}"),                      // Umbral Bolt
-		["VoidDrainSpell"] = Spiral(32, 32, 2.6f, 22, 3.5f) + Circle(32, 32, 3.5f, "{U}"),                    // Siphon the Dark
+		["UmbralBoltSpell"] = Poly("44,8 20,34 31,34 19,56 46,26 35,26", "{U}", "{C}"),                      // Umbral Bolt
+		["SiphonTheDarkSpell"] = Spiral(32, 32, 2.6f, 22, 3.5f) + Circle(32, 32, 3.5f, "{U}"),                    // Siphon the Dark
 		["TouchOfAffliction"] = Path("M20,8 C16,20 28,26 22,40", "none", "{C}", 6) + Path("M20,8 C16,20 28,26 22,40", "none", "{U}", 3) + // Touch of Affliction
 		                         Path("M32,6 C30,22 38,28 32,46", "none", "{C}", 6) + Path("M32,6 C30,22 38,28 32,46", "none", "{U}", 3) +
 		                         Path("M44,8 C48,20 36,26 42,40", "none", "{C}", 6) + Path("M44,8 C48,20 36,26 42,40", "none", "{U}", 3) +
 		                         Circle(32, 54, 2.5f) + Circle(22, 48, 2) + Circle(42, 48, 2),
-		["DecaySpellResource"] = Path("M10,14 L54,14 L54,22 C50,22 49,30 46,40 C43,30 42,24 38,24 C35,24 34,36 31,50 C28,36 27,24 24,24 C21,24 20,30 18,36 C16,28 15,22 10,22 Z", "{U}", "{C}", 2.5f), // Rot
+		["RotSpell"] = Path("M10,14 L54,14 L54,22 C50,22 49,30 46,40 C43,30 42,24 38,24 C35,24 34,36 31,50 C28,36 27,24 24,24 C21,24 20,30 18,36 C16,28 15,22 10,22 Z", "{U}", "{C}", 2.5f), // Rot
 		["SoulShatterSpell"] = Poly("32,8 44,30 34,32", "{U}", "{C}") + Poly("44,34 32,56 30,38", "{U}", "{C}") + // Soul Shatter
 		                        Poly("20,30 28,30 28,46", "{U}", "{C}") + Line(32, 33, 36, 35, 2, "{H}"),
-		["ConsumingVoid"] = Circle(32, 32, 15, "#000000") + Ring(32, 32, 15, 3) +                              // Swallowing Dark
+		["SwallowingDarkSpell"] = Circle(32, 32, 15, "#000000") + Ring(32, 32, 15, 3) +                              // Swallowing Dark
 		                     Head(32, 9, 90, 6) + Head(32, 55, -90, 6) + Head(9, 32, 0, 6) + Head(55, 32, 180, 6),
-		["VoidsEmbraceSpell"] = Flame(32, 35, 1.15f, "#000000", "{C}", "{C}"),                                  // Embrace the Dark
+		["EmbraceTheDarkSpell"] = Flame(32, 35, 1.15f, "#000000", "{C}", "{C}"),                                  // Embrace the Dark
 
 		// WICK — time by the candle
-		["HasteSpell"] = Candle(38, 40, 1.05f) + Line(8, 26, 22, 26, 3) + Line(5, 36, 22, 36, 3) + Line(10, 46, 22, 46, 3), // Quicken the Wick
-		["TemporalWardSpell"] = Star(32, 32, 14, 23, 20) + Ring(32, 32, 14, 2, "{K}", 0.6f) + Flame(32, 33, 0.42f, "{K}", "{C}"), // Wax Seal
-		["ManaLoopSpell"] = Drop(32, 38, 1.55f) + Drop(32, 12, 0.45f, "{H}"),                                     // Drip
-		["TimeLoopSpell"] = ArcArrow(32, 32, 20, -60, 250, 3.5f) + Star(32, 32, 4, 11, 3.5f, "{H}"),              // Relight
-		["RewindSpell"] = Candle(32, 40, 0.95f) + ArcArrow(32, 32, 24, 30, -230, 3),                             // Unburn
-		["TimeWarpSpell"] = Flame(16, 40, 0.5f) + Flame(32, 30, 0.75f) + Flame(48, 40, 0.5f) + Head(32, 6, -90, 5, "{H}"), // Burn Bright
-		["MirrorImage"] = Flame(22, 34, 0.75f) + Flame(42, 34, 0.75f, "none", "{C}", "{C}"),                      // Twin Flame
+		["QuickenTheWickSpell"] = Candle(38, 40, 1.05f) + Line(8, 26, 22, 26, 3) + Line(5, 36, 22, 36, 3) + Line(10, 46, 22, 46, 3), // Quicken the Wick
+		["WaxSealSpell"] = Star(32, 32, 14, 23, 20) + Ring(32, 32, 14, 2, "{K}", 0.6f) + Flame(32, 33, 0.42f, "{K}", "{C}"), // Wax Seal
+		["DripSpell"] = Drop(32, 38, 1.55f) + Drop(32, 12, 0.45f, "{H}"),                                     // Drip
+		["RelightSpell"] = ArcArrow(32, 32, 20, -60, 250, 3.5f) + Star(32, 32, 4, 11, 3.5f, "{H}"),              // Relight
+		["UnburnSpell"] = Candle(32, 40, 0.95f) + ArcArrow(32, 32, 24, 30, -230, 3),                             // Unburn
+		["BurnBrightSpell"] = Flame(16, 40, 0.5f) + Flame(32, 30, 0.75f) + Flame(48, 40, 0.5f) + Head(32, 6, -90, 5, "{H}"), // Burn Bright
+		["TwinFlameSpell"] = Flame(22, 34, 0.75f) + Flame(42, 34, 0.75f, "none", "{C}", "{C}"),                      // Twin Flame
 
 		// KINDLING — burning your own life
-		["SanguinePact"] = Heart(32, 38, 1.5f) + Flame(32, 16, 0.38f),                                          // Burning Pact
-		["VitalSurgeSpell"] = Flame(32, 34, 1.15f, "{C}", "{H}") + Heart(32, 40, 0.55f, "{K}"),                  // Lifeflame
-		["SanguineDrainSpell"] = Flame(32, 34, 0.6f) + Arrow(6, 8, 18, 20, 3) + Arrow(58, 8, 46, 20, 3) +         // Draw the Heat
+		["BurningPactSpell"] = Heart(32, 38, 1.5f) + Flame(32, 16, 0.38f),                                          // Burning Pact
+		["LifeflameSpell"] = Flame(32, 34, 1.15f, "{C}", "{H}") + Heart(32, 40, 0.55f, "{K}"),                  // Lifeflame
+		["DrawTheHeatSpell"] = Flame(32, 34, 0.6f) + Arrow(6, 8, 18, 20, 3) + Arrow(58, 8, 46, 20, 3) +         // Draw the Heat
 		                          Arrow(6, 58, 18, 46, 3) + Arrow(58, 58, 46, 46, 3),
-		["ExsanguinateSpell"] = Line(14, 54, 50, 40, 6) + Line(14, 40, 50, 54, 6) + Flame(32, 26, 0.75f),         // Feed the Pyre
+		["FeedThePyreSpell"] = Line(14, 54, 50, 40, 6) + Line(14, 40, 50, 54, 6) + Flame(32, 26, 0.75f),         // Feed the Pyre
 		["NovaOfSacrifice"] = Heart(32, 34, 1f, "{H}") + Ring(32, 32, 19, 3) + Rays(32, 32, 22, 29, 8, 2.5f),    // Nova of Sacrifice
-		["VampiricEmbrace"] = Flame(32, 24, 0.6f) + Flame(15, 45, 0.45f) + Flame(49, 45, 0.45f) +                // Shared Flame
+		["SharedFlameSpell"] = Flame(32, 24, 0.6f) + Flame(15, 45, 0.45f) + Flame(49, 45, 0.45f) +                // Shared Flame
 		                       Line(30, 34, 18, 40, 2.5f, "{H}") + Line(34, 34, 46, 40, 2.5f, "{H}"),
 
 		// GENERAL
@@ -336,7 +336,7 @@ public static class LastLightIcons
 		["Umbral Resonance"] = Ring(32, 32, 22, 2, "{C}", 0.35f) + Ring(32, 32, 15, 2.5f, "{C}", 0.65f) + Ring(32, 32, 8, 3) + Circle(32, 32, 5, "{U}"),
 
 		// Flame
-		["Shielding Reinvigoration"] = Shield(32, 32, 1.5f, "none", "{C}") + Flame(32, 34, 0.55f),
+		["Shielding Rekindle"] = Shield(32, 32, 1.5f, "none", "{C}") + Flame(32, 34, 0.55f),
 		["Sacred Ground"] = Line(8, 50, 56, 50, 3) + Flame(32, 32, 0.8f) + Drop(13, 38, 0.45f, "{H}") + Drop(51, 38, 0.45f, "{H}"),
 		["Sacred Momentum"] = Flame(26, 32, 0.85f) + Path("M44,14 L52,14 L52,52 L44,52 Z", "none", "{C}", 2.5f) + Poly("45,34 51,34 51,51 45,51", "{H}"),
 		["Radiant Infusion"] = Circle(32, 30, 16, "{C}") + Blade(32, 34, 1f),

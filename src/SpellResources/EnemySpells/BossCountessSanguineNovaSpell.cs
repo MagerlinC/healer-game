@@ -26,7 +26,7 @@ public partial class BossCountessSanguineNovaSpell : SpellResource
 		Description = "The Countess detonates a sphere of pressurised blood, " +
 		              "blasting the entire party — unless deflected in time.";
 		Tags = SpellTags.Damage;
-		School = SpellSchool.Sanguimancy;
+		School = SpellSchool.Kindling;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Parryable = true;

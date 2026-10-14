@@ -13,7 +13,7 @@ namespace healerfantasy.Items.Amulets;
 /// return a thread of mana for each soul touched.
 ///
 /// Legendary effect: Group healing spells restore 8 mana per friendly target healed.
-/// E.g. Holy Nova hitting all 4 party members restores 32 mana.
+/// E.g. Flashfire hitting all 4 party members restores 32 mana.
 ///
 /// Implemented by counting friendly targets in OnAfterCast for any spell
 /// carrying both the GroupSpell and Healing tags.

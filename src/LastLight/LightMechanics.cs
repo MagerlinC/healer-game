@@ -8,11 +8,11 @@ namespace healerfantasy.LastLight;
 /// How each spell school plays with the healer's light. Called by
 /// <see cref="SpellPipeline"/> after every successful cast.
 ///
-///   Flame (Holy)        — brightens the light for a few seconds and burns away one Gloom.
-///   Ember (Nature)      — healing leaves a smouldering pocket of light under the ally.
-///   Umbra (Void)        — adds a stack of Gloom to the party: the light dims and the
-///                         darkness creeps faster (+damage taken per stack). The trade-off.
-///   Wick (Chronomancy)  — the flame gutters, then flares.
+///   Flame — brightens the light for a few seconds and burns away one Gloom.
+///   Ember — healing leaves a smouldering pocket of light under the ally.
+///   Umbra — adds a stack of Gloom to the party: the light dims and the
+///          darkness creeps faster (+damage taken per stack). The trade-off.
+///   Wick — the flame gutters, then flares.
 ///
 /// Gloom is gameplay; the rest is visual feedback.
 /// </summary>
@@ -37,23 +37,23 @@ public static class LightMechanics
 
 		switch (ctx.Spell.School)
 		{
-			case SpellSchool.Holy:
+			case SpellSchool.Flame:
 				_brightenStart = Now;
 				BurnAwayGloom(ctx.Caster);
 				break;
 
-			case SpellSchool.Nature:
+			case SpellSchool.Ember:
 				if (ctx.Tags.HasFlag(SpellTags.Healing) && ctx.Targets != null)
 					foreach (var target in ctx.Targets)
 						if (target is { IsFriendly: true } && GodotObject.IsInstanceValid(target))
 							EmberPocket.SpawnUnder(target);
 				break;
 
-			case SpellSchool.Void:
+			case SpellSchool.Umbra:
 				AddGloom(ctx.Caster);
 				break;
 
-			case SpellSchool.Chronomancy:
+			case SpellSchool.Wick:
 				_gutterStart = Now;
 				break;
 		}
@@ -127,7 +127,7 @@ public partial class GloomEffect : CharacterEffect, ICharacterModifier
 	{
 		EffectId = Id;
 		AbilityName = "Gloom";
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		IsHarmful = true;
 		IsDispellable = false;
 		MaximumStacks = LightMechanics.MaxGloom;

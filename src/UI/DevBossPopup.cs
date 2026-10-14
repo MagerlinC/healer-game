@@ -6,7 +6,7 @@ using Godot;
 using healerfantasy;
 using healerfantasy.Items;
 using healerfantasy.SpellResources;
-using healerfantasy.SpellResources.Void;
+using healerfantasy.SpellResources.Umbra;
 using healerfantasy.Talents;
 using healerfantasy.UI;
 
@@ -423,11 +423,11 @@ public partial class DevBossPopup : CanvasLayer
 
 		(SpellSchool School, string Name, Color Accent)[] schoolDefs =
 		{
-			(SpellSchool.Holy, "Holy", new Color(0.95f, 0.85f, 0.40f)),
-			(SpellSchool.Nature, "Nature", new Color(0.40f, 0.80f, 0.35f)),
-			(SpellSchool.Void, "Void", new Color(0.65f, 0.35f, 0.85f)),
-			(SpellSchool.Chronomancy, "Chronomancy", new Color(0.35f, 0.75f, 0.90f)),
-			(SpellSchool.Sanguimancy, "Sanguimancy", new Color(0.85f, 0.15f, 0.15f))
+			(SpellSchool.Flame, SchoolInfo.Name(SpellSchool.Flame), SchoolInfo.Color(SpellSchool.Flame)),
+			(SpellSchool.Ember, SchoolInfo.Name(SpellSchool.Ember), SchoolInfo.Color(SpellSchool.Ember)),
+			(SpellSchool.Umbra, SchoolInfo.Name(SpellSchool.Umbra), SchoolInfo.Color(SpellSchool.Umbra)),
+			(SpellSchool.Wick, SchoolInfo.Name(SpellSchool.Wick), SchoolInfo.Color(SpellSchool.Wick)),
+			(SpellSchool.Kindling, SchoolInfo.Name(SpellSchool.Kindling), SchoolInfo.Color(SpellSchool.Kindling))
 		};
 
 		for (var i = 0; i < schoolDefs.Length; i++)

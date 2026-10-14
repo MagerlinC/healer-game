@@ -6,8 +6,8 @@ using Godot;
 using healerfantasy.Items;
 using healerfantasy.Runes;
 using healerfantasy.SpellResources;
-using healerfantasy.SpellResources.Chronomancy;
-using healerfantasy.SpellResources.Void;
+using healerfantasy.SpellResources.Wick;
+using healerfantasy.SpellResources.Umbra;
 using healerfantasy.Talents;
 
 namespace healerfantasy;
@@ -396,8 +396,8 @@ public partial class RunState : Node
 	{
 		SelectedSpells =
 		[
-			new TouchOfLightSpell(), new WaveOfIncandescenceSpell(), new WildGrowthSpell(),
-			new RewindSpell(), new TimeWarpSpell(), new DecaySpellResource()
+			new CandleTouchSpell(), new WildfireSpell(), new SpreadingEmbersSpell(),
+			new UnburnSpell(), new BurnBrightSpell(), new RotSpell()
 		];
 	}
 

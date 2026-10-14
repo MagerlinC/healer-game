@@ -1,0 +1,31 @@
+using healerfantasy.SpellResources;
+using healerfantasy.SpellSystem;
+
+namespace healerfantasy.Talents;
+
+/// <summary>
+/// Increases the output of spells tagged with Fire, Cold, or Lightning by 20%.
+///
+/// Applies as an <see cref="ISpellModifier"/> during the OnCalculate phase,
+/// so it stacks correctly with stat-based multipliers that run before it.
+/// </summary>
+public class UmbralSpecialistTalent : ISpellModifier
+{
+	const float Bonus = 1.20f; // +20 %
+
+	public ModifierPriority Priority => ModifierPriority.BASE;
+
+	public void OnBeforeCast(SpellContext ctx)
+	{
+	}
+
+	public void OnCalculate(SpellContext ctx)
+	{
+		if (!ctx.IsSpellOfSchool(SpellSchool.Umbra)) return;
+		ctx.FinalValue *= Bonus;
+	}
+
+	public void OnAfterCast(SpellContext ctx)
+	{
+	}
+}

@@ -44,7 +44,7 @@ public static class LoadoutPreferences
 
         /// <summary>
         /// The player's preferred spell school affinity, stored as the enum
-        /// name string (e.g. "Holy", "Nature").  Null means no preference set.
+        /// name string (e.g. "Flame", "Ember"; older saves may hold the pre-rename names).  Null means no preference set.
         /// Null-safe on old saves that predate affinity persistence.
         /// </summary>
         public string? SchoolAffinity { get; set; } = null;
@@ -100,7 +100,7 @@ public static class LoadoutPreferences
         get
         {
             if (string.IsNullOrEmpty(_data.SchoolAffinity)) return null;
-            return Enum.TryParse<SpellSchool>(_data.SchoolAffinity, out var school) ? school : null;
+            return SchoolInfo.TryParse(_data.SchoolAffinity, out var school) ? school : null;
         }
     }
 

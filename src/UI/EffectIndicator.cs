@@ -44,7 +44,7 @@ public partial class EffectIndicator : PanelContainer
 	// Bright orange color for dispellable harmful effects
 	static readonly Color HarmfulDispellableBadgeBorder = new(0.90f, 0.40f, 0.10f, 0.95f);
 
-	// Mirror Image clone effect — matches the ghostly blue-cyan tint on MirrorImageClone
+	// Twin Flame clone effect — matches the ghostly blue-cyan tint on TwinFlameClone
 	static readonly Color MirrorBadgeBorder = new(0.35f, 0.72f, 1.00f, 0.90f);
 	static readonly Color MirrorBgColor     = new(0.07f, 0.11f, 0.20f, 0.90f);
 
@@ -112,7 +112,7 @@ public partial class EffectIndicator : PanelContainer
 			iconRect.MouseFilter = MouseFilterEnum.Ignore;
 			iconRect.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
 
-			// Apply the same ghostly blue shader used on MirrorImageClone so the
+			// Apply the same ghostly blue shader used on TwinFlameClone so the
 			// icon is visually consistent with the clone standing beside the player.
 			if (isMirror)
 			{
@@ -227,7 +227,7 @@ public partial class EffectIndicator : PanelContainer
 
 	/// <summary>
 	/// Converts a PascalCase effect ID into a space-separated display name.
-	/// "ShieldingReinvigoration" → "Shielding Reinvigoration"
+	/// "KindledWard" → "Kindled Ward"
 	/// The <c>_Mirror</c> suffix is stripped before formatting; callers that
 	/// want "(Mirror)" in the display string append it themselves.
 	/// </summary>

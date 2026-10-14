@@ -16,7 +16,7 @@ public partial class BossSoulRendSpell : SpellResource
 		Name = "Soul Rend";
 		Description = "The Bringer tears at the target's very soul, dealing void damage.";
 		Tags = SpellTags.Damage;
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		ManaCost = 0f;
 		CastTime = 0f;
 	}

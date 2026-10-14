@@ -79,7 +79,7 @@ public partial class BossHealthBar : CharacterFrame
 	/// <param name="bossNameOverride">
 	/// When provided, this bar tracks the named character instead of
 	/// <see cref="RunState.CurrentBossName"/>. Used for secondary bars (Astral Twin,
-	/// Rune-of-Nature vines, etc.).
+	/// Rune-of-Ember vines, etc.).
 	/// </param>
 	/// <param name="sideMargin">
 	/// Horizontal inset in pixels applied to both the health panel and the

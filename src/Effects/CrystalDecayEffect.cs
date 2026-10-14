@@ -16,6 +16,6 @@ public partial class CrystalDecayEffect : DamageOverTimeEffect
 	public CrystalDecayEffect() : base(20f, 30f, 1f)
 	{
 		EffectId = "CrystalDecay";
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 	}
 }

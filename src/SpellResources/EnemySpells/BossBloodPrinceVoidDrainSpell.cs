@@ -31,7 +31,7 @@ public partial class BossBloodPrinceVoidDrainSpell : SpellResource
 			"Ancient blood magic drains the life from the entire party simultaneously, " +
 			"dealing 20 damage per second for 10 seconds. This curse cannot be dispelled.";
 		Tags = SpellTags.Damage | SpellTags.Duration;
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		ManaCost = 0f;
 		CastTime = 0f;
 		TargetingType = TargetingType.Enemy;
@@ -49,11 +49,11 @@ public partial class BossBloodPrinceVoidDrainSpell : SpellResource
 
 	public override void Apply(SpellContext ctx)
 	{
-		// Re-use VoidDrainEffect with no heal-fraction (siphon is handled by the
+		// Re-use DarkDrainEffect with no heal-fraction (siphon is handled by the
 		// Blood Covenant passive in TheBloodPrince._Process, not per-tick).
 		foreach (var target in ctx.Targets)
 		{
-			target.ApplyEffect(new VoidDrainEffect(DamagePerTick, Duration, 0f)
+			target.ApplyEffect(new DarkDrainEffect(DamagePerTick, Duration, 0f)
 			{
 				AbilityName = Name,
 				Description = Description,

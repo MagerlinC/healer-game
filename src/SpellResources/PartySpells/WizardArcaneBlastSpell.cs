@@ -19,7 +19,7 @@ public partial class WizardArcaneBlastSpell : SpellResource
 		Tags = SpellTags.Damage | SpellTags.Attack;
 		ManaCost = 0f;
 		CastTime = 0f;
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		TargetingType = TargetingType.Enemy;
 	}
 

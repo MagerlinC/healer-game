@@ -12,6 +12,6 @@ public partial class CorrosiveOozeEffect : DamageOverTimeEffect
 	public CorrosiveOozeEffect() : base(12f, 10f, 1f)
 	{
 		EffectId = "CorrosiveOoze";
-		School = SpellSchool.Nature;
+		School = SpellSchool.Ember;
 	}
 }

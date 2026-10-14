@@ -26,7 +26,7 @@ public partial class BossCountessCrimsonCurseSpell : SpellResource
 			"A vampiric hex that saps the target's blood and corrupts healing magic, " +
 			"dealing 15 damage per second and reducing healing received by 50% for 10 seconds. Dispellable.";
 		Tags = SpellTags.Damage | SpellTags.Duration;
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/the-countess/crimson-curse.png");
@@ -42,7 +42,7 @@ public partial class BossCountessCrimsonCurseSpell : SpellResource
 				AbilityName = Name,
 				Description = Description,
 				SourceCharacterName = ctx.Caster?.CharacterName,
-				School = SpellSchool.Void,
+				School = SpellSchool.Umbra,
 				Icon = Icon
 			});
 		}

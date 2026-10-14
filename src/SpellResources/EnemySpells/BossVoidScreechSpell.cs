@@ -17,7 +17,7 @@ public partial class BossVoidScreechSpell : SpellResource
 		Name = "Void Screech";
 		Description = "A piercing screech of void energy aimed at a party member, dealing void damage.";
 		Tags = SpellTags.Damage;
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		ManaCost = 0f;
 		CastTime = 0f;
 	}

@@ -15,12 +15,12 @@ public enum TargetingType
 
 public enum SpellSchool
 {
-	Nature,
-	Void,
-	Holy,
-	Chronomancy,
+	Ember,
+	Umbra,
+	Flame,
+	Wick,
 	Generic,
-	Sanguimancy
+	Kindling
 }
 
 [GlobalClass]
@@ -67,7 +67,7 @@ public partial class SpellResource : Resource
 
 	/// <summary>
 	/// The health cost of this spell, paid by the caster when the spell is applied.
-	/// 0 for spells that use mana instead. Sanguimancy spells override this.
+	/// 0 for spells that use mana instead. Kindling spells override this.
 	/// Readable by talents via <see cref="SpellSystem.SpellContext.Spell"/>.
 	/// </summary>
 	/// <summary>

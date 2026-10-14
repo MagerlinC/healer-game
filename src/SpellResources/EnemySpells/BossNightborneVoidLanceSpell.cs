@@ -17,7 +17,7 @@ public partial class BossNightborneVoidLanceSpell : SpellResource
 		Name = "Void Lance";
 		Description = "A concentrated spear of void energy that pierces through armour and strikes a random party member.";
 		Tags = SpellTags.Damage;
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		ManaCost = 0f;
 		CastTime = 0f;
 		TargetingType = TargetingType.Enemy;

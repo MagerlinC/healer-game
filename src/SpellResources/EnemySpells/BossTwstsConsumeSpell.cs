@@ -29,7 +29,7 @@ public partial class BossTwstsConsumeSpell : SpellResource
 			"over 30 seconds. Dispelling it returns the energy to the boss as healing — " +
 			"the sooner it is cleansed, the greater the heal.";
 		Tags = SpellTags.Damage | SpellTags.Duration;
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets +
@@ -62,7 +62,7 @@ public partial class BossTwstsConsumeSpell : SpellResource
 				AbilityName = Name,
 				Description = Description,
 				SourceCharacterName = ctx.Caster?.CharacterName,
-				School = SpellSchool.Void,
+				School = SpellSchool.Umbra,
 				Icon = Icon,
 				Boss = ctx.Caster
 			});

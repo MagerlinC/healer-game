@@ -160,7 +160,7 @@ public partial class PartyFrame : CharacterFrame
 		_shieldBar.AddThemeStyleboxOverride("fill", new StyleBoxFlat { BgColor = LastLightHud.ShieldGlass });
 		_panel.AddChild(_shieldBar);
 
-		// ── heal-absorption overlay (Rune of the Void) ────────────────────────
+		// ── heal-absorption overlay (Rune of the Umbra) ────────────────────────
 		// Dark purple bar that fills from the right edge of current health inward,
 		// showing how much incoming healing will be consumed before reaching health.
 		_absorbBar = new ProgressBar();

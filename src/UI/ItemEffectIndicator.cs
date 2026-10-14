@@ -2,7 +2,7 @@ using Godot;
 
 /// <summary>
 /// A small icon badge displayed below the healer's party frame while an item
-/// effect is active (e.g. the Pendant of the Void's Embrace charge).
+/// effect is active (e.g. the Pendant of the Umbral Embrace charge).
 ///
 /// Differs from <see cref="EffectIndicator"/> in two ways:
 /// <list type="bullet">

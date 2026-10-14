@@ -3,7 +3,7 @@ using healerfantasy.SpellSystem;
 namespace healerfantasy.Effects;
 
 /// <summary>
-/// A holy buff that suffuses the target with divine energy, increasing all
+/// A Flame buff that suffuses the target with divine energy, increasing all
 /// damage they deal by <see cref="DamageBonus"/> for the effect's duration.
 ///
 /// Applied by the Radiant Infusion talent after a healing spell lands.

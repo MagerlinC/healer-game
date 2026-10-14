@@ -19,7 +19,7 @@ public partial class BossDeathMarkSpell : SpellResource
 		Name = "Death Mark";
 		Description = $"Brands the target with a necrotic curse, dealing {_damageAmountPerTick} damage per second until cleansed.";
 		Tags = SpellTags.Damage | SpellTags.Duration;
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/bringer-of-death/death-mark.png");
 		ManaCost = 0f;
 		CastTime = 0f;
@@ -33,7 +33,7 @@ public partial class BossDeathMarkSpell : SpellResource
 			AbilityName = Name,
 			Description = Description,
 			SourceCharacterName = ctx.Caster?.CharacterName,
-			School = SpellSchool.Void,
+			School = SpellSchool.Umbra,
 			Icon = Icon
 		});
 	}

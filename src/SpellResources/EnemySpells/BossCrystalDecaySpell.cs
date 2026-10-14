@@ -31,7 +31,7 @@ public partial class BossCrystalDecaySpell : SpellResource
 			AbilityName = Name,
 			Description = Description,
 			SourceCharacterName = ctx.Caster?.CharacterName,
-			School = SpellSchool.Void,
+			School = SpellSchool.Umbra,
 			Icon = Icon
 		});
 	}

@@ -394,7 +394,7 @@ public partial class OverworldController
 
 	/// <summary>Maps a spell school name string to its display colour.</summary>
 	static Color SchoolColor(string school) =>
-		System.Enum.TryParse<SpellSchool>(school, out var s) && s != SpellSchool.Generic
+		SchoolInfo.TryParse(school, out var s) && s != SpellSchool.Generic
 			? SchoolInfo.Color(s)
 			: new Color(0.85f, 0.80f, 0.75f); // neutral
 

@@ -21,7 +21,7 @@ public partial class BossNightborneUmbralEruptionSpell : SpellResource
 		Description =
 			"The Nightborne charges with terrifying speed and erupts in a wave of pure shadow, engulfing the entire party — unless deflected.";
 		Tags = SpellTags.Damage;
-		School = SpellSchool.Void;
+		School = SpellSchool.Umbra;
 		ManaCost = 0f;
 		CastTime = 0f;
 		Parryable = true;

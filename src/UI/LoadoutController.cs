@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using healerfantasy.SpellResources;
-using healerfantasy.SpellResources.Void;
+using healerfantasy.SpellResources.Umbra;
 using healerfantasy.Talents;
 using healerfantasy.LastLight;
 using healerfantasy.LastLight.Hud;
@@ -58,21 +58,21 @@ public abstract partial class LoadoutController : Node2D
 	// ── school definitions ────────────────────────────────────────────────────
 	protected static readonly (SpellSchool School, string Name)[] SpellSchoolTabs =
 	{
-		(SpellSchool.Holy, SchoolInfo.Name(SpellSchool.Holy)),
-		(SpellSchool.Nature, SchoolInfo.Name(SpellSchool.Nature)),
-		(SpellSchool.Void, SchoolInfo.Name(SpellSchool.Void)),
-		(SpellSchool.Chronomancy, SchoolInfo.Name(SpellSchool.Chronomancy)),
-		(SpellSchool.Sanguimancy, SchoolInfo.Name(SpellSchool.Sanguimancy))
+		(SpellSchool.Flame, SchoolInfo.Name(SpellSchool.Flame)),
+		(SpellSchool.Ember, SchoolInfo.Name(SpellSchool.Ember)),
+		(SpellSchool.Umbra, SchoolInfo.Name(SpellSchool.Umbra)),
+		(SpellSchool.Wick, SchoolInfo.Name(SpellSchool.Wick)),
+		(SpellSchool.Kindling, SchoolInfo.Name(SpellSchool.Kindling))
 	};
 
 	protected static readonly (SpellSchool School, string Name, Color Accent)[] TalentSchoolOrder =
 	{
 		(SpellSchool.Generic, "General", new Color(0.70f, 0.65f, 0.60f)),
-		(SpellSchool.Chronomancy, SchoolInfo.Name(SpellSchool.Chronomancy), SchoolInfo.Color(SpellSchool.Chronomancy)),
-		(SpellSchool.Holy, SchoolInfo.Name(SpellSchool.Holy), SchoolInfo.Color(SpellSchool.Holy)),
-		(SpellSchool.Nature, SchoolInfo.Name(SpellSchool.Nature), SchoolInfo.Color(SpellSchool.Nature)),
-		(SpellSchool.Void, SchoolInfo.Name(SpellSchool.Void), SchoolInfo.Color(SpellSchool.Void)),
-		(SpellSchool.Sanguimancy, SchoolInfo.Name(SpellSchool.Sanguimancy), SchoolInfo.Color(SpellSchool.Sanguimancy))
+		(SpellSchool.Wick, SchoolInfo.Name(SpellSchool.Wick), SchoolInfo.Color(SpellSchool.Wick)),
+		(SpellSchool.Flame, SchoolInfo.Name(SpellSchool.Flame), SchoolInfo.Color(SpellSchool.Flame)),
+		(SpellSchool.Ember, SchoolInfo.Name(SpellSchool.Ember), SchoolInfo.Color(SpellSchool.Ember)),
+		(SpellSchool.Umbra, SchoolInfo.Name(SpellSchool.Umbra), SchoolInfo.Color(SpellSchool.Umbra)),
+		(SpellSchool.Kindling, SchoolInfo.Name(SpellSchool.Kindling), SchoolInfo.Color(SpellSchool.Kindling))
 	};
 
 	// ── shared interactible state (common to Overworld and Camp) ─────────────
@@ -607,7 +607,7 @@ public abstract partial class LoadoutController : Node2D
 
 		var availableSchools = PlayerProgressStore.HasDefeatedCastleOfBlood
 			? SpellSchoolTabs
-			: SpellSchoolTabs.Where(s => s.School != SpellSchool.Sanguimancy).ToArray();
+			: SpellSchoolTabs.Where(s => s.School != SpellSchool.Kindling).ToArray();
 
 		foreach (var (school, name) in availableSchools)
 		{
@@ -654,20 +654,16 @@ public abstract partial class LoadoutController : Node2D
 			header.AddThemeFontSizeOverride("font_size", 16);
 			header.AddThemeColorOverride("font_color", AssetConstants.SpellSchoolColor(school));
 			headerMarginContainer.AddChild(header);
+			headerMarginContainer.AddThemeConstantOverride("margin_right", 8);
+			headerMarginContainer.AddChild(BuildAffinityToggle(school, name));
 
 			wrapper.AddChild(headerMarginContainer);
+			wrapper.AddChild(BuildSchoolDescription(school));
 			wrapper.AddChild(pane);
 
 			panel.AddChild(wrapper);
 
-			// ── Wrap spell column + affinity card in a vertical stack ─────────
-			var schoolStack = new VBoxContainer();
-			schoolStack.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-			schoolStack.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-			schoolStack.AddThemeConstantOverride("separation", 6);
-			schoolStack.AddChild(panel);
-			schoolStack.AddChild(BuildAffinityTomeCard(school, name));
-			columns.AddChild(schoolStack);
+			columns.AddChild(panel);
 		}
 
 		vbox.AddChild(columns);
@@ -677,7 +673,7 @@ public abstract partial class LoadoutController : Node2D
 
 		var hint = new Label();
 		hint.Text =
-			"Click a spell to equip or unequip it  •  Click a tome to set your school affinity  •  Click a loadout slot to clear it";
+			"Click a spell to equip or unequip it  •  Click Affinity to favour a school's talents  •  Click a loadout slot to clear it";
 		hint.HorizontalAlignment = HorizontalAlignment.Center;
 		hint.AddThemeFontSizeOverride("font_size", 11);
 		hint.AddThemeColorOverride("font_color", HintColor);
@@ -687,26 +683,64 @@ public abstract partial class LoadoutController : Node2D
 	}
 
 	/// <summary>
-	/// Builds the narrow affinity tome card that appears to the right of each
-	/// spell-school column.  Clicking the card toggles that school as the active
-	/// school affinity; a gold border shows the currently selected school.
-	///
-	/// Sanguimancy is shown locked until the Castle of Blood has been defeated.
+	/// Flavour line plus the school's base mechanic, shown under the school name.
+	/// The mechanic line reserves two lines of height so the spell lists stay aligned across columns.
 	/// </summary>
-	Control BuildAffinityTomeCard(SpellSchool school, string schoolName)
+	Control BuildSchoolDescription(SpellSchool school)
 	{
-		var isLocked = school == SpellSchool.Sanguimancy && !PlayerProgressStore.HasDefeatedCastleOfBlood;
+		var (flavour, mechanic) = SchoolInfo.Description(school);
+
+		var box = new VBoxContainer();
+		box.AddThemeConstantOverride("separation", 2);
+
+		var margin = new MarginContainer();
+		margin.AddThemeConstantOverride("margin_left", 8);
+		margin.AddThemeConstantOverride("margin_right", 8);
+		margin.AddChild(box);
+
+		Label Line(string text, Color color, float minHeight)
+		{
+			var label = new Label
+			{
+				Text = text,
+				HorizontalAlignment = HorizontalAlignment.Center,
+				AutowrapMode = TextServer.AutowrapMode.WordSmart,
+				CustomMinimumSize = new Vector2(0, minHeight)
+			};
+			label.AddThemeFontSizeOverride("font_size", 11);
+			label.AddThemeColorOverride("font_color", color);
+			box.AddChild(label);
+			return label;
+		}
+
+		var accent = AssetConstants.SpellSchoolColor(school);
+		Line(flavour, new Color(accent.R, accent.G, accent.B, 0.75f), 0f);
+		if (mechanic != "")
+			Line(mechanic, HintColor, 38f);
+
+		return margin;
+	}
+
+	/// <summary>
+	/// Builds the compact affinity toggle in the top-right of each school's header.
+	/// Clicking it toggles that school as the active school affinity; a gold
+	/// border shows the currently selected school.
+	///
+	/// Kindling is shown locked until the Castle of Blood has been defeated.
+	/// </summary>
+	Control BuildAffinityToggle(SpellSchool school, string schoolName)
+	{
+		var isLocked = school == SpellSchool.Kindling && !PlayerProgressStore.HasDefeatedCastleOfBlood;
 		var isSelected = RunState.Instance.SchoolAffinity == school;
 		var (_, _, accent) = TalentSchoolOrder.First(e => e.School == school);
 
 		// ── Card container ────────────────────────────────────────────────────
 		var cardStyle = new StyleBoxFlat();
 		cardStyle.BgColor = new Color(0.08f, 0.07f, 0.04f, 0.90f);
-		cardStyle.SetCornerRadiusAll(6);
-		cardStyle.ContentMarginLeft = cardStyle.ContentMarginRight = 6f;
-		cardStyle.ContentMarginTop = cardStyle.ContentMarginBottom = 8f;
-		cardStyle.ShadowColor = new Color(0f, 0f, 0f, 0.4f);
-		cardStyle.ShadowSize = 6;
+		cardStyle.SetCornerRadiusAll(4);
+		cardStyle.ContentMarginLeft = 2f;
+		cardStyle.ContentMarginRight = 6f;
+		cardStyle.ContentMarginTop = cardStyle.ContentMarginBottom = 1f;
 		if (isSelected)
 		{
 			cardStyle.SetBorderWidthAll(2);
@@ -719,14 +753,13 @@ public abstract partial class LoadoutController : Node2D
 		}
 
 		var card = new PanelContainer();
-		card.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		card.SizeFlagsHorizontal = Control.SizeFlags.ShrinkEnd;
+		card.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
 		card.AddThemeStyleboxOverride("panel", cardStyle);
 
-		// ── Inner layout (tome icon + label, centred vertically) ──────────────
-		var vbox = new VBoxContainer();
-		vbox.AddThemeConstantOverride("separation", 6);
-		vbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		vbox.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		// ── Inner layout (small tome icon + label) ────────────────────────────
+		var vbox = new HBoxContainer();
+		vbox.AddThemeConstantOverride("separation", 2);
 		vbox.Alignment = BoxContainer.AlignmentMode.Center;
 		vbox.MouseFilter = Control.MouseFilterEnum.Ignore;
 		card.AddChild(vbox);
@@ -734,16 +767,16 @@ public abstract partial class LoadoutController : Node2D
 		// Tome icon
 		var tomeIcon = new TextureRect();
 		tomeIcon.Texture = GD.Load<Texture2D>(AssetConstants.TalentTomePath(school));
-		tomeIcon.CustomMinimumSize = new Vector2(56f, 56f);
+		tomeIcon.CustomMinimumSize = new Vector2(24f, 24f);
 		tomeIcon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 		tomeIcon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-		tomeIcon.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+		tomeIcon.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
 		tomeIcon.MouseFilter = Control.MouseFilterEnum.Ignore;
 		vbox.AddChild(tomeIcon);
 
 		if (isLocked)
 		{
-			// ── Locked (Sanguimancy before Castle of Blood) ───────────────────
+			// ── Locked (Kindling before Castle of Blood) ───────────────────
 			var lockLabel = new Label();
 			lockLabel.Text = "🔒";
 			lockLabel.HorizontalAlignment = HorizontalAlignment.Center;
@@ -990,14 +1023,14 @@ public abstract partial class LoadoutController : Node2D
 	// ── spell lock helpers ────────────────────────────────────────────────────
 
 	/// <summary>
-	/// A spell is locked if its school has not been unlocked yet (e.g. Sanguimancy
+	/// A spell is locked if its school has not been unlocked yet (e.g. Kindling
 	/// requires the Castle of Blood to have been defeated), or if the player has not
 	/// yet acquired enough school talents this run.
 	/// </summary>
 	bool IsSpellLocked(SpellResource spell)
 	{
 		// School-wide unlock check.
-		if (spell.School == SpellSchool.Sanguimancy && !PlayerProgressStore.HasDefeatedCastleOfBlood)
+		if (spell.School == SpellSchool.Kindling && !PlayerProgressStore.HasDefeatedCastleOfBlood)
 			return true;
 
 		if (spell.RequiredSchoolPoints <= 0) return false;
@@ -1007,8 +1040,8 @@ public abstract partial class LoadoutController : Node2D
 
 	(string title, string desc) GetLockedSpellTooltip(SpellResource spell)
 	{
-		// School unlock tooltip for Sanguimancy.
-		if (spell.School == SpellSchool.Sanguimancy && !PlayerProgressStore.HasDefeatedCastleOfBlood)
+		// School unlock tooltip for Kindling.
+		if (spell.School == SpellSchool.Kindling && !PlayerProgressStore.HasDefeatedCastleOfBlood)
 			return (spell.Name,
 				$"{spell.Description}\n\n🔒 Kindling is locked.\nDefeat The Blood Prince in the Castle of Blood to unlock this school.");
 
@@ -1500,16 +1533,16 @@ public abstract partial class LoadoutController : Node2D
 		cardRow.AddThemeConstantOverride("separation", 16);
 		center.AddChild(cardRow);
 
-		// Schools eligible for affinity (Generic excluded; Sanguimancy gated on progress).
+		// Schools eligible for affinity (Generic excluded; Kindling gated on progress).
 		var schools = new List<SpellSchool>
 		{
-			SpellSchool.Chronomancy,
-			SpellSchool.Holy,
-			SpellSchool.Nature,
-			SpellSchool.Void
+			SpellSchool.Wick,
+			SpellSchool.Flame,
+			SpellSchool.Ember,
+			SpellSchool.Umbra
 		};
 		if (PlayerProgressStore.HasDefeatedCastleOfBlood)
-			schools.Add(SpellSchool.Sanguimancy);
+			schools.Add(SpellSchool.Kindling);
 
 		// Keep references to update borders on click without rebuilding nodes.
 		var cardEntries = new List<(SpellSchool School, StyleBoxFlat Style)>();
