@@ -21,9 +21,9 @@ public partial class HasteSpell : SpellResource
 
 	public HasteSpell()
 	{
-		Name = "Haste";
+		Name = "Quicken the Wick";
 		Description =
-			$"Accelerate your own flow of time, increasing your haste and movement speed by {SpeedBonus:F0}% for {BuffDuration}s.";
+			$"Burn your wick faster, increasing your haste and movement speed by {SpeedBonus:F0}% for {BuffDuration}s.";
 		ManaCost = 10f;
 		CastTime = 0.0f;
 		Cooldown = 15f;

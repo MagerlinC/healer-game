@@ -28,8 +28,8 @@ public static class TalentRegistry
 	[
 		new()
 		{
-			Name = "Void Specialist",
-			Description = "20% increased void damage.",
+			Name = "Umbral Specialist",
+			Description = "20% increased umbral damage.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_5.png",
 			TalentRow = 0,
 			School = SpellSchool.Void,
@@ -39,7 +39,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Entropic Surge",
-			Description = "Void spells have a 15% chance to deal double damage.",
+			Description = "Umbra spells have a 15% chance to deal double damage.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_9.png",
 			TalentRow = 1,
 			School = SpellSchool.Void,
@@ -48,8 +48,8 @@ public static class TalentRegistry
 		},
 		new()
 		{
-			Name = "Siphoning Void",
-			Description = "Dealing void damage restores 1 mana.",
+			Name = "Siphoning Dark",
+			Description = "Dealing umbral damage restores 1 mana.",
 			IconPath = AssetConstants.TalentIconAssets + "void/siphoning-void.png",
 			TalentRow = 2,
 			School = SpellSchool.Void,
@@ -59,7 +59,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Necrotic Touch",
-			Description = "Void damage spells have a 25% chance to apply a free 3-tick, 5-damage-per-tick DoT.",
+			Description = "Umbral damage spells have a 25% chance to apply a free 3-tick, 5-damage-per-tick DoT.",
 			IconPath = AssetConstants.TalentIconAssets + "void/necrotic-touch.png",
 			TalentRow = 3,
 			School = SpellSchool.Void,
@@ -68,8 +68,8 @@ public static class TalentRegistry
 		},
 		new()
 		{
-			Name = "Void Resonance",
-			Description = "Casting Shadow Bolt consumes all DoTs on the target, instantly dealing their remaining damage.",
+			Name = "Umbral Resonance",
+			Description = "Casting Umbral Bolt consumes all DoTs on the target, instantly dealing their remaining damage.",
 			IconPath = AssetConstants.TalentIconAssets + "void/void-resonance.png",
 			TalentRow = 3,
 			School = SpellSchool.Void,
@@ -103,7 +103,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Sacred Momentum",
-			Description = "Holy spells are 15% more effective when the target is below 50% health.",
+			Description = "Flame spells are 15% more effective when the target is below 50% health.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_3.png",
 			School = SpellSchool.Holy,
 			TalentRow = 2,
@@ -136,8 +136,8 @@ public static class TalentRegistry
 	[
 		new()
 		{
-			Name = "Verdant Strength",
-			Description = "Nature healing spells are 20% more effective.",
+			Name = "Banked Embers",
+			Description = "Ember healing spells are 20% more effective.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_6.png",
 			School = SpellSchool.Nature,
 			TalentRow = 0,
@@ -146,8 +146,8 @@ public static class TalentRegistry
 		},
 		new()
 		{
-			Name = "Toxic Potency",
-			Description = "Nature damage spells deal 20% more damage.",
+			Name = "Searing Cinders",
+			Description = "Ember damage spells deal 20% more damage.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_7.png",
 			School = SpellSchool.Nature,
 			TalentRow = 1,
@@ -156,7 +156,7 @@ public static class TalentRegistry
 		},
 		new()
 		{
-			Name = "Flourishing",
+			Name = "Spreading Warmth",
 			Description =
 				"Casting a healing spell on a target causes the most-injured party member to be healed for 8 HP.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_8.png",
@@ -167,7 +167,7 @@ public static class TalentRegistry
 		},
 		new()
 		{
-			Name = "Deep Roots",
+			Name = "Deep Coals",
 			Description = "Casting a HoT on a target that already has one active restores 4 mana.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_18.png",
 			School = SpellSchool.Nature,
@@ -177,7 +177,7 @@ public static class TalentRegistry
 		},
 		new()
 		{
-			Name = "Overgrowth",
+			Name = "Overburn",
 			Description = "HoT spells tick for 20% more on targets above 75% health.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_19.png",
 			School = SpellSchool.Nature,
@@ -213,7 +213,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Mana Rift",
-			Description = "Chronomancy spells have a 20% chance to refund their full mana cost.",
+			Description = "Wick spells have a 20% chance to refund their full mana cost.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_14.png",
 			School = SpellSchool.Chronomancy,
 			TalentRow = 2,
@@ -224,7 +224,7 @@ public static class TalentRegistry
 		{
 			Name = "Future Sight",
 			Description =
-				"Casting a Chronomancy spell makes your next non-Chronomancy spell always crit.",
+				"Casting a Wick spell makes your next non-Wick spell always crit.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_24.png",
 			School = SpellSchool.Chronomancy,
 			TalentRow = 3,
@@ -237,7 +237,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Temporal Momentum",
-			Description = "Casting a Chronomancy spell makes your next non-Chronomancy spell instant.",
+			Description = "Casting a Wick spell makes your next non-Wick spell instant.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_25.png",
 			School = SpellSchool.Chronomancy,
 			TalentRow = 3,
@@ -314,7 +314,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Crimson Rebound",
-			Description = "After casting a Sanguimancy spell, recover 40% of its health cost as healing over 5 seconds.",
+			Description = "After casting a Kindling spell, recover 40% of its health cost as healing over 5 seconds.",
 			IconPath = AssetConstants.TalentIconAssets + "sanguimancy/crimson-rebound.png",
 			School = SpellSchool.Sanguimancy,
 			TalentRow = 0,
@@ -324,7 +324,7 @@ public static class TalentRegistry
 		new()
 		{
 			Name = "Bloodthirst",
-			Description = "Sanguimancy spells deal and heal 25% more.",
+			Description = "Kindling spells deal and heal 25% more.",
 			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_9.png",
 			School = SpellSchool.Sanguimancy,
 			TalentRow = 1,
@@ -333,9 +333,9 @@ public static class TalentRegistry
 		},
 		new()
 		{
-			Name = "Sanguine Ward",
+			Name = "Kindled Ward",
 			Description =
-				"When you spend health on a Sanguimancy spell, all living allies gain a shield equal to the health cost for 10 seconds.",
+				"When you spend health on a Kindling spell, all living allies gain a shield equal to the health cost for 10 seconds.",
 			IconPath = AssetConstants.TalentIconAssets + "sanguimancy/sanguine-ward.png",
 			School = SpellSchool.Sanguimancy,
 			TalentRow = 2,

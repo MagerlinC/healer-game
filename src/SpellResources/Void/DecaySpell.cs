@@ -13,9 +13,9 @@ public partial class DecaySpellResource : SpellResource
 
 	public DecaySpellResource()
 	{
-		Name = "Decay";
+		Name = "Rot";
 		Description =
-			$"Atrophies the target, damaging it for {DamagePerTick} void damage every {TickInterval}s for {EffectDuration}s.";
+			$"Rots the target, damaging it for {DamagePerTick} umbral damage every {TickInterval}s for {EffectDuration}s.";
 		ManaCost = 6f;
 		CastTime = 0.0f;
 		// HealOverTime implies Healing; the per-tick value is what gets modified.
@@ -39,7 +39,7 @@ public partial class DecaySpellResource : SpellResource
 		// ctx.FinalValue is the modifier-adjusted per-tick heal amount.
 		ctx.Target?.ApplyEffect(new Effects.DamageOverTimeEffect(ctx.FinalValue, EffectDuration, TickInterval)
 		{
-			EffectId = Name, // "Decay" — unique per spell, not per class
+			EffectId = Name, // "Rot" — unique per spell, not per class
 			Icon = Icon,
 			SourceCharacterName = ctx.Caster.CharacterName,
 			AbilityName = Name,

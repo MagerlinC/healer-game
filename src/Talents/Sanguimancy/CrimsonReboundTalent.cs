@@ -43,7 +43,7 @@ public class CrimsonReboundTalent : ISpellModifier
 			School = SpellSchool.Sanguimancy,
 			SourceCharacterName = ctx.Caster.CharacterName,
 			AbilityName = "Crimson Rebound",
-			Description = "Recovering health spent on blood magic."
+			Description = "Recovering health spent on kindling."
 		});
 	}
 }

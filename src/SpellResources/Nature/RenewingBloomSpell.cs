@@ -14,7 +14,7 @@ public partial class RenewingBloomSpell : SpellResource
 
 	public RenewingBloomSpell()
 	{
-		Name = "Renewing Bloom";
+		Name = "Smoulder";
 		Description = $"Heals the target for {HealPerTick} every {TickInterval}s for {EffectDuration}s.";
 		ManaCost = 6f;
 		CastTime = 0.0f;

@@ -66,6 +66,13 @@ public static class LastLightHud
 		Shader = GD.Load<Shader>("res://src/LastLight/Hud/hud_icon.gdshader")
 	};
 
+	/// <summary>
+	/// The candlelight material for an icon — or null for the drawn Last Light icons,
+	/// which are already in palette and would lose their school colour.
+	/// </summary>
+	public static ShaderMaterial IconMaterialFor(Texture2D texture) =>
+		LastLightIcons.IsOurs(texture) ? null : IconMaterial;
+
 	/// <summary>A sharp-cornered soot panel with a thin iron border.</summary>
 	public static StyleBoxFlat Panel(Color? bg = null, Color? border = null, int borderWidth = 1)
 	{

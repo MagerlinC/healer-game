@@ -41,6 +41,14 @@ public class TalentDefinition
 	public string IconPath { get; init; }
 
 	/// <summary>
+	/// The talent's icon: the drawn Last Light icon when that style is on, otherwise
+	/// the texture at <see cref="IconPath"/>. Use this rather than loading the path.
+	/// </summary>
+	public Texture2D LoadIcon() =>
+		LastLight.Hud.LastLightIcons.ForTalent(Name, School)
+		?? (string.IsNullOrEmpty(IconPath) ? null : GD.Load<Texture2D>(IconPath));
+
+	/// <summary>
 	/// Relative weight used when randomly selecting talent offers on the victory screen.
 	/// Higher values make this talent more likely to appear.
 	/// Defaults to 1.0 — override per-entry in <see cref="TalentRegistry"/> to bias offers.
@@ -64,7 +72,7 @@ public class TalentDefinition
 	/// </summary>
 	public Talent CreateTalent()
 	{
-		var icon = GD.Load<Texture2D>(IconPath);
+		var icon = LoadIcon();
 		var talent = new Talent { Name = Name, Description = Description };
 		Configure?.Invoke(talent, icon);
 		return talent;

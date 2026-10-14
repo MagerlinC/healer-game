@@ -122,7 +122,7 @@ public partial class GenericActionBar : HBoxContainer
 			iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 			iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			iconRect.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-			if (LastLightStyle.Enabled) iconRect.Material = LastLightHud.IconMaterial;
+			if (LastLightStyle.Enabled) iconRect.Material = LastLightHud.IconMaterialFor(iconRect.Texture);
 			inner.AddChild(iconRect);
 		}
 

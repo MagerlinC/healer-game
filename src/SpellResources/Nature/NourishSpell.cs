@@ -29,9 +29,9 @@ public partial class NourishSpell : SpellResource
 
 	public NourishSpell()
 	{
-		Name = "Nourish";
+		Name = "Stoke";
 		Description =
-			$"Heals the target for {HealAmount} HP. Heals for {100 * (HotBonusMultiplier - 1f):F0}% more if the target has a nature heal-over-time effect active.";
+			$"Heals the target for {HealAmount} HP. Heals for {100 * (HotBonusMultiplier - 1f):F0}% more if the target has a ember heal-over-time effect active.";
 		ManaCost = 10f;
 		CastTime = 2.0f;
 		Cooldown = 0f;

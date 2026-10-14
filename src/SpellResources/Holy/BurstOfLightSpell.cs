@@ -11,7 +11,7 @@ public partial class BurstOfLightSpell : SpellResource
 
 	public BurstOfLightSpell()
 	{
-		Name = "Burst of Light";
+		Name = "Flare";
 		Description = $"Deals {DamageAmount} light damage to target enemy.";
 		School = SpellSchool.Holy;
 		ManaCost = 5f;

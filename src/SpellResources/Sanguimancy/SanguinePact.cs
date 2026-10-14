@@ -23,7 +23,7 @@ public partial class SanguinePact : SpellResource
 
 	public SanguinePact()
 	{
-		Name = "Sanguine Pact";
+		Name = "Burning Pact";
 		Description =
 			$"Sacrifice {HpCost} HP to restore {ManaGained} mana instantly.";
 		ManaCost = 0f;

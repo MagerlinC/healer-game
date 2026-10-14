@@ -12,9 +12,9 @@ public partial class LeafShadeSpell : SpellResource
 
 	public LeafShadeSpell()
 	{
-		Name = "Leaf shade";
+		Name = "Ash Veil";
 		Description =
-			$"Harden the target's skin with nature magic, reducing all damage they take by {(int)(DamageReduction * 100)}% for {BuffDuration}s.";
+			$"Veil the target in drifting ash, reducing all damage they take by {(int)(DamageReduction * 100)}% for {BuffDuration}s.";
 		ManaCost = 7f;
 		CastTime = 0.0f;
 		Cooldown = 10f;

@@ -16,7 +16,7 @@ public partial class WaveOfIncandescenceSpell : SpellResource
 
 	public WaveOfIncandescenceSpell()
 	{
-		Name = "Wave of Incandescence";
+		Name = "Wildfire";
 		Description = $"Restores {HealAmount} health to all party members.";
 		ManaCost = 20f;
 		CastTime = 2f;

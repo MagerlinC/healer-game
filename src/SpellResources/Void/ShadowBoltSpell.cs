@@ -12,13 +12,13 @@ namespace healerfantasy.SpellResources;
 [GlobalClass]
 public partial class ShadowBoltSpell : SpellResource
 {
-	public static readonly string SpellName = "Shadow Bolt";
+	public static readonly string SpellName = "Umbral Bolt";
 	[Export] public float DamageAmount = 30f;
 
 	public ShadowBoltSpell()
 	{
 		Name = SpellName;
-		Description = $"Launches a bolt of concentrated shadow at the target, dealing {DamageAmount} void damage.";
+		Description = $"Launches a bolt of concentrated dark at the target, dealing {DamageAmount} umbral damage.";
 		ManaCost = 10f;
 		CastTime = 1.5f;
 		School = SpellSchool.Void;

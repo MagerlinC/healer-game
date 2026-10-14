@@ -8,15 +8,7 @@ public static class AssetConstants
 
 	public static Color SpellSchoolColor(SpellSchool school)
 	{
-		return school switch
-		{
-			SpellSchool.Holy => new Color(0.95f, 0.85f, 0.40f),
-			SpellSchool.Nature => new Color(0.40f, 0.80f, 0.35f),
-			SpellSchool.Void => new Color(0.65f, 0.35f, 0.85f),
-			SpellSchool.Chronomancy => new Color(0.35f, 0.75f, 0.90f),
-			SpellSchool.Sanguimancy => new Color(0.85f, 0.15f, 0.15f),
-			_ => new Color(0.70f, 0.65f, 0.60f)
-		};
+		return SchoolInfo.Color(school);
 	}
 	public static readonly string EnemyAssets = "res://assets/enemies/";
 	public static readonly string SpellIconAssets = "res://assets/spell-icons/";

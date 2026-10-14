@@ -17,9 +17,9 @@ public partial class WildGrowthSpell : SpellResource
 
 	public WildGrowthSpell()
 	{
-		Name = "Wild Growth";
+		Name = "Spreading Embers";
 		Description =
-			$"Spreads natural energy across the party, healing each member for {HealPerTick} every {TickInterval}s for {EffectDuration}s.";
+			$"Scatters glowing embers across the party, healing each member for {HealPerTick} every {TickInterval}s for {EffectDuration}s.";
 		ManaCost = 14f;
 		CastTime = 1.0f;
 		Cooldown = 8f;

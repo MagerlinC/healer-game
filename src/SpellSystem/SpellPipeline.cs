@@ -185,6 +185,9 @@ public static class SpellPipeline
 		// ── 12. Record in history ───────────────────────────────────────────
 		caster.SpellHistory.Record(spell.Name, ctx.Timestamp);
 
+		// ── 13. The school's effect on the healer's light (Gloom, embers, …) ──
+		LastLight.LightMechanics.OnCast(ctx);
+
 		return ctx;
 	}
 }

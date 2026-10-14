@@ -20,9 +20,9 @@ public partial class MirrorImage : UltimateSpellResource
 
 	public MirrorImage()
 	{
-		Name = "Mirror Image";
+		Name = "Twin Flame";
 		Description =
-			$"Reach into a parallel timeline and pull a mirror image of yourself into this one. Each time you cast a spell while Mirror Image is active, your mirror image mimics that spell, dealing 50% of the damage or healing to a random target within range. Lasts {Duration:F0}s.";
+			$"Reach into a parallel timeline and pull a mirror image of yourself into this one. Each time you cast a spell while Twin Flame is active, your mirror image mimics that spell, dealing 50% of the damage or healing to a random target within range. Lasts {Duration:F0}s.";
 		ActivationDescription = "Accumulate a total of 12 seconds of chronomancy buff duration across all targets.";
 		ManaCost = 0f;
 		CastTime = 0.0f;

@@ -21,9 +21,9 @@ public partial class OneWithNatureSpell : UltimateSpellResource
 
 	public OneWithNatureSpell()
 	{
-		Name = "One With Nature";
+		Name = "One With the Ash";
 		Description =
-			$"Become one with nature for {BuffDuration:F0}s, making all spells instant cast and increasing nature spell healing by {100 * HealingIncrease:F0}%. Directly healing a target causes all beneficial nature effects on that target to refresh their duration.";
+			$"Become one with the ash for {BuffDuration:F0}s, making all spells instant cast and increasing Ember spell healing by {100 * HealingIncrease:F0}%. Directly healing a target causes all beneficial nature effects on that target to refresh their duration.";
 		ActivationDescription = "Accumulate a total of 16 seconds of nature healing-over-time duration across all targets.";
 		ManaCost = 10f;
 		CastTime = 0.0f;
@@ -44,7 +44,7 @@ public partial class OneWithNatureSpell : UltimateSpellResource
 			SourceCharacterName = ctx.Caster.CharacterName,
 			AbilityName = Name,
 			Description =
-				$"Nature healing spells are instant and do {100 * HealingIncrease:F0}% increased healing. Beneficial nature effects on targets you directly heal refresh their duration."
+				$"Ember healing spells are instant and do {100 * HealingIncrease:F0}% increased healing. Beneficial nature effects on targets you directly heal refresh their duration."
 		});
 	}
 

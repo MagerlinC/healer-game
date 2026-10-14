@@ -12,9 +12,9 @@ public partial class SwarmOfTheForest : SpellResource
 
 	public SwarmOfTheForest()
 	{
-		Name = "Swarm of the Forest";
+		Name = "Mothswarm";
 		Description =
-			$"Send out a swarm of insects, dealing {ValuePerTick:F0} nature damage per second for {BuffDuration}s. When this effect expires, the swarm spreads to all allies, healing them for {ValuePerTick:F0} per second for {BuffDuration}s.";
+			$"Send out a swarm of moths, dealing {ValuePerTick:F0} ember damage per second for {BuffDuration}s. When this effect expires, the moths scatter to all allies, healing them for {ValuePerTick:F0} per second for {BuffDuration}s.";
 		ManaCost = 8f;
 		CastTime = 0.0f;
 		Cooldown = 12f;

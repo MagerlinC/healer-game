@@ -58,22 +58,22 @@ public abstract partial class LoadoutController : Node2D
 	// ── school definitions ────────────────────────────────────────────────────
 	protected static readonly (SpellSchool School, string Name)[] SpellSchoolTabs =
 	{
-		(SpellSchool.Holy, "Holy"),
-		(SpellSchool.Nature, "Nature"),
-		(SpellSchool.Void, "Void"),
-		(SpellSchool.Chronomancy, "Chronomancy"),
-		(SpellSchool.Sanguimancy, "Sanguimancy")
+		(SpellSchool.Holy, SchoolInfo.Name(SpellSchool.Holy)),
+		(SpellSchool.Nature, SchoolInfo.Name(SpellSchool.Nature)),
+		(SpellSchool.Void, SchoolInfo.Name(SpellSchool.Void)),
+		(SpellSchool.Chronomancy, SchoolInfo.Name(SpellSchool.Chronomancy)),
+		(SpellSchool.Sanguimancy, SchoolInfo.Name(SpellSchool.Sanguimancy))
 	};
 
 
 	protected static readonly (SpellSchool School, string Name, Color Accent)[] TalentSchoolOrder =
 	{
 		(SpellSchool.Generic, "General", new Color(0.70f, 0.65f, 0.60f)),
-		(SpellSchool.Chronomancy, "Chronomancy", new Color(0.35f, 0.75f, 0.90f)),
-		(SpellSchool.Holy, "Holy", new Color(0.95f, 0.85f, 0.40f)),
-		(SpellSchool.Nature, "Nature", new Color(0.40f, 0.80f, 0.35f)),
-		(SpellSchool.Void, "Void", new Color(0.65f, 0.35f, 0.85f)),
-		(SpellSchool.Sanguimancy, "Sanguimancy", new Color(0.85f, 0.15f, 0.15f))
+		(SpellSchool.Chronomancy, SchoolInfo.Name(SpellSchool.Chronomancy), SchoolInfo.Color(SpellSchool.Chronomancy)),
+		(SpellSchool.Holy, SchoolInfo.Name(SpellSchool.Holy), SchoolInfo.Color(SpellSchool.Holy)),
+		(SpellSchool.Nature, SchoolInfo.Name(SpellSchool.Nature), SchoolInfo.Color(SpellSchool.Nature)),
+		(SpellSchool.Void, SchoolInfo.Name(SpellSchool.Void), SchoolInfo.Color(SpellSchool.Void)),
+		(SpellSchool.Sanguimancy, SchoolInfo.Name(SpellSchool.Sanguimancy), SchoolInfo.Color(SpellSchool.Sanguimancy))
 	};
 
 	// ── shared interactible state (common to Overworld and Camp) ─────────────
@@ -1043,12 +1043,12 @@ public abstract partial class LoadoutController : Node2D
 		// School unlock tooltip for Sanguimancy.
 		if (spell.School == SpellSchool.Sanguimancy && !PlayerProgressStore.HasDefeatedCastleOfBlood)
 			return (spell.Name,
-				$"{spell.Description}\n\n🔒 Sanguimancy is locked.\nDefeat The Blood Prince in the Castle of Blood to unlock this school.");
+				$"{spell.Description}\n\n🔒 Kindling is locked.\nDefeat The Blood Prince in the Castle of Blood to unlock this school.");
 
 		var invested = RunState.Instance.SelectedTalentDefs.Count(d => d.School == spell.School);
 		var ultIndicator = spell is UltimateSpellResource ? " (Ultimate)" : "";
 		return (spell.Name + ultIndicator,
-			$"{spell.Description}\n\nRequires {spell.RequiredSchoolPoints} {spell.School} talent" +
+			$"{spell.Description}\n\nRequires {spell.RequiredSchoolPoints} {SchoolInfo.Name(spell.School)} talent" +
 			$"{(spell.RequiredSchoolPoints > 1 ? "s" : "")} acquired.\n" +
 			$"({invested} / {spell.RequiredSchoolPoints} acquired this run)");
 	}
@@ -1485,7 +1485,7 @@ public abstract partial class LoadoutController : Node2D
 				iconPanel.MouseDefaultCursorShape = Control.CursorShape.Arrow;
 
 				var icon = new TextureRect();
-				icon.Texture = GD.Load<Texture2D>(def.IconPath);
+				icon.Texture = def.LoadIcon();
 				icon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 				icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 				icon.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);

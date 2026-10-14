@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using healerfantasy.SpellResources;
 using healerfantasy;
 using healerfantasy.CombatLog;
 using healerfantasy.Runes;
@@ -344,7 +345,7 @@ public partial class OverworldController
 					talentLabel.AddThemeFontSizeOverride("font_size", 13);
 					talentLabel.AddThemeColorOverride("font_color", SchoolColor(talent.School));
 					talentLabel.MouseFilter = Control.MouseFilterEnum.Stop;
-					talentLabel.TooltipText = $"{talent.School}\n{talent.Description}";
+					talentLabel.TooltipText = $"{SchoolInfo.Name(talent.School)}\n{talent.Description}";
 					talentFlow.AddChild(talentLabel);
 				}
 			}
@@ -392,14 +393,10 @@ public partial class OverworldController
 	}
 
 	/// <summary>Maps a spell school name string to its display colour.</summary>
-	static Color SchoolColor(string school) => school switch
-	{
-		"Holy"        => new Color(0.95f, 0.88f, 0.35f),   // gold
-		"Nature"      => new Color(0.38f, 0.88f, 0.48f),   // green
-		"Void"        => new Color(0.72f, 0.45f, 0.95f),   // purple
-		"Chronomancy" => new Color(0.38f, 0.78f, 0.98f),   // cyan-blue
-		_             => new Color(0.85f, 0.80f, 0.75f)    // neutral
-	};
+	static Color SchoolColor(string school) =>
+		System.Enum.TryParse<SpellSchool>(school, out var s) && s != SpellSchool.Generic
+			? SchoolInfo.Color(s)
+			: new Color(0.85f, 0.80f, 0.75f); // neutral
 
 	// ══════════════════════════════════════════════════════════════════════════
 	// ENCOUNTER DETAIL MODAL

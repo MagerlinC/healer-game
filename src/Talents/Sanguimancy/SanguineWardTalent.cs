@@ -42,8 +42,8 @@ public class SanguineWardTalent : ISpellModifier
 				Icon = EffectIcon,
 				School = SpellSchool.Sanguimancy,
 				SourceCharacterName = ctx.Caster.CharacterName,
-				AbilityName = "Sanguine Ward",
-				Description = $"Shielded by the caster's blood sacrifice."
+				AbilityName = "Kindled Ward",
+				Description = $"Shielded by the caster's burning sacrifice."
 			});
 		}
 	}

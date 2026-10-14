@@ -11,7 +11,7 @@ public partial class TouchOfLightSpell : SpellResource
 
 	public TouchOfLightSpell()
 	{
-		Name = "Touch of Light";
+		Name = "Candle Touch";
 		Description = $"Restores {HealAmount} health to the target.";
 		ManaCost = 6f;
 		CastTime = 1.5f;

@@ -23,7 +23,7 @@ public partial class VitalSurgeSpell : SpellResource
 
 	public VitalSurgeSpell()
 	{
-		Name = "Vital Surge";
+		Name = "Lifeflame";
 		Description =
 			$"Sacrifice {HpCostAmount} health to transfuse your life force into an ally, restoring {HealAmount} health. Cannot target the caster.";
 		ManaCost = 0f;

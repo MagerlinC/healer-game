@@ -21,9 +21,9 @@ public partial class HolyNovaSpell : SpellResource
 
 	public HolyNovaSpell()
 	{
-		Name = "Holy Nova";
+		Name = "Flashfire";
 		Description =
-			$"Release a nova of holy light, healing all party members for {HealAmount} HP and dealing {DamageAmount} damage to the enemy.";
+			$"Release a flash of fire, healing all party members for {HealAmount} HP and dealing {DamageAmount} damage to the enemy.";
 		ManaCost = 16f;
 		CastTime = 1.5f;
 		Cooldown = 10f;

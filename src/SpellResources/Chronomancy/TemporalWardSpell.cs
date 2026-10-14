@@ -22,9 +22,9 @@ public partial class TemporalWardSpell : SpellResource
 
 	public TemporalWardSpell()
 	{
-		Name = "Temporal Ward";
+		Name = "Wax Seal";
 		Description =
-			$"Surround all party members in a time-locked barrier, absorbing up to {ShieldAmount} damage each for {ShieldDuration}s.";
+			$"Surround all party members in a seal of hardened wax, absorbing up to {ShieldAmount} damage each for {ShieldDuration}s.";
 		ManaCost = 15f;
 		CastTime = 1.5f;
 		Cooldown = 8f;

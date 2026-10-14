@@ -8,7 +8,7 @@ namespace healerfantasy.SpellResources.Void;
 public partial class ConsumingVoid : SpellResource
 {
 
-	public static readonly string SpellName = "Consuming Void";
+	public static readonly string SpellName = "Swallowing Dark";
 	[Export] public float AddedDamagePerConsumedHoT = 15f;
 	[Export] public float BaseDamage = 10f;
 
@@ -16,7 +16,7 @@ public partial class ConsumingVoid : SpellResource
 	{
 		Name = SpellName;
 		Description =
-			$"Consume all healing-over-time effects on your party, dealing {BaseDamage:F0} void damage to your target, plus and additional {AddedDamagePerConsumedHoT:F0} per effect consumed.";
+			$"Consume all healing-over-time effects on your party, dealing {BaseDamage:F0} umbral damage to your target, plus and additional {AddedDamagePerConsumedHoT:F0} per effect consumed.";
 		ManaCost = 10f;
 		CastTime = 1.0f;
 		School = SpellSchool.Void;

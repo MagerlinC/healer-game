@@ -8,7 +8,7 @@ public partial class ReinvigorateSpell : SpellResource
 	float HealAmount = 10f;
 	public ReinvigorateSpell()
 	{
-		Name = "Reinvigorate";
+		Name = "Rekindle";
 		Description =
 			$"Instantly restores {HealAmount} health to the target and refreshes the duration of all beneficial buffs which were applied by the caster on the target.";
 		ManaCost = 5f;

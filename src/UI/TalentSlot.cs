@@ -94,7 +94,7 @@ public partial class TalentSlot : PanelContainer
 		vbox.AddChild(iconArea);
 
 		// Layer 1 — monk icon
-		var iconTex = GD.Load<Texture2D>(Definition.IconPath);
+		var iconTex = Definition.LoadIcon();
 		var iconRect = new TextureRect();
 		iconRect.Texture = iconTex;
 		iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;

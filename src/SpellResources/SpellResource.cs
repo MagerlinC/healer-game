@@ -36,7 +36,18 @@ public partial class SpellResource : Resource
 	[Export] public TargetingType TargetingType = TargetingType.Ally;
 	[Export] public SpellSchool School;
 
-	[Export] public Texture2D Icon;
+	Texture2D _icon;
+
+	/// <summary>
+	/// The spell's icon. With the Last Light style on, the drawn school icon replaces
+	/// the original art (see <c>LastLightIcons</c>); otherwise the assigned texture.
+	/// </summary>
+	[Export]
+	public Texture2D Icon
+	{
+		get => LastLight.Hud.LastLightIcons.ForSpell(this) ?? _icon;
+		set => _icon = value;
+	}
 
 	/// <summary>
 	/// Tags that describe this spell's school and behaviour.

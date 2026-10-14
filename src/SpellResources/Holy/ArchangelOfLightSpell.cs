@@ -20,9 +20,9 @@ public partial class ArchangelOfLightSpell : UltimateSpellResource
 
 	public ArchangelOfLightSpell()
 	{
-		Name = "Archangel of Light";
+		Name = "Become the Sun";
 		Description =
-			$"Embody the ultimate form of light for {BuffDuration:F0}s, making all spells free and increasing holy spell healing by {100 * HealingIncrease:F0}%. Overhealing a target causes the excess healing to heal all allies and damage all enemies.";
+			$"Burn as bright as the sun for {BuffDuration:F0}s, making all spells free and increasing Flame spell healing by {100 * HealingIncrease:F0}%. Overhealing a target causes the excess healing to heal all allies and damage all enemies.";
 		ActivationDescription = "Spend a total of 50 mana on holy spells.";
 		ManaCost = 10f;
 		CastTime = 0.0f;
@@ -43,7 +43,7 @@ public partial class ArchangelOfLightSpell : UltimateSpellResource
 			SourceCharacterName = ctx.Caster.CharacterName,
 			AbilityName = Name,
 			Description =
-				$"Holy spells are free and do {100 * HealingIncrease:F0}% increased healing. Overhealing a target causes the excess healing to heal all allies and damage all enemies."
+				$"Flame spells are free and do {100 * HealingIncrease:F0}% increased healing. Overhealing a target causes the excess healing to heal all allies and damage all enemies."
 		});
 	}
 

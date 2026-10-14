@@ -20,7 +20,7 @@ public partial class TimeLoopSpell : SpellResource
 
 	public TimeLoopSpell()
 	{
-		Name = "Time Loop";
+		Name = "Relight";
 		Description =
 			$"Traps an enemy in a temporal loop, tracking all damage dealt to them. After {Delay}s, the loop resolves, exploding for {100 * DamageFraction:F0}% of the total damage dealt within that time.";
 		ManaCost = 8f;

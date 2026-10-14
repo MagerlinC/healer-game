@@ -64,13 +64,8 @@ public partial class FloatingCombatText : Label
 	// ── colour palette ───────────────────────────────────────────────────────
 	static Color SchoolColor(SpellSchool school)
 	{
-		return school switch
-		{
-			SpellSchool.Holy => new Color(1.00f, 0.90f, 0.30f), // gold
-			SpellSchool.Nature => new Color(0.40f, 0.90f, 0.10f), // bright green
-			SpellSchool.Void => new Color(0.72f, 0.40f, 1.00f), // purple
-			SpellSchool.Chronomancy => new Color(0.20f, 0.85f, 1.00f), // cyan
-			_ => new Color(1.00f, 1.00f, 1.00f) // white
-		};
+		return school == SpellSchool.Generic
+			? new Color(1.00f, 1.00f, 1.00f) // white
+			: SchoolInfo.Color(school);
 	}
 }

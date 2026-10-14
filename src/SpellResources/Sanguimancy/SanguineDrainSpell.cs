@@ -24,7 +24,7 @@ public partial class SanguineDrainSpell : SpellResource
 
 	public SanguineDrainSpell()
 	{
-		Name = "Sanguine Drain";
+		Name = "Draw the Heat";
 		Description =
 			$"Spend {HpCostAmount} health to siphon vitality from the enemy, dealing {DamageAmount} damage and healing all allies for {HealPerAlly} health.";
 		ManaCost = 0f;

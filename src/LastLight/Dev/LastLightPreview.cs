@@ -40,6 +40,14 @@ public partial class LastLightPreview : Node
 			}
 		}
 
+		if (scene == "icons")
+		{
+			GetTree().Root.CallDeferred(Node.MethodName.AddChild, new IconSheet());
+			GetTree().Root.CallDeferred(Node.MethodName.AddChild,
+				new Shooter { OutPrefix = outPrefix, ProcessMode = ProcessModeEnum.Always });
+			return;
+		}
+
 		var path = scene switch
 		{
 			"menu" => "res://levels/MainMenu.tscn",
@@ -86,6 +94,18 @@ public partial class LastLightPreview : Node
 					GameTooltip.Show("Renewing Light", "Heals the target for 40 over 12 seconds. Costs 12 mana.");
 				else if (action == "pause")
 					Input.ParseInputEvent(new InputEventKey { PhysicalKeycode = Key.Escape, Keycode = Key.Escape, Pressed = true });
+				else if (action.StartsWith("cast:") && scene?.GetNodeOrNull<Character>("Healer") is { } healer)
+				{
+					// cast:Umbral_Bolt — enemy spells hit the boss, the rest land on the Templar.
+					var name = action.Substring(5).Replace('_', ' ');
+					var spell = healerfantasy.SpellResources.SpellRegistry.AllSpells.Find(s => s.Name == name);
+					var target = spell?.TargetingType == healerfantasy.SpellResources.TargetingType.Enemy
+						? GetTree().GetFirstNodeInGroup(GameConstants.BossGroupName) as Character
+						: scene.GetNodeOrNull<Character>("Templar");
+					if (spell != null && target != null)
+						healerfantasy.SpellSystem.SpellPipeline.Cast(spell, healer, target);
+					else GD.PrintErr($"[preview] could not cast '{name}'");
+				}
 				else if (action is "killparty" or "killboss")
 				{
 					var group = action == "killparty" ? GameConstants.PartyGroupName : GameConstants.BossGroupName;

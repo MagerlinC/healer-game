@@ -22,9 +22,9 @@ public partial class VoidDrainSpell : SpellResource
 
 	public VoidDrainSpell()
 	{
-		Name = "Void Drain";
+		Name = "Siphon the Dark";
 		Description =
-			$"Drains void energy from the target, dealing {DamagePerTick} void damage every {TickRate}s over {Duration}s and healing yourself for {(int)(HealFraction * 100)}% of damage dealt.";
+			$"Siphons the darkness from the target, dealing {DamagePerTick} umbral damage every {TickRate}s over {Duration}s and healing yourself for {(int)(HealFraction * 100)}% of damage dealt.";
 		ManaCost = 10f;
 		CastTime = 0.0f;
 		Cooldown = 4f;

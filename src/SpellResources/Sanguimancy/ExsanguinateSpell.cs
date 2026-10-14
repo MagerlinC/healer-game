@@ -30,7 +30,7 @@ public partial class ExsanguinateSpell : SpellResource
 
 	public ExsanguinateSpell()
 	{
-		Name = "Exsanguinate";
+		Name = "Feed the Pyre";
 		Description =
 			$"Extract {DrainPerMember} health from each living party member (non-lethal), dealing twice the total as damage to the boss.";
 		ManaCost = 0f;

@@ -19,9 +19,9 @@ public partial class PoisonBoltSpell : SpellResource
 
 	public PoisonBoltSpell()
 	{
-		Name = "Poison Bolt";
+		Name = "Cinder";
 		Description =
-			$"Blasts the target for {InstantDamage} nature damage, and infects the target with virulent poison, dealing {DamagePerTick} nature damage every {TickInterval}s for {EffectDuration}s.";
+			$"Blasts the target for {InstantDamage} ember damage, and sears the target with smouldering cinders, dealing {DamagePerTick} ember damage every {TickInterval}s for {EffectDuration}s.";
 		ManaCost = 7f;
 		CastTime = 0.0f;
 		School = SpellSchool.Nature;
@@ -67,7 +67,7 @@ public partial class PoisonBoltSpell : SpellResource
 
 		ctx.Target?.ApplyEffect(new Effects.DamageOverTimeEffect(ctx.FinalValue, EffectDuration, TickInterval)
 		{
-			EffectId = Name, // "Poison Bolt" — unique per spell, not per class
+			EffectId = Name, // "Cinder" — unique per spell, not per class
 			Icon = Icon,
 			SourceCharacterName = ctx.Caster.CharacterName,
 			AbilityName = Name,

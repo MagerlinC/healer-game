@@ -96,7 +96,7 @@ public static class LastLightSkin
 			}
 		}
 
-		if (c is TextureRect tr && tr.Material == null && tr.Texture is { } tex)
+		if (c is TextureRect tr && tr.Material == null && tr.Texture is { } tex && !LastLightIcons.IsOurs(tex))
 		{
 			var w = tex.GetWidth();
 			var h = tex.GetHeight();

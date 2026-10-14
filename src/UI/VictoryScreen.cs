@@ -628,8 +628,7 @@ public partial class VictoryScreen : CanvasLayer
 		icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 		icon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 		icon.MouseFilter = Control.MouseFilterEnum.Ignore;
-		if (!string.IsNullOrEmpty(def.IconPath))
-			icon.Texture = GD.Load<Texture2D>(def.IconPath);
+		icon.Texture = def.LoadIcon();
 		iconArea.AddChild(icon);
 
 		// Tier banner pinned to the top-left corner of the icon area.
@@ -644,7 +643,7 @@ public partial class VictoryScreen : CanvasLayer
 
 		// School name — tinted the school colour.
 		var schoolLabel = new Label();
-		schoolLabel.Text = def.School.ToString();
+		schoolLabel.Text = SchoolInfo.Name(def.School);
 		schoolLabel.HorizontalAlignment = HorizontalAlignment.Center;
 		schoolLabel.AddThemeFontSizeOverride("font_size", 11);
 		schoolLabel.AddThemeColorOverride("font_color", schoolColor);

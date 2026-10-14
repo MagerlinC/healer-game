@@ -19,8 +19,8 @@ public partial class DivineAegisSpell : SpellResource
 
 	public DivineAegisSpell()
 	{
-		Name = "Divine Aegis";
-		Description = $"Surround the target in holy light, absorbing up to {ShieldAmount} damage for {ShieldDuration}s.";
+		Name = "Lantern Ward";
+		Description = $"Surround the target in lantern light, absorbing up to {ShieldAmount} damage for {ShieldDuration}s.";
 		ManaCost = 8f;
 		CastTime = 0.0f;
 		Cooldown = 8f;

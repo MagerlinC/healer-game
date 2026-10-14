@@ -74,7 +74,11 @@ public static class LoadoutPreferences
             {
                 var name = names[i];
                 if (!string.IsNullOrEmpty(name))
-                    result[i] = SpellRegistry.AllSpells.FirstOrDefault(s => s.Name == name);
+                {
+                    // Loadouts saved before the school rename store the old spell names.
+                    var current = SchoolInfo.CurrentSpellName(name);
+                    result[i] = SpellRegistry.AllSpells.FirstOrDefault(s => s.Name == current);
+                }
             }
             return result;
         }

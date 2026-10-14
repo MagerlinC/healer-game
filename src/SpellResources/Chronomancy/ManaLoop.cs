@@ -21,9 +21,9 @@ public partial class ManaLoopSpell : SpellResource
 
 	public ManaLoopSpell()
 	{
-		Name = "Mana Loop";
+		Name = "Drip";
 		Description =
-			$"Traps an ally in an arcane temporal loop. After {Delay}s, the loop resolves, restoring {ManaAmount} mana.";
+			$"Traps an ally in an slow drip of wax. After {Delay}s, the loop resolves, restoring {ManaAmount} mana.";
 		ManaCost = 8f;
 		CastTime = 0.0f;
 		Cooldown = 8f;

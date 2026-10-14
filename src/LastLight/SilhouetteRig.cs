@@ -388,14 +388,16 @@ public partial class SilhouetteRig : CanvasGroup
 			if (_glow != null)
 			{
 				_glow.Position = light;
-				_glow.Scale = Vector2.One * 0.42f * flick * casting * (IsAlive ? 1f : 0.25f);
+				_glow.Scale = Vector2.One * 0.42f * flick * casting * (IsAlive ? 1f : 0.25f)
+				              * Mathf.Sqrt(LightMechanics.LightMultiplier(_character));
 			}
 
 			var canvas = _owner.GetGlobalTransformWithCanvas();
 			var size = GetViewport().GetVisibleRect().Size;
 			LastLightStyle.LightUv = canvas * light / size;
 			LastLightStyle.LightFeetUv = canvas * (_feetOffset + new Vector2(0f, 2f)) / size;
-			LastLightStyle.LightStrength = IsAlive ? flick * casting : 0.25f;
+			// Flame brightens, Wick gutters, Gloom dims (see LightMechanics).
+			LastLightStyle.LightStrength = (IsAlive ? flick * casting : 0.25f) * LightMechanics.LightMultiplier(_character);
 		}
 	}
 

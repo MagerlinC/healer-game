@@ -22,7 +22,7 @@ public partial class VampiricEmbrace : UltimateSpellResource
 
 	public VampiricEmbrace()
 	{
-		Name = "Vampiric Embrace";
+		Name = "Shared Flame";
 		Description =
 			$"Embrace the sanguine power of your party, making all allies lose {DrainPerSecond} HP/s but leech {100 * LeechRate:F0}% of damage dealt by you as healing to all party members. When this spell ends, all enemies are damaged for {100 * DamageMultiplierOnExpire:F0}% of total life leeched.";
 		ActivationDescription = "Spend a total of 50 health on sanguimancy spells.";

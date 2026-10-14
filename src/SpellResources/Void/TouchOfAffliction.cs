@@ -15,7 +15,7 @@ public partial class TouchOfAffliction : SpellResource
 	{
 		Name = SpellName;
 		Description =
-			$"Reach into the afflictions of the target dealing {BaseDamage} void damage, plus an additional {AddedDamagePerDoT} per active damage-over-time effect on the target.";
+			$"Reach into the afflictions of the target dealing {BaseDamage} umbral damage, plus an additional {AddedDamagePerDoT} per active damage-over-time effect on the target.";
 		ManaCost = 10f;
 		CastTime = 0.0f;
 		School = SpellSchool.Void;
