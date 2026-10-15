@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://b1cj0sulxg46u"
+path="res://.godot/imported/The Infinite Abyss.wav-bddf3f64dad952343048167c722ccaff.sample"
+
+[deps]
+
+source_file="res://assets/music/The Infinite Abyss.wav"
+dest_files=["res://.godot/imported/The Infinite Abyss.wav-bddf3f64dad952343048167c722ccaff.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=2
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

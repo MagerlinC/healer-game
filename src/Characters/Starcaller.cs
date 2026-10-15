@@ -51,6 +51,9 @@ public partial class Starcaller : PartyMember
 		if (!IsAlive) return;
 		if (IsKnockedBack) return;
 
+		// Don't let a melee ally end up standing on top of us.
+		MakeRoom(FindPreferredBoss(), 60f);
+
 		_castTimer -= (float)delta;
 		if (_castTimer <= 0f)
 		{

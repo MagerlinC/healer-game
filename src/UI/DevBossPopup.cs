@@ -56,6 +56,9 @@ public partial class DevBossPopup : CanvasLayer
 	Button _launchBtn = null!;
 	Label _loadoutStatusLabel = null!;
 	(DungeonDefinition Dungeon, int BossIndex)? _currentMatch;
+	VBoxContainer _suggestions = null!;
+	readonly List<string> _suggestionNames = new();
+	const int MaxSuggestions = 6;
 
 	// ── sub-panel nodes ───────────────────────────────────────────────────────
 	TalentSelector _talentSelector = null!;
@@ -146,7 +149,7 @@ public partial class DevBossPopup : CanvasLayer
 
 		// ── Boss search ───────────────────────────────────────────────────────
 		var inputLabel = new Label();
-		inputLabel.Text = "Boss Name  (exact match, case-insensitive)";
+		inputLabel.Text = "Boss Name  (case-insensitive  •  Tab to complete  •  Enter to launch)";
 		inputLabel.AddThemeFontSizeOverride("font_size", 12);
 		inputLabel.AddThemeColorOverride("font_color", new Color(0.55f, 0.52f, 0.48f));
 		vbox.AddChild(inputLabel);
@@ -156,7 +159,13 @@ public partial class DevBossPopup : CanvasLayer
 		_input.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		_input.AddThemeFontSizeOverride("font_size", 16);
 		_input.TextChanged += OnInputChanged;
+		_input.TextSubmitted += _ => OnInputSubmitted();
+		_input.GuiInput += OnInputKey;
 		vbox.AddChild(_input);
+
+		_suggestions = new VBoxContainer();
+		_suggestions.AddThemeConstantOverride("separation", 2);
+		vbox.AddChild(_suggestions);
 
 		_matchLabel = new Label();
 		_matchLabel.Text = "";
@@ -250,8 +259,14 @@ public partial class DevBossPopup : CanvasLayer
 	void OnInputChanged(string text)
 	{
 		var trimmed = text.Trim();
+		RefreshSuggestions(trimmed);
 
-		if (BossLookup.TryGetValue(trimmed, out var match))
+		// An exact name, or a partial one that only fits a single boss, selects it.
+		var found = BossLookup.TryGetValue(trimmed, out var match);
+		if (!found && _suggestionNames.Count == 1)
+			found = BossLookup.TryGetValue(_suggestionNames[0], out match);
+
+		if (found)
 		{
 			_currentMatch = match;
 			_matchLabel.Text = $"✓  {match.Dungeon.Name}  —  Boss {match.BossIndex + 1} of {match.Dungeon.BossCount}";
@@ -261,10 +276,82 @@ public partial class DevBossPopup : CanvasLayer
 		else
 		{
 			_currentMatch = null;
-			_matchLabel.Text = string.IsNullOrWhiteSpace(trimmed) ? "" : "No matching boss found";
+			_matchLabel.Text = string.IsNullOrWhiteSpace(trimmed) ? ""
+				: _suggestionNames.Count > 1 ? "Pick a boss above, or keep typing"
+				: "No matching boss found";
 			_matchLabel.AddThemeColorOverride("font_color", new Color(0.65f, 0.38f, 0.35f));
 			_launchBtn.Visible = false;
 		}
+	}
+
+	/// <summary>
+	/// Boss names containing <paramref name="text"/> (any case), best first: names that
+	/// start with it, then names with a word starting with it, then the rest.
+	/// </summary>
+	void RefreshSuggestions(string text)
+	{
+		foreach (var child in _suggestions.GetChildren()) child.QueueFree();
+		_suggestionNames.Clear();
+		if (string.IsNullOrWhiteSpace(text)) return;
+
+		int Rank(string name) =>
+			name.StartsWith(text, StringComparison.OrdinalIgnoreCase) ? 0
+			: name.Split(' ', '(').Any(w => w.StartsWith(text, StringComparison.OrdinalIgnoreCase)) ? 1
+			: 2;
+
+		_suggestionNames.AddRange(BossLookup.Keys
+			.Where(name => name.Contains(text, StringComparison.OrdinalIgnoreCase))
+			.OrderBy(Rank)
+			.ThenBy(name => name)
+			.Take(MaxSuggestions));
+
+		// The only suggestion being exactly what's typed adds nothing.
+		if (_suggestionNames.Count == 1 && _suggestionNames[0].Equals(text, StringComparison.OrdinalIgnoreCase))
+			return;
+
+		foreach (var name in _suggestionNames)
+		{
+			var (dungeon, index) = BossLookup[name];
+			var btn = new Button
+			{
+				Text = $"{name}   —   {dungeon.Name}, boss {index + 1}",
+				Flat = true,
+				Alignment = HorizontalAlignment.Left,
+				FocusMode = Control.FocusModeEnum.None
+			};
+			btn.AddThemeFontSizeOverride("font_size", 13);
+			btn.AddThemeColorOverride("font_color", new Color(0.78f, 0.74f, 0.68f));
+			btn.AddThemeColorOverride("font_hover_color", SubtleGold);
+			var chosen = name;
+			btn.Pressed += () => CompleteTo(chosen);
+			_suggestions.AddChild(btn);
+		}
+	}
+
+	void CompleteTo(string name)
+	{
+		_input.Text = name;
+		_input.CaretColumn = name.Length;
+		OnInputChanged(name);
+		_input.GrabFocus();
+	}
+
+	/// <summary>Tab completes to the best suggestion instead of moving focus.</summary>
+	void OnInputKey(InputEvent ev)
+	{
+		if (ev is not InputEventKey { Pressed: true, Keycode: Key.Tab } || _suggestionNames.Count == 0) return;
+		CompleteTo(_suggestionNames[0]);
+		_input.AcceptEvent();
+	}
+
+	/// <summary>Enter launches the selected boss, or completes to the best suggestion first.</summary>
+	void OnInputSubmitted()
+	{
+		var exact = BossLookup.ContainsKey(_input.Text.Trim());
+		if (_currentMatch != null && (exact || _suggestionNames.Count <= 1))
+			OnLaunchPressed();
+		else if (_suggestionNames.Count > 0)
+			CompleteTo(_suggestionNames[0]);
 	}
 
 	void OnLaunchPressed()

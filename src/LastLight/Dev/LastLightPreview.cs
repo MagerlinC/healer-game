@@ -18,7 +18,7 @@ public partial class LastLightPreview : Node
 	/// <summary>
 	/// UI states to trigger at t=2s (--do=a,b): settings, panel0..panelN (overlay panels),
 	/// tooltip, pause, killparty, killboss, bosshp:0.4, cast:Spell_Name, mouse:x;y, thorns,
-	/// abyss:stare|eclipse|tendrils|open.
+	/// abyss:stare|eclipse|tendrils|open, devsearch:text (overworld).
 	/// </summary>
 	static string[] Actions = System.Array.Empty<string>();
 
@@ -145,7 +145,25 @@ public partial class LastLightPreview : Node
 						if (node is TheInfiniteAbyss abyss)
 							abyss.DevTrigger(action.Substring(6));
 				}
-				else if (action is "killparty" or "killboss")
+				else if (action.StartsWith("devsearch:"))
+				{
+					// devsearch:abys — opens the dev boss popup (Ctrl+Alt+O) and types into its search.
+					Input.ParseInputEvent(new InputEventKey
+						{ Keycode = Key.O, CtrlPressed = true, AltPressed = true, Pressed = true });
+					var text = action.Substring(10).Replace('_', ' ');
+					// After the popup has opened (it clears its search box when it does).
+					GetTree().CreateTimer(0.3).Timeout += () =>
+					{
+						foreach (var node in GetTree().Root.FindChildren("*", "LineEdit", true, false))
+							if (node is LineEdit edit && edit.IsVisibleInTree())
+							{
+								edit.Text = text;
+								edit.EmitSignal(LineEdit.SignalName.TextChanged, text);
+								break;
+							}
+					};
+				}
+								else if (action is "killparty" or "killboss")
 				{
 					var group = action == "killparty" ? GameConstants.PartyGroupName : GameConstants.BossGroupName;
 					foreach (var node in GetTree().GetNodesInGroup(group))

@@ -27,6 +27,9 @@ public static class ParryWindowManager
 	/// <summary>True while a parryable attack wind-up is active.</summary>
 	public static bool IsOpen { get; private set; }
 
+	/// <summary>True during the final <see cref="ParryWindowDuration"/> seconds, when a deflect counts.</summary>
+	public static bool IsDeflectWindowLive => IsOpen && Godot.Time.GetTicksMsec() >= _deflectWindowOpenAt;
+
 	static bool _wasDeflected;
 	/// <summary>Godot millisecond tick at which deflect inputs start being accepted.</summary>
 	static ulong _deflectWindowOpenAt;

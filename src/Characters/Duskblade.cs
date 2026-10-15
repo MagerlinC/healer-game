@@ -89,7 +89,11 @@ public partial class Duskblade : PartyMember
 				ClampToArenaBoundary();
 				return; // Not in range yet — skip attack logic
 			}
-			if (dist < reach - BackOffSlack)
+			if (StepAsideFromAllies(boss, MoveSpeed * 0.6f))
+			{
+				// Crowding another ally: StepAsideFromAllies has moved us sideways.
+			}
+			else if (dist < reach - BackOffSlack)
 			{
 				// Standing inside a big boss (e.g. it moved onto us): step back out,
 				// still attacking. The slack keeps this from jittering at the edge.
@@ -99,7 +103,7 @@ public partial class Duskblade : PartyMember
 			}
 			else
 			{
-				// In range — make sure we've fully stopped.
+				// In range with room to stand — make sure we've fully stopped.
 				Velocity = Vector2.Zero;
 				MoveAndSlide();
 				ClampToArenaBoundary();

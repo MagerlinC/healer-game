@@ -2,6 +2,7 @@ using Godot;
 using healerfantasy;
 using healerfantasy.LastLight;
 using healerfantasy.SpellResources;
+using healerfantasy.SpellSystem;
 
 /// <summary>
 /// Boss cast bar. Shown below the boss health bar while the Crystal Knight is
@@ -35,10 +36,22 @@ public partial class BossCastBar : CastBarBase
 	// The bar fill brightens towards a vivid orange as the cast completes.
 	static readonly Color FillPeak = new(0.9f, 0.3f, 0.1f);
 
+	// ── deflectable casts ─────────────────────────────────────────────────────
+	// A cast the player must deflect looks nothing like an ordinary long cast: pale
+	// gold and white instead of red, and a bright white flash once the deflect window
+	// is actually open. Purely visual — no text telling the player what to do.
+	static readonly Color DeflectGold = new(1f, 0.84f, 0.42f);
+	static readonly Color DeflectGoldDim = new(0.62f, 0.5f, 0.24f);
+
+	bool _deflectable;
+
 	// ── lifecycle ─────────────────────────────────────────────────────────────
 	public override void _Ready()
 	{
 		base._Ready();
+
+		ParryWindowManager.WindupStarted += OnDeflectableStarted;
+		ParryWindowManager.WindupEnded += OnDeflectableEnded;
 
 		// ── pre-channel cast bars (all bosses that emit CastWindupStarted) ─────
 		// GlobalAutoLoad wires this to every registered emitter of the same name,
@@ -73,6 +86,41 @@ public partial class BossCastBar : CastBarBase
 			Callable.From(StopCast));
 	}
 
+	public override void _ExitTree()
+	{
+		ParryWindowManager.WindupStarted -= OnDeflectableStarted;
+		ParryWindowManager.WindupEnded -= OnDeflectableEnded;
+	}
+
+	void OnDeflectableStarted(string spellName, Texture2D icon, float duration) => _deflectable = true;
+
+	void OnDeflectableEnded()
+	{
+		_deflectable = false;
+		NameLabel.AddThemeColorOverride("font_color", NameColor);
+	}
+
+	void UpdateDeflectableVisual(float progress)
+	{
+		var time = Time.GetTicksMsec() / 1000f;
+		if (ParryWindowManager.IsDeflectWindowLive)
+		{
+			// The window is open: flash hard so it can't be missed.
+			var flash = Mathf.Sin(time * 26f) * 0.5f + 0.5f;
+			NameLabel.AddThemeColorOverride("font_color", Colors.White);
+			PanelStyle.BorderColor = Colors.White;
+			PanelStyle.SetBorderWidthAll(4);
+			BarFillStyle.BgColor = DeflectGold.Lerp(Colors.White, 0.45f + 0.55f * flash);
+			return;
+		}
+
+		var pulse = Mathf.Sin(time * Mathf.Lerp(2f, 5f, progress) * Mathf.Tau) * 0.5f + 0.5f;
+		NameLabel.AddThemeColorOverride("font_color", DeflectGold);
+		PanelStyle.BorderColor = DeflectGold.Lerp(Colors.White, pulse * 0.6f);
+		PanelStyle.SetBorderWidthAll(Mathf.RoundToInt(Mathf.Lerp(2f, 3f, progress)));
+		BarFillStyle.BgColor = DeflectGoldDim.Lerp(DeflectGold, progress);
+	}
+
 	// ── visual update hook ────────────────────────────────────────────────────
 
 	/// <summary>
@@ -82,6 +130,12 @@ public partial class BossCastBar : CastBarBase
 	/// </summary>
 	protected override void OnCastVisualUpdate(float progress)
 	{
+		if (_deflectable)
+		{
+			UpdateDeflectableVisual(progress);
+			return;
+		}
+
 		// Fast pulse frequency that accelerates with progress: starts at ~2 Hz,
 		// reaches ~6 Hz as the cast completes, so urgency is palpable.
 		var pulseHz = Mathf.Lerp(2.0f, 6.0f, progress);

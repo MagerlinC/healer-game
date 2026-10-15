@@ -148,6 +148,59 @@ public partial class PartyMember : Character
 	/// Uses the same ellipse-containment formula as <c>IcicleExplosionZone</c>:
 	/// (dx/rx)² + (dy/ry)² ≤ 1.
 	/// </summary>
+	/// <summary>Closest two party members may stand before a melee member steps aside.</summary>
+	const float MinSpacing = 34f;
+
+	/// <summary>
+	/// Melee members call this once in range: if another party member is standing on top
+	/// of them, they sidestep around <paramref name="boss"/> (keeping their distance to it)
+	/// until there's room, so area attacks don't hit two allies as one. Returns true while
+	/// stepping aside.
+	/// </summary>
+	protected bool StepAsideFromAllies(Character boss, float speed)
+	{
+		foreach (var node in GetTree().GetNodesInGroup(GameConstants.PartyGroupName))
+		{
+			if (node == this || node is not Character other || !other.IsAlive) continue;
+			var apart = GlobalPosition - other.GlobalPosition;
+			if (apart.Length() >= MinSpacing) continue;
+
+			// Sideways around the boss, on whichever side moves away from the other ally.
+			var toBoss = (boss.GlobalPosition - GlobalPosition).Normalized();
+			var tangent = new Vector2(-toBoss.Y, toBoss.X);
+			var side = tangent.Dot(apart) >= 0f ? 1f : -1f;
+			Velocity = tangent * side * speed;
+			MoveAndSlide();
+			ClampToArenaBoundary();
+			return true;
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// Ranged members call this each frame: if another party member is crowding them,
+	/// they step sideways away from it (outward from <paramref name="boss"/> when it's
+	/// straight above or below). Returns true while stepping.
+	/// </summary>
+	protected bool MakeRoom(Character boss, float speed)
+	{
+		foreach (var node in GetTree().GetNodesInGroup(GameConstants.PartyGroupName))
+		{
+			if (node == this || node is not Character other || !other.IsAlive) continue;
+			var dx = GlobalPosition.X - other.GlobalPosition.X;
+			if (GlobalPosition.DistanceTo(other.GlobalPosition) >= MinSpacing) continue;
+
+			var side = Mathf.Abs(dx) > 2f ? Mathf.Sign(dx)
+				: boss != null ? Mathf.Sign(GlobalPosition.X - boss.GlobalPosition.X) : 1f;
+			Velocity = new Vector2(side == 0f ? 1f : side, 0f) * speed;
+			MoveAndSlide();
+			ClampToArenaBoundary();
+			return true;
+		}
+		Velocity = Vector2.Zero;
+		return false;
+	}
+
 	protected void ClampToArenaBoundary()
 	{
 		if (ArenaBoundary is not { } bounds) return;

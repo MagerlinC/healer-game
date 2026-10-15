@@ -27,6 +27,9 @@ public abstract partial class CastBarBase : PanelContainer
 	Label       _timeLabel;
 	ProgressBar _bar;
 
+	/// <summary>The spell-name label, for subclasses that annotate it.</summary>
+	protected Label NameLabel => _nameLabel;
+
 	// ── exposed style boxes — subclasses may animate these ────────────────────
 	protected StyleBoxFlat PanelStyle;
 	protected StyleBoxFlat BarFillStyle;

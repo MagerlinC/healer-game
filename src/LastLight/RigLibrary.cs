@@ -291,9 +291,9 @@ public static partial class RigLibrary
 		.Part("head", new Color(0.88f, 0.92f, 0.9f), "70,-180 85,-176 81,-165 68,-169")
 		.Part("head", new Color(0.88f, 0.92f, 0.9f), "97,-177 111,-179 109,-167 97,-166")
 		.Part("head", Void, "66,-148 112,-148 106,-130 99,-141 93,-128 87,-141 80,-128 73,-141")
-		// the great claw
-		.Part("arm", Dark, "84,-164 172,-204 202,-182 122,-128", 1)
-		.Part("arm", Dark, "190,-204 254,-226 202,-188", 1)
-		.Part("arm", Dark, "198,-190 262,-180 202,-176", 1)
-		.Part("arm", Dark, "194,-178 244,-142 190,-166", 1);
+		// the great claw, reaching out from behind the skull (its root would cover the face)
+		.Part("arm", Dark, "84,-164 172,-204 202,-182 122,-128", -1)
+		.Part("arm", Dark, "190,-204 254,-226 202,-188", -1)
+		.Part("arm", Dark, "198,-190 262,-180 202,-176", -1)
+		.Part("arm", Dark, "194,-178 244,-142 190,-166", -1);
 }

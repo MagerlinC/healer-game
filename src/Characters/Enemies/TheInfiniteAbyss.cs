@@ -104,10 +104,10 @@ public partial class TheInfiniteAbyss : EnemyCharacter
 		_eclipseTimer = 30f;
 		ApplyRuneModifiers();
 
-		// The last fight gets the heavier track from the start.
+		// The last fight has its own track (looping, set in its import settings).
 		if (GetParent()?.GetNodeOrNull<AudioStreamPlayer>("AudioStreamPlayer") is { } music)
 		{
-			music.Stream = GD.Load<AudioStream>(AssetConstants.FinalBossPhase2MusicPath);
+			music.Stream = GD.Load<AudioStream>(AssetConstants.InfiniteAbyssMusicPath);
 			music.Play();
 		}
 	}
