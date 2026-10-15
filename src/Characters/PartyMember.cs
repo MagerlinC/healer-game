@@ -208,12 +208,12 @@ public partial class PartyMember : Character
 		if (LastKnownBossTarget != null && !GodotObject.IsInstanceValid(LastKnownBossTarget))
 			LastKnownBossTarget = null;
 
-		if (LastKnownBossTarget != null && LastKnownBossTarget.IsAlive)
+		if (LastKnownBossTarget != null && LastKnownBossTarget.IsAlive && !LastKnownBossTarget.IsUntargetable)
 			return LastKnownBossTarget;
 
-		// Fallback: first alive boss in the group.
+		// Fallback: first alive boss in the group that can be hurt right now.
 		foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
-			if (node is Character c && c.IsAlive)
+			if (node is Character c && c.IsAlive && !c.IsUntargetable)
 				return c;
 
 		return null;

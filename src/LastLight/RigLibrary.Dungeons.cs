@@ -10,6 +10,7 @@ namespace healerfantasy.LastLight;
 ///   • Castle of Blood  — gaunt aristocrats; blood-red eyes and veins.
 ///   • Sanctum of Stars — the void wearing star-shaped holes; cold starlight.
 ///   • Frozen Peak      — frost-rimed shapes; pale blue-white glints.
+///   • The Abyss        — darkness itself, too vast to see whole; two pale eyes.
 /// Same authoring rules as <see cref="RigLibrary"/>: feet at (0,0), facing right.
 /// </summary>
 public static partial class RigLibrary
@@ -437,6 +438,73 @@ public static partial class RigLibrary
 		.Part("arm", ColdEye, Circle(14f, -118f, 2.2f, 8))
 		.Part("body", ColdEye, Circle(-16f, -116f, 1.8f, 8))
 		.Part("off", ColdEye, Circle(-24f, -92f, 1.6f, 8));
+
+	// ═════════════════════════════════════════════════════════════════════════
+	// THE ABYSS
+	// ═════════════════════════════════════════════════════════════════════════
+
+	static readonly Color AbyssEye = new(0.7f, 0.68f, 0.78f);
+	static readonly Color AbyssEyeHalo = new(0.2f, 0.17f, 0.26f);
+
+	/// <summary>
+	/// The Infinite Abyss → a towering black mass that rises out of the floor and on past
+	/// the top of the screen, two huge pale eyes, and tendrils reaching down from above.
+	/// It stands on its origin (see <see cref="RigDefinition.FeetOffset"/>) so the party
+	/// fights at its base.
+	/// </summary>
+	public static RigDefinition TheInfiniteAbyss() => new RigDefinition
+		{
+			Id = "the-infinite-abyss", Mode = RigMode.Darkness, Height = 720f, Width = 520f, Scale = 0.5f,
+			MaxGrow = 1f, FeetOffset = 20f, BurnTop = -340f,
+			SwingAngle = 0.55f, Lunge = 0f, Breath = 0.5f, CastRaise = 0.35f,
+			Pool = new Vector2(320, 34), PoolColor = new Color(0.01f, 0.006f, 0.012f, 0.95f)
+		}
+		.Joint("body", "", 0, -200)
+		.Joint("head", "body", 0, -150)
+		.Joint("arm", "body", 150, -300)
+		.Joint("off", "body", -150, -300)
+		.Joint("tendrilL", "body", -220, -210)
+		.Joint("tendrilR", "body", 220, -230)
+		.Joint("tendrilHighL", "body", -60, -430)
+		.Joint("tendrilHighR", "body", 90, -460)
+		// reaching tendrils, behind the mass
+		.Part("tendrilL", Dark, Thick(11f, "-220,-210 -300,-250 -345,-330 -335,-430 -360,-500"), -1)
+		.Part("tendrilR", Dark, Thick(11f, "220,-230 300,-300 325,-390 305,-490 330,-560"), -1)
+		.Part("tendrilHighL", Dark, Thick(13f, "-60,-430 -150,-520 -130,-640 -175,-730"), -1)
+		.Part("tendrilHighR", Dark, Thick(13f, "90,-460 175,-570 150,-700 190,-760"), -1)
+		// the mass itself: a ragged base dissolving into the floor, rising out of sight
+		.Part("body", Dark,
+			"-285,0 -262,-14 -240,4 -214,-12 -186,6 -160,-10 -130,5 -100,-12 -70,4 -40,-10 -10,6 20,-12 " +
+			"50,5 80,-10 110,6 140,-12 170,4 200,-12 230,5 258,-12 285,0 " +
+			"272,-90 238,-240 214,-400 232,-560 196,-760 -196,-760 -236,-560 -212,-400 -244,-240 -276,-90")
+		.Part("body", Void, "-150,-60 -120,-200 -130,-360 -60,-430 60,-440 130,-360 118,-200 150,-60 0,-30")
+		// the great tendrils it strikes with, in front
+		.Part("arm", Dark, Thick(17f, "150,-300 235,-262 285,-182 302,-92 334,-14"), 1)
+		.Part("arm", Dark, "322,-30 352,0 330,6", 1)
+		.Part("off", Dark, Thick(17f, "-150,-300 -235,-262 -285,-182 -302,-92 -334,-14"), 1)
+		.Part("off", Dark, "-322,-30 -352,0 -330,6", 1)
+		// two huge, gloomy, pupil-less eyes: a dim halo around a washed-out pale disc
+		.Part("head", AbyssEyeHalo, Circle(-88f, -150f, 48f, 32))
+		.Part("head", AbyssEyeHalo, Circle(88f, -150f, 48f, 32))
+		.Part("head", AbyssEye, Circle(-88f, -150f, 38f, 32))
+		.Part("head", AbyssEye, Circle(88f, -150f, 38f, 32));
+
+	/// <summary>Abyssal Tendril → a single tendril rising from a pool of black, one round pale eye at its tip.</summary>
+	public static RigDefinition AbyssalTendril() => new RigDefinition
+		{
+			Id = "abyssal-tendril", Mode = RigMode.Darkness, Height = 170f, Width = 60f, Scale = 0.42f,
+			SwingAngle = 0.9f, Lunge = 6f, Breath = 1.4f,
+			Pool = new Vector2(46, 10), PoolColor = new Color(0.01f, 0.006f, 0.012f, 0.95f)
+		}
+		.Joint("body", "", 0, -40)
+		.Joint("arm", "body", 6, -100)
+		.Joint("head", "arm", -2, -150)
+		.Part("body", Dark, "-22,0 -12,-8 0,2 12,-8 22,0 12,-30 -10,-30")
+		.Part("body", Dark, Thick(10f, "0,-24 -10,-60 8,-100"))
+		.Part("arm", Dark, Thick(8f, "8,-100 -8,-135 4,-162"))
+		.Part("arm", Dark2, "-6,-64 -18,-70 -8,-58")
+		.Part("arm", Dark2, "4,-120 16,-126 6,-114")
+		.Part("head", AbyssEye, Circle(3f, -162f, 5f, 12));
 
 	// ── helpers ──────────────────────────────────────────────────────────────
 

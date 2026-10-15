@@ -1,7 +1,7 @@
 namespace healerfantasy.Runes;
 
 /// <summary>
-/// Identifies each of the four runes by a 1-based index. Each one deepens the night
+/// Identifies each of the five runes by a 1-based index. Each one deepens the night
 /// a little further (names and text: <see cref="RuneInfo"/>).
 ///
 /// The index also defines unlock order: acquiring rune N requires completing
@@ -32,4 +32,10 @@ public enum RuneIndex
     /// extra mechanics tagged with <c>[RuneOfTheStarlessNight]</c>.
     /// </summary>
     StarlessNight = 4,
+
+    /// <summary>
+    /// Rune of the Abyss — opens a fifth, final dungeon past the Frozen Peak:
+    /// The Abyss, home of The Infinite Abyss.
+    /// </summary>
+    Abyss = 5,
 }

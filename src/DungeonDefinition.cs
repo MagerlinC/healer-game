@@ -100,6 +100,15 @@ public class DungeonDefinition
 			{
 				GameConstants.FrozenPeakBossName // "Queen of the Frozen Wastes"
 			}
+		},
+		new()
+		{
+			// Only part of a run while the Rune of the Abyss is active (see RunState.RunDungeons).
+			Name = GameConstants.AbyssDungeonName,
+			Tier = GameConstants.AbyssTier,
+			MapPosition = new Vector2(1180f, 150f),
+			BossScenePaths = GameConstants.AbyssBossScenePaths,
+			BossNames = new[] { GameConstants.AbyssBossName }
 		}
 	];
 }

@@ -34,7 +34,7 @@ public partial class RuneTablePanel : CanvasLayer
 
 	static readonly RuneEntry[] Runes = System.Linq.Enumerable.ToArray(
 		System.Linq.Enumerable.Select(
-			new[] { RuneIndex.Twilight, RuneIndex.Nightfall, RuneIndex.Midnight, RuneIndex.StarlessNight },
+			new[] { RuneIndex.Twilight, RuneIndex.Nightfall, RuneIndex.Midnight, RuneIndex.StarlessNight, RuneIndex.Abyss },
 			r => new RuneEntry(r, RuneInfo.Name(r), RuneInfo.Description(r))));
 
 

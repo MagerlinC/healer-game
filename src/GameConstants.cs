@@ -50,6 +50,16 @@ public static class GameConstants
 	public const string FrozenPeakBossName = "Queen of the Frozen Wastes";
 	public const string FrozenTerrorName = "The Frozen Terror";
 
+	// ── Boss names — The Abyss ────────────────────────────────────────────────
+	/// <summary>
+	/// Tier 5 — a secret final dungeon past the Frozen Peak, only part of a run while
+	/// the Rune of the Abyss is active.
+	/// </summary>
+	public const int AbyssTier = 5;
+
+	public const string AbyssDungeonName = "The Abyss";
+	public const string AbyssBossName = "The Infinite Abyss";
+
 
 	public const string BossGroupName = "boss";
 	public const string PartyGroupName = "party";
@@ -59,7 +69,8 @@ public static class GameConstants
 		{ 1, new List<int> { 800, 1000, 1200 } },
 		{ 2, new List<int> { 1400, 2000, 2200 } },
 		{ 3, new List<int> { 2400, 2800, 3000 } },
-		{ 4, new List<int> { 5000 } }
+		{ 4, new List<int> { 5000 } },
+		{ 5, new List<int> { 9000 } }
 	};
 
 	public static float InfiniteDuration = 999999f;
@@ -123,6 +134,12 @@ public static class GameConstants
 	public static readonly string[] FrozenPeakBossScenePaths =
 	{
 		"res://levels/QueenOfTheFrozenWastes.tscn"
+	};
+
+	/// <summary>Packed scene path for The Abyss — the secret final encounter.</summary>
+	public static readonly string[] AbyssBossScenePaths =
+	{
+		"res://levels/TheInfiniteAbyss.tscn"
 	};
 
 	// ── Rune system ───────────────────────────────────────────────────────────

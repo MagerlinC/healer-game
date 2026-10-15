@@ -85,6 +85,20 @@ public sealed class RigDefinition
 	public bool BehindOtherBosses;
 
 	/// <summary>
+	/// Where the feet sit below the owner's origin, in world units. Negative (the default)
+	/// means "mid-body", i.e. 45% of the drawn height. A towering figure sets this so it
+	/// stands on its origin and rises (partly off-screen) above it.
+	/// </summary>
+	public float FeetOffset = -1f;
+
+	/// <summary>
+	/// Darkness: the highest point (design y, negative = up) the damage burn climbs to.
+	/// 0 uses the top of the drawn shape. For figures that rise off-screen, so the burn
+	/// stays in the part the player can see.
+	/// </summary>
+	public float BurnTop;
+
+	/// <summary>
 	/// Per-rig overrides for how sprite animation names map to poses
 	/// ("attack", "cast", "move", "idle"). Unlisted names use the shared defaults.
 	/// </summary>

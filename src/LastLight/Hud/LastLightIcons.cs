@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Godot;
 using healerfantasy.SpellResources;
 
@@ -71,31 +73,122 @@ public static class LastLightIcons
 		return Render("effect:gloom", SpellSchool.Umbra, GloomGlyph, false);
 	}
 
+	const string RuneStonePath = "res://assets/interactibles/rune.png";
+
 	/// <summary>
-	/// A rune: a standing stone carved with the sky at that hour of the night. The
-	/// runes go darker as they go: a sinking sun, a crescent, a sliver, then no light at all.
+	/// A rune: the blank rune stone (<see cref="RuneStonePath"/>) with the sky at that hour
+	/// of the night carved into it. The runes go darker as they go: a sinking sun, a crescent,
+	/// a sliver, no light at all, and finally the Abyss looking back.
 	/// </summary>
 	public static Texture2D ForRune(Runes.RuneIndex rune)
+	{
+		var key = "rune:" + rune;
+		if (Cache.TryGetValue(key, out var cached)) return cached;
+
+		var previous = CultureInfo.CurrentCulture;
+		CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+		try
+		{
+			// Marks are drawn on the usual 64×64 grid; only light and dark shapes, no
+			// background-coloured covers, since the stone shows through around them.
+			var mark = rune switch
+			{
+				// Twilight: the sun half-sunk below a horizon line
+				Runes.RuneIndex.Twilight => Path("M19,37 A13,13 0 0 1 45,37 Z", "{H}", "{C}", 1.5f) + Line(13, 37, 51, 37, 3),
+				// Nightfall: a crescent moon
+				Runes.RuneIndex.Nightfall => Crescent(32, 32, 14, 38, 28, 12),
+				// Midnight: only a thin sliver of moon left
+				Runes.RuneIndex.Midnight => Crescent(32, 32, 14, 35.5f, 30.5f, 13.5f),
+				// Abyss: blackness with two pale eyes open in it
+				Runes.RuneIndex.Abyss => Circle(32, 32, 16, "#050307") + Circle(25.5f, 31, 3.6f, "{H}") + Circle(38.5f, 31, 3.6f, "{H}"),
+				// Starless Night: an empty, lightless disc
+				_ => Circle(32, 32, 14, "#050307") + Ring(32, 32, 14, 2f, "{C}", 0.8f)
+			};
+			// A dark, slightly offset copy underneath reads as the cut into the stone.
+			var carve = Regex.Replace(mark, "(fill|stroke)='(?!none)[^']*'", "$1='#1f1a17'");
+
+			var c = Runes.RuneInfo.Color(rune);
+			var svg = ("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 91 120' width='91' height='120'>" +
+			           "<g transform='translate(7.1,18.6) scale(1.2)'>" +
+			           "<g transform='translate(1,1.4)' opacity='0.8'>" + carve + "</g>" + mark + "</g></svg>")
+				.Replace("{C}", "#" + c.ToHtml(false))
+				.Replace("{H}", "#" + c.Lerp(Colors.White, 0.55f).ToHtml(false));
+
+			var glyph = new Image();
+			var stone = GD.Load<Texture2D>(RuneStonePath)?.GetImage();
+			if (glyph.LoadSvgFromString(svg, RasterScale) != Error.Ok || stone == null)
+			{
+				GD.PushWarning($"[LastLightIcons] could not render {key}");
+				return Cache[key] = null;
+			}
+			stone = (Image)stone.Duplicate();
+			if (stone.IsCompressed()) stone.Decompress();
+			stone.Convert(Image.Format.Rgba8);
+			stone.Resize(glyph.GetWidth(), glyph.GetHeight(), Image.Interpolation.Cubic);
+			stone.BlendRect(glyph, new Rect2I(0, 0, glyph.GetWidth(), glyph.GetHeight()), Vector2I.Zero);
+
+			var tex = ImageTexture.CreateFromImage(stone);
+			Ours.Add(tex);
+			return Cache[key] = tex;
+		}
+		finally
+		{
+			CultureInfo.CurrentCulture = previous;
+		}
+	}
+
+	/// <summary>
+	/// A crescent: the disc at (cx, cy, r) with the disc at (ix, iy, ir) taken out of it,
+	/// as one polygon (sampled, so no covering shape is needed).
+	/// </summary>
+	static string Crescent(float cx, float cy, float r, float ix, float iy, float ir, string fill = "{H}")
+	{
+		const int samples = 120;
+		var outer = new Vector2(cx, cy);
+		var inner = new Vector2(ix, iy);
+		var away = Mathf.Atan2(cy - iy, cx - ix); // the lit side faces away from the shadow disc
+		var pts = new List<Vector2>();
+		for (var i = 0; i <= samples; i++)
+		{
+			var a = away - Mathf.Pi + Mathf.Tau * i / samples;
+			var p = outer + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
+			if (p.DistanceTo(inner) >= ir) pts.Add(p);
+		}
+		var back = new List<Vector2>();
+		for (var i = 0; i <= samples; i++)
+		{
+			var a = away - Mathf.Pi + Mathf.Tau * i / samples;
+			var p = inner + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * ir;
+			if (p.DistanceTo(outer) <= r) back.Add(p);
+		}
+		back.Reverse();
+		pts.AddRange(back);
+		return Poly(string.Join(" ", pts.Select(p => $"{p.X:0.##},{p.Y:0.##}")), fill);
+	}
+
+	/// <summary>The Infinite Abyss's ability icons (cast bars, debuffs, the combat log).</summary>
+	public static Texture2D ForAbyss(string ability)
 	{
 		var previous = CultureInfo.CurrentCulture;
 		CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 		try
 		{
-			const string stone = "32,6 48,14 52,40 44,58 20,58 12,40 16,14";
-			var mark = rune switch
+			var glyph = ability switch
 			{
-				// Twilight: the sun half-sunk below a horizon line
-				Runes.RuneIndex.Twilight => Circle(32, 36, 10, "{H}") + Poly("18,36 46,36 46,48 18,48", "#1c1714")
-				                            + Line(17, 36, 47, 36, 2),
-				// Nightfall: a crescent moon
-				Runes.RuneIndex.Nightfall => Circle(32, 31, 11, "{H}") + Circle(37, 28, 10, "#1c1714"),
-				// Midnight: only a thin sliver of moon left
-				Runes.RuneIndex.Midnight => Circle(32, 31, 11, "{H}") + Circle(35, 30, 11, "#1c1714"),
-				// Starless Night: an empty, lightless disc
-				_ => Circle(32, 31, 11, "#000000") + Ring(32, 31, 11, 1.5f, "{C}", 0.6f)
+				// a black weight pressing down on the ground
+				"crushing-dark" => Poly("14,8 50,8 41,34 32,54 23,34", "{U}", "{C}") + Line(12, 58, 52, 58, 3, "{H}"),
+				// a tendril spearing down from above into a marked circle
+				"falling-tendril" => Ring(32, 52, 9, 2.5f, "{H}") + Path("M38,2 C26,16 42,28 32,48", "none", "{C}", 6)
+				                     + Path("M38,2 C26,16 42,28 32,48", "none", "{U}", 2.5f),
+				// two huge eyes opening in the black
+				"stare" => Circle(32, 32, 26, "#000000") + Poly("8,32 20,23 30,31 20,38", "{H}") + Poly("56,32 44,23 34,31 44,38", "{H}")
+				           + Line(20, 25, 20, 37, 2.5f, "#000000") + Line(44, 25, 44, 37, 2.5f, "#000000"),
+				// the light swallowed: a thin ring of it left around a black disc
+				"eclipse" => Circle(32, 32, 17, "{H}") + Circle(32, 32, 14.5f, "#000000"),
+				// a single tendril lashing sideways
+				_ => Path("M14,56 C18,36 44,40 42,22 C41,14 48,10 54,10", "none", "{C}", 5) + Circle(54, 10, 3, "{H}")
 			};
-			var glyph = Poly(stone, "#1c1714", "{C}") + mark;
-			return Render("rune:" + rune, Runes.RuneInfo.Color(rune), glyph, false);
+			return Render("abyss:" + ability, new Color(0.55f, 0.36f, 0.62f), glyph, false);
 		}
 		finally
 		{

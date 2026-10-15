@@ -21,14 +21,14 @@ public static class RuneStore
     const string FileSavePath = "user://runes.save";
 
     /// <summary>Total number of runes in the game.</summary>
-    public const int TotalRunes = 4;
+    public const int TotalRunes = 5;
 
     // ── data ──────────────────────────────────────────────────────────────────
 
     public sealed class RuneData
     {
         /// <summary>
-        /// How many runes have been permanently unlocked (0–4).
+        /// How many runes have been permanently unlocked (0–5).
         /// Rune N is unlocked when <c>AcquiredRuneCount >= N</c>.
         /// </summary>
         public int AcquiredRuneCount { get; set; } = 0;
@@ -38,7 +38,7 @@ public static class RuneStore
 
     static RuneData _data = LoadFromDisk();
 
-    /// <summary>How many runes have been permanently unlocked (0–4).</summary>
+    /// <summary>How many runes have been permanently unlocked (0–5).</summary>
     public static int AcquiredRuneCount => _data.AcquiredRuneCount;
 
     /// <summary>Returns <c>true</c> if rune <paramref name="index"/> has been acquired.</summary>

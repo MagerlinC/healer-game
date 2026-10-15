@@ -54,7 +54,7 @@ public partial class IconSheet : CanvasLayer
 		var runeTitle = new Label { Text = "Runes", CustomMinimumSize = new Vector2(90, 0) };
 		LastLightHud.Style(runeTitle, 16, new Color(0.86f, 0.8f, 0.66f));
 		runes.AddChild(runeTitle);
-		foreach (var rune in new[] { Runes.RuneIndex.Twilight, Runes.RuneIndex.Nightfall, Runes.RuneIndex.Midnight, Runes.RuneIndex.StarlessNight })
+		foreach (var rune in new[] { Runes.RuneIndex.Twilight, Runes.RuneIndex.Nightfall, Runes.RuneIndex.Midnight, Runes.RuneIndex.StarlessNight, Runes.RuneIndex.Abyss })
 			runes.AddChild(Cell(LastLightIcons.ForRune(rune), Runes.RuneInfo.Name(rune)));
 	}
 

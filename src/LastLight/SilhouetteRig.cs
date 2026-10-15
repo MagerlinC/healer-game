@@ -90,7 +90,7 @@ public partial class SilhouetteRig : CanvasGroup
 		_seed = GD.Randf() * 100f;
 		_t = GD.Randf() * 10f;
 		_lastPos = _owner.GlobalPosition;
-		_feetOffset = new Vector2(0f, _def.Height * _def.Scale * 0.45f);
+		_feetOffset = new Vector2(0f, _def.FeetOffset >= 0f ? _def.FeetOffset : _def.Height * _def.Scale * 0.45f);
 		// Some enemies pulse their sprite's scale; the rig follows relative to this.
 		if (_src != null) _srcBaseScale = _src.Scale.Abs();
 
@@ -442,7 +442,8 @@ public partial class SilhouetteRig : CanvasGroup
 		// over the shape actually drawn; the party uses its nominal height.
 		var lift = _joints[0].Offset.Y;
 		var feet = _def.Mode == RigMode.Darkness ? xf * new Vector2(0f, _drawnBottom + lift) : xf * Vector2.Zero;
-		var top = _def.Mode == RigMode.Darkness ? xf * new Vector2(0f, _drawnTop + lift) : xf * new Vector2(0f, -_def.Height);
+		var burnTop = _def.BurnTop < 0f ? Mathf.Max(_def.BurnTop, _drawnTop) : _drawnTop;
+		var top = _def.Mode == RigMode.Darkness ? xf * new Vector2(0f, burnTop + lift) : xf * new Vector2(0f, -_def.Height);
 		var width = xf.BasisXform(new Vector2(_def.Width, 0f)).Length();
 
 		_mat.SetShaderParameter("body_feet", feet / size);

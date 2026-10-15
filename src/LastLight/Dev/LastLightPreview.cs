@@ -17,7 +17,8 @@ public partial class LastLightPreview : Node
 
 	/// <summary>
 	/// UI states to trigger at t=2s (--do=a,b): settings, panel0..panelN (overlay panels),
-	/// tooltip, pause, killparty, killboss, bosshp:0.4, cast:Spell_Name, mouse:x;y, thorns.
+	/// tooltip, pause, killparty, killboss, bosshp:0.4, cast:Spell_Name, mouse:x;y, thorns,
+	/// abyss:stare|eclipse|tendrils|open.
 	/// </summary>
 	static string[] Actions = System.Array.Empty<string>();
 
@@ -65,6 +66,10 @@ public partial class LastLightPreview : Node
 		};
 		if (scene == "fight") RunState.Instance.SetupDevTestFight(DungeonDefinition.All[dungeon], boss);
 		else RunState.Instance.Reset();
+		// --runes=1,2,5 — activates these runes for the preview (e.g. 5 shows the Abyss on the map).
+		foreach (var arg in OS.GetCmdlineUserArgs())
+			if (arg.StartsWith("--runes="))
+				RunState.Instance.SetActiveRunes(arg.Substring(8).Split(',').Select(r => (Runes.RuneIndex)int.Parse(r)));
 		// Camp and map: pretend the first dungeon is cleared so progress is visible.
 		if (scene is "camp" or "map") RunState.Instance.CompleteDungeon();
 
@@ -132,6 +137,13 @@ public partial class LastLightPreview : Node
 					var manager = new ThornsManager();
 					scene.AddChild(manager);
 					manager.Init(GetTree().GetNodesInGroup(GameConstants.PartyGroupName).OfType<Character>(), ui);
+				}
+				else if (action.StartsWith("abyss:"))
+				{
+					// abyss:eclipse — triggers one of The Infinite Abyss's abilities right away.
+					foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
+						if (node is TheInfiniteAbyss abyss)
+							abyss.DevTrigger(action.Substring(6));
 				}
 				else if (action is "killparty" or "killboss")
 				{

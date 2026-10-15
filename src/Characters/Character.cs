@@ -94,6 +94,12 @@ public abstract partial class Character : CharacterBody2D
 	/// (seconds, see <see cref="Time.GetTicksMsec"/>). Its figure turns to face them.
 	/// </summary>
 	public Character LastAttackTarget { get; private set; }
+
+	/// <summary>
+	/// True while this enemy can't be hurt and shouldn't be focused (e.g. a boss shielded
+	/// by a phase); the party picks another target instead.
+	/// </summary>
+	public virtual bool IsUntargetable => false;
 	public double LastAttackTime { get; private set; } = -100;
 
 	public void NoteAttackTarget(Character target)

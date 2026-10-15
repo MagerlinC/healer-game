@@ -777,7 +777,7 @@ public partial class MainMenuUI : Node2D
 		if (DisplayServer.WindowGetMode() == DisplayServer.WindowMode.Windowed)
 		{
 			if (cfg.HasSectionKey(DisplaySection, "width") &&
-			    cfg.HasSectionKey(DisplaySection, "height"))
+				cfg.HasSectionKey(DisplaySection, "height"))
 			{
 				var w = (int)cfg.GetValue(DisplaySection, "width");
 				var h = (int)cfg.GetValue(DisplaySection, "height");

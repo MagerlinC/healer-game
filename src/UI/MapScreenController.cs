@@ -25,8 +25,9 @@ public partial class MapScreenController : Node2D
 {
 	// Map node positions in viewport space (1920×1080).
 	// The path winds across the map and ascends toward the frozen peak in the upper-right.
-	// Adjust these to match the actual world-map background art as needed.
-	static readonly Vector2[] NodeCentres =
+	// With the Rune of the Abyss active it climbs on past the peak, then turns back
+	// across the top of the map into the dark.
+	static readonly Vector2[] BaseCentres =
 	{
 		new(235f, 310f), // Dungeon 0 — upper-left, mountain peaks
 		new(430f, 543f), // Camp 0    — left-centre
@@ -37,9 +38,23 @@ public partial class MapScreenController : Node2D
 		new(1800f, 540f) // Dungeon 3 — The Frozen Peak, upper-far-right
 	};
 
-	static readonly bool[] IsDungeon = { true, false, true, false, true, false, true };
-	static readonly int[] DungeonIdx = { 0, -1, 1, -1, 2, -1, 3 };
-	static readonly int[] CampIdx = { -1, 0, -1, 1, -1, 2, -1 };
+	static readonly Vector2[] AbyssCentres =
+	{
+		new(1580f, 300f), // Camp 3    — above the peak
+		new(1120f, 150f) // Dungeon 4 — The Abyss, top-centre
+	};
+
+	/// <summary>True when this run continues past the Frozen Peak into the Abyss.</summary>
+	static bool HasAbyss => RunState.Instance.RunDungeons.Count > 4;
+
+	static Vector2[] NodeCentres => HasAbyss ? [..BaseCentres, ..AbyssCentres] : BaseCentres;
+
+	static bool[] IsDungeon => HasAbyss
+		? [true, false, true, false, true, false, true, false, true]
+		: [true, false, true, false, true, false, true];
+
+	static int[] DungeonIdx => HasAbyss ? [0, -1, 1, -1, 2, -1, 3, -1, 4] : [0, -1, 1, -1, 2, -1, 3];
+	static int[] CampIdx => HasAbyss ? [-1, 0, -1, 1, -1, 2, -1, 3, -1] : [-1, 0, -1, 1, -1, 2, -1];
 
 	static readonly Vector2 DungeonNodeSize = new(160f, 90f);
 	static readonly Vector2 CampNodeSize = new(120f, 72f);

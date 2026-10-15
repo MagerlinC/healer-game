@@ -75,7 +75,16 @@ public partial class RunState : Node
 	/// per tier (1, 2, 3, 4) in ascending tier order. Tier 4 has only one dungeon
 	/// (The Frozen Peak), so it is always the final destination.
 	/// </summary>
-	public List<DungeonDefinition> RunDungeons { get; private set; } = null!;
+	public List<DungeonDefinition> RunDungeons =>
+		_devDungeons ?? _pickedDungeons
+			.Where(d => d.Tier != GameConstants.AbyssTier || IsRuneActive(RuneIndex.Abyss))
+			.ToList();
+
+	/// <summary>One dungeon per tier, picked at reset (the Abyss is filtered by its rune).</summary>
+	List<DungeonDefinition> _pickedDungeons = null!;
+
+	/// <summary>Replaces the run's dungeons for a dev test fight.</summary>
+	List<DungeonDefinition>? _devDungeons;
 
 	/// <summary>Picks one dungeon per tier at random and returns them in tier order.</summary>
 	static List<DungeonDefinition> BuildRunDungeons()
@@ -295,7 +304,7 @@ public partial class RunState : Node
 		CompletedDungeons = 0;
 		CompletedCamps = 0;
 		CurrentBossIndexInDungeon = bossIndex;
-		RunDungeons = new List<DungeonDefinition> { dungeon };
+		_devDungeons = new List<DungeonDefinition> { dungeon };
 		IsDevTestFight = true;
 	}
 
@@ -335,7 +344,7 @@ public partial class RunState : Node
 	public override void _Ready()
 	{
 		Instance = this;
-		RunDungeons = BuildRunDungeons();
+		_pickedDungeons = BuildRunDungeons();
 		InitSpellsFromPreferences();
 		InitRunesFromPreferences();
 		InitSchoolAffinityFromPreferences();
@@ -370,7 +379,8 @@ public partial class RunState : Node
 		_activeRunes.Clear();
 		InitRunesFromPreferences();
 		ItemStore.Clear();
-		RunDungeons = BuildRunDungeons();
+		_pickedDungeons = BuildRunDungeons();
+		_devDungeons = null;
 
 		// Talents are wiped above, so any equipped ultimate may no longer meet its
 		// school-point requirement. Clear it so the player must re-equip it in the

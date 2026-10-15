@@ -61,7 +61,9 @@ public static class LastLightStyle
 		[typeof(TheFrozenTerror)] = _ => RigLibrary.TheFrozenTerror(),
 
 		// Rune of Ember
-		[typeof(ThornsEnemy)] = _ => RigLibrary.Thorns()
+		[typeof(ThornsEnemy)] = _ => RigLibrary.Thorns(),
+		[typeof(TheInfiniteAbyss)] = _ => RigLibrary.TheInfiniteAbyss(),
+		[typeof(AbyssalTendril)] = _ => RigLibrary.AbyssalTendril()
 	};
 
 	/// <summary>Dungeon name → background preset.</summary>
@@ -71,7 +73,8 @@ public static class LastLightStyle
 		["The Forsaken Citadel"] = LastLightBackground.Preset.ForsakenCitadel,
 		["Castle of Blood"] = LastLightBackground.Preset.CastleOfBlood,
 		["The Sanctum of Stars"] = LastLightBackground.Preset.SanctumOfStars,
-		["The Frozen Peak"] = LastLightBackground.Preset.FrozenPeak
+		["The Frozen Peak"] = LastLightBackground.Preset.FrozenPeak,
+		[GameConstants.AbyssDungeonName] = LastLightBackground.Preset.Abyss
 	};
 
 	/// <summary>How much larger bosses are drawn than their rig's design size.</summary>

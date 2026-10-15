@@ -5,7 +5,7 @@ namespace healerfantasy.Runes;
 /// <summary>
 /// Player-facing names and descriptions of the runes. Every rune makes the run
 /// harder, so they read as the night deepening: twilight, nightfall, midnight,
-/// and finally a night without stars.
+/// a night without stars, and finally the Abyss itself.
 /// </summary>
 public static class RuneInfo
 {
@@ -15,6 +15,7 @@ public static class RuneInfo
 		RuneIndex.Nightfall => "Rune of Nightfall",
 		RuneIndex.Midnight => "Rune of Midnight",
 		RuneIndex.StarlessNight => "Rune of the Starless Night",
+		RuneIndex.Abyss => "Rune of the Abyss",
 		_ => "Unknown Rune"
 	};
 
@@ -32,6 +33,9 @@ public static class RuneInfo
 		RuneIndex.StarlessNight =>
 			"Not a single star remains; yours is the only light. Every boss fights in its " +
 			"truest, darkest form, unlocking its full strength.",
+		RuneIndex.Abyss =>
+			"Beyond the night lies only the Abyss. A final path opens past the Frozen Peak, " +
+			"where The Infinite Abyss waits for the last light.",
 		_ => ""
 	};
 
@@ -41,6 +45,7 @@ public static class RuneInfo
 		RuneIndex.Twilight => new Color(0.93f, 0.6f, 0.36f),
 		RuneIndex.Nightfall => new Color(0.6f, 0.47f, 0.82f),
 		RuneIndex.Midnight => new Color(0.38f, 0.48f, 0.78f),
+		RuneIndex.Abyss => new Color(0.55f, 0.36f, 0.62f),
 		_ => new Color(0.42f, 0.42f, 0.5f)
 	};
 }

@@ -29,7 +29,10 @@ public partial class LastLightBackground : Control
 		SanctumOfStars,
 
 		/// <summary>Jagged peaks, falling snow, a pale floor and the frost ring of the arena.</summary>
-		FrozenPeak
+		FrozenPeak,
+
+		/// <summary>Nothing on the horizon at all; a broken floor whose fragments drift up into the black.</summary>
+		Abyss
 	}
 
 	public Preset BackgroundPreset = Preset.AncientKeep;
@@ -71,6 +74,11 @@ public partial class LastLightBackground : Control
 			new(0.5f, 0.55f, 0.6f),
 			new(0.26f, 0.3f, 0.36f, 0.92f), new(0.13f, 0.15f, 0.19f), new(0.04f, 0.045f, 0.06f),
 			new(0.92f, 0.96f, 1f), -2.4f, 0.03f, 1.3f, 0.45f),
+		Preset.Abyss => new Palette(0.26f,
+			new(0.008f, 0.006f, 0.012f), new(0.05f, 0.035f, 0.07f), new(0.07f, 0.055f, 0.09f), new(0.025f, 0.02f, 0.035f),
+			new(0.1f, 0.07f, 0.15f),
+			new(0.05f, 0.04f, 0.07f, 0.9f), new(0.03f, 0.024f, 0.045f), new(0.01f, 0.008f, 0.015f),
+			new(0.62f, 0.52f, 0.78f), 1.1f, 0.008f, 0.9f, 0.35f),
 		_ => Neutral
 	};
 
@@ -187,6 +195,9 @@ public partial class LastLightBackground : Control
 				return;
 			case Preset.FrozenPeak:
 				DrawFrozen(Shape, Line, w, h, far, mid, near);
+				return;
+			case Preset.Abyss:
+				DrawAbyss(Shape, w, h, far, mid, near);
 				return;
 		}
 
@@ -387,6 +398,28 @@ public partial class LastLightBackground : Control
 		// monolith fragments framing the arena
 		shape(near, 0, 1, 0, 0.2f, 0.08f, 0.24f, 0.1f, 0.7f, 0.06f, 1);
 		shape(near, w, 1, w, 0.3f, w - 0.07f, 0.28f, w - 0.1f, 0.75f, w - 0.05f, 1);
+	}
+
+	static void DrawAbyss(ShapeFn shape, float w, float h, Color far, Color mid, Color near)
+	{
+		// No horizon at all: the floor simply ends, and its broken pieces rise into the black.
+		void Shard(Color c, float x, float y, float r, float tilt)
+		{
+			shape(c, x - r, y + tilt * r, x - r * 0.3f, y - r * 0.5f, x + r * 0.6f, y - r * 0.35f - tilt * r,
+				x + r, y + r * 0.1f, x + r * 0.2f, y + r * 0.7f);
+		}
+		Shard(far, w * 0.12f, h - 0.18f, 0.025f, 0.3f);
+		Shard(far, w * 0.3f, h - 0.32f, 0.015f, -0.2f);
+		Shard(far, w * 0.74f, h - 0.26f, 0.02f, 0.4f);
+		Shard(far, w * 0.9f, h - 0.12f, 0.03f, -0.3f);
+		Shard(mid, w * 0.2f, h - 0.06f, 0.035f, -0.25f);
+		Shard(mid, w * 0.82f, h - 0.05f, 0.04f, 0.2f);
+		// the floor's broken far edge
+		shape(mid, 0, h + 0.02f, w * 0.1f, h - 0.005f, w * 0.18f, h + 0.012f, w * 0.3f, h - 0.004f, w * 0.42f, h + 0.015f,
+			w * 0.55f, h - 0.006f, w * 0.68f, h + 0.012f, w * 0.8f, h - 0.004f, w * 0.92f, h + 0.016f, w, h, w, h + 0.06f, 0, h + 0.06f);
+		// jagged black fragments framing the arena
+		shape(near, 0, 1, 0, 0.28f, 0.05f, 0.34f, 0.09f, 0.62f, 0.06f, 0.8f, 0.11f, 1);
+		shape(near, w, 1, w, 0.32f, w - 0.06f, 0.4f, w - 0.1f, 0.7f, w - 0.07f, 1);
 	}
 
 	static void DrawFrozen(ShapeFn shape, LineFn line, float w, float h, Color far, Color mid, Color near)
