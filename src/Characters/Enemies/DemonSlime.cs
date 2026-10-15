@@ -260,14 +260,14 @@ public partial class DemonSlime : EnemyCharacter
 		_visual.Play("idle");
 	}
 
-	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	/// <summary>Rune of Midnight: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
-		MeleeInterval /= GameConstants.RuneTimeHasteMultiplier;
-		AcidSpitInterval /= GameConstants.RuneTimeHasteMultiplier;
-		OozeInterval /= GameConstants.RuneTimeHasteMultiplier;
-		NovaInterval /= GameConstants.RuneTimeHasteMultiplier;
-		DetonationZoneInterval /= GameConstants.RuneTimeHasteMultiplier;
+		MeleeInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		AcidSpitInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		OozeInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		NovaInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		DetonationZoneInterval /= GameConstants.RuneMidnightHasteMultiplier;
 	}
 
 }

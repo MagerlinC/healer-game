@@ -99,8 +99,8 @@ public partial class NecroticWave : Node2D
 	public override void _Ready()
 	{
 
-		// Scale speed if rune of purity is active
-		if (RunState.Instance.IsRuneActive(RuneIndex.Purity))
+		// Scale speed if the Rune of the Starless Night is active
+		if (RunState.Instance.IsRuneActive(RuneIndex.StarlessNight))
 		{
 			Speed = 115f;
 			GapSize = 110f;

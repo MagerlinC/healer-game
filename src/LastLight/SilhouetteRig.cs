@@ -44,6 +44,9 @@ public partial class SilhouetteRig : CanvasGroup
 	LanternLight _lantern;
 
 	float _t, _seed, _facing = 1f, _move, _consumed, _deathT;
+
+	// Vertical extent of the drawn polygons at rest (design units, y down).
+	float _drawnTop, _drawnBottom;
 	Vector2 _srcBaseScale = Vector2.One;
 	bool _isLightSource = true;
 	Vector2 _lastPos;
@@ -68,6 +71,12 @@ public partial class SilhouetteRig : CanvasGroup
 	}
 
 	bool IsAlive => _character?.IsAlive ?? true;
+
+	/// <summary>Half the drawn body width of <paramref name="owner"/>'s rig, in world units (0 without a rig).</summary>
+	public static float BodyRadius(Node owner) =>
+		owner.GetNodeOrNull<SilhouetteRig>("SilhouetteRig") is { } rig
+			? rig._def.Width * 0.5f * rig._def.Scale * rig._def.Grow
+			: 0f;
 
 	/// <summary>Turns the figure to face a direction (sign of <paramref name="x"/>); kept until something else turns it.</summary>
 	public void Face(float x) => _facing = x < 0f ? -1f : 1f;
@@ -96,16 +105,17 @@ public partial class SilhouetteRig : CanvasGroup
 		BuildPolygons();
 
 		// Darkness is drawn behind the party so the people you are healing stay readable
-		// (unless it is wrapped around them, like vines).
+		// (unless it is wrapped around them, like thorns).
 		if (_def.Mode == RigMode.Darkness)
-			ZIndex = _def.InFront ? 1 : -1;
+			ZIndex = _def.InFront ? 1 : _def.BehindOtherBosses ? -3 : -1;
 
 		if (_def.Pool != Vector2.Zero)
 		{
 			_pool = new Polygon2D
 			{
 				Color = _def.Hover ? new Color(_def.PoolColor, _def.PoolColor.A * 0.45f) : _def.PoolColor,
-				ZIndex = -2,
+				// under the figures; a rig drawn behind other bosses keeps its pool behind them too
+				ZIndex = _def.BehindOtherBosses ? -4 : -2,
 				Antialiased = true
 			};
 			_owner.AddChild(_pool);
@@ -119,7 +129,7 @@ public partial class SilhouetteRig : CanvasGroup
 			_owner.AddChild(_lantern);
 		}
 
-		Scale = new Vector2(_def.Scale, _def.Scale);
+		Scale = new Vector2(_def.Scale, _def.Scale) * _def.Grow;
 		ApplyPose(1f);
 	}
 
@@ -163,6 +173,12 @@ public partial class SilhouetteRig : CanvasGroup
 			var poly = new Polygon2D { Polygon = part.Points, Color = part.Color, Antialiased = true };
 			AddChild(poly);
 			_polys.Add((poly, _jointIndex[part.Joint]));
+			foreach (var p in part.Points)
+			{
+				var y = p.Y;
+				_drawnTop = Mathf.Min(_drawnTop, y);
+				_drawnBottom = Mathf.Max(_drawnBottom, y);
+			}
 		}
 	}
 
@@ -224,7 +240,7 @@ public partial class SilhouetteRig : CanvasGroup
 		}
 		else if (IsAlive)
 		{
-			var look = _def.Mode == RigMode.Party ? FindNearestBoss() : FindPartyCentre();
+			var look = _def.Mode == RigMode.Party ? FindNearestBoss() : FindFacingTarget();
 			if (look is { } p && Mathf.Abs(p.X - _owner.GlobalPosition.X) > 4f)
 				target = Mathf.Sign(p.X - _owner.GlobalPosition.X);
 		}
@@ -233,7 +249,7 @@ public partial class SilhouetteRig : CanvasGroup
 		// zero width, which reads as spinning a 3D object rather than turning around.
 		_facing = target;
 		var pulse = _src != null && _srcBaseScale.X > 0f ? Mathf.Abs(_src.Scale.X) / _srcBaseScale.X : 1f;
-		Scale = new Vector2(_def.Scale * _facing, _def.Scale) * pulse;
+		Scale = new Vector2(_def.Scale * _facing, _def.Scale) * _def.Grow * pulse;
 	}
 
 	void UpdateMovement(float dt)
@@ -244,9 +260,13 @@ public partial class SilhouetteRig : CanvasGroup
 		_move = Mathf.MoveToward(_move, target, dt * 5f);
 	}
 
+	/// <summary>
+	/// Missing health, eased: the party is consumed by darkness, the darkness is burned
+	/// away by light (see figure.gdshader). Dying finishes the job.
+	/// </summary>
 	void UpdateConsumption(float dt)
 	{
-		if (_def.Mode != RigMode.Party) return;
+		if (_def.Mode == RigMode.Light) return;
 		var target = _character == null ? 0f
 			: IsAlive ? 1f - Mathf.Clamp(_character.CurrentHealth / Mathf.Max(_character.MaxHealth, 1f), 0f, 1f)
 			: 1f;
@@ -382,7 +402,7 @@ public partial class SilhouetteRig : CanvasGroup
 				        + 0.12f * Mathf.Sin(3f * a + _t * 0.6f + _seed)
 				        + 0.07f * Mathf.Sin(7f * a - _t * 1.1f);
 				if (i % 3 == 0) r += 0.22f * (0.5f + 0.5f * Mathf.Sin(_t * 0.8f + i));
-				pts[i] = new Vector2(Mathf.Cos(a) * _def.Pool.X * r, Mathf.Sin(a) * _def.Pool.Y * r) * _def.Scale;
+				pts[i] = new Vector2(Mathf.Cos(a) * _def.Pool.X * r, Mathf.Sin(a) * _def.Pool.Y * r) * _def.Scale * _def.Grow;
 			}
 			_pool.Polygon = pts;
 			_pool.Position = _feetOffset;
@@ -418,8 +438,11 @@ public partial class SilhouetteRig : CanvasGroup
 	{
 		var size = GetViewport().GetVisibleRect().Size;
 		var xf = GetGlobalTransformWithCanvas();
-		var feet = xf * Vector2.Zero;
-		var top = xf * new Vector2(0f, -_def.Height);
+		// Darkness rigs vary wildly (wings, hovering, tall halos), so their burn line runs
+		// over the shape actually drawn; the party uses its nominal height.
+		var lift = _joints[0].Offset.Y;
+		var feet = _def.Mode == RigMode.Darkness ? xf * new Vector2(0f, _drawnBottom + lift) : xf * Vector2.Zero;
+		var top = _def.Mode == RigMode.Darkness ? xf * new Vector2(0f, _drawnTop + lift) : xf * new Vector2(0f, -_def.Height);
 		var width = xf.BasisXform(new Vector2(_def.Width, 0f)).Length();
 
 		_mat.SetShaderParameter("body_feet", feet / size);
@@ -495,16 +518,29 @@ public partial class SilhouetteRig : CanvasGroup
 		return best;
 	}
 
-	Vector2? FindPartyCentre()
+	/// <summary>How long an enemy keeps facing someone it attacked before turning back to the tank.</summary>
+	const double FaceAttackTargetFor = 3.0;
+
+	/// <summary>
+	/// Where an enemy looks: at whoever it just attacked, otherwise at the tank it
+	/// fights (the Dawnwarden), otherwise at the nearest party member.
+	/// </summary>
+	Vector2? FindFacingTarget()
 	{
-		var sum = Vector2.Zero;
-		var count = 0;
+		if (_character is { LastAttackTarget: { } target } c
+		    && GodotObject.IsInstanceValid(target) && target.IsAlive
+		    && Time.GetTicksMsec() / 1000.0 - c.LastAttackTime < FaceAttackTargetFor)
+			return target.GlobalPosition;
+
+		Character nearest = null;
+		var bestDist = float.MaxValue;
 		foreach (var node in GetTree().GetNodesInGroup(GameConstants.PartyGroupName))
 		{
-			if (node is not Character c || !c.IsAlive) continue;
-			sum += c.GlobalPosition;
-			count++;
+			if (node is not Character p || !p.IsAlive) continue;
+			if (p.CharacterName == GameConstants.DawnwardenName) return p.GlobalPosition;
+			var d = p.GlobalPosition.DistanceSquaredTo(_owner.GlobalPosition);
+			if (d < bestDist) { bestDist = d; nearest = p; }
 		}
-		return count > 0 ? sum / count : null;
+		return nearest?.GlobalPosition;
 	}
 }

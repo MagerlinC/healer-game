@@ -133,23 +133,23 @@ public static class GameConstants
 	/// </summary>
 	public const float RuneHealthBonusPerRune = 0.10f;
 
-	/// <summary>Rune 3 (Time): bosses cast all abilities this much faster (1.10 = 10% haste).</summary>
-	public const float RuneTimeHasteMultiplier = 1.10f;
+	/// <summary>Rune 3 (Midnight): bosses cast all abilities this much faster (1.10 = 10% haste).</summary>
+	public const float RuneMidnightHasteMultiplier = 1.10f;
 
-	/// <summary>Rune 1 (Void): fraction of damage dealt that becomes healing absorption.</summary>
-	public const float RuneVoidAbsorptionFraction = 0.10f;
+	/// <summary>Rune 1 (Twilight): fraction of damage dealt that becomes a Shroud (light absorption).</summary>
+	public const float RuneTwilightShroudFraction = 0.10f;
 
 	/// <summary>
-	/// Rune 2 (Nature): seconds between each vines spawn during a boss fight.
+	/// Rune 2 (Nightfall): seconds between each thorns spawn during a boss fight.
 	/// </summary>
-	public const float RuneNatureVinesInterval = 8f;
+	public const float RuneNightfallThornsInterval = 8f;
 
-	/// <summary>Rune 2 (Nature): damage the vines deal to their target per second.</summary>
-	public const float RuneNatureVinesDamagePerSecond = 10f;
+	/// <summary>Rune 2 (Nightfall): damage the thorns deal to their target per second.</summary>
+	public const float RuneNightfallThornsDamagePerSecond = 10f;
 
-	public const float RuneNatureVinesMaxHealthPerDungeonTier = 50f;
+	public const float RuneNightfallThornsMaxHealthPerDungeonTier = 50f;
 
-	/// <summary>Group name used for Vines enemies so they can be found by the UI.</summary>
-	public const string VinesGroupName = "vines";
+	/// <summary>Group name used for Thorns enemies so they can be found by the UI.</summary>
+	public const string ThornsGroupName = "thorns";
 
 }

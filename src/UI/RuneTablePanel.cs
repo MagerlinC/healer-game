@@ -1,6 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.LastLight.Hud;
 using healerfantasy;
 using healerfantasy.Runes;
 
@@ -29,19 +30,13 @@ public partial class RuneTablePanel : CanvasLayer
 	const string HealthBonusLine = "\n\nEach active rune increases all boss health by +10%.";
 
 	// ── rune display info ─────────────────────────────────────────────────────
-	record RuneInfo(RuneIndex Index, string Name, string Description);
+	record RuneEntry(RuneIndex Index, string Name, string Description);
 
-	static readonly RuneInfo[] Runes =
-	{
-		new(RuneIndex.Void, "Rune of the Void",
-			"Seeps the world in the energy of the void, making enemy damage apply a Light Absorption equal to 10% of the damage dealt to the target.\nRestored light is swallowed until the absorption is fully consumed."),
-		new(RuneIndex.Nature, "Rune of Nature",
-			"Embraces the violent growth of nature, causing Growing Vines to appear, attaching to party members and dealing damage until killed."),
-		new(RuneIndex.Time, "Rune of Time",
-			"Energizes the flow of time, granting all bosses +10% Haste, causing their attacks and abilities to fire 10% more frequently."),
-		new(RuneIndex.Purity, "Rune of Purity",
-			"Enables the purest form of each boss, unlocking their true strength.")
-	};
+	static readonly RuneEntry[] Runes = System.Linq.Enumerable.ToArray(
+		System.Linq.Enumerable.Select(
+			new[] { RuneIndex.Twilight, RuneIndex.Nightfall, RuneIndex.Midnight, RuneIndex.StarlessNight },
+			r => new RuneEntry(r, RuneInfo.Name(r), RuneInfo.Description(r))));
+
 
 	// ── node refs ─────────────────────────────────────────────────────────────
 	readonly List<RuneSlotControl> _slots = new();
@@ -295,7 +290,7 @@ public partial class RuneTablePanel : CanvasLayer
 			_icon.MouseFilter = MouseFilterEnum.Ignore;
 
 			if (isAcquired)
-				_icon.Texture = GD.Load<Texture2D>(AssetConstants.RuneIconPath(runeNum));
+				_icon.Texture = LastLightIcons.ForRune((RuneIndex)runeNum);
 			else
 				_icon.Modulate = new Color(0.18f, 0.18f, 0.18f);
 
@@ -332,7 +327,7 @@ public partial class RuneTablePanel : CanvasLayer
 
 			// Lazily load the icon texture once the rune is first acquired.
 			if (isAcquired && _icon.Texture == null)
-				_icon.Texture = GD.Load<Texture2D>(AssetConstants.RuneIconPath(_runeNum));
+				_icon.Texture = LastLightIcons.ForRune((RuneIndex)_runeNum);
 
 			MouseDefaultCursorShape = isAcquired && !locked ? CursorShape.PointingHand : CursorShape.Arrow;
 		}

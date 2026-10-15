@@ -448,14 +448,14 @@ public partial class TheNightborne : EnemyCharacter
 		tween.TweenCallback(Callable.From(dust.QueueFree));
 	}
 
-	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	/// <summary>Rune of Midnight: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
-		ShadowStrikeInterval /= GameConstants.RuneTimeHasteMultiplier;
-		VoidLanceInterval /= GameConstants.RuneTimeHasteMultiplier;
-		NightVeilInterval /= GameConstants.RuneTimeHasteMultiplier;
-		UmbralEruptionInterval /= GameConstants.RuneTimeHasteMultiplier;
-		NightsAdvanceInterval /= GameConstants.RuneTimeHasteMultiplier;
+		ShadowStrikeInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		VoidLanceInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		NightVeilInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		UmbralEruptionInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		NightsAdvanceInterval /= GameConstants.RuneMidnightHasteMultiplier;
 	}
 
 }

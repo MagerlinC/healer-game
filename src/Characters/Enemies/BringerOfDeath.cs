@@ -244,13 +244,13 @@ public partial class BringerOfDeath : EnemyCharacter
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	/// <summary>Rune of Midnight: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
-		MeleeInterval /= GameConstants.RuneTimeHasteMultiplier;
-		SoulRendInterval /= GameConstants.RuneTimeHasteMultiplier;
-		DeathMarkInterval /= GameConstants.RuneTimeHasteMultiplier;
-		EmbraceInterval /= GameConstants.RuneTimeHasteMultiplier;
+		MeleeInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		SoulRendInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		DeathMarkInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		EmbraceInterval /= GameConstants.RuneMidnightHasteMultiplier;
 	}
 
 }

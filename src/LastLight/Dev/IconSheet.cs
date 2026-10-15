@@ -47,6 +47,15 @@ public partial class IconSheet : CanvasLayer
 			foreach (var talent in TalentRegistry.AllTalents.Where(t => t.School == school))
 				row.AddChild(Cell(talent.LoadIcon(), talent.Name));
 		}
+
+		var runes = new HBoxContainer();
+		runes.AddThemeConstantOverride("separation", 8);
+		rows.AddChild(runes);
+		var runeTitle = new Label { Text = "Runes", CustomMinimumSize = new Vector2(90, 0) };
+		LastLightHud.Style(runeTitle, 16, new Color(0.86f, 0.8f, 0.66f));
+		runes.AddChild(runeTitle);
+		foreach (var rune in new[] { Runes.RuneIndex.Twilight, Runes.RuneIndex.Nightfall, Runes.RuneIndex.Midnight, Runes.RuneIndex.StarlessNight })
+			runes.AddChild(Cell(LastLightIcons.ForRune(rune), Runes.RuneInfo.Name(rune)));
 	}
 
 	static Control Cell(Texture2D icon, string name)

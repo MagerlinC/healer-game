@@ -119,12 +119,12 @@ public partial class World : Node2D
 		tutorialManager.Init(ui);
 		AddChild(tutorialManager);
 
-		// ── Rune of Nature — vines manager ────────────────────────────────────
-		if (RunState.Instance.IsRuneActive(RuneIndex.Nature) && !RunState.Instance.IsDevTestFight)
+		// ── Rune of Nightfall — thorns manager ────────────────────────────────────
+		if (RunState.Instance.IsRuneActive(RuneIndex.Nightfall) && !RunState.Instance.IsDevTestFight)
 		{
-			var vinesManager = new VinesManager();
-			AddChild(vinesManager);
-			vinesManager.Init(new[] { dawnwarden, (Character)player, duskblade, starcaller }, ui);
+			var thornsManager = new ThornsManager();
+			AddChild(thornsManager);
+			thornsManager.Init(new[] { dawnwarden, (Character)player, duskblade, starcaller }, ui);
 		}
 
 		// ── Talent selector ───────────────────────────────────────────────────

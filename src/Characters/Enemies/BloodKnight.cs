@@ -353,12 +353,12 @@ public partial class BloodKnight : EnemyCharacter
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	/// <summary>Rune of Midnight: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
-		MeleeAttackInterval /= GameConstants.RuneTimeHasteMultiplier;
-		CleaveInterval /= GameConstants.RuneTimeHasteMultiplier;
-		DrainInterval /= GameConstants.RuneTimeHasteMultiplier;
+		MeleeAttackInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		CleaveInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		DrainInterval /= GameConstants.RuneMidnightHasteMultiplier;
 	}
 
 }

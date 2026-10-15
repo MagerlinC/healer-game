@@ -46,6 +46,16 @@ public sealed class RigDefinition
 	/// <summary>Design units → world units.</summary>
 	public float Scale = 0.3f;
 
+	/// <summary>
+	/// Extra scale around the feet (they stay put, the figure grows upward). Bosses get
+	/// <see cref="LastLightStyle.BossGrow"/> so they tower over the melee party members,
+	/// who stand at the boss's mid-body.
+	/// </summary>
+	public float Grow = 1f;
+
+	/// <summary>Upper limit for <see cref="Grow"/>, for bosses that are already large on screen.</summary>
+	public float MaxGrow = 2f;
+
 	public List<RigJoint> Joints = new();
 	public List<RigPart> Parts = new();
 
@@ -65,8 +75,14 @@ public sealed class RigDefinition
 	public bool Hover;
 	public float HoverHeight = 40f;
 
-	/// <summary>Draw in front of the party instead of behind (e.g. vines wrapping an ally).</summary>
+	/// <summary>Draw in front of the party instead of behind (e.g. thorns wrapping an ally).</summary>
 	public bool InFront;
+
+	/// <summary>
+	/// Draw behind other darkness (e.g. a huge add that must never hide the boss
+	/// whose attacks the player has to read).
+	/// </summary>
+	public bool BehindOtherBosses;
 
 	/// <summary>
 	/// Per-rig overrides for how sprite animation names map to poses

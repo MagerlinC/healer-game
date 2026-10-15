@@ -188,6 +188,10 @@ public static class SpellPipeline
 		// ── 13. The school's effect on the healer's light (Gloom, embers, …) ──
 		LastLight.LightMechanics.OnCast(ctx);
 
+		// Enemies turn to face whoever they just attacked.
+		if (!caster.IsFriendly && explicitTarget is { IsFriendly: true })
+			caster.NoteAttackTarget(explicitTarget);
+
 		return ctx;
 	}
 }

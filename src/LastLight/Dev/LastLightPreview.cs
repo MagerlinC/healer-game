@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using Godot;
 
@@ -16,9 +17,12 @@ public partial class LastLightPreview : Node
 
 	/// <summary>
 	/// UI states to trigger at t=2s (--do=a,b): settings, panel0..panelN (overlay panels),
-	/// tooltip, pause, killparty, killboss, cast:Spell_Name, mouse:x;y.
+	/// tooltip, pause, killparty, killboss, bosshp:0.4, cast:Spell_Name, mouse:x;y, thorns.
 	/// </summary>
 	static string[] Actions = System.Array.Empty<string>();
+
+	/// <summary>Seconds at which to take screenshots (--times=8,11,14); the game quits after the last.</summary>
+	static List<float> ShotTimes = new() { 2.6f, 3.3f, 4.1f, 5.0f };
 
 	public override void _Ready()
 	{
@@ -33,6 +37,9 @@ public partial class LastLightPreview : Node
 			if (arg.StartsWith("--scene=")) scene = arg.Substring(8);
 			if (arg.StartsWith("--dungeon=")) dungeon = int.Parse(arg.Substring(10));
 			if (arg.StartsWith("--do=")) Actions = arg.Substring(5).Split(',');
+			if (arg.StartsWith("--times="))
+				ShotTimes = arg.Substring(8).Split(',')
+					.Select(t => float.Parse(t, System.Globalization.CultureInfo.InvariantCulture)).ToList();
 			if (arg.StartsWith("--crop="))
 			{
 				var v = arg.Substring(7).Split(',');
@@ -71,7 +78,7 @@ public partial class LastLightPreview : Node
 		public string OutPrefix = "";
 		float _t;
 		bool _damaged;
-		readonly List<float> _shots = new() { 2.6f, 3.3f, 4.1f, 5.0f };
+		readonly List<float> _shots = ShotTimes;
 		int _index;
 		bool _acted;
 
@@ -111,6 +118,20 @@ public partial class LastLightPreview : Node
 					if (spell != null && target != null)
 						healerfantasy.SpellSystem.SpellPipeline.Cast(spell, healer, target);
 					else GD.PrintErr($"[preview] could not cast '{name}'");
+				}
+				else if (action.StartsWith("bosshp:"))
+				{
+					// bosshp:0.4 — damages every boss down to that fraction of its health.
+					var fraction = float.Parse(action.Substring(7), System.Globalization.CultureInfo.InvariantCulture);
+					foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
+						if (node is Character c) c.TakeDamage(Mathf.Max(c.CurrentHealth - c.MaxHealth * fraction, 0f));
+				}
+				else if (action == "thorns" && scene?.GetNodeOrNull<global::GameUI>("PartyUI") is { } ui)
+				{
+					// thorns — starts the Rune of Nightfall's Grasping Thorns (first spawn after its interval).
+					var manager = new ThornsManager();
+					scene.AddChild(manager);
+					manager.Init(GetTree().GetNodesInGroup(GameConstants.PartyGroupName).OfType<Character>(), ui);
 				}
 				else if (action is "killparty" or "killboss")
 				{

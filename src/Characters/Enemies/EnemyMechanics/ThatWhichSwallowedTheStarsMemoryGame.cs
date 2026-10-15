@@ -56,7 +56,7 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 	bool _isPureRuneActive = false;
 	public override void _Ready()
 	{
-		_isPureRuneActive = RunState.Instance.IsRuneActive(RuneIndex.Purity);
+		_isPureRuneActive = RunState.Instance.IsRuneActive(RuneIndex.StarlessNight);
 		_rng.Randomize();
 		_arenaRect = BuildArenaRect();
 		BuildTiles();

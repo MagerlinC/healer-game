@@ -25,9 +25,8 @@ public partial class Dawnwarden : PartyMember
 	[Export] public float MoveSpeed = 80f;
 
 	/// <summary>
-	/// Distance from the boss centre at which the Dawnwarden stops and begins
-	/// attacking. Should account for the boss sprite radius so the Dawnwarden
-	/// stops just outside the boss rather than overlapping it.
+	/// Closest distance from the boss centre at which to stop and attack; wide bosses
+	/// push it out to just beyond their body (see <see cref="ReachFor"/>).
 	/// </summary>
 	[Export] public float MeleeRange = 50f;
 
@@ -56,6 +55,16 @@ public partial class Dawnwarden : PartyMember
 			_visual.Play("idle");
 	}
 
+	/// <summary>How far inside <see cref="ReachFor"/> we tolerate before stepping back.</summary>
+	const float BackOffSlack = 20f;
+
+	/// <summary>
+	/// How close to the boss's centre to stand: <see cref="MeleeRange"/>, or just
+	/// outside a wide boss's body so the two don't overlap.
+	/// </summary>
+	float ReachFor(Character boss) =>
+		Mathf.Max(MeleeRange, healerfantasy.LastLight.SilhouetteRig.BodyRadius(boss) + 25f);
+
 	public override void _Process(double delta)
 	{
 		base._Process(delta);
@@ -72,13 +81,22 @@ public partial class Dawnwarden : PartyMember
 		if (boss != null)
 		{
 			var dist = GlobalPosition.DistanceTo(boss.GlobalPosition);
-			if (dist > MeleeRange)
+			var reach = ReachFor(boss);
+			if (dist > reach)
 			{
 				var direction = (boss.GlobalPosition - GlobalPosition).Normalized();
 				Velocity = direction * MoveSpeed;
 				MoveAndSlide();
 				ClampToArenaBoundary();
 				return; // Not in range yet — skip attack logic
+			}
+			if (dist < reach - BackOffSlack)
+			{
+				// Standing inside a big boss (e.g. it moved onto us): step back out,
+				// still attacking. The slack keeps this from jittering at the edge.
+				Velocity = (GlobalPosition - boss.GlobalPosition).Normalized() * MoveSpeed * 0.6f;
+				MoveAndSlide();
+				ClampToArenaBoundary();
 			}
 			else
 			{

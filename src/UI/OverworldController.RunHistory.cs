@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using healerfantasy.LastLight.Hud;
 using healerfantasy.SpellResources;
 using healerfantasy;
 using healerfantasy.CombatLog;
@@ -146,8 +147,8 @@ public partial class OverworldController
 					icon.CustomMinimumSize = new Vector2(22f, 22f);
 					icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 					icon.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
-					icon.Texture = GD.Load<Texture2D>(AssetConstants.RuneIconPath(runeIndex));
-					icon.TooltipText = ((RuneIndex)runeIndex).ToString();
+					icon.Texture = LastLightIcons.ForRune((RuneIndex)runeIndex);
+					icon.TooltipText = RuneInfo.Name((RuneIndex)runeIndex);
 					runeRow.AddChild(icon);
 				}
 			}

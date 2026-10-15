@@ -60,8 +60,8 @@ public partial class BossQueenSnowstormSpell : SpellResource
 			return;
 		}
 
-		var purityRuneActive = RunState.Instance.IsRuneActive(RuneIndex.Purity);
-		var channel = new SnowstormChannelNode(Boss, purityRuneActive ? ChannelDuration + 2f : ChannelDuration, DamagePerTick)
+		var starlessRuneActive = RunState.Instance.IsRuneActive(RuneIndex.StarlessNight);
+		var channel = new SnowstormChannelNode(Boss, starlessRuneActive ? ChannelDuration + 2f : ChannelDuration, DamagePerTick)
 		{
 			OnChannelFinished = () => (Boss as QueenOfTheFrozenWastes)?.OnSnowstormChannelEnded()
 		};

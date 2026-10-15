@@ -29,7 +29,7 @@ public partial class BossHealthBar : CharacterFrame
 	/// <summary>
 	/// Horizontal inset shared by both the health panel and the effect-badge row.
 	/// Defaults to 48 for the full-width boss bar; pass a smaller value for
-	/// compact bars (e.g. vines bars in a narrow left-side column).
+	/// compact bars (e.g. thorns bars in a narrow left-side column).
 	/// </summary>
 	readonly int _sideMargin;
 
@@ -39,9 +39,9 @@ public partial class BossHealthBar : CharacterFrame
 	/// <summary>
 	/// Label text set by <see cref="Init"/>.  When set, this takes priority over
 	/// the <c>charName</c> argument in <see cref="UpdateProgress"/> so that a
-	/// human-readable display name (e.g. "Vine (Dawnwarden)") is preserved even when
+	/// human-readable display name (e.g. "Thorns (Dawnwarden)") is preserved even when
 	/// subsequent <see cref="Character.HealthChanged"/> signals carry the raw
-	/// <see cref="Character.CharacterName"/> (e.g. "Vines_1").
+	/// <see cref="Character.CharacterName"/> (e.g. "Thorns_1").
 	/// </summary>
 	string? _displayName;
 
@@ -79,7 +79,7 @@ public partial class BossHealthBar : CharacterFrame
 	/// <param name="bossNameOverride">
 	/// When provided, this bar tracks the named character instead of
 	/// <see cref="RunState.CurrentBossName"/>. Used for secondary bars (Astral Twin,
-	/// Rune-of-Ember vines, etc.).
+	/// Rune-of-Ember thorns, etc.).
 	/// </param>
 	/// <param name="sideMargin">
 	/// Horizontal inset in pixels applied to both the health panel and the
@@ -446,7 +446,16 @@ public partial class BossHealthBar : CharacterFrame
 		}
 		_nameLabel.OffsetLeft = 2f;
 		_currentHealthLabel.OffsetRight = -2f;
-		LastLightHud.Style(_nameLabel, 19, LastLightHud.Text);
+
+		// Compact bars (adds like Grasping Thorns) are narrow: a smaller name that
+		// stops short of the health numbers, trimmed if it would still run into them.
+		var compact = _sideMargin < 32;
+		if (compact)
+		{
+			_nameLabel.OffsetRight = -54f;
+			_nameLabel.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
+		}
+		LastLightHud.Style(_nameLabel, compact ? 13 : 19, LastLightHud.Text);
 		LastLightHud.Style(_currentHealthLabel, 12, LastLightHud.TextDim);
 	}
 }

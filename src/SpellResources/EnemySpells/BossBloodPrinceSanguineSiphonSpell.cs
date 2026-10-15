@@ -101,12 +101,12 @@ public partial class BossBloodPrinceSanguineSiphonSpell : SpellResource
 			return;
 		}
 
-		var purityRuneActive = RunState.Instance.IsRuneActive(RuneIndex.Purity);
+		var starlessRuneActive = RunState.Instance.IsRuneActive(RuneIndex.StarlessNight);
 		// ── spawn the channel node on the World (boss's parent) ───────────────
 		var channelNode = new SanguineSiphonChannelNode(
 			Boss,
 			targets,
-			purityRuneActive ? ChannelDuration : ChannelDuration + 2f,
+			starlessRuneActive ? ChannelDuration : ChannelDuration + 2f,
 			LifeLeechedPerTick);
 
 		channelNode.OnChannelFinished = () =>

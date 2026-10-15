@@ -28,11 +28,11 @@ using SpellResource = healerfantasy.SpellResources.SpellResource;
 ///
 /// Mini-enemy health bars
 /// ──────────────────────
-/// Spawned adds (VinesEnemy, BloodRune, etc.) each get a compact floating health
+/// Spawned adds (ThornsEnemy, BloodRune, etc.) each get a compact floating health
 /// bar that tracks their world-space position.  Optionally a small cast bar can
 /// be embedded below the health bar for adds that channel spells (e.g. Blood Rune).
 /// Call <see cref="AddMiniEnemyHealthBar"/> for any add that needs a health frame;
-/// <see cref="AddVinesHealthBar"/> is a thin wrapper kept for VinesManager
+/// <see cref="AddThornsHealthBar"/> is a thin wrapper kept for ThornsManager
 /// compatibility.
 /// </summary>
 public partial class GameUI : CanvasLayer
@@ -78,7 +78,7 @@ public partial class GameUI : CanvasLayer
 
 	/// <summary>
 	/// Positioned screen-space wrapper for each active mini-enemy health bar
-	/// (VinesEnemy, BloodRune, etc.).
+	/// (ThornsEnemy, BloodRune, etc.).
 	/// </summary>
 	readonly Dictionary<string, Control> _miniEnemyBarAnchors = new();
 
@@ -333,7 +333,7 @@ public partial class GameUI : CanvasLayer
 		if (_bossHealthBar.IsHovered())
 			return AliveOrFallback(_primaryBossCharacter, _secondaryBossCharacter);
 
-		// Mini-enemy bars (VinesEnemy, BloodRune, etc.) — return the matching Character.
+		// Mini-enemy bars (ThornsEnemy, BloodRune, etc.) — return the matching Character.
 		foreach (var (charName, bar) in _miniEnemyBars)
 		{
 			if (bar.IsHovered() && _miniEnemyCharacters.TryGetValue(charName, out var enemy)
@@ -418,7 +418,7 @@ public partial class GameUI : CanvasLayer
 		_bossCastBar.OffsetBottom = 278f;
 	}
 
-	// ── Mini-enemy health bars (VinesEnemy, BloodRune, etc.) ─────────────────
+	// ── Mini-enemy health bars (ThornsEnemy, BloodRune, etc.) ─────────────────
 
 	/// <summary>
 	/// Creates a compact health bar — and optionally an embedded cast bar — for
@@ -480,14 +480,14 @@ public partial class GameUI : CanvasLayer
 	}
 
 	/// <summary>
-	/// Creates a compact health bar for <paramref name="vines"/> and adds it to
+	/// Creates a compact health bar for <paramref name="thorns"/> and adds it to
 	/// a floating screen-space anchor above the attached target.
 	/// Wrapper around <see cref="AddMiniEnemyHealthBar"/> kept for
-	/// <see cref="VinesManager"/> compatibility.
+	/// <see cref="ThornsManager"/> compatibility.
 	/// </summary>
-	public void AddVinesHealthBar(VinesEnemy vines)
+	public void AddThornsHealthBar(ThornsEnemy thorns)
 	{
-		AddMiniEnemyHealthBar(vines, vines.DisplayName, hasCastBar: false);
+		AddMiniEnemyHealthBar(thorns, thorns.DisplayName, hasCastBar: false);
 	}
 
 	/// <summary>
@@ -509,13 +509,13 @@ public partial class GameUI : CanvasLayer
 	}
 
 	/// <summary>
-	/// Removes the vines health bar for the character named
-	/// <paramref name="vinesCharacterName"/>.
+	/// Removes the thorns health bar for the character named
+	/// <paramref name="thornsCharacterName"/>.
 	/// Wrapper around <see cref="RemoveMiniEnemyHealthBar"/> kept for
-	/// <see cref="VinesManager"/> compatibility.
+	/// <see cref="ThornsManager"/> compatibility.
 	/// </summary>
-	public void RemoveVinesHealthBar(string vinesCharacterName)
-		=> RemoveMiniEnemyHealthBar(vinesCharacterName);
+	public void RemoveThornsHealthBar(string thornsCharacterName)
+		=> RemoveMiniEnemyHealthBar(thornsCharacterName);
 
 	void UpdateMiniEnemyBarPositions()
 	{

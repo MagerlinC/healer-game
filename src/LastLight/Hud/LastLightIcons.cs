@@ -71,17 +71,50 @@ public static class LastLightIcons
 		return Render("effect:gloom", SpellSchool.Umbra, GloomGlyph, false);
 	}
 
+	/// <summary>
+	/// A rune: a standing stone carved with the sky at that hour of the night. The
+	/// runes go darker as they go: a sinking sun, a crescent, a sliver, then no light at all.
+	/// </summary>
+	public static Texture2D ForRune(Runes.RuneIndex rune)
+	{
+		var previous = CultureInfo.CurrentCulture;
+		CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+		try
+		{
+			const string stone = "32,6 48,14 52,40 44,58 20,58 12,40 16,14";
+			var mark = rune switch
+			{
+				// Twilight: the sun half-sunk below a horizon line
+				Runes.RuneIndex.Twilight => Circle(32, 36, 10, "{H}") + Poly("18,36 46,36 46,48 18,48", "#1c1714")
+				                            + Line(17, 36, 47, 36, 2),
+				// Nightfall: a crescent moon
+				Runes.RuneIndex.Nightfall => Circle(32, 31, 11, "{H}") + Circle(37, 28, 10, "#1c1714"),
+				// Midnight: only a thin sliver of moon left
+				Runes.RuneIndex.Midnight => Circle(32, 31, 11, "{H}") + Circle(35, 30, 11, "#1c1714"),
+				// Starless Night: an empty, lightless disc
+				_ => Circle(32, 31, 11, "#000000") + Ring(32, 31, 11, 1.5f, "{C}", 0.6f)
+			};
+			var glyph = Poly(stone, "#1c1714", "{C}") + mark;
+			return Render("rune:" + rune, Runes.RuneInfo.Color(rune), glyph, false);
+		}
+		finally
+		{
+			CultureInfo.CurrentCulture = previous;
+		}
+	}
+
 	/// <summary>True for icons made here — they are already in palette and must not be toned down.</summary>
 	public static bool IsOurs(Texture2D texture) => texture != null && Ours.Contains(texture);
 
 	// ── rendering ────────────────────────────────────────────────────────────
 
-	static Texture2D Render(string key, SpellSchool school, string glyph, bool talent)
+	static Texture2D Render(string key, SpellSchool school, string glyph, bool talent) =>
+		Render(key, school == SpellSchool.Generic ? new Color(0.86f, 0.8f, 0.66f) : SchoolInfo.Color(school), glyph, talent);
+
+	static Texture2D Render(string key, Color c, string glyph, bool talent)
 	{
 		if (Cache.TryGetValue(key, out var cached)) return cached;
 
-		var c = SchoolInfo.Color(school);
-		if (school == SpellSchool.Generic) c = new Color(0.86f, 0.8f, 0.66f);
 		var hot = c.Lerp(Colors.White, 0.65f);
 
 		var svg = new StringBuilder()

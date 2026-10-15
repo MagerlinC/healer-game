@@ -349,7 +349,7 @@ public static partial class RigLibrary
 	/// <summary>Queen of the Frozen Wastes → a tall queen in an icicle crown with a frost-crystal staff.</summary>
 	public static RigDefinition QueenOfTheFrozenWastes() => new RigDefinition
 		{
-			Id = "queen-of-the-frozen-wastes", Mode = RigMode.Darkness, Height = 300f, Width = 130f,
+			Id = "queen-of-the-frozen-wastes", Mode = RigMode.Darkness, Height = 300f, Width = 130f, MaxGrow = 1.05f, // the Frozen Peak camera is close; she already towers
 			Scale = 0.37f, SwingAngle = 1.1f, Lunge = 8f, Breath = 0.6f, CastRaise = 1.4f,
 			Pool = new Vector2(150, 24), PoolColor = FrostPool
 		}
@@ -381,6 +381,9 @@ public static partial class RigLibrary
 	public static RigDefinition TheFrozenTerror() => new RigDefinition
 		{
 			Id = "the-frozen-terror", Mode = RigMode.Darkness, Height = 230f, Width = 300f, Scale = 0.5f,
+			// Already huge, and joins the Queen mid-fight: stays its size and behind her,
+			// so her ice cone can always be read.
+			MaxGrow = 1f, BehindOtherBosses = true,
 			SwingAngle = 1.1f, Lunge = 18f, Breath = 1.4f, CastRaise = 0.6f,
 			Pool = new Vector2(180, 26), PoolColor = FrostPool
 		}
@@ -411,13 +414,13 @@ public static partial class RigLibrary
 		.Part("arm", Dark, "140,-6 158,10 132,6", 1);
 
 	// ═════════════════════════════════════════════════════════════════════════
-	// RUNE OF NATURE
+	// RUNE OF NIGHTFALL
 	// ═════════════════════════════════════════════════════════════════════════
 
-	/// <summary>Vines → thorned black tendrils coiling up around the ally they strangle.</summary>
-	public static RigDefinition Vines() => new RigDefinition
+	/// <summary>Grasping Thorns (Rune of Nightfall) → black thorned tendrils coiling up around the ally they strangle, tips cold and pale.</summary>
+	public static RigDefinition Thorns() => new RigDefinition
 		{
-			Id = "vines", Mode = RigMode.Darkness, Height = 120f, Width = 80f, Scale = 0.46f,
+			Id = "thorns", Mode = RigMode.Darkness, Height = 120f, Width = 80f, Scale = 0.46f,
 			Breath = 1.6f, InFront = true
 		}
 		.Joint("body", "", 0, -20)
@@ -431,8 +434,9 @@ public static partial class RigLibrary
 		.Part("arm", Dark2, "20,-40 30,-44 22,-34")
 		.Part("arm", Dark2, "6,-72 -4,-78 4,-66")
 		.Part("off", Dark2, "-30,-36 -40,-34 -32,-28")
-		.Part("arm", new Color(0.45f, 0.6f, 0.3f), Circle(14f, -118f, 2f, 8))
-		.Part("body", new Color(0.45f, 0.6f, 0.3f), Circle(-16f, -116f, 1.6f, 8));
+		.Part("arm", ColdEye, Circle(14f, -118f, 2.2f, 8))
+		.Part("body", ColdEye, Circle(-16f, -116f, 1.8f, 8))
+		.Part("off", ColdEye, Circle(-24f, -92f, 1.6f, 8));
 
 	// ── helpers ──────────────────────────────────────────────────────────────
 

@@ -68,6 +68,14 @@ public partial class PartyFrame : CharacterFrame
 		_showItemEffects = showItemEffects;
 	}
 
+	const float FrameWidth = 160f;
+
+	/// <summary>
+	/// As many badges per row as fit the frame; more effects wrap onto new rows
+	/// above (the frames are bottom-aligned), so the frame never widens.
+	/// </summary>
+	protected override int EffectGridColumns => ColumnsThatFit(FrameWidth);
+
 	public override void _Ready()
 	{
 		MouseFilter = MouseFilterEnum.Pass;
@@ -78,7 +86,7 @@ public partial class PartyFrame : CharacterFrame
 
 		// ── outer panel ───────────────────────────────────────────────────────
 		_frameWrapper = new Control();
-		_frameWrapper.CustomMinimumSize = new Vector2(160, 75);
+		_frameWrapper.CustomMinimumSize = new Vector2(FrameWidth, 75);
 		_frameWrapper.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 
 		_panel = new PanelContainer();

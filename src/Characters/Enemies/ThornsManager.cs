@@ -5,14 +5,14 @@ using healerfantasy;
 using healerfantasy.UI;
 
 /// <summary>
-/// Rune of Nature — manages the periodic spawning of <see cref="VinesEnemy"/>
+/// Rune of Nightfall — manages the periodic spawning of <see cref="ThornsEnemy"/>
 /// during boss fights.
 ///
 /// Added to the World scene when Rune 2 is active.  Listens for boss death to
-/// stop spawning, and immediately despawns any live vines when all bosses die
-/// (so vines don't linger after the fight ends).
+/// stop spawning, and immediately despawns any live thorns when all bosses die
+/// (so thorns don't linger after the fight ends).
 /// </summary>
-public partial class VinesManager : Node
+public partial class ThornsManager : Node
 {
     // ── state ─────────────────────────────────────────────────────────────────
 
@@ -23,7 +23,7 @@ public partial class VinesManager : Node
     /// <summary>Party member nodes injected by World._Ready().</summary>
     readonly List<Character> _party = new();
 
-    /// <summary>Reference to GameUI so we can add/remove vine health bars.</summary>
+    /// <summary>Reference to GameUI so we can add/remove thorn health bars.</summary>
     GameUI? _gameUI;
 
     // ── init ──────────────────────────────────────────────────────────────────
@@ -32,15 +32,15 @@ public partial class VinesManager : Node
     {
         _party.AddRange(partyMembers);
         _gameUI = ui;
-        // Start with a short delay so vines don't appear instantly.
-        _spawnTimer = GameConstants.RuneNatureVinesInterval;
+        // Start with a short delay so thorns don't appear instantly.
+        _spawnTimer = GameConstants.RuneNightfallThornsInterval;
     }
 
     // ── lifecycle ─────────────────────────────────────────────────────────────
 
     public override void _Ready()
     {
-        // Stop all vines activity when every boss dies.
+        // Stop all thorns activity when every boss dies.
         GlobalAutoLoad.SubscribeToSignal(
             nameof(Character.Died),
             Callable.From((Character c) =>
@@ -50,13 +50,13 @@ public partial class VinesManager : Node
                 var anyBossAlive = GetTree()
                     .GetNodesInGroup(GameConstants.BossGroupName)
                     .OfType<Character>()
-                    .Any(b => b != c && b.IsAlive && !b.IsInGroup(GameConstants.VinesGroupName));
+                    .Any(b => b != c && b.IsAlive && !b.IsInGroup(GameConstants.ThornsGroupName));
                 if (anyBossAlive) return;
 
                 _active = false;
-                // Instantly remove any live vines so they don't persist into victory.
-                foreach (var node in GetTree().GetNodesInGroup(GameConstants.VinesGroupName).ToList())
-                    if (node is VinesEnemy v)
+                // Instantly remove any live thorns so they don't persist into victory.
+                foreach (var node in GetTree().GetNodesInGroup(GameConstants.ThornsGroupName).ToList())
+                    if (node is ThornsEnemy v)
                         v.QueueFree();
             }));
     }
@@ -68,13 +68,13 @@ public partial class VinesManager : Node
         _spawnTimer -= (float)delta;
         if (_spawnTimer > 0f) return;
 
-        _spawnTimer = GameConstants.RuneNatureVinesInterval;
-        SpawnVines();
+        _spawnTimer = GameConstants.RuneNightfallThornsInterval;
+        SpawnThorns();
     }
 
     // ── private ───────────────────────────────────────────────────────────────
 
-    void SpawnVines()
+    void SpawnThorns()
     {
         // Pick a random alive party member.
         var alive = _party.Where(p => p.IsAlive).ToList();
@@ -85,21 +85,21 @@ public partial class VinesManager : Node
         var target = alive[rng.RandiRange(0, alive.Count - 1)];
 
         _spawnCounter++;
-        var vines = new VinesEnemy(target, $"Vines_{_spawnCounter}");
+        var thorns = new ThornsEnemy(target, $"Thorns_{_spawnCounter}");
 
-        // Add vines as a sibling of this manager in the World scene.
-        GetParent().AddChild(vines);
+        // Add thorns as a sibling of this manager in the World scene.
+        GetParent().AddChild(thorns);
 
-        // Register the vines health bar in the GameUI.
-        _gameUI?.AddVinesHealthBar(vines);
+        // Register the thorns health bar in the GameUI.
+        _gameUI?.AddThornsHealthBar(thorns);
 
-        // Remove the vines health bar when the vines die.
-        vines.Connect(
+        // Remove the thorns health bar when the thorns die.
+        thorns.Connect(
             nameof(Character.Died),
             Callable.From((Character c) =>
             {
-                if (c is VinesEnemy v)
-                    _gameUI?.RemoveVinesHealthBar(v.CharacterName);
+                if (c is ThornsEnemy v)
+                    _gameUI?.RemoveThornsHealthBar(v.CharacterName);
             }));
     }
 }

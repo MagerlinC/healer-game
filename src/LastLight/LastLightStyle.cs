@@ -24,7 +24,7 @@ public static class LastLightStyle
 
 	/// <summary>
 	/// Character type → rig. Rigs attach automatically whenever one of these enters
-	/// the game, so bosses and mid-fight adds (clones, runes, vines) are covered alike.
+	/// the game, so bosses and mid-fight adds (clones, runes, thorns) are covered alike.
 	/// </summary>
 	static readonly Dictionary<Type, Func<Character, RigDefinition>> Rigs = new()
 	{
@@ -61,7 +61,7 @@ public static class LastLightStyle
 		[typeof(TheFrozenTerror)] = _ => RigLibrary.TheFrozenTerror(),
 
 		// Rune of Ember
-		[typeof(VinesEnemy)] = _ => RigLibrary.Vines()
+		[typeof(ThornsEnemy)] = _ => RigLibrary.Thorns()
 	};
 
 	/// <summary>Dungeon name → background preset.</summary>
@@ -73,6 +73,9 @@ public static class LastLightStyle
 		["The Sanctum of Stars"] = LastLightBackground.Preset.SanctumOfStars,
 		["The Frozen Peak"] = LastLightBackground.Preset.FrozenPeak
 	};
+
+	/// <summary>How much larger bosses are drawn than their rig's design size.</summary>
+	public const float BossGrow = 1.3f;
 
 	static bool _rigsInstalled;
 
@@ -87,8 +90,10 @@ public static class LastLightStyle
 			// Deferred, so the character's own _Ready has built its sprite first.
 			Callable.From(() =>
 			{
-				if (GodotObject.IsInstanceValid(c) && c.GetNodeOrNull("SilhouetteRig") == null)
-					SilhouetteRig.Attach(c, make(c));
+				if (!GodotObject.IsInstanceValid(c) || c.GetNodeOrNull("SilhouetteRig") != null) return;
+				var def = make(c);
+				if (c.IsInGroup(GameConstants.BossGroupName)) def.Grow = Mathf.Min(BossGrow, def.MaxGrow);
+				SilhouetteRig.Attach(c, def);
 			}).CallDeferred();
 		};
 	}

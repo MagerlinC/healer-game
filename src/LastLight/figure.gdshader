@@ -3,7 +3,8 @@
 // The group is first rendered as-is, then this shader re-colours the result:
 //   mode 0 (party)    lit from the healer's side, warm rim on edges facing the light,
 //                     missing health = darkness rising from the feet with a jagged edge.
-//   mode 1 (darkness) near-black, faint warm rim; bright colours stay emissive (eyes).
+//   mode 1 (darkness) near-black, faint warm rim; bright colours stay emissive (eyes);
+//                     damage taken = light burning the dark away from the feet up.
 //   mode 2 (light)    the healer: unshaded, warmer toward the hem, hem fades out.
 shader_type canvas_item;
 render_mode unshaded;
@@ -27,6 +28,8 @@ uniform vec4 shade_color : source_color = vec4(0.11, 0.095, 0.08, 1.0);
 uniform vec4 rim_color : source_color = vec4(1.0, 0.86, 0.6, 1.0);
 uniform vec4 dark_color : source_color = vec4(0.018, 0.014, 0.014, 1.0);
 uniform float rim_px = 2.0;
+// Darkness: width of the black rim kept around a burning silhouette, in pixels.
+uniform float burn_rim_px = 5.0;
 
 // A thin outline just outside the silhouette: always on for the party (so allies
 // stay readable inside a boss's darkness), and on darkness while it is highlighted
@@ -41,6 +44,13 @@ float vnoise(float x) {
 	float f = fract(x);
 	f = f * f * (3.0 - 2.0 * f);
 	return mix(hash1(i), hash1(i + 1.0), f);
+}
+float vnoise2(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash2(i), hash2(i + vec2(1.0, 0.0)), f.x),
+	           mix(hash2(i + vec2(0.0, 1.0)), hash2(i + vec2(1.0, 1.0)), f.x), f.y);
 }
 
 void fragment() {
@@ -92,6 +102,49 @@ void fragment() {
 	} else if (mode == 1) {
 		float emissive = step(0.5, dot(base, vec3(0.3333)));
 		col = mix(base, rim_color.rgb, rim * 0.45 * (1.0 - emissive));
+
+		// Damage: the light burns the dark away from the feet up (the inverse of the
+		// party's rot). Below a ragged front the shade turns to pale, dusty light with
+		// faint brighter veins; the front glows softly and motes drift above it.
+		if (consumed > 0.002) {
+			float teeth = abs(fract(xn * 4.5 + vnoise(xn * 3.0 + seed) * 1.6) - 0.5) * 2.0;
+			float creep = vnoise(xn * 9.0 + seed * 7.0 + TIME * 0.35) - 0.5;
+			float wander = vnoise(xn * 2.2 + seed * 3.0 + TIME * 0.2) - 0.5;
+			float edge = consumed * 1.08 - 0.04 + (teeth - 0.5) * 0.05 + creep * 0.05 + wander * 0.1;
+			float below = edge - h;
+			float burned = consumed > 0.995 ? 1.0 : step(0.0, below);
+
+			// Pale, dusty light with a few faint, slowly pulsing veins.
+			vec2 g = SCREEN_UV / px / 22.0;
+			float n = vnoise2(g) * 0.75 + vnoise2(g * 2.1 + 7.0) * 0.25;
+			float crack = 1.0 - smoothstep(0.0, 0.022, abs(n - 0.5));
+			vec3 glow = vec3(1.0, 0.94, 0.82);
+			vec3 ash = vec3(0.19, 0.175, 0.155) * (0.85 + 0.3 * reach);
+			vec3 burnt = mix(ash, glow * (0.45 + 0.06 * sin(TIME * 1.2 + n * 11.0)), crack * 0.15);
+
+			float front = (1.0 - smoothstep(0.0, 0.012, abs(below))) * step(consumed, 0.995) * 0.38;
+			// Faint motes just above the front: each one dim and different, fading as it
+			// rises and as it burns out, so they read as drifting dust rather than dots.
+			vec2 cell = floor(SCREEN_UV / px / 2.0);
+			float tick = floor(TIME * 5.0);
+			float h1 = hash2(cell + tick * 0.53);
+			float rise = clamp(-below / 0.07, 0.0, 1.0);
+			float spark = step(h1, 0.015) * step(0.0, -below) * (1.0 - rise)
+				* mix(0.25, 0.6, hash2(cell * 1.7 + tick)) * (1.0 - fract(TIME * 5.0) * 0.6);
+
+			// The silhouette's rim stays dark, so the boss keeps its shape however
+			// much of it has burned: only the inside cracks open.
+			float inner = 1.0;
+			for (int i = 0; i < 8; i++) {
+				float a = float(i) * 0.7853982;
+				inner = min(inner, textureLod(screen_tex, SCREEN_UV + vec2(cos(a), sin(a)) * burn_rim_px * px, 0.0).a);
+			}
+			float interior = smoothstep(0.3, 0.9, inner);
+
+			float keep = (1.0 - emissive) * interior;
+			col = mix(col, burnt, burned * keep);
+			col = mix(col, glow, max(front, spark * mix(1.0, interior, burned)) * keep);
+		}
 	} else {
 		// Side facing the light is warm and bright, the far side falls into shade.
 		vec2 center_px = (body_feet - vec2(0.0, body_size.y * 0.5)) / px;

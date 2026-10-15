@@ -406,14 +406,14 @@ public partial class FlyingSkull : EnemyCharacter
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	/// <summary>Rune of Midnight: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
-		MeleeInterval /= GameConstants.RuneTimeHasteMultiplier;
-		ScreechInterval /= GameConstants.RuneTimeHasteMultiplier;
-		PoolInterval /= GameConstants.RuneTimeHasteMultiplier;
-		WailInterval /= GameConstants.RuneTimeHasteMultiplier;
-		WavesInterval /= GameConstants.RuneTimeHasteMultiplier;
+		MeleeInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		ScreechInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		PoolInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		WailInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		WavesInterval /= GameConstants.RuneMidnightHasteMultiplier;
 	}
 
 }

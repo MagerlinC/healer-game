@@ -415,12 +415,12 @@ public partial class AstralTwin : EnemyCharacter
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	/// <summary>Rune of Midnight: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
-		StrikeInterval /= GameConstants.RuneTimeHasteMultiplier;
-		StarfallInterval /= GameConstants.RuneTimeHasteMultiplier;
-		ConvergenceInterval /= GameConstants.RuneTimeHasteMultiplier;
+		StrikeInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		StarfallInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		ConvergenceInterval /= GameConstants.RuneMidnightHasteMultiplier;
 	}
 
 }

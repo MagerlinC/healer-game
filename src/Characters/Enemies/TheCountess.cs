@@ -493,13 +493,13 @@ public partial class TheCountess : EnemyCharacter
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	/// <summary>Rune of Midnight: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
-		MeleeAttackInterval /= GameConstants.RuneTimeHasteMultiplier;
-		BloodBoltInterval /= GameConstants.RuneTimeHasteMultiplier;
-		CurseInterval /= GameConstants.RuneTimeHasteMultiplier;
-		NovaInterval /= GameConstants.RuneTimeHasteMultiplier;
+		MeleeAttackInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		BloodBoltInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		CurseInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		NovaInterval /= GameConstants.RuneMidnightHasteMultiplier;
 	}
 
 }

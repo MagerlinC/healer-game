@@ -170,7 +170,7 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 		if (!IsAlive) return;
 
 		// ── Frostbite — apply on first tick, then manage stacks ───────────────
-		if (!_frostbiteApplied && RunState.Instance.IsRuneActive(RuneIndex.Purity))
+		if (!_frostbiteApplied && RunState.Instance.IsRuneActive(RuneIndex.StarlessNight))
 			ApplyFrostbiteToHealer();
 		UpdateFrostbiteStacks((float)delta);
 
@@ -674,14 +674,14 @@ public partial class QueenOfTheFrozenWastes : EnemyCharacter
 		GD.Print($"[QueenOfTheFrozenWastes] Frostbite — stacks: {_frostbiteEffect.CurrentStacks} (moving: {isMoving}).");
 	}
 
-	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	/// <summary>Rune of Midnight: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
-		MeleeAttackInterval /= GameConstants.RuneTimeHasteMultiplier;
-		SnowstormInterval /= GameConstants.RuneTimeHasteMultiplier;
-		IcicleInterval /= GameConstants.RuneTimeHasteMultiplier;
-		BurstOfWinterInterval /= GameConstants.RuneTimeHasteMultiplier;
-		IceBlockInterval /= GameConstants.RuneTimeHasteMultiplier;
+		MeleeAttackInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		SnowstormInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		IcicleInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		BurstOfWinterInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		IceBlockInterval /= GameConstants.RuneMidnightHasteMultiplier;
 	}
 
 }

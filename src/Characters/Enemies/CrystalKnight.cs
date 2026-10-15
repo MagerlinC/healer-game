@@ -73,7 +73,7 @@ public partial class CrystalKnight : EnemyCharacter
 	float _crushTimer;
 	float _crushWindupTimer; // counts down during the Structural Crush wind-up
 
-	bool _runeOfPurityActive = false;
+	bool _starlessRuneActive = false;
 
 	BossMeleeAttackSpell _meleeSpell;
 	BossCrystalBlastSpell _blastSpell;
@@ -105,7 +105,7 @@ public partial class CrystalKnight : EnemyCharacter
 	{
 		base._Ready();
 		CharacterName = GameConstants.Boss1Name;
-		_runeOfPurityActive = RunState.Instance.IsRuneActive(RuneIndex.Purity);
+		_starlessRuneActive = RunState.Instance.IsRuneActive(RuneIndex.StarlessNight);
 
 		// Stagger first attacks so the player has a moment to react.
 		_meleeTimer = MeleeAttackInterval;
@@ -181,7 +181,7 @@ public partial class CrystalKnight : EnemyCharacter
 			_decayTimer = DecayInterval;
 			CastCrystalDecay();
 		}
-		else if (_crushTimer <= 0f && _runeOfPurityActive)
+		else if (_crushTimer <= 0f && _starlessRuneActive)
 		{
 			_crushTimer = CrushInterval;
 			BeginStructuralCrush();
@@ -287,13 +287,13 @@ public partial class CrystalKnight : EnemyCharacter
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	/// <summary>Rune of Midnight: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
-		MeleeAttackInterval /= GameConstants.RuneTimeHasteMultiplier;
-		SpellCastInterval /= GameConstants.RuneTimeHasteMultiplier;
-		DecayInterval /= GameConstants.RuneTimeHasteMultiplier;
-		CrushInterval /= GameConstants.RuneTimeHasteMultiplier;
+		MeleeAttackInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		SpellCastInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		DecayInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		CrushInterval /= GameConstants.RuneMidnightHasteMultiplier;
 	}
 
 }

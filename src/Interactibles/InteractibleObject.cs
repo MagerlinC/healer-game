@@ -42,229 +42,236 @@ namespace healerfantasy;
 [GlobalClass]
 public partial class InteractibleObject : Area2D
 {
-    /// <summary>Raised when the player left-clicks this interactible.</summary>
-    public event Action? Interacted;
+	/// <summary>Raised when the player left-clicks this interactible.</summary>
+	public event Action? Interacted;
 
-    // ── Exported properties (Inspector-editable for editor-placed instances) ──
+	// ── Exported properties (Inspector-editable for editor-placed instances) ──
 
-    /// <summary>
-    /// res:// path to the sprite texture.
-    /// May be left empty when the texture is applied at runtime via <see cref="SetTexture"/>.
-    /// </summary>
-    [Export] public string TexturePath { get; set; } = "";
+	/// <summary>
+	/// res:// path to the sprite texture.
+	/// May be left empty when the texture is applied at runtime via <see cref="SetTexture"/>.
+	/// </summary>
+	[Export]
+	public string TexturePath { get; set; } = "";
 
-    /// <summary>Scale of the inner Sprite2D relative to this node.</summary>
-    [Export] public Vector2 SpriteScale { get; set; } = Vector2.One;
+	/// <summary>Scale of the inner Sprite2D relative to this node.</summary>
+	[Export]
+	public Vector2 SpriteScale { get; set; } = Vector2.One;
 
-    /// <summary>Radius of the CircleShape2D used for click detection.</summary>
-    [Export] public float CollisionRadius { get; set; } = 28f;
+	/// <summary>Radius of the CircleShape2D used for click detection.</summary>
+	[Export]
+	public float CollisionRadius { get; set; } = 28f;
 
-    /// <summary>
-    /// Optional res:// path to a one-shot SFX clip played on click.
-    /// Leave empty for no audio.
-    /// </summary>
-    [Export] public string SfxPath { get; set; } = "";
+	/// <summary>
+	/// Optional res:// path to a one-shot SFX clip played on click.
+	/// Leave empty for no audio.
+	/// </summary>
+	[Export]
+	public string SfxPath { get; set; } = "";
 
-    /// <summary>
-    /// Radius of the small light that marks this object in the dark (screen heights;
-    /// 0 = none). Only sprite-based objects get one; rigged figures carry their own.
-    /// </summary>
-    [Export] public float BeaconRadius { get; set; } = 0.12f;
+	/// <summary>
+	/// Radius of the small light that marks this object in the dark (screen heights;
+	/// 0 = none). Only sprite-based objects get one; rigged figures carry their own.
+	/// </summary>
+	[Export]
+	public float BeaconRadius { get; set; } = 0.10f;
 
-    // ── Runtime nodes — created in _Ready ─────────────────────────────────────
+	// ── Runtime nodes — created in _Ready ─────────────────────────────────────
 
-    Sprite2D? _sprite;
+	Sprite2D? _sprite;
 
-    /// <summary>
-    /// Second sprite rendered behind <see cref="_sprite"/> that carries the
-    /// outline-glow shader.  Starts fully transparent; tweened to opaque on
-    /// hover and back to transparent on exit.
-    /// </summary>
-    Sprite2D? _glowSprite;
+	/// <summary>
+	/// Second sprite rendered behind <see cref="_sprite"/> that carries the
+	/// outline-glow shader.  Starts fully transparent; tweened to opaque on
+	/// hover and back to transparent on exit.
+	/// </summary>
+	Sprite2D? _glowSprite;
 
-    AudioStreamPlayer? _sfxPlayer;
-    Tween? _glowTween;
-    healerfantasy.LastLight.LanternLight? _beacon;
+	AudioStreamPlayer? _sfxPlayer;
+	Tween? _glowTween;
+	LastLight.LanternLight? _beacon;
 
-    /// <summary>
-    /// Shared across all instances so the shader is compiled only once.
-    /// </summary>
-    static Shader? _glowShader;
+	/// <summary>
+	/// Shared across all instances so the shader is compiled only once.
+	/// </summary>
+	static Shader? _glowShader;
 
-    // ── Constructors ──────────────────────────────────────────────────────────
+	// ── Constructors ──────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Parameterless constructor for nodes placed in the Godot editor.
-    /// Configure the node via the exported Inspector properties and the
-    /// editor transform handles.
-    /// </summary>
-    public InteractibleObject() { }
+	/// <summary>
+	/// Parameterless constructor for nodes placed in the Godot editor.
+	/// Configure the node via the exported Inspector properties and the
+	/// editor transform handles.
+	/// </summary>
+	public InteractibleObject()
+	{
+	}
 
-    /// <summary>
-    /// Full constructor for creating the interactible entirely in code.
-    /// All parameters map directly to the equivalent exported property.
-    /// </summary>
-    /// <param name="texturePath">res:// path to the sprite texture.</param>
-    /// <param name="position">World-space position of the Area2D.</param>
-    /// <param name="spriteScale">Scale applied to the inner Sprite2D.</param>
-    /// <param name="collisionRadius">Radius of the CircleShape2D collider.</param>
-    /// <param name="sfxPath">
-    ///     Optional res:// path to a one-shot SFX clip played on click.
-    ///     Pass <c>null</c> or omit for no audio.
-    /// </param>
-    public InteractibleObject(
-        string texturePath,
-        Vector2 position,
-        Vector2 spriteScale,
-        float collisionRadius,
-        string? sfxPath = null)
-    {
-        TexturePath = texturePath;
-        Position = position;
-        SpriteScale = spriteScale;
-        CollisionRadius = collisionRadius;
-        if (sfxPath != null) SfxPath = sfxPath;
-    }
+	/// <summary>
+	/// Full constructor for creating the interactible entirely in code.
+	/// All parameters map directly to the equivalent exported property.
+	/// </summary>
+	/// <param name="texturePath">res:// path to the sprite texture.</param>
+	/// <param name="position">World-space position of the Area2D.</param>
+	/// <param name="spriteScale">Scale applied to the inner Sprite2D.</param>
+	/// <param name="collisionRadius">Radius of the CircleShape2D collider.</param>
+	/// <param name="sfxPath">
+	///     Optional res:// path to a one-shot SFX clip played on click.
+	///     Pass <c>null</c> or omit for no audio.
+	/// </param>
+	public InteractibleObject(
+		string texturePath,
+		Vector2 position,
+		Vector2 spriteScale,
+		float collisionRadius,
+		string? sfxPath = null)
+	{
+		TexturePath = texturePath;
+		Position = position;
+		SpriteScale = spriteScale;
+		CollisionRadius = collisionRadius;
+		if (sfxPath != null) SfxPath = sfxPath;
+	}
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
+	// ── Lifecycle ─────────────────────────────────────────────────────────────
 
-    public override void _Ready()
-    {
-        InputPickable = true;
-        Monitoring = false;
-        Monitorable = false;
+	public override void _Ready()
+	{
+		InputPickable = true;
+		Monitoring = false;
+		Monitorable = false;
 
-        // ── Sprites — only created when a texture path has been set ──────────
-        if (!string.IsNullOrEmpty(TexturePath))
-        {
-            var tex = GD.Load<Texture2D>(TexturePath);
+		// ── Sprites — only created when a texture path has been set ──────────
+		if (!string.IsNullOrEmpty(TexturePath))
+		{
+			var tex = GD.Load<Texture2D>(TexturePath);
 
-            // Glow sprite is added FIRST so it renders behind the main sprite.
-            _glowShader ??= BuildGlowShader();
-            _glowSprite = new Sprite2D
-            {
-                Texture  = tex,
-                Scale    = SpriteScale,
-                Modulate = new Color(1f, 1f, 1f, 0f),   // fully transparent until hovered
-                Material = new ShaderMaterial { Shader = _glowShader }
-            };
-            AddChild(_glowSprite);
+			// Glow sprite is added FIRST so it renders behind the main sprite.
+			_glowShader ??= BuildGlowShader();
+			_glowSprite = new Sprite2D
+			{
+				Texture = tex,
+				Scale = SpriteScale,
+				Modulate = new Color(1f, 1f, 1f, 0f), // fully transparent until hovered
+				Material = new ShaderMaterial { Shader = _glowShader }
+			};
+			AddChild(_glowSprite);
 
-            // Main sprite on top — reuses the already-loaded Texture2D reference.
-            _sprite = new Sprite2D { Texture = tex, Scale = SpriteScale };
-            AddChild(_sprite);
+			// Main sprite on top — reuses the already-loaded Texture2D reference.
+			_sprite = new Sprite2D { Texture = tex, Scale = SpriteScale };
+			AddChild(_sprite);
 
-            // A soft light so the object can be found in the dark; brightens on hover.
-            if (BeaconRadius > 0f)
-            {
-                _beacon = new healerfantasy.LastLight.LanternLight
-                {
-                    Radius = BeaconRadius, GlowAlpha = 0.4f, GlowScale = 1.2f, ZIndex = -1,
-                    // a steady glow: barely moving, and slowly
-                    FlickerAmount = 0.2f, FlickerSpeed = 0.12f
-                };
-                AddChild(_beacon);
-            }
-        }
+			// A soft light so the object can be found in the dark; brightens on hover.
+			if (BeaconRadius > 0f)
+			{
+				_beacon = new LastLight.LanternLight
+				{
+					Radius = BeaconRadius, GlowAlpha = 0.4f, GlowScale = 1.2f, ZIndex = -1,
+					// a steady glow: barely moving, and slowly
+					FlickerAmount = 0.2f, FlickerSpeed = 0.12f
+				};
+				AddChild(_beacon);
+			}
+		}
 
-        // ── Collision ─────────────────────────────────────────────────────────
-        var collision = new CollisionShape2D
-        {
-            Shape = new CircleShape2D { Radius = CollisionRadius }
-        };
-        AddChild(collision);
+		// ── Collision ─────────────────────────────────────────────────────────
+		var collision = new CollisionShape2D
+		{
+			Shape = new CircleShape2D { Radius = CollisionRadius }
+		};
+		AddChild(collision);
 
-        // ── SFX player ────────────────────────────────────────────────────────
-        if (!string.IsNullOrEmpty(SfxPath))
-        {
-            _sfxPlayer = new AudioStreamPlayer
-            {
-                Stream   = GD.Load<AudioStream>(SfxPath),
-                VolumeDb = -6f
-            };
-            AddChild(_sfxPlayer);
-        }
+		// ── SFX player ────────────────────────────────────────────────────────
+		if (!string.IsNullOrEmpty(SfxPath))
+		{
+			_sfxPlayer = new AudioStreamPlayer
+			{
+				Stream = GD.Load<AudioStream>(SfxPath),
+				VolumeDb = -6f
+			};
+			AddChild(_sfxPlayer);
+		}
 
-        // ── Hover — pointer cursor + glow fade ────────────────────────────────
-        MouseEntered += OnHoverEnter;
-        MouseExited  += OnHoverExit;
+		// ── Hover — pointer cursor + glow fade ────────────────────────────────
+		MouseEntered += OnHoverEnter;
+		MouseExited += OnHoverExit;
 
-        // ── Click ─────────────────────────────────────────────────────────────
-        InputEvent += (_, ev, _) =>
-        {
-            if (ev is InputEventMouseButton mb &&
-                mb.ButtonIndex == MouseButton.Left &&
-                mb.Pressed)
-            {
-                _sfxPlayer?.Play();
-                Interacted?.Invoke();
-            }
-        };
-    }
+		// ── Click ─────────────────────────────────────────────────────────────
+		InputEvent += (_, ev, _) =>
+		{
+			if (ev is InputEventMouseButton mb &&
+			    mb.ButtonIndex == MouseButton.Left &&
+			    mb.Pressed)
+			{
+				_sfxPlayer?.Play();
+				Interacted?.Invoke();
+			}
+		};
+	}
 
-    // ── Hover handlers ────────────────────────────────────────────────────────
+	// ── Hover handlers ────────────────────────────────────────────────────────
 
-    void OnHoverEnter()
-    {
-        Input.SetDefaultCursorShape(Input.CursorShape.PointingHand);
-        if (_beacon != null) _beacon.Boost = 1.3f;
+	void OnHoverEnter()
+	{
+		Input.SetDefaultCursorShape(Input.CursorShape.PointingHand);
+		if (_beacon != null) _beacon.Boost = 1.3f;
 
-        if (_glowSprite == null) return;
-        _glowTween?.Kill();
-        _glowTween = CreateTween();
-        _glowTween.TweenProperty(_glowSprite, "modulate:a", 1.0f, 0.18f);
-    }
+		if (_glowSprite == null) return;
+		_glowTween?.Kill();
+		_glowTween = CreateTween();
+		_glowTween.TweenProperty(_glowSprite, "modulate:a", 1.0f, 0.18f);
+	}
 
-    void OnHoverExit()
-    {
-        Input.SetDefaultCursorShape(Input.CursorShape.Arrow);
-        if (_beacon != null) _beacon.Boost = 1f;
+	void OnHoverExit()
+	{
+		Input.SetDefaultCursorShape(Input.CursorShape.Arrow);
+		if (_beacon != null) _beacon.Boost = 1f;
 
-        if (_glowSprite == null) return;
-        _glowTween?.Kill();
-        _glowTween = CreateTween();
-        _glowTween.TweenProperty(_glowSprite, "modulate:a", 0.0f, 0.18f);
-    }
+		if (_glowSprite == null) return;
+		_glowTween?.Kill();
+		_glowTween = CreateTween();
+		_glowTween.TweenProperty(_glowSprite, "modulate:a", 0.0f, 0.18f);
+	}
 
-    // ── Public API ────────────────────────────────────────────────────────────
+	// ── Public API ────────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Swaps the displayed texture at runtime (e.g. after an affinity change).
-    /// Safe to call before <see cref="_Ready"/> has run — the texture will be
-    /// applied once the sprite nodes are created.
-    /// </summary>
-    /// <summary>Sets a material on the visible sprite (not the hover glow).</summary>
-    public void SetSpriteMaterial(Material material)
-    {
-        if (_sprite != null) _sprite.Material = material;
-    }
+	/// <summary>
+	/// Swaps the displayed texture at runtime (e.g. after an affinity change).
+	/// Safe to call before <see cref="_Ready"/> has run — the texture will be
+	/// applied once the sprite nodes are created.
+	/// </summary>
+	/// <summary>Sets a material on the visible sprite (not the hover glow).</summary>
+	public void SetSpriteMaterial(Material material)
+	{
+		if (_sprite != null) _sprite.Material = material;
+	}
 
-    public void SetTexture(string texturePath)
-    {
-        TexturePath = texturePath;
-        if (string.IsNullOrEmpty(texturePath)) return;
+	public void SetTexture(string texturePath)
+	{
+		TexturePath = texturePath;
+		if (string.IsNullOrEmpty(texturePath)) return;
 
-        var tex = GD.Load<Texture2D>(texturePath);
-        if (_sprite     != null) _sprite.Texture     = tex;
-        if (_glowSprite != null) _glowSprite.Texture = tex;
-    }
+		var tex = GD.Load<Texture2D>(texturePath);
+		if (_sprite != null) _sprite.Texture = tex;
+		if (_glowSprite != null) _glowSprite.Texture = tex;
+	}
 
-    // ── Glow shader ───────────────────────────────────────────────────────────
+	// ── Glow shader ───────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Builds the outline-glow shader shared by all <see cref="InteractibleObject"/>
-    /// instances (compiled once, reused via <see cref="_glowShader"/>).
-    ///
-    /// Technique: sample the texture's alpha channel at 8 neighbouring texels.
-    /// Wherever at least one neighbour is opaque, render a warm-gold pixel.
-    /// Because this sprite sits BEHIND the main sprite, the glow is naturally
-    /// invisible inside the opaque sprite body — it only shows as a halo around
-    /// the edges, giving a clean outline-glow affordance.
-    /// </summary>
-    static Shader BuildGlowShader()
-    {
-        var s = new Shader();
-        s.Code = @"
+	/// <summary>
+	/// Builds the outline-glow shader shared by all <see cref="InteractibleObject"/>
+	/// instances (compiled once, reused via <see cref="_glowShader"/>).
+	///
+	/// Technique: sample the texture's alpha channel at 8 neighbouring texels.
+	/// Wherever at least one neighbour is opaque, render a warm-gold pixel.
+	/// Because this sprite sits BEHIND the main sprite, the glow is naturally
+	/// invisible inside the opaque sprite body — it only shows as a halo around
+	/// the edges, giving a clean outline-glow affordance.
+	/// </summary>
+	static Shader BuildGlowShader()
+	{
+		var s = new Shader();
+		s.Code = @"
 shader_type canvas_item;
 
 // How many texels outward the glow extends.
@@ -289,6 +296,6 @@ void fragment() {
     COLOR = vec4(1.0, 0.84, 0.32, glow);
 }
 ";
-        return s;
-    }
+		return s;
+	}
 }

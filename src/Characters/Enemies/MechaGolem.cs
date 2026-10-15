@@ -251,13 +251,13 @@ public partial class MechaGolem : EnemyCharacter
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	/// <summary>Rune of Midnight: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
-		MeleeInterval /= GameConstants.RuneTimeHasteMultiplier;
-		BarrageInterval /= GameConstants.RuneTimeHasteMultiplier;
-		PulseInterval /= GameConstants.RuneTimeHasteMultiplier;
-		OverloadInterval /= GameConstants.RuneTimeHasteMultiplier;
+		MeleeInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		BarrageInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		PulseInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		OverloadInterval /= GameConstants.RuneMidnightHasteMultiplier;
 	}
 
 }

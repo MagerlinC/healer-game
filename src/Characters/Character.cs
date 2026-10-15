@@ -89,6 +89,19 @@ public abstract partial class Character : CharacterBody2D
 	[Export] public float MaxMana = 100.0f;
 	[Export] public bool IsFriendly = true; // for conditional modifiers that check friend vs foe
 
+	/// <summary>
+	/// The party member this enemy last attacked with a single-target spell, and when
+	/// (seconds, see <see cref="Time.GetTicksMsec"/>). Its figure turns to face them.
+	/// </summary>
+	public Character LastAttackTarget { get; private set; }
+	public double LastAttackTime { get; private set; } = -100;
+
+	public void NoteAttackTarget(Character target)
+	{
+		LastAttackTarget = target;
+		LastAttackTime = Time.GetTicksMsec() / 1000.0;
+	}
+
 	/// <summary>Base critical strike chance before talent modifiers are applied.</summary>
 	[Export] public float BaseCritChance = 0.05f; // 5% chance
 
@@ -196,9 +209,9 @@ public abstract partial class Character : CharacterBody2D
 		// Rune of the Umbra: apply healing absorption equal to 10% of all
 		// damage taken by friendly characters.
 		if (IsFriendly && amount > 0f &&
-		    RunState.Instance?.IsRuneActive(RuneIndex.Void) == true)
+		    RunState.Instance?.IsRuneActive(RuneIndex.Twilight) == true)
 		{
-			AddHealAbsorption(amount * GameConstants.RuneVoidAbsorptionFraction);
+			AddHealAbsorption(amount * GameConstants.RuneTwilightShroudFraction);
 		}
 
 		// Shield absorbs damage before health is affected.
@@ -341,16 +354,16 @@ public abstract partial class Character : CharacterBody2D
 	// ── rune hooks ────────────────────────────────────────────────────────────
 
 	/// <summary>
-	/// Convenience property: returns <c>true</c> when Rune 4 (Rune of Purity)
+	/// Convenience property: returns <c>true</c> when Rune 4 (Rune of the Starless Night)
 	/// is active for the current run.  Boss spells check this to decide whether
 	/// to enable their "purest form" extra mechanics.
 	/// </summary>
-	protected bool RuneOfPurityActive =>
-		RunState.Instance?.IsRuneActive(RuneIndex.Purity) == true;
+	protected bool RuneOfTheStarlessNightActive =>
+		RunState.Instance?.IsRuneActive(RuneIndex.StarlessNight) == true;
 
 	/// <summary>
 	/// Override in boss subclasses to scale attack/ability interval fields
-	/// by the Rune of Time haste multiplier.
+	/// by the Rune of Midnight haste multiplier.
 	/// Called by <see cref="ApplyRuneModifiers"/> at the end of each boss's
 	/// own <c>_Ready()</c>, AFTER interval fields have been initialised.
 	/// </summary>
@@ -366,7 +379,7 @@ public abstract partial class Character : CharacterBody2D
 	protected void ApplyRuneModifiers()
 	{
 		if (IsFriendly) return;
-		if (RunState.Instance?.IsRuneActive(RuneIndex.Time) == true)
+		if (RunState.Instance?.IsRuneActive(RuneIndex.Midnight) == true)
 			OnApplyHasteRune();
 	}
 

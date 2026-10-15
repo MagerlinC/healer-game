@@ -7,7 +7,7 @@ namespace healerfantasy.Items.Amulets;
 
 /// <summary>
 /// Emberkeeper's Clasp — Rare amulet that can drop from any boss.
-/// Carved from living wood and threaded with wild-grown vines, this clasp
+/// Carved from living wood and threaded with wild-grown thorns, this clasp
 /// channels the raw energy of the forest into the wearer's ember magic.
 ///
 /// Stat bonus: +20% Ember school spell damage.

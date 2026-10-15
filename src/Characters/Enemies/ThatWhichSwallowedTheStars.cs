@@ -137,7 +137,7 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 	public override void _Ready()
 	{
 		base._Ready();
-		_isPureRuneActive = RunState.Instance.IsRuneActive(RuneIndex.Purity);
+		_isPureRuneActive = RunState.Instance.IsRuneActive(RuneIndex.StarlessNight);
 		CharacterName = GameConstants.SanctumBoss3Name;
 		IsFriendly = false;
 
@@ -495,14 +495,14 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 			_fightCamera.Offset = _cameraBaseOffset;
 	}
 
-	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	/// <summary>Rune of Midnight: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
-		MeleeAttackInterval /= GameConstants.RuneTimeHasteMultiplier;
-		BeamInterval /= GameConstants.RuneTimeHasteMultiplier;
-		ConsumeInterval /= GameConstants.RuneTimeHasteMultiplier;
-		CataclysmInterval /= GameConstants.RuneTimeHasteMultiplier;
-		MemoryGameInterval /= GameConstants.RuneTimeHasteMultiplier;
+		MeleeAttackInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		BeamInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		ConsumeInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		CataclysmInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		MemoryGameInterval /= GameConstants.RuneMidnightHasteMultiplier;
 	}
 
 }

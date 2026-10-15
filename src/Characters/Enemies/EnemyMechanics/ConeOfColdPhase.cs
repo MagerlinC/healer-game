@@ -17,7 +17,8 @@ using healerfantasy.SpellResources;
 ///      into the safe-zone slot (left / middle / right, chosen at random).
 ///   3. An ice-block overlay appears on each encased member.
 ///   4. Boss channels Cone of Cold for <see cref="CastDuration"/> seconds
-///      (cast bar shown via <see cref="ShowCastBar"/>).
+///      (cast bar shown via <see cref="ShowCastBar"/>), while a faint outline of
+///      the cone telegraphs where it will land.
 ///   5. Cone visual fires; the player takes <see cref="ConeDamage"/> if they
 ///      are NOT standing in the safe third of the arena.
 ///   6. Ice overlays are removed, party members are un-stunned, boss tweens
@@ -62,6 +63,7 @@ public partial class ConeOfColdPhase : Node2D
 	Vector2 _bossSavedPosition;
 	readonly List<PartyMember> _encased = new();
 	readonly List<Node2D> _overlays = new();
+	ConeDrawNode _telegraph;
 
 	// ── public API ────────────────────────────────────────────────────────────
 
@@ -181,6 +183,17 @@ public partial class ConeOfColdPhase : Node2D
 	{
 		ShowCastBar?.Invoke("Cone of Cold",
 			GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/queen-of-the-frozen-wastes/absolute-zero.png"), CastDuration);
+
+		_telegraph = new ConeDrawNode
+		{
+			SafeZone = _safeZone,
+			BossTip = _boss.GlobalPosition,
+			Telegraph = true,
+			ZIndex = 15,
+			GlobalPosition = Vector2.Zero
+		};
+		GetParent().AddChild(_telegraph);
+
 		GetTree().CreateTimer(CastDuration).Timeout += StepFire;
 	}
 
@@ -191,6 +204,8 @@ public partial class ConeOfColdPhase : Node2D
 	void StepFire()
 	{
 		HideCastBar?.Invoke();
+		if (IsInstanceValid(_telegraph)) _telegraph.QueueFree();
+		_telegraph = null;
 		SpawnConeVisual();
 		ApplyConeDamage();
 		GetTree().CreateTimer(ConeLinger).Timeout += StepReturn;
@@ -311,6 +326,14 @@ public partial class ConeDrawNode : Node2D
 {
 	public ConeOfColdPhase.SafeZone SafeZone { get; set; }
 
+	/// <summary>
+	/// Draw only a faint, pulsing outline (and a whisper of fill) of the area the cone
+	/// will cover, shown while it is being cast.
+	/// </summary>
+	public bool Telegraph { get; set; }
+
+	float _t;
+
 	/// <summary>World position of the boss — used as the tip of every slice.</summary>
 	public Vector2 BossTip { get; set; }
 
@@ -348,6 +371,14 @@ public partial class ConeDrawNode : Node2D
 			GD.PrintErr("[ConeDrawNode] Could not load cone.png — slices will be flat-coloured.");
 	}
 
+	public override void _Process(double delta)
+	{
+		if (!Telegraph) return;
+		// A slow, gentle pulse: noticeable, but quieter than the real cone.
+		_t += (float)delta;
+		Modulate = new Color(1f, 1f, 1f, 0.55f + 0.3f * Mathf.Sin(_t * 5f));
+	}
+
 	public override void _Draw()
 	{
 		// Collect arena dimensions (fallback values keep editor previews sane).
@@ -374,6 +405,11 @@ public partial class ConeDrawNode : Node2D
 		// The outline is kept as a bright ice-blue edge.
 		var tint = new Color(1f, 1f, 1f, 0.85f);
 		var outline = new Color(0.55f, 0.85f, 1.00f, 0.90f);
+		if (Telegraph)
+		{
+			tint = new Color(0.55f, 0.85f, 1.00f, 0.18f);
+			outline = new Color(0.7f, 0.92f, 1.00f, 0.8f);
+		}
 
 		switch (SafeZone)
 		{
@@ -419,11 +455,12 @@ public partial class ConeDrawNode : Node2D
 			new(1f, 1f)
 		};
 
-		DrawPolygon(pts, new Color[] { tint }, uvs, _tex);
+		// The telegraph is untextured: just a tinted wash under its outline.
+		DrawPolygon(pts, new Color[] { tint }, uvs, Telegraph ? null : _tex);
 		DrawPolyline(new Vector2[]
 		{
 			tip, new(x0, y0),
 			new(x1, y1), tip
-		}, outline, 2.5f);
+		}, outline, Telegraph ? 3f : 2.5f);
 	}
 }

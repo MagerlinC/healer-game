@@ -13,7 +13,7 @@ namespace healerfantasy.SpellResources;
 /// name to its health-frame cast bar. Damage is applied directly via
 /// <see cref="Character.TakeDamage"/> rather than through
 /// <see cref="SpellPipeline"/>, matching the convention used by other add enemies
-/// (e.g. <see cref="VinesEnemy"/>).
+/// (e.g. <see cref="ThornsEnemy"/>).
 /// </summary>
 [GlobalClass]
 public partial class BossBloodBurstSpell : SpellResource

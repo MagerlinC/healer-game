@@ -240,13 +240,13 @@ public partial class FlyingDemon : EnemyCharacter
 
 	// ── targeting helpers ─────────────────────────────────────────────────────
 
-	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	/// <summary>Rune of Midnight: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
-		MeleeInterval /= GameConstants.RuneTimeHasteMultiplier;
-		BoltInterval /= GameConstants.RuneTimeHasteMultiplier;
-		BurnInterval /= GameConstants.RuneTimeHasteMultiplier;
-		EruptionInterval /= GameConstants.RuneTimeHasteMultiplier;
+		MeleeInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		BoltInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		BurnInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		EruptionInterval /= GameConstants.RuneMidnightHasteMultiplier;
 	}
 
 }

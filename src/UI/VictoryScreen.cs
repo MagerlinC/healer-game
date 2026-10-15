@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using healerfantasy.LastLight.Hud;
 using healerfantasy;
 using healerfantasy.CombatLog;
 using healerfantasy.Items;
@@ -108,11 +109,11 @@ public partial class VictoryScreen : CanvasLayer
 
 				// For multi-boss encounters (e.g. The Astral Twins), only show the
 				// victory screen when ALL real bosses are dead.
-				// Vines (Rune of Ember) are in BossGroupName but are not real bosses —
-				// the fight ends when the actual boss dies regardless of vine state.
+				// Thorns (Rune of Ember) are in BossGroupName but are not real bosses —
+				// the fight ends when the actual boss dies regardless of thorn state.
 				foreach (var node in GetTree().GetNodesInGroup(GameConstants.BossGroupName))
 					if (node is Character c && c != character && c.IsAlive
-					    && !c.IsInGroup(GameConstants.VinesGroupName))
+					    && !c.IsInGroup(GameConstants.ThornsGroupName))
 						return;
 
 				// Snapshot this boss encounter before clearing the rolling log.
@@ -206,14 +207,7 @@ public partial class VictoryScreen : CanvasLayer
 			RuneStore.UnlockNextRune();
 			runeDropped = true;
 			runeIndex = acquired + 1;
-			runeDropName = runeIndex switch
-			{
-				1 => "Rune of the Void",
-				2 => "Rune of Nature",
-				3 => "Rune of Time",
-				4 => "Rune of Purity",
-				_ => "Unknown Rune"
-			};
+			runeDropName = RuneInfo.Name((RuneIndex)runeIndex);
 		}
 
 		// Unlock the Runes news board entry the first time the Queen is defeated.
@@ -786,7 +780,7 @@ public partial class VictoryScreen : CanvasLayer
 			icon.CustomMinimumSize = new Vector2(44f, 44f);
 			icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			icon.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
-			icon.Texture = GD.Load<Texture2D>(AssetConstants.RuneIconPath(runeIndex));
+			icon.Texture = LastLightIcons.ForRune((RuneIndex)runeIndex);
 			runeRow.AddChild(icon);
 
 			var textVBox = new VBoxContainer();

@@ -14,7 +14,7 @@ using healerfantasy.SpellResources;
 /// despawns shortly after.
 ///
 /// The rune is NOT a boss — it is removed from the boss group in <see cref="_Ready"/>
-/// so victory / defeat conditions and VinesManager's alive-boss check are
+/// so victory / defeat conditions and ThornsManager's alive-boss check are
 /// unaffected by it.
 ///
 /// Cast bar integration
@@ -111,7 +111,7 @@ public partial class BloodRune : EnemyCharacter
 	{
 		base._Ready(); // registers signals, adds to boss group
 
-		// Remove from the boss group so VinesManager's alive-boss check,
+		// Remove from the boss group so ThornsManager's alive-boss check,
 		// victory conditions, and BossHealthBar routing are unaffected.
 		RemoveFromGroup(GameConstants.BossGroupName);
 		AddToGroup(BloodRuneGroupName);

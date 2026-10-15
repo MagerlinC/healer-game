@@ -39,18 +39,24 @@ public abstract partial class CharacterFrame : VBoxContainer
 	protected readonly GridContainer EffectBar;
 
 	/// <summary>
-	/// Number of columns in the effect grid. Defaults to 5, which fills a
-	/// 160 px frame at the standard 28 px indicator size with 3 px gaps.
-	/// Override in subclasses that use a different frame width.
+	/// Number of columns in the effect grid. Override in subclasses so a full row
+	/// never makes the frame wider than its panel (see <see cref="ColumnsThatFit"/>).
 	/// </summary>
 	protected virtual int EffectGridColumns => 5;
+
+	/// <summary>Gap between effect badges, horizontally and vertically.</summary>
+	protected const int EffectGap = 3;
+
+	/// <summary>How many effect badges fit side by side in <paramref name="width"/> pixels.</summary>
+	protected int ColumnsThatFit(float width) =>
+		Mathf.Max(1, Mathf.FloorToInt((width + EffectGap) / (_effectIndicatorSize + EffectGap)));
 
 	public int _effectIndicatorSize = 34;
 	protected CharacterFrame()
 	{
 		EffectBar = new GridContainer();
-		EffectBar.AddThemeConstantOverride("h_separation", 3);
-		EffectBar.AddThemeConstantOverride("v_separation", 3);
+		EffectBar.AddThemeConstantOverride("h_separation", EffectGap);
+		EffectBar.AddThemeConstantOverride("v_separation", EffectGap);
 		EffectBar.MouseFilter = MouseFilterEnum.Ignore;
 	}
 

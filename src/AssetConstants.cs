@@ -84,12 +84,6 @@ public static class AssetConstants
 
 	// ── Rune assets ───────────────────────────────────────────────────────────
 
-	static readonly string RuneBasePath = "res://assets/interactibles/";
-	public static readonly string RuneVoidIconPath = RuneBasePath + "rune-void.png";
-	public static readonly string RuneNatureIconPath = RuneBasePath + "rune-nature.png";
-	public static readonly string RuneTimeIconPath = RuneBasePath + "rune-time.png";
-	public static readonly string RuneHolyIconPath = RuneBasePath + "rune-holy.png";
-
 	public static readonly string RuneFramePath = "res://assets/frames/rune-frame.png";
 	public static readonly string RuneFrameActivePath = "res://assets/frames/rune-frame-active.png";
 
@@ -111,20 +105,7 @@ public static class AssetConstants
 	public static readonly string TalentsSfxPath = "res://assets/sound-effects/choir-hit.wav";
 	public static readonly string WalkSfxPath = "res://assets/sound-effects/movement/walk.wav";
 
-	/// <summary>Returns the icon path for rune N (1-based).</summary>
-	public static string RuneIconPath(int runeIndex)
-	{
-		return runeIndex switch
-		{
-			1 => RuneVoidIconPath,
-			2 => RuneNatureIconPath,
-			3 => RuneTimeIconPath,
-			4 => RuneHolyIconPath,
-			_ => RuneVoidIconPath
-		};
-	}
-
-	// ── Vines enemy assets ────────────────────────────────────────────────────
+	// ── Thorns enemy assets ────────────────────────────────────────────────────
 
 
 	// ── Equipment UI assets ───────────────────────────────────────────────────

@@ -6,18 +6,18 @@ using healerfantasy.Effects;
 using healerfantasy.SpellResources;
 
 /// <summary>
-/// Rune of Nature — a vine creature that spawns every
-/// <see cref="GameConstants.RuneNatureVinesInterval"/> seconds during boss fights.
+/// Rune of Nightfall — a thorn creature that spawns every
+/// <see cref="GameConstants.RuneNightfallThornsInterval"/> seconds during boss fights.
 ///
-/// On spawn the vines latch onto a random alive party member and deal
-/// <see cref="GameConstants.RuneNatureVinesDamagePerSecond"/> damage per second
-/// to that target until the vines are killed.
+/// On spawn the thorns latch onto a random alive party member and deal
+/// <see cref="GameConstants.RuneNightfallThornsDamagePerSecond"/> damage per second
+/// to that target until the thorns are killed.
 ///
-/// The vines have their own health bar displayed below the boss bar (managed by
+/// The thorns have their own health bar displayed below the boss bar (managed by
 /// <see cref="healerfantasy.UI.GameUI"/>).  Killing them removes them from the
 /// scene and clears the health bar.
 /// </summary>
-public partial class VinesEnemy : EnemyCharacter
+public partial class ThornsEnemy : EnemyCharacter
 {
 	/// <summary>
 	/// Animation clips (frames / fps from the original sprites). These are gameplay:
@@ -30,11 +30,11 @@ public partial class VinesEnemy : EnemyCharacter
 
 	// ── public state ──────────────────────────────────────────────────────────
 
-	/// <summary>The party-member character this vine is currently latched onto.</summary>
+	/// <summary>The party-member character this thorn is currently latched onto.</summary>
 	public Character? AttachedTarget { get; private set; }
 
-	/// <summary>Display name shown on the vines health bar.</summary>
-	public string DisplayName { get; private set; } = "Growing Vines";
+	/// <summary>Display name shown on the thorns health bar.</summary>
+	public string DisplayName { get; private set; } = "Grasping Thorns";
 
 	// ── internal ──────────────────────────────────────────────────────────────
 
@@ -48,12 +48,12 @@ public partial class VinesEnemy : EnemyCharacter
 
 	// ── ctor ──────────────────────────────────────────────────────────────────
 
-	public VinesEnemy(Character target, string instanceName)
+	public ThornsEnemy(Character target, string instanceName)
 	{
-		MaxHealth = (RunState.Instance.CurrentDungeonIndex + 1) * GameConstants.RuneNatureVinesMaxHealthPerDungeonTier;
+		MaxHealth = (RunState.Instance.CurrentDungeonIndex + 1) * GameConstants.RuneNightfallThornsMaxHealthPerDungeonTier;
 		IsFriendly = false;
 		CharacterName = instanceName;
-		DisplayName = $"Vine ({target.CharacterName})";
+		DisplayName = $"Thorns ({target.CharacterName})";
 		AttachedTarget = target;
 	}
 
@@ -62,7 +62,7 @@ public partial class VinesEnemy : EnemyCharacter
 	public override void _Ready()
 	{
 		base._Ready();
-		AddToGroup(GameConstants.VinesGroupName);
+		AddToGroup(GameConstants.ThornsGroupName);
 
 		// ── visual ─────────────────────────────────────────────────────────
 		_visual = CharacterVisual.Attach(this, Clips);
@@ -72,10 +72,10 @@ public partial class VinesEnemy : EnemyCharacter
 			GlobalPosition = AttachedTarget.GlobalPosition + new Vector2(0f, -30f);
 
 		// Apply the grasped effect to the targeted party member so their portrait
-		// shows an effect indicator for the duration of this vine's life.
+		// shows an effect indicator for the duration of this thorn's life.
 		if (AttachedTarget != null)
 		{
-			var effect = new GraspedByVineEffect(CharacterName);
+			var effect = new GraspedByThornsEffect(CharacterName);
 			_graspedEffectId = effect.EffectId;
 			AttachedTarget.ApplyEffect(effect);
 		}
@@ -83,8 +83,8 @@ public partial class VinesEnemy : EnemyCharacter
 
 	public override void _ExitTree()
 	{
-		// Remove the grasped effect whether the vine died normally (0.8s timer →
-		// QueueFree) or was force-freed by VinesManager when the boss died.
+		// Remove the grasped effect whether the thorn died normally (0.8s timer →
+		// QueueFree) or was force-freed by ThornsManager when the boss died.
 		if (_graspedEffectId != "" && AttachedTarget != null
 		                           && IsInstanceValid(AttachedTarget))
 			AttachedTarget.RemoveEffect(_graspedEffectId);
@@ -106,7 +106,7 @@ public partial class VinesEnemy : EnemyCharacter
 		{
 			_damageTimer = DamageInterval;
 			if (AttachedTarget.IsAlive)
-				AttachedTarget.TakeDamage(GameConstants.RuneNatureVinesDamagePerSecond);
+				AttachedTarget.TakeDamage(GameConstants.RuneNightfallThornsDamagePerSecond);
 		}
 	}
 

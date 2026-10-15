@@ -501,13 +501,13 @@ public partial class TheBloodPrince : EnemyCharacter
 		return alive.GetRange(0, count);
 	}
 
-	/// <summary>Rune of Time: scale all ability intervals by the haste multiplier.</summary>
+	/// <summary>Rune of Midnight: scale all ability intervals by the haste multiplier.</summary>
 	protected override void OnApplyHasteRune()
 	{
-		SlashInterval /= GameConstants.RuneTimeHasteMultiplier;
-		BloodBoltInterval /= GameConstants.RuneTimeHasteMultiplier;
-		SiphonInterval /= GameConstants.RuneTimeHasteMultiplier;
-		VoidDrainInterval /= GameConstants.RuneTimeHasteMultiplier;
+		SlashInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		BloodBoltInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		SiphonInterval /= GameConstants.RuneMidnightHasteMultiplier;
+		VoidDrainInterval /= GameConstants.RuneMidnightHasteMultiplier;
 	}
 
 }
