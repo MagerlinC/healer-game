@@ -30,6 +30,7 @@ public partial class CampController : LoadoutController
 	CanvasLayer? _merchantPanel;
 	MerchantPane? _merchantPane;
 	InteractibleObject? _merchantInteractible;
+	SilhouetteRig? _merchantRig;
 
 	protected override bool PersistSpellLoadout => false;
 
@@ -75,7 +76,8 @@ public partial class CampController : LoadoutController
 			"", SlotRight + new Vector2(0f, 10f), Vector2.One, 36f));
 		var merchant = _merchantInteractible;
 		var merchantVisual = CharacterVisual.Attach(merchant, new() { ["idle"] = new(1f, true) });
-		SilhouetteRig.Attach(merchant, RigLibrary.Merchant(), merchantVisual).Face(-1f);
+		_merchantRig = SilhouetteRig.Attach(merchant, RigLibrary.Merchant(), merchantVisual);
+		_merchantRig.Face(-1f);
 		merchant.MouseEntered += () => merchantVisual.Modulate = new Color(1.3f, 1.3f, 1.3f);
 		merchant.MouseExited += () => merchantVisual.Modulate = Colors.White;
 
@@ -104,9 +106,9 @@ public partial class CampController : LoadoutController
 		WireHints(merchant, "Merchant  •  Buy and sell items for gold");
 
 		// Show the camp merchant tutorial the first time the player visits camp.
-		// Deferred so the scene is fully laid out before we query node positions.
+		// Wait a frame so the merchant rig has positioned itself before we measure it.
 		if (!PlayerProgressStore.HasSeenCampMerchantTutorial)
-			Callable.From(ShowCampMerchantTutorial).CallDeferred();
+			ShowCampMerchantTutorialNextFrame();
 	}
 
 	// ── armory panel ──────────────────────────────────────────────────────────
@@ -129,20 +131,19 @@ public partial class CampController : LoadoutController
 
 	// ── camp merchant tutorial ────────────────────────────────────────────────
 
+	async void ShowCampMerchantTutorialNextFrame()
+	{
+		await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+		if (IsInsideTree()) ShowCampMerchantTutorial();
+	}
+
 	void ShowCampMerchantTutorial()
 	{
 		if (PlayerProgressStore.HasSeenCampMerchantTutorial) return;
 
-		// Build a spotlight rect from the merchant's world position.
-		// The merchant is a Node2D sprite, so we approximate a bounding box
-		// centred on its global position.
-		var spotlight = new Rect2();
-		if (_merchantInteractible != null)
-		{
-			var centre = _merchantInteractible.GlobalPosition;
-			var size = new Vector2(130f, 170f);
-			spotlight = new Rect2(centre - size * 0.5f, size);
-		}
+		// Spotlight the merchant rig's on-screen body (its feet sit below the
+		// interactible's origin, and the canvas transform maps world → screen).
+		var spotlight = _merchantRig?.GetScreenRect() ?? new Rect2();
 
 		TutorialHighlightOverlay.Show(
 			GetTree(),

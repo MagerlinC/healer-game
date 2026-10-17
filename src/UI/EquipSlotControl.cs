@@ -111,6 +111,22 @@ public partial class EquipSlotControl : Control
 		_glow.BorderColor = item != null ? RarityColor(item.Rarity) : Colors.Transparent;
 	}
 
+	// ── right-click quick-unequip ─────────────────────────────────────────────
+
+	public override void _GuiInput(InputEvent @event)
+	{
+		if (@event is not InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true })
+			return;
+		if (ItemStore.GetEquipped(Slot) == null) return;
+
+		AcceptEvent();
+		ItemStore.Unequip(Slot);
+		Refresh();
+		// The mouse is still over the now-empty slot, so show the empty-slot tooltip.
+		GameTooltip.Show(SlotDisplayName(Slot) + " slot", "Drag an item here to equip it");
+		OnChanged?.Invoke();
+	}
+
 	// ── drag source ───────────────────────────────────────────────────────────
 
 	public override Variant _GetDragData(Vector2 atPosition)

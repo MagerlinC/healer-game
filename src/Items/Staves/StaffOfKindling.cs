@@ -10,16 +10,16 @@ namespace healerfantasy.Items.Staves;
 ///
 /// Stat bonus: +25 maximum mana.
 /// </summary>
-public class StaffOfTheArchmage : EquippableItem
+public class StaffOfKindling : EquippableItem
 {
 	static float MaxManaIncrease = 50f;
 	static float ManaRegenIncrease = 2f;
 	static float ManaCostIncreasePercent = 0.5f;
-	public override string ItemId => "staff_of_the_archmage";
+	public override string ItemId => "staff_of_kindling";
 
-	public StaffOfTheArchmage()
+	public StaffOfKindling()
 	{
-		Name = "Staff of the Archmage";
+		Name = "Staff of Kindling";
 		Description =
 			$"+{MaxManaIncrease:F0} maximum kindling. +{ManaRegenIncrease:F} kindling gathered per second. Spells cost {100 * ManaCostIncreasePercent:F0}% more kindling.";
 		Rarity = ItemRarity.Legendary;

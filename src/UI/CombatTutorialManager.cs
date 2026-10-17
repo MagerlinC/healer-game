@@ -22,6 +22,7 @@ namespace healerfantasy.UI;
 public partial class CombatTutorialManager : Node
 {
 	GameUI? _ui;
+	Player? _player;
 
 	// Per-session guards.
 	bool _targetingShown;
@@ -39,12 +40,14 @@ public partial class CombatTutorialManager : Node
 	// ── public API ────────────────────────────────────────────────────────────
 
 	/// <summary>
-	/// Provide the GameUI reference used to locate spell-slot screen positions.
+	/// Provide the GameUI reference used to locate spell-slot screen positions,
+	/// and the player used to cast Deflect when the Deflect tutorial is dismissed.
 	/// Call this from World._Ready() before adding the node to the tree.
 	/// </summary>
-	public void Init(GameUI ui)
+	public void Init(GameUI ui, Player player)
 	{
 		_ui = ui;
+		_player = player;
 	}
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
@@ -139,12 +142,17 @@ public partial class CombatTutorialManager : Node
 		TutorialHighlightOverlay.Show(
 			GetTree(),
 			"Deflect!",
-			$"The parry window is open — now's your chance!\n\n" +
-			$"Press [{key}] right now to deflect the incoming ability " +
-			$"and reduce its damage to zero.",
+			$"The enemy is casting a deadly ability, which can be deflected with the right timing!\n\n" +
+			$"Press [{key}] when the ability is about to go off to deflect the incoming ability, " +
+			$"preventing the damage it would deal.",
 			spotlight,
 			"deflect",
-			PlayerProgressStore.MarkDeflectTutorialSeen
+			() =>
+			{
+				PlayerProgressStore.MarkDeflectTutorialSeen();
+				// The dismissing key press happened while paused — honour it as a deflect.
+				_player?.CastDeflect();
+			}
 		);
 	}
 
@@ -153,9 +161,15 @@ public partial class CombatTutorialManager : Node
 		if (_dispelShown || PlayerProgressStore.HasSeenDispelTutorial) return;
 		_dispelShown = true;
 
-		var spotlight = GetSpotlightRect(_ui?.GenericBar?.DispelPanel);
+		var dispelSpotlight = GetSpotlightRect(_ui?.GenericBar?.DispelPanel);
 		var frameSpotlight = _ui?.GetPartyFrameRect(characterName) ?? new Rect2();
 		var key = GetKeybindLabel("dispel");
+
+		// The text panel anchors beside the primary spotlight, so make the afflicted
+		// party frame primary — anchoring to the Dispel icon covered the frame.
+		var hasFrame = frameSpotlight.Size.X > 1f && frameSpotlight.Size.Y > 1f;
+		var primary = hasFrame ? frameSpotlight : dispelSpotlight;
+		var secondary = hasFrame ? dispelSpotlight : new Rect2();
 
 		TutorialHighlightOverlay.Show(
 			GetTree(),
@@ -164,10 +178,15 @@ public partial class CombatTutorialManager : Node
 			$"Hover over their party frame (highlighted) and press [{key}] " +
 			$"to cleanse all harmful effects from them.\n\n" +
 			$"Some debuffs can be deadly if left unchecked!",
-			spotlight,
+			primary,
 			"dispel",
-			PlayerProgressStore.MarkDispelTutorialSeen,
-			frameSpotlight
+			() =>
+			{
+				PlayerProgressStore.MarkDispelTutorialSeen();
+				// The dismissing key press happened while paused — honour it as a dispel.
+				_player?.CastDispelOnFirstAfflicted();
+			},
+			secondary
 		);
 	}
 
@@ -180,7 +199,7 @@ public partial class CombatTutorialManager : Node
 			GetTree(),
 			"Move Out!",
 			"The boss has marked your position with a Detonation Zone!\n\n" +
-			"Move away from the glowing red circle before it detonates — " +
+			"Move away from the dangerous area before it detonates — " +
 			"anyone still standing inside will take heavy damage.\n\n" +
 			"Watch your feet and keep moving!",
 			new Rect2(),

@@ -89,6 +89,19 @@ public partial class SilhouetteRig : CanvasGroup
 	/// <summary>Turns the figure to face a direction (sign of <paramref name="x"/>); kept until something else turns it.</summary>
 	public void Face(float x) => _facing = x < 0f ? -1f : 1f;
 
+	/// <summary>
+	/// The figure's nominal body (Width × Height, feet at the rig origin) in viewport
+	/// pixels — e.g. for spotlighting it in a tutorial overlay.
+	/// </summary>
+	public Rect2 GetScreenRect()
+	{
+		var xf = GetGlobalTransformWithCanvas();
+		var a = xf * new Vector2(-_def.Width * 0.5f, -_def.Height);
+		var b = xf * new Vector2(_def.Width * 0.5f, 0f);
+		var min = new Vector2(Mathf.Min(a.X, b.X), Mathf.Min(a.Y, b.Y));
+		return new Rect2(min, (a - b).Abs());
+	}
+
 	public override void _Ready()
 	{
 		_shader ??= GD.Load<Shader>("res://src/LastLight/figure.gdshader");

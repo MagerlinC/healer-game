@@ -356,6 +356,44 @@ public partial class Player : Character
 		}
 	}
 
+	void TryCastGenericSpell(SpellResource? spell)
+	{
+		if (spell == null || IsOnCooldown(spell)) return;
+		var target = ResolveTargetWithFallback(GameUI?.GetHoveredCharacter(), spell);
+		if (target != null)
+			FireGenericSpell(spell, target);
+	}
+
+	/// <summary>
+	/// Cast Deflect immediately, as if its key had just been pressed. Used by the
+	/// Deflect tutorial: the key press that dismisses the overlay happens while the
+	/// game is paused, so the regular input path never sees it.
+	/// </summary>
+	public void CastDeflect()
+	{
+		if (IsAlive)
+			TryCastGenericSpell(GenericSpells.FirstOrDefault(s => s.Name == "Deflect"));
+	}
+
+	/// <summary>
+	/// Cast Dispel on the first living party member carrying a harmful, dispellable
+	/// effect. Used by the Dispel tutorial: its dismissing key press happens while
+	/// the game is paused and the overlay blocks hovering, so we pick the target.
+	/// </summary>
+	public void CastDispelOnFirstAfflicted()
+	{
+		if (!IsAlive) return;
+		var dispel = GenericSpells.FirstOrDefault(s => s.Name == "Dispel");
+		if (dispel == null || IsOnCooldown(dispel)) return;
+
+		var target = GetTree().GetNodesInGroup(GameConstants.PartyGroupName)
+			.OfType<Character>()
+			.FirstOrDefault(c => c.IsAlive &&
+			                     c.GetAllEffects().Any(e => e.IsHarmful && e.IsDispellable));
+		if (target != null)
+			FireGenericSpell(dispel, target);
+	}
+
 	/// <summary>Returns true if <paramref name="spell"/> still has time remaining on its cooldown.</summary>
 	public bool IsOnCooldown(SpellResource spell)
 	{
@@ -396,15 +434,7 @@ public partial class Player : Character
 		// Checked before the _isCasting early-return so Deflect can be triggered
 		// at any time during a cast.
 		if (IsAlive)
-		{
-			var genericSpell = GetGenericSpellForInput();
-			if (genericSpell != null && !IsOnCooldown(genericSpell))
-			{
-				var target = ResolveTargetWithFallback(GameUI?.GetHoveredCharacter(), genericSpell);
-				if (target != null)
-					FireGenericSpell(genericSpell, target);
-			}
-		}
+			TryCastGenericSpell(GetGenericSpellForInput());
 
 		// Tick cast timer — any movement input interrupts the cast
 		if (_isCasting)

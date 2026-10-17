@@ -116,7 +116,7 @@ public partial class World : Node2D
 		// ── In-combat tutorial manager ────────────────────────────────────────
 		// Must be created after BuildGenericActionBar so the slot panel refs exist.
 		var tutorialManager = new CombatTutorialManager();
-		tutorialManager.Init(ui);
+		tutorialManager.Init(ui, player);
 		AddChild(tutorialManager);
 
 		// ── Rune of Nightfall — thorns manager ────────────────────────────────────

@@ -40,7 +40,7 @@ public static class ItemRegistry
 		(null, () => new Shadeweaver()),
 		(null, () => new ArcaneAccelerator()),
 		(null, () => new StaffOfEternalFlame()),
-		(null, () => new StaffOfTheArchmage()),
+		(null, () => new StaffOfKindling()),
 		(null, () => new TheBloodCane()),
 
 		// Rings

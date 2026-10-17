@@ -211,7 +211,7 @@ public partial class EquipmentPane : Control
 
 		// ── Usage hint ────────────────────────────────────────────────────────
 		var hint = new Label();
-		hint.Text = "•Drag items to their slot to equip (or right-click)\n•Drag slots to inventory to unequip";
+		hint.Text = "•Drag items to their slot to equip (or right-click)\n•Drag slots to inventory to unequip (or right-click)";
 		hint.AutowrapMode = TextServer.AutowrapMode.Word;
 		hint.HorizontalAlignment = HorizontalAlignment.Left;
 		hint.AddThemeFontSizeOverride("font_size", 11);
