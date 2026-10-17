@@ -33,11 +33,8 @@ public partial class CampController : LoadoutController
 
 	protected override bool PersistSpellLoadout => false;
 
-	protected override bool HasBonfire => true;
+	// ── Virtual config overrides ──────────────────────────────────────────────
 
-	// ── Virtual config overrides (Camp layout differs slightly from Overworld) ─
-
-	protected override float MapTextureScale => 0.125f;
 	protected override string MapHintText => "World Map  •  Continue your journey";
 
 	// ── SetupScene ────────────────────────────────────────────────────────────
@@ -69,13 +66,13 @@ public partial class CampController : LoadoutController
 		// ── Camp-specific interactibles ───────────────────────────────────────
 		var armory = AddInteractible(new InteractibleObject(
 			AssetConstants.ArmoryInteractiblePath,
-			new Vector2(696f, FloorHeight - 205f), new Vector2(0.125f, 0.125f), 36f));
+			SlotLeft, new Vector2(0.125f, 0.125f), 36f));
 
 		// The merchant is a rigged figure rather than a sprite: no texture, just the
 		// click area, with the rig (and its lantern) turned towards the fire and
 		// outlined on hover.
 		_merchantInteractible = AddInteractible(new InteractibleObject(
-			"", new Vector2(1300f, FloorHeight - 130f), Vector2.One, 36f));
+			"", SlotRight + new Vector2(0f, 10f), Vector2.One, 36f));
 		var merchant = _merchantInteractible;
 		var merchantVisual = CharacterVisual.Attach(merchant, new() { ["idle"] = new(1f, true) });
 		SilhouetteRig.Attach(merchant, RigLibrary.Merchant(), merchantVisual).Face(-1f);
@@ -83,7 +80,7 @@ public partial class CampController : LoadoutController
 		merchant.MouseExited += () => merchantVisual.Modulate = Colors.White;
 
 		// ── Player ────────────────────────────────────────────────────────────
-		SetupPlayer(660f, bgLeft, bgRight);
+		SetupPlayer(bgLeft, bgRight);
 
 		// ── HUD ───────────────────────────────────────────────────────────────
 		var hud = SetupHud();
@@ -125,7 +122,8 @@ public partial class CampController : LoadoutController
 
 	void OpenMerchant()
 	{
-		_merchantPane!.Refresh();
+		_merchantPane!.ClearRecentPurchase();
+		_merchantPane.Refresh();
 		OpenPanel(_merchantPanel!);
 	}
 

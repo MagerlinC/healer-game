@@ -72,6 +72,14 @@ public partial class SilhouetteRig : CanvasGroup
 
 	bool IsAlive => _character?.IsAlive ?? true;
 
+	/// <summary>
+	/// Lights this figure from another light (e.g. the camp's bonfire) instead of the
+	/// healer. <see cref="LitByOffset"/> is the light's point in that node's local space.
+	/// </summary>
+	public Node2D LitBy;
+	public Vector2 LitByOffset;
+	public float LitByRadius = 0.6f;
+
 	/// <summary>Half the drawn body width of <paramref name="owner"/>'s rig, in world units (0 without a rig).</summary>
 	public static float BodyRadius(Node owner) =>
 		owner.GetNodeOrNull<SilhouetteRig>("SilhouetteRig") is { } rig
@@ -449,7 +457,12 @@ public partial class SilhouetteRig : CanvasGroup
 		_mat.SetShaderParameter("body_feet", feet / size);
 		_mat.SetShaderParameter("body_size", new Vector2(width / size.X, Mathf.Max(feet.Y - top.Y, 1f) / size.Y));
 		_mat.SetShaderParameter("consumed", _consumed);
-		if (_lantern != null)
+		if (LitBy != null && IsInstanceValid(LitBy))
+		{
+			_mat.SetShaderParameter("light_uv", LitBy.GetGlobalTransformWithCanvas() * LitByOffset / size);
+			_mat.SetShaderParameter("light_radius", LitByRadius);
+		}
+		else if (_lantern != null)
 		{
 			_mat.SetShaderParameter("light_uv", _lantern.GetGlobalTransformWithCanvas().Origin / size);
 			_mat.SetShaderParameter("light_radius", _def.OwnLightRadius);

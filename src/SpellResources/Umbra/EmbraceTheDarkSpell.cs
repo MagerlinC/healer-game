@@ -12,10 +12,10 @@ public partial class EmbraceTheDarkSpell : UltimateSpellResource
 	[Export] public float UmbraDamageIncreasePerStack = 2f;
 
 	/// <summary>
-	/// Requirement: cast 5 umbral spells.
+	/// Requirement: cast 7 umbral spells.
 	/// Each umbral school spell cast increments Progress by 1.
 	/// </summary>
-	public override float Requirement => 5f;
+	public override float Requirement => 7f;
 
 	public override string ActiveEffectId => "EmbraceTheDark";
 
@@ -24,7 +24,7 @@ public partial class EmbraceTheDarkSpell : UltimateSpellResource
 		Name = "Embrace the Dark";
 		Description =
 			$"Let the dark in, gaining one stack of Embrace the Dark per second. Each stack causes you to lose {HealthDrainPerStack} light/s but gain {HastePerStack}% haste and {UmbraDamageIncreasePerStack}% increased umbral damage per stack. No maximum stacks - this embrace ends in death.";
-		ActivationDescription = "Cast 5 Umbra spells.";
+		ActivationDescription = $"Cast {Requirement:F0} Umbra spells.";
 		ManaCost = 0f;
 		CastTime = 0.0f;
 		Cooldown = 20f;

@@ -11,11 +11,11 @@ public partial class OneWithTheAshSpell : UltimateSpellResource
 	static float HealingIncrease = 0.3f;
 
 	/// <summary>
-	/// Requirement: accumulate 16 seconds of ember HoT coverage across all targets.
+	/// Requirement: accumulate 100 seconds of Ember HoT coverage across all targets.
 	/// Each active ember HoT on any party member contributes 1 second per real second.
 	/// Multiple simultaneous HoTs or targets all count independently.
 	/// </summary>
-	public override float Requirement => 16f;
+	public override float Requirement => 100f;
 
 	public override string ActiveEffectId => "OneWithTheAsh";
 
@@ -24,7 +24,7 @@ public partial class OneWithTheAshSpell : UltimateSpellResource
 		Name = "One With the Ash";
 		Description =
 			$"Become one with the ash for {BuffDuration:F0}s, making all spells instant cast and increasing light restored by Ember spells by {100 * HealingIncrease:F0}%. Directly restoring light to a target refreshes the duration of all beneficial Ember effects on it.";
-		ActivationDescription = "Accumulate a total of 16 seconds of lingering Ember light across all targets.";
+		ActivationDescription = $"Accumulate a total of {Requirement:F0} seconds of lingering Ember light across all targets.";
 		ManaCost = 10f;
 		CastTime = 0.0f;
 		Cooldown = 0f;

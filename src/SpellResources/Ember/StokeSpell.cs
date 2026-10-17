@@ -19,7 +19,7 @@ namespace healerfantasy.SpellResources;
 [GlobalClass]
 public partial class StokeSpell : SpellResource
 {
-	[Export] public float HealAmount = 25f;
+	[Export] public float HealAmount = 35f;
 
 	/// <summary>
 	/// Multiplicative bonus applied when a HoT is active on the target.
@@ -33,7 +33,7 @@ public partial class StokeSpell : SpellResource
 		Description =
 			$"Restores {HealAmount} light to the target, or {100 * (HotBonusMultiplier - 1f):F0}% more if the target has a lingering Ember light active.";
 		ManaCost = 10f;
-		CastTime = 2.0f;
+		CastTime = 1.5f;
 		Cooldown = 0f;
 		School = SpellSchool.Ember;
 		Tags = SpellTags.Healing;

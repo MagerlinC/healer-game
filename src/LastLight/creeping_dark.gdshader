@@ -15,7 +15,13 @@ uniform float squash = 1.5;       // >1 flattens each pocket onto the floor
 uniform float max_dark = 0.95;
 uniform vec4 ember : source_color = vec4(0.85, 0.38, 0.14, 1.0);
 
-float hash2(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+// Sin-free hash: fract(sin(...)) can round differently in neighbouring cells on
+// the GPU, tearing the noise into hard seams and blocks.
+float hash2(vec2 p) {
+	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
+}
 float noise(vec2 p) {
 	vec2 i = floor(p);
 	vec2 f = fract(p);

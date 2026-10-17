@@ -18,6 +18,7 @@ namespace healerfantasy.SpellSystem;
 ///  4. Run <see cref="ISpellModifier.OnBeforeCast"/> (sorted by Priority)
 ///  5. Set FinalValue = BaseValue, apply stat multipliers (Damage/HealingMultiplier)
 ///  6. Run <see cref="ISpellModifier.OnCalculate"/>
+///     (5–6 run separately for a damage+healing spell's secondary component)
 ///  7. Crit roll — if it hits, add <see cref="SpellTags.Critical"/> and scale FinalValue
 ///  8. Run <see cref="ISpellModifier.OnAfterCast"/>
 ///  9. Execute the spell via <see cref="SpellResource.Apply"/>
@@ -41,6 +42,7 @@ public static class SpellPipeline
 			Spell = spell,
 			Tags = spell.Tags,
 			BaseValue = spell.GetBaseValue(),
+			SecondaryBaseValue = spell.GetSecondaryBaseValue(),
 			Timestamp = Time.GetTicksMsec() / 1000.0
 		};
 
@@ -78,37 +80,51 @@ public static class SpellPipeline
 		foreach (var mod in modifiers)
 			mod.OnBeforeCast(ctx);
 
-		// ── 6. Apply stat modifiers/crits, then OnCalculate ─────────────────────
-		ctx.FinalValue = ctx.BaseValue;
-
-		var damageForSchool = ctx.CasterStats.SpellSchoolIncreasedDamage[spell.School];
-		var totalIncreasedDamage = ctx.CasterStats.IncreasedDamage + damageForSchool;
-		if (ctx.Tags.HasFlag(SpellTags.Damage))
+		// ── 6. Apply stat modifiers, then OnCalculate ───────────────────────
+		// A spell that both damages and heals keeps the two apart: the primary value
+		// only sees the primary kind's tag (so only damage bonuses or only healing
+		// bonuses apply), and the secondary value is calculated in its own pass that
+		// only sees the secondary kind's tag. Bonuses not tied to a kind (e.g. school
+		// talents) apply to both.
+		var secondaryKind = spell.SecondaryKind;
+		var hasSecondary = secondaryKind != SpellTags.None;
+		var primaryKind = secondaryKind switch
 		{
-			ctx.FinalValue *= 1.0f + totalIncreasedDamage;
+			SpellTags.Damage => SpellTags.Healing,
+			SpellTags.Healing => SpellTags.Damage,
+			_ => SpellTags.None
+		};
 
-			// Party members gain +20% damage per completed dungeon.
-			// e.g. dungeon 0 = 1×, dungeon 1 = 1.2×, dungeon 2 = 1.4×, etc.
-			if (caster is PartyMember)
-			{
-				var dungeonScalar = 1.0f + 0.2f * RunState.Instance.CurrentDungeonIndex;
-				ctx.FinalValue *= dungeonScalar;
-			}
+		var fullTags = ctx.Tags;
+		if (hasSecondary)
+			ctx.Tags = fullTags & ~secondaryKind;
+		ctx.FinalValue = CalculateValue(ctx, caster, modifiers, ctx.BaseValue);
+
+		if (hasSecondary)
+		{
+			var primaryBaseValue = ctx.BaseValue;
+			var primaryFinalValue = ctx.FinalValue;
+			// The secondary pass only produces a value — effect-duration bonuses
+			// belong to the primary effect.
+			var durationBonus = ctx.EffectDurationBonus;
+
+			ctx.Tags = (fullTags & ~primaryKind) | secondaryKind;
+			ctx.BaseValue = ctx.SecondaryBaseValue;
+			ctx.SecondaryFinalValue = CalculateValue(ctx, caster, modifiers, ctx.SecondaryBaseValue);
+
+			ctx.BaseValue = primaryBaseValue;
+			ctx.FinalValue = primaryFinalValue;
+			ctx.EffectDurationBonus = durationBonus;
 		}
 
-		var healingForSchool = ctx.CasterStats.SpellSchoolIncreasedHealing[spell.School];
-		var totalIncreasedHealing = ctx.CasterStats.IncreasedHealing + healingForSchool;
-		if (ctx.Tags.HasFlag(SpellTags.Healing))
-			ctx.FinalValue *= 1.0f + totalIncreasedHealing;
-
-		foreach (var mod in modifiers)
-			mod.OnCalculate(ctx);
+		ctx.Tags = fullTags;
 
 		// ── 7. Crit roll ────────────────────────────────────────────────────
 		if (ctx.CasterStats.NextCastIsCrit || ctx.CasterStats.CritChance > 0f && GD.Randf() < ctx.CasterStats.CritChance)
 		{
 			ctx.Tags |= SpellTags.Critical;
 			ctx.FinalValue *= ctx.CasterStats.CritMultiplier;
+			ctx.SecondaryFinalValue *= ctx.CasterStats.CritMultiplier;
 		}
 
 		// ── 8. OnAfterCast ──────────────────────────────────────────────────
@@ -120,9 +136,11 @@ public static class SpellPipeline
 		// captured in the log before the Died signal fires and snapshots it.
 		// All values (FinalValue, Targets, Tags) are fully resolved by this point.
 		var isDirectSpell = !ctx.Tags.HasFlag(SpellTags.Duration);
+		// A damage+healing spell's direct record is of its primary kind.
+		var logTags = ctx.Tags & ~secondaryKind;
 		foreach (var target in ctx.Targets)
 		{
-			if (ctx.Tags.HasFlag(SpellTags.Healing) && isDirectSpell)
+			if (logTags.HasFlag(SpellTags.Healing) && isDirectSpell)
 			{
 				CombatLog.CombatLog.Record(new CombatEventRecord
 				{
@@ -136,7 +154,7 @@ public static class SpellPipeline
 					Description = spell.Description
 				});
 			}
-			else if (ctx.Tags.HasFlag(SpellTags.Damage) && isDirectSpell)
+			else if (logTags.HasFlag(SpellTags.Damage) && isDirectSpell)
 			{
 				CombatLog.CombatLog.Record(new CombatEventRecord
 				{
@@ -193,5 +211,40 @@ public static class SpellPipeline
 			caster.NoteAttackTarget(explicitTarget);
 
 		return ctx;
+	}
+
+	/// <summary>
+	/// Steps 5–6 for one value: the caster's damage/healing stat bonuses for the
+	/// kinds in <see cref="SpellContext.Tags"/>, then every modifier's OnCalculate.
+	/// </summary>
+	static float CalculateValue(SpellContext ctx, Character caster, List<ISpellModifier> modifiers, float baseValue)
+	{
+		var spell = ctx.Spell;
+		ctx.FinalValue = baseValue;
+
+		var damageForSchool = ctx.CasterStats.SpellSchoolIncreasedDamage[spell.School];
+		var totalIncreasedDamage = ctx.CasterStats.IncreasedDamage + damageForSchool;
+		if (ctx.Tags.HasFlag(SpellTags.Damage))
+		{
+			ctx.FinalValue *= 1.0f + totalIncreasedDamage;
+
+			// Party members gain +20% damage per completed dungeon.
+			// e.g. dungeon 0 = 1×, dungeon 1 = 1.2×, dungeon 2 = 1.4×, etc.
+			if (caster is PartyMember)
+			{
+				var dungeonScalar = 1.0f + 0.2f * RunState.Instance.CurrentDungeonIndex;
+				ctx.FinalValue *= dungeonScalar;
+			}
+		}
+
+		var healingForSchool = ctx.CasterStats.SpellSchoolIncreasedHealing[spell.School];
+		var totalIncreasedHealing = ctx.CasterStats.IncreasedHealing + healingForSchool;
+		if (ctx.Tags.HasFlag(SpellTags.Healing))
+			ctx.FinalValue *= 1.0f + totalIncreasedHealing;
+
+		foreach (var mod in modifiers)
+			mod.OnCalculate(ctx);
+
+		return ctx.FinalValue;
 	}
 }

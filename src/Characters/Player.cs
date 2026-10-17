@@ -472,7 +472,7 @@ public partial class Player : Character
 
 			var stats = GetCharacterStats();
 			var adjustedManaCost = spellToCast.ManaCost * stats.ManaCostMultiplier;
-			var adjustedLifeCost = spellToCast.ManaCost * stats.ManaCostMultiplier;
+			var adjustedLifeCost = spellToCast.HealthCost * stats.LifeCostMultiplier;
 			var canPayCost = CurrentMana >= adjustedManaCost && CurrentHealth > adjustedLifeCost;
 			if (canPayCost && !IsOnCooldown(spellToCast))
 			{

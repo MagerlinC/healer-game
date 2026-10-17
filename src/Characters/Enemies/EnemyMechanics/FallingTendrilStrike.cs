@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using healerfantasy;
 using healerfantasy.CombatLog;
@@ -21,15 +22,19 @@ public partial class FallingTendrilStrike : Node2D
 	public float Damage { get; set; } = 45f;
 	public string BossName { get; set; } = GameConstants.AbyssBossName;
 
+	/// <summary>Fired once, the moment the spear's tip reaches the floor.</summary>
+	public event Action Landed;
+
 	/// <summary>Half-width of the struck area in world units (the floor ellipse is flatter).</summary>
 	const float Radius = 26f;
 	const float Flatten = 0.5f;
 	const float LockBefore = 0.6f; // stop following this long before impact
 	const float SpearTime = 0.55f; // descend, hold, retract
+	const float DropFraction = 0.2f; // share of SpearTime spent descending
 	static readonly Vector2 FeetOffset = new(0f, 20f);
 
 	float _t, _strikeT;
-	bool _struck;
+	bool _struck, _landed;
 
 	/// <summary>Where a character's feet are, in world space.</summary>
 	public static Vector2 FeetOf(Character c) => c.GlobalPosition + FeetOffset;
@@ -54,6 +59,11 @@ public partial class FallingTendrilStrike : Node2D
 		else
 		{
 			_strikeT += dt;
+			if (!_landed && _strikeT >= SpearTime * DropFraction)
+			{
+				_landed = true;
+				Landed?.Invoke();
+			}
 			if (_strikeT >= SpearTime) QueueFree();
 		}
 		QueueRedraw();
@@ -120,7 +130,7 @@ public partial class FallingTendrilStrike : Node2D
 			if (!Strike._struck) return;
 			var t = Strike._strikeT / SpearTime;
 			// 0–0.2 drop, 0.2–0.6 hold, 0.6–1 retract
-			var reach = t < 0.2f ? t / 0.2f : t < 0.6f ? 1f : 1f - (t - 0.6f) / 0.4f;
+			var reach = t < DropFraction ? t / DropFraction : t < 0.6f ? 1f : 1f - (t - 0.6f) / 0.4f;
 			const float top = -320f;
 			var tip = new Vector2(0f, Mathf.Lerp(top, 0f, reach));
 			if (tip.Y <= top + 1f) return;
@@ -143,8 +153,8 @@ public partial class FallingTendrilStrike : Node2D
 			right.CopyTo(poly, 8);
 			DrawColoredPolygon(poly, new Color(0.01f, 0.005f, 0.015f, 1f));
 			DrawPolyline(left, new Color(0.7f, 0.62f, 0.88f, 0.55f), 1.2f, true);
-			if (t >= 0.2f && t < 0.6f)
-				DrawCircle(tip, 7f, new Color(0.75f, 0.65f, 0.95f, 0.35f * (1f - (t - 0.2f) / 0.4f)));
+			if (t >= DropFraction && t < 0.6f)
+				DrawCircle(tip, 7f, new Color(0.75f, 0.65f, 0.95f, 0.35f * (1f - (t - DropFraction) / 0.4f)));
 		}
 	}
 }

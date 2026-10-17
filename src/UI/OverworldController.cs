@@ -8,7 +8,7 @@ using healerfantasy.UI;
 ///
 /// Extends <see cref="LoadoutController"/> so it inherits the full spell
 /// overlay system.  Overworld-specific additions:
-///   • Library background + walkable player
+///   • Walkable player in the shared camp (see <see cref="LoadoutController.SetupBackground"/>)
 ///   • Run History scroll interactible + overlay (see <c>OverworldController.RunHistory.cs</c>)
 ///   • Rune Table interactible
 ///   • First-time tutorial popup via <see cref="TutorialPopup"/>
@@ -44,14 +44,14 @@ public partial class OverworldController : LoadoutController
 		// ── Overworld-specific interactibles ──────────────────────────────────
 		var runHistoryScroll = AddInteractible(new InteractibleObject(
 			AssetConstants.RunScrollInteractiblePath,
-			new Vector2(565f, FloorHeight - 110f), new Vector2(0.12f, 0.12f), 28f,
+			SlotLeft, new Vector2(0.12f, 0.12f), 28f,
 			AssetConstants.SpellbookSfxPath));
 
 		if (PlayerProgressStore.HasUnlockedRuneEntry)
 		{
 			var runeTable = AddInteractible(new InteractibleObject(
 				AssetConstants.RuneTableInteractiblePath,
-				new Vector2(1110f, FloorHeight), new Vector2(0.085f, 0.085f), 36f,
+				SlotBackCentre, new Vector2(0.085f, 0.085f), 36f,
 				AssetConstants.RuneSfxPath));
 
 			runeTable.Interacted += () => _runeTablePanel!.Open();
@@ -69,7 +69,7 @@ public partial class OverworldController : LoadoutController
 		AddChild(_runeTablePanel);
 
 		// ── Player ────────────────────────────────────────────────────────────
-		SetupPlayer(896f, bgLeft, bgRight);
+		SetupPlayer(bgLeft, bgRight);
 
 		// ── HUD ───────────────────────────────────────────────────────────────
 		SetupHud();

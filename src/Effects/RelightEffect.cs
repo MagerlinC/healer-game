@@ -26,11 +26,18 @@ public partial class RelightEffect : CharacterEffect
 		DamageFraction = damageFraction;
 	}
 
+	public override void OnApplied(Character target)
+	{
+		_originalTargetHealth = target.CurrentHealth;
+	}
+
 	public override void OnExpired(Character target)
 	{
-		var damageTaken = target.CurrentHealth - _originalTargetHealth;
-		target.TakeDamage(damageTaken * DamageFraction);
-		target.RaiseFloatingCombatText(damageTaken, false, (int)School, false);
+		var damageTaken = Mathf.Max(0f, _originalTargetHealth - target.CurrentHealth);
+		var explosionDamage = damageTaken * DamageFraction;
+		if (explosionDamage <= 0f) return;
+		target.TakeDamage(explosionDamage);
+		target.RaiseFloatingCombatText(explosionDamage, false, (int)School, false);
 
 		if (SourceCharacterName == null) return;
 		CombatLog.CombatLog.Record(new CombatEventRecord
@@ -39,7 +46,7 @@ public partial class RelightEffect : CharacterEffect
 			SourceName = SourceCharacterName,
 			TargetName = target.CharacterName,
 			AbilityName = AbilityName ?? EffectId,
-			Amount = damageTaken,
+			Amount = explosionDamage,
 			Description = Description,
 			Type = CombatEventType.Damage,
 			IsCrit = false

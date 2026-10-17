@@ -147,8 +147,8 @@ public partial class MainMenuUI : Node2D
 		var menuRegion = new CenterContainer();
 		menuRegion.AnchorLeft = 0f;
 		menuRegion.AnchorRight = 1f;
-		menuRegion.AnchorTop = 0.25f;
-		menuRegion.AnchorBottom = 0.53f;
+		menuRegion.AnchorTop = 0.38f;
+		menuRegion.AnchorBottom = 0.62f;
 		menuRegion.MouseFilter = Control.MouseFilterEnum.Ignore;
 		bg.AddChild(menuRegion);
 
@@ -166,26 +166,81 @@ public partial class MainMenuUI : Node2D
 
 	// ── Last Light splash ─────────────────────────────────────────────────────
 
+	const string BackgroundPath = "res://assets/backgrounds/main-menu/background.png";
+
+	/// <summary>Where the healer stands: on the far end of the rocky bridge, in background pixels.</summary>
+	static readonly Vector2 BridgeSpot = new(1720f, 1085f);
+
+	/// <summary>The healer's size relative to the background, so it stays far away at any resolution.</summary>
+	const float HealerScalePerBgPixel = 2f / 1440f;
+
 	/// <summary>
-	/// The healer stands in a ring of broken stones, the only light in an endless
-	/// dark that keeps creeping in on it. Title and menu sit out in the dark above.
+	/// A cavern of broken stone, a rocky bridge across the dark, and far off on it
+	/// the healer, its back to us: one small light. Title and menu sit in the dark above.
 	/// </summary>
 	static void BuildLastLightScene(Control bg)
 	{
-		bg.AddChild(new LastLightBackground { BackgroundPreset = LastLightBackground.Preset.Sanctuary });
-
-		var view = bg.GetViewport().GetVisibleRect().Size;
-		var healer = new Node2D
+		var texture = GD.Load<Texture2D>(BackgroundPath);
+		var picture = new TextureRect
 		{
-			Position = new Vector2(view.X * 0.5f, view.Y * 0.7f),
-			Scale = new Vector2(5f, 5f)
+			Texture = texture,
+			ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+			StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
+			MouseFilter = Control.MouseFilterEnum.Ignore
 		};
-		bg.AddChild(healer);
-		SilhouetteRig.Attach(healer, RigLibrary.Healer());
+		picture.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		bg.AddChild(picture);
 
-		var dark = new CreepingDarkness { Radius = 0.34f, MaxDark = 0.93f };
+		var healer = new Node2D();
+		bg.AddChild(healer);
+
+		// The healer's light, warming the stone of the bridge around it.
+		var g = new Gradient();
+		g.SetColor(0, new Color(1f, 0.74f, 0.4f, 0.45f));
+		g.SetColor(1, new Color(1f, 0.55f, 0.2f, 0f));
+		g.AddPoint(0.3f, new Color(1f, 0.66f, 0.3f, 0.16f));
+		healer.AddChild(new Sprite2D
+		{
+			Texture = new GradientTexture2D
+			{
+				Gradient = g, Width = 256, Height = 256,
+				Fill = GradientTexture2D.FillEnum.Radial,
+				FillFrom = new Vector2(0.5f, 0.5f), FillTo = new Vector2(0.5f, 0f)
+			},
+			Material = new CanvasItemMaterial { BlendMode = CanvasItemMaterial.BlendModeEnum.Add },
+			Position = new Vector2(0f, -10f),
+			Scale = new Vector2(1.5f, 0.85f)
+		});
+		SilhouetteRig.Attach(healer, RigLibrary.HealerFromBehind());
+
+		// The dark churning in on the healer from every side, the same dark that takes
+		// the light when the party falls; here the light still holds it back.
+		var darkMat = new ShaderMaterial { Shader = GD.Load<Shader>("res://src/LastLight/faded_light.gdshader") };
+		darkMat.SetShaderParameter("progress", 0.85f);
+		darkMat.SetShaderParameter("heart_dark", 0f);
+		darkMat.SetShaderParameter("pocket_radius", 0.4f);
+		darkMat.SetShaderParameter("max_dark", 0.78f);
+		var dark = new ColorRect { Material = darkMat, MouseFilter = Control.MouseFilterEnum.Ignore };
 		dark.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 		bg.AddChild(dark);
+
+		// The picture is cropped to cover the window, so follow its scale and offset.
+		void Place()
+		{
+			var view = bg.GetViewportRect().Size;
+			var bgSize = texture.GetSize();
+			var scale = Mathf.Max(view.X / bgSize.X, view.Y / bgSize.Y);
+			var offset = (view - bgSize * scale) / 2f;
+			healer.Position = offset + BridgeSpot * scale;
+			healer.Scale = Vector2.One * HealerScalePerBgPixel * bgSize.Y * scale;
+			// Centre the pocket of light on the healer's body, not its feet.
+			darkMat.SetShaderParameter("heart", (healer.Position + new Vector2(0f, -40f) * healer.Scale.Y) / view);
+		}
+
+		Place();
+		var viewport = bg.GetViewport();
+		viewport.SizeChanged += Place;
+		healer.TreeExiting += () => viewport.SizeChanged -= Place;
 	}
 
 	// ── button factory ────────────────────────────────────────────────────────

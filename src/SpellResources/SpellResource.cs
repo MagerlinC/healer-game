@@ -82,6 +82,26 @@ public partial class SpellResource : Resource
 	}
 
 	/// <summary>
+	/// The kind of this spell's secondary component — <see cref="SpellTags.Damage"/> or
+	/// <see cref="SpellTags.Healing"/> — for spells that both deal damage and restore light
+	/// (e.g. Flashfire's damage, Draw the Heat's heal). The pipeline scales the primary
+	/// value (<see cref="GetBaseValue"/>) with bonuses of the other kind only, and the
+	/// secondary value (<see cref="GetSecondaryBaseValue"/>) with bonuses of this kind only.
+	/// <see cref="SpellTags.None"/> (default) for spells with a single kind of output.
+	/// </summary>
+	public virtual SpellTags SecondaryKind => SpellTags.None;
+
+	/// <summary>
+	/// The raw magnitude of the secondary component that seeds
+	/// <see cref="SpellContext.SecondaryBaseValue"/>. Only used when
+	/// <see cref="SecondaryKind"/> is set.
+	/// </summary>
+	public virtual float GetSecondaryBaseValue()
+	{
+		return 0f;
+	}
+
+	/// <summary>
 	/// Resolves the full target list for this cast.
 	/// Single-target spells return a one-element list (the default).
 	/// Group spells override this to return all valid targets.

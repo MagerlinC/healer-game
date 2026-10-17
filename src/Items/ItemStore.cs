@@ -72,6 +72,26 @@ public static class ItemStore
 		_inventory.Remove(item);
 	}
 
+	/// <summary>
+	/// Equip <paramref name="item"/> into its natural slot, replacing whatever is
+	/// there. Rings prefer an empty ring slot (Ring1 first), otherwise replace Ring1.
+	/// Used by the right-click quick-equip shortcut.
+	/// </summary>
+	public static void QuickEquip(EquippableItem item)
+	{
+		var isRing = item.Slot == EquipSlot.Ring1 || item.Slot == EquipSlot.Ring2;
+		if (!isRing)
+		{
+			Equip(item);
+			return;
+		}
+
+		var slot = !_equipped.ContainsKey(EquipSlot.Ring1) ? EquipSlot.Ring1
+			: !_equipped.ContainsKey(EquipSlot.Ring2) ? EquipSlot.Ring2
+			: EquipSlot.Ring1;
+		Equip(item, slot);
+	}
+
 	/// <summary>Move the equipped item in <paramref name="slot"/> back to inventory.</summary>
 	public static void Unequip(EquipSlot slot)
 	{

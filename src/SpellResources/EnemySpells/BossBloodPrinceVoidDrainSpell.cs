@@ -49,7 +49,7 @@ public partial class BossBloodPrinceVoidDrainSpell : SpellResource
 
 	public override void Apply(SpellContext ctx)
 	{
-		// Re-use DarkDrainEffect with no heal-fraction (siphon is handled by the
+		// Re-use DarkDrainEffect with no self-heal (siphon is handled by the
 		// Blood Covenant passive in TheBloodPrince._Process, not per-tick).
 		foreach (var target in ctx.Targets)
 		{

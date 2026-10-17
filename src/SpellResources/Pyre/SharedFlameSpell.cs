@@ -13,10 +13,10 @@ public partial class SharedFlameSpell : UltimateSpellResource
 	const float DamageMultiplierOnExpire = 8f;
 
 	/// <summary>
-	/// Requirement: spend a total of 50 health on Pyre spells.
+	/// Requirement: spend a total of 75 health on Pyre spells.
 	/// Each Pyre spell cast contributes its HealthCost to Progress.
 	/// </summary>
-	public override float Requirement => 50f;
+	public override float Requirement => 75f;
 
 	public override string ActiveEffectId => "SharedFlameEffect";
 
@@ -25,7 +25,7 @@ public partial class SharedFlameSpell : UltimateSpellResource
 		Name = "Shared Flame";
 		Description =
 			$"Share your flame with the party, making all allies lose {DrainPerSecond} light/s, but {100 * LeechRate:F0}% of the damage you deal is restored to all party members as light. When this spell ends, all enemies are damaged for {100 * DamageMultiplierOnExpire:F0}% of the total light restored this way.";
-		ActivationDescription = "Burn a total of 50 of your own light on Pyre spells.";
+		ActivationDescription = $"Burn a total of {Requirement:F0} of your own light on Pyre spells.";
 		ManaCost = 0f;
 		CastTime = 0.0f;
 		Cooldown = 20f;
@@ -54,7 +54,7 @@ public partial class SharedFlameSpell : UltimateSpellResource
 	}
 
 	/// <summary>
-	/// Accumulate health spent on Pyre spells toward the 50-health requirement.
+	/// Accumulate health spent on Pyre spells toward the 75-health requirement.
 	/// </summary>
 	public override void OnRegularSpellCast(SpellContext ctx)
 	{

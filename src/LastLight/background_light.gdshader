@@ -23,7 +23,13 @@ uniform float speck_density = 0.012;
 uniform float speck_size = 1.0;
 uniform float speck_strength = 0.3;
 
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+// Sin-free hash: fract(sin(...)) can round differently in neighbouring cells on
+// the GPU, tearing the noise into hard seams and blocks.
+float hash(vec2 p) {
+	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
+}
 
 void fragment() {
 	vec2 q = UV - light_uv;

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Godot;
+using healerfantasy.Effects;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources.Pyre;
@@ -9,11 +10,12 @@ public partial class NovaOfSacrifice : SpellResource
 
 	float hpCost = 25f;
 	float conversionFactor = 2f;
+	float shieldDuration = 8f;
 	public NovaOfSacrifice()
 	{
 		Name = "Nova of Sacrifice";
 		Description =
-			$"Erupt in a nova of blood, burning {hpCost} of your own light to apply a blood shield to all allies lasting 8 seconds. The shield absorbs damage equal to twice the light burned";
+			$"Erupt in a nova of blood, burning {hpCost} of your own light to apply a blood shield to all allies lasting {shieldDuration} seconds. The shield absorbs damage equal to twice the light burned.";
 		ManaCost = 0f;
 		HealthCost = hpCost;
 		CastTime = 2.0f;
@@ -42,6 +44,13 @@ public partial class NovaOfSacrifice : SpellResource
 	public override void Apply(SpellContext ctx)
 	{
 		foreach (var target in ctx.Targets)
-			target.AddShield(ctx.FinalValue);
+			target.ApplyEffect(new ShieldEffect("NovaOfSacrifice", ctx.FinalValue, shieldDuration)
+			{
+				Icon = ctx.Spell.Icon,
+				School = School,
+				SourceCharacterName = ctx.Caster.CharacterName,
+				AbilityName = Name,
+				Description = Description
+			});
 	}
 }

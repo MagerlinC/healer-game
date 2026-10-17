@@ -22,7 +22,7 @@ public partial class CinderSpell : SpellResource
 		Name = "Cinder";
 		Description =
 			$"Blasts the target for {InstantDamage} ember damage, and sears the target with smouldering cinders, dealing {DamagePerTick} ember damage every {TickInterval}s for {EffectDuration}s.";
-		ManaCost = 7f;
+		ManaCost = 9f;
 		CastTime = 0.0f;
 		School = SpellSchool.Ember;
 		Tags = SpellTags.Damage | SpellTags.Duration;
@@ -42,8 +42,7 @@ public partial class CinderSpell : SpellResource
 		// IncreasedDamage, school bonuses, and crit equally.
 		// The Duration tag suppresses central logging and FCT for this spell, so
 		// we handle them here for the instant portion only.
-		var scale = DamagePerTick > 0f ? ctx.FinalValue / DamagePerTick : 1f;
-		var scaledInstantDamage = InstantDamage * scale;
+		var scaledInstantDamage = ctx.ScaleWithModifiers(InstantDamage);
 		var isCrit = ctx.Tags.HasFlag(SpellTags.Critical);
 
 		ctx.Target?.TakeDamage(scaledInstantDamage);

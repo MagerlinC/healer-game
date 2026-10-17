@@ -73,6 +73,14 @@ public partial class GameUI : CanvasLayer
 	const float MiniEnemyBarWithCastHeight = 148f;
 	const float MiniEnemyBarTopOffset = 86f;
 
+	// ── Bottom HUD stack (offsets from the screen's bottom edge) ─────────────
+	// Bottom → top: action bar, healer item-effect row (35px, hangs below the
+	// frames), party health panels (75px), one effect-badge row (34px + gaps),
+	// cast bar.
+	const float ActionBarBottomOffset   = -12f;
+	const float PartyFramesBottomOffset = ActionBarBottomOffset - 58f - 42f;
+	const float CastBarBottomOffset     = PartyFramesBottomOffset - 75f - 2f - 34f - 10f;
+
 	/// <summary>Badge shown to the right of the mana orb when Stone of Rebirth is active.</summary>
 	ItemEffectIndicator? _stoneOfRebirthBadge;
 
@@ -116,18 +124,18 @@ public partial class GameUI : CanvasLayer
 		var anchor = _anchor;
 
 		// ── Cast bar ──────────────────────────────────────────────────────────
-		// Anchored at (50%, 87%) — horizontally centred, just below the party
-		// frames and above the action bar.  GrowDirection.Both lets the bar
-		// expand to its natural content height from that point with no hardcoded
-		// pixel offsets for the vertical axis.
+		// Bottom-anchored, horizontally centred, sitting just above the party
+		// frames (and one row of their effect badges).  GrowDirection.Begin lets
+		// the bar grow upward to its natural content height from that edge.
 		var castBar = new CastBar();
 		castBar.CustomMinimumSize = new Vector2(280f, 0f);
 		castBar.AnchorLeft = castBar.AnchorRight = 0.5f;
-		castBar.AnchorTop = castBar.AnchorBottom = 0.82f;
+		castBar.AnchorTop = castBar.AnchorBottom = 1f;
 		castBar.GrowHorizontal = Control.GrowDirection.Both;
-		castBar.GrowVertical = Control.GrowDirection.Both;
+		castBar.GrowVertical = Control.GrowDirection.Begin;
 		castBar.OffsetLeft = -140f;
 		castBar.OffsetRight = 140f;
+		castBar.OffsetTop = castBar.OffsetBottom = CastBarBottomOffset;
 		anchor.AddChild(castBar);
 
 		// ── Mana bar ──────────────────────────────────────────────────────────
@@ -210,14 +218,16 @@ public partial class GameUI : CanvasLayer
 		anchor.AddChild(bossCastBar);
 
 		// ── Party frames ──────────────────────────────────────────────────────
-		// Single-point anchor at (50%, 80%) — fully relative so it scales with
-		// any resolution.  GrowDirection.Both lets the HBox inside expand from
-		// that centre point without needing any hardcoded pixel offsets.
+		// Single-point anchor, bottom-centre, so the health panels sit between
+		// the cast bar and the action bar, low enough to stay clear of the party
+		// in the world.  The HBox inside grows upward from this point, and the
+		// healer's item-effect row hangs below it, above the action bar.
 		_partyFrames = new PartyFrames();
 		_partyFrames.AnchorLeft = 0.5f;
 		_partyFrames.AnchorRight = 0.5f;
-		_partyFrames.AnchorTop = 0.75f;
-		_partyFrames.AnchorBottom = 0.75f;
+		_partyFrames.AnchorTop = 1f;
+		_partyFrames.AnchorBottom = 1f;
+		_partyFrames.OffsetTop = _partyFrames.OffsetBottom = PartyFramesBottomOffset;
 		_partyFrames.GrowHorizontal = Control.GrowDirection.Both;
 		_partyFrames.GrowVertical = Control.GrowDirection.Both;
 		anchor.AddChild(_partyFrames);
@@ -254,8 +264,8 @@ public partial class GameUI : CanvasLayer
 		barRow.AnchorTop = barRow.AnchorBottom = 1f;
 		barRow.GrowHorizontal = Control.GrowDirection.Both;
 		barRow.GrowVertical = Control.GrowDirection.Begin;
-		barRow.OffsetTop = -152f;
-		barRow.OffsetBottom = -100f;
+		barRow.OffsetTop = ActionBarBottomOffset - 58f; // 58px slots
+		barRow.OffsetBottom = ActionBarBottomOffset;
 		anchor.AddChild(barRow);
 
 		_actionBar = new ActionBar();

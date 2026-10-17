@@ -5,7 +5,7 @@ namespace healerfantasy.SpellResources;
 
 public partial class RekindleSpell : SpellResource
 {
-	float HealAmount = 10f;
+	float HealAmount = 20f;
 	public RekindleSpell()
 	{
 		Name = "Rekindle";

@@ -16,7 +16,7 @@ namespace healerfantasy.SpellResources.Wick;
 [GlobalClass]
 public partial class DripSpell : SpellResource
 {
-	[Export] public float ManaAmount = 35f;
+	[Export] public float ManaAmount = 20f;
 	[Export] public float Delay = 4f;
 
 	public DripSpell()

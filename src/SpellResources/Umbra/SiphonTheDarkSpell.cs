@@ -39,9 +39,16 @@ public partial class SiphonTheDarkSpell : SpellResource
 		return DamagePerTick;
 	}
 
+	public override SpellTags SecondaryKind => SpellTags.Healing;
+
+	public override float GetSecondaryBaseValue()
+	{
+		return DamagePerTick * HealFraction;
+	}
+
 	public override void Apply(SpellContext ctx)
 	{
-		ctx.Target.ApplyEffect(new DarkDrainEffect(DamagePerTick, Duration + ctx.EffectDurationBonus, HealFraction)
+		ctx.Target.ApplyEffect(new DarkDrainEffect(ctx.FinalValue, Duration + ctx.EffectDurationBonus, ctx.SecondaryFinalValue)
 		{
 			AbilityName = Name,
 			Description = Description,

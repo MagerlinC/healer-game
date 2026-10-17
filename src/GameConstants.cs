@@ -154,7 +154,7 @@ public static class GameConstants
 	public const float RuneMidnightHasteMultiplier = 1.10f;
 
 	/// <summary>Rune 1 (Twilight): fraction of damage dealt that becomes a Shroud (light absorption).</summary>
-	public const float RuneTwilightShroudFraction = 0.10f;
+	public const float RuneTwilightShroudFraction = 0.20f;
 
 	/// <summary>
 	/// Rune 2 (Nightfall): seconds between each thorns spawn during a boss fight.

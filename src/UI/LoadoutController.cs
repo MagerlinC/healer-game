@@ -52,7 +52,6 @@ public abstract partial class LoadoutController : Node2D
 	const float CardW = 95f;
 	const float CardH = 110f;
 	const float CardIconSz = 64f;
-	protected const float FloorHeight = 780f;
 	protected const string DefaultHint = "Walk up to an object and click it to interact";
 
 	// ── school definitions ────────────────────────────────────────────────────
@@ -100,9 +99,6 @@ public abstract partial class LoadoutController : Node2D
 	readonly List<(SpellSchool School, StyleBoxFlat Style)> _schoolColumnStyles = new();
 
 	// ── virtual config — override in subclasses to customise layout ───────────
-
-	/// <summary>Sprite scale of the map interactible texture (visual scale stays 1.5×).</summary>
-	protected virtual float MapTextureScale => 0.100f;
 
 	/// <summary>Hint-bar text shown when hovering over the map interactible.</summary>
 	protected virtual string MapHintText => "World Map  •  Plan your journey";
@@ -346,108 +342,108 @@ public abstract partial class LoadoutController : Node2D
 
 	// ── scene setup helpers ──────────────────────────────────────────────────
 
-	/// <summary>
-	/// Scales and positions a full-screen background sprite, then returns the
-	/// world-space left and right edges of the visible area for player clamping.
-	/// The sprite keeps its bottom edge aligned with the camera so wider/taller
-	/// aspect ratios crop from the top instead of hiding the floor.
-	/// </summary>
-	/// <summary>Place a bonfire (a second light that holds the dark back) at the camp fire.</summary>
-	protected virtual bool HasBonfire => false;
+	// ── camp layout ──────────────────────────────────────────────────────────
+	// Overworld and Camp share one camp: a clearing in a dark wood, everything
+	// gathered round the bonfire. Slots run in an arc behind and beside the fire
+	// (world space; the camera shows x 480–1440, y 270–810).
+
+	/// <summary>Base of the bonfire, in the middle of the clearing.</summary>
+	protected static readonly Vector2 FirePosition = new(960f, 640f);
+
+	/// <summary>Far left of the arc, by the woodpile.</summary>
+	protected static readonly Vector2 SlotLeft = new(645f, 655f);
+
+	/// <summary>Back left, at the edge of the firelight.</summary>
+	protected static readonly Vector2 SlotBackLeft = new(762f, 572f);
+
+	/// <summary>Behind the fire, left of the smoke.</summary>
+	protected static readonly Vector2 SlotBackCentreLeft = new(865f, 552f);
+
+	/// <summary>Straight behind the fire, between the two back slots.</summary>
+	protected static readonly Vector2 SlotBackCentre = new(963f, 540f);
+
+	/// <summary>Behind the fire, right of the smoke.</summary>
+	protected static readonly Vector2 SlotBackCentreRight = new(1062f, 556f);
+
+	/// <summary>Far right of the arc, past the tent.</summary>
+	protected static readonly Vector2 SlotRight = new(1282f, 655f);
+
+	/// <summary>Where the Lightkeeper arrives: by the fire, between the party's logs.</summary>
+	protected static readonly Vector2 PlayerStart = new(925f, 750f);
 
 	/// <summary>
-	/// Builds the sanctuary backdrop and the darkness that creeps in on the healer's light,
-	/// and returns the world-space left and right edges of the visible area for player clamping.
+	/// Builds the camp: the clearing backdrop, the bonfire at its heart and the
+	/// darkness pressing in round it, and returns the world-space left and right
+	/// edges the player may walk between.
 	/// </summary>
 	protected (float BgLeft, float BgRight) SetupBackground()
 	{
-		var camera = GetNode<Camera2D>("Camera2D");
-		var viewSize = GetViewport().GetVisibleRect().Size;
-		var worldW = viewSize.X / camera.Zoom.X;
-		var worldH = viewSize.Y / camera.Zoom.Y;
-
 		var backLayer = new CanvasLayer { Layer = -10 };
 		AddChild(backLayer);
-		backLayer.AddChild(new LastLightBackground { BackgroundPreset = LastLightBackground.Preset.Sanctuary });
+		backLayer.AddChild(new LastLightBackground { BackgroundPreset = LastLightBackground.Preset.Camp });
 
-		// Above the world, below the HUD (5) and overlay panels (10).
+		// Above the world, below the HUD (5) and overlay panels (10). The healer's own
+		// light is small here; the fire holds the dark back from the whole clearing.
 		var darkLayer = new CanvasLayer { Layer = 1 };
 		AddChild(darkLayer);
-		darkLayer.AddChild(new CreepingDarkness { Radius = 0.34f, MaxDark = 0.88f });
+		darkLayer.AddChild(new CreepingDarkness { Radius = 0.2f, MaxDark = 0.8f, Squash = 1.85f });
 
-		if (HasBonfire)
+		AddChild(new CampDecor { Position = FirePosition });
+		AddChild(new Bonfire
 		{
-			AddChild(new Bonfire
-			{
-				Position = BonfireSmokePosition(camera.Position) + new Vector2(0f, 16f),
-				Scale = new Vector2(1.6f, 1.6f)
-			});
-			SetupBonfireSmoke(camera.Position);
-		}
+			Position = FirePosition,
+			Scale = new Vector2(1.6f, 1.6f),
+			LightRadius = 0.56f,
+			LightSoftness = 0.3f,
+			StoneRing = true
+		});
+		SetupBonfireSmoke();
 
-		return (camera.Position.X - worldW / 2f, camera.Position.X + worldW / 2f);
+		// The edge of the clearing, not the edge of the screen.
+		return (560f, 1360f);
 	}
 
 	/// <summary>
-	/// Spawns a <see cref="BonfireSmoke"/> effect positioned over the bonfire in
-	/// the background image, or adopts one already placed in the scene via the
-	/// Godot editor.
-	///
-	/// Override <see cref="BonfireSmokePosition"/> in a subclass to shift the
-	/// default world-space anchor point for scenes where the bonfire sits at a
-	/// different pixel.  The node's exported properties can also be tweaked
-	/// directly in the Inspector when it is placed in the editor.
+	/// Spawns a <see cref="BonfireSmoke"/> effect over the bonfire, or adopts one
+	/// already placed in the scene via the Godot editor (whose exported properties
+	/// can then be tweaked in the Inspector).
 	/// </summary>
-	void SetupBonfireSmoke(Vector2 cameraPos)
+	void SetupBonfireSmoke()
 	{
 		var smoke = GetNodeOrNull<BonfireSmoke>("BonfireSmoke");
 		if (smoke == null)
 		{
-			var pos = BonfireSmokePosition(cameraPos);
 			smoke = new BonfireSmoke
 			{
-				ColumnCenterX = pos.X,
-				BonfireY = pos.Y
+				ColumnCenterX = FirePosition.X,
+				BonfireY = FirePosition.Y - 16f
 			};
 			AddChild(smoke);
 		}
 	}
 
 	/// <summary>
-	/// Returns the world-space position (X = horizontal centre, Y = bonfire base)
-	/// of the bonfire smoke column for this scene.
-	///
-	/// Defaults to the approximate bonfire position in the shared camp/overworld
-	/// background.  Override in a subclass if the bonfire is at a different location.
+	/// Creates and adds the <see cref="OverworldPlayer"/> at <see cref="PlayerStart"/>,
+	/// free to walk between <paramref name="bgLeft"/> and <paramref name="bgRight"/>
+	/// and from the back of the clearing to just short of the undergrowth.
 	/// </summary>
-	protected virtual Vector2 BonfireSmokePosition(Vector2 cameraPos)
-	{
-		return new Vector2(cameraPos.X, cameraPos.Y + 85f);
-	}
-
-	/// <summary>
-	/// Creates and adds the <see cref="OverworldPlayer"/> to the scene, assigning
-	/// movement bounds from the background edges.
-	/// Vertical movement is restricted to the bottom 50 % of the reference canvas
-	/// so the player stays within the visible play area.
-	/// </summary>
-	protected void SetupPlayer(float xPosition, float bgLeft, float bgRight)
+	protected void SetupPlayer(float bgLeft, float bgRight)
 	{
 		_player = new OverworldPlayer
 		{
-			Position = new Vector2(xPosition, FloorHeight - 8f),
+			Position = PlayerStart,
 			Scale = new Vector2(1.5f, 1.5f),
 			XMin = bgLeft,
 			XMax = bgRight,
-			YMin = RefH * 0.5f, // top of the bottom half (~540 px)
-			YMax = RefH - 80f // keep player visible near the bottom (~1000 px)
+			YMin = 590f,
+			YMax = 765f,
+			// over the logs the party sits on (drawn at Z 1)
+			ZIndex = 2
 		};
 		AddChild(_player);
 
 		{
-			// Start a little up from the floor edge so the whole circle of light is on screen.
-			_player.Position = new Vector2(xPosition, FloorHeight - 110f);
-			SilhouetteRig.Attach(_player, RigLibrary.Healer());
+			SilhouetteRig.Attach(_player, RigLibrary.Healer(atRest: true));
 			// The painted props are seen by candlelight, like the spell icons.
 			foreach (var area in _interactibles)
 				if (area is InteractibleObject io)
@@ -475,6 +471,8 @@ public abstract partial class LoadoutController : Node2D
 	/// </summary>
 	protected T AddInteractible<T>(T interactible) where T : Area2D
 	{
+		// The fire lights the camp; each prop only needs a faint glow to pick it out.
+		if (interactible is InteractibleObject io) io.BeaconRadius = 0.05f;
 		AddChild(interactible);
 		_interactibles.Add(interactible);
 		return interactible;
@@ -510,9 +508,9 @@ public abstract partial class LoadoutController : Node2D
 	///   <item>Map — navigates to the Map Screen</item>
 	///   <item>News Board + exclamation sprite + overlay panel</item>
 	/// </list>
-	/// Positions and hint texts are controlled by the virtual config properties
-	/// (<see cref="MapTextureScale"/>, <see cref="MapHintText"/>, etc.) so subclasses
-	/// can override individual values without duplicating setup logic.
+	/// They take the back slots of the camp layout; hint texts are controlled by
+	/// the virtual config properties (<see cref="MapHintText"/>) so subclasses can
+	/// override individual values without duplicating setup logic.
 	/// </summary>
 	protected void SetupCommonInteractibles()
 	{
@@ -531,7 +529,7 @@ public abstract partial class LoadoutController : Node2D
 		{
 			_spellTomeInteractible = AddInteractible(new InteractibleObject(
 				AssetConstants.GetSpellBookPathForAffinity(RunState.Instance.SchoolAffinity),
-				new Vector2(820f, FloorHeight - 220f), new Vector2(0.35f, 0.35f), 28f,
+				SlotBackCentreLeft, new Vector2(0.35f, 0.35f), 28f,
 				AssetConstants.SpellbookSfxPath));
 		}
 
@@ -545,23 +543,22 @@ public abstract partial class LoadoutController : Node2D
 		// ── Map ───────────────────────────────────────────────────────────────
 		var mapItem = AddInteractible(new InteractibleObject(
 			AssetConstants.MapInteractiblePath,
-			new Vector2(1050f, FloorHeight - 220f), new Vector2(MapTextureScale, MapTextureScale), 28f));
+			SlotBackCentreRight, new Vector2(0.11f, 0.11f), 28f));
 		mapItem.Scale = new Vector2(1.5f, 1.5f);
 		mapItem.Interacted += OnOpenMap;
 		WireHints(mapItem, MapHintText);
 
 		// ── News Board ────────────────────────────────────────────────────────
-		const float NewsBoardX = 755f;
 		var newsBoard = AddInteractible(new InteractibleObject(
 			AssetConstants.NewsBoardInteractiblePath,
-			new Vector2(NewsBoardX, FloorHeight - 200f), new Vector2(0.090f, 0.090f), 32f,
+			SlotBackLeft, new Vector2(0.090f, 0.090f), 32f,
 			AssetConstants.SpellbookSfxPath));
 
 		var exclamation = new Sprite2D
 		{
 			Texture = GD.Load<Texture2D>(AssetConstants.ExclamationInteractiblePath),
 			Scale = new Vector2(0.045f, 0.045f),
-			Position = new Vector2(NewsBoardX + 26f, FloorHeight - 222f),
+			Position = SlotBackLeft + new Vector2(26f, -22f),
 			Visible = PlayerProgressStore.HasUnreadBoardEntries
 		};
 		AddChild(exclamation);

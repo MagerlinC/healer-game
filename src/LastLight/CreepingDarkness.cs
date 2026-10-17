@@ -29,6 +29,9 @@ public partial class CreepingDarkness : ColorRect
 	/// <summary>How opaque the darkness gets; below 1 lets distant shapes show faintly.</summary>
 	public float MaxDark = 0.95f;
 
+	/// <summary>How flat each pocket lies on the floor (&gt;1 = wider than tall).</summary>
+	public float Squash = 1.5f;
+
 	/// <summary>False for scenes without a healer (the world map).</summary>
 	public bool FollowHealer = true;
 
@@ -78,6 +81,7 @@ public partial class CreepingDarkness : ColorRect
 		_mat.SetShaderParameter("light_soft", _soft);
 		_mat.SetShaderParameter("aspect", size.Y > 0f ? size.X / size.Y : 1.7778f);
 		_mat.SetShaderParameter("max_dark", MaxDark);
+		_mat.SetShaderParameter("squash", Squash);
 	}
 
 	void Add(LightPocket pocket, ref int count)

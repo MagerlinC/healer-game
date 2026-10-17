@@ -27,6 +27,9 @@ using healerfantasy.SpellSystem;
 ///     and allies outside it burn (<see cref="EclipsePhase"/>). Flame casts push it back.
 ///   • The Abyss Opens (50%)        — the Abyss becomes untouchable while three
 ///     <see cref="AbyssalTendril"/>s rise and lash the party until cut down.
+///
+/// The fight opens with the Abyss rising out of the floor with a long creaking croak;
+/// it does nothing else until it has fully risen.
 /// </summary>
 public partial class TheInfiniteAbyss : EnemyCharacter
 {
@@ -52,6 +55,16 @@ public partial class TheInfiniteAbyss : EnemyCharacter
 	const float AddHealth = 420f;
 	const float AddLashDamage = 18f;
 
+	/// <summary>How long the entrance rise takes, and how far below its spot it starts.</summary>
+	const float EntranceDuration = 2.75f;
+	const float EntranceDepth = 140f;
+
+	/// <summary>
+	/// Seconds of lead-in before the first hit in the tendril impact sound; skipped so the
+	/// hit lands with the spears. Tune by ear if it drifts.
+	/// </summary>
+	const float TendrilImpactLeadIn = 0.15f;
+
 	/// <summary>Eye positions relative to the boss origin (rig design ±88,-150 at scale 0.5, feet 20 below).</summary>
 	static readonly Vector2[] EyePositions = { new(-44f, -55f), new(44f, -55f) };
 
@@ -68,9 +81,10 @@ public partial class TheInfiniteAbyss : EnemyCharacter
 
 	CharacterVisual _visual = null!;
 	AudioStreamPlayer _riser = null!;
+	AudioStreamPlayer _stareSfx = null!, _consumeSfx = null!, _croakSfx = null!, _gruntSfx = null!, _tendrilImpactSfx = null!;
 	Character _pendingMelee;
 	float _meleeTimer, _tendrilTimer, _stareTimer, _eclipseTimer, _stareWindup;
-	bool _staring, _eclipseActive, _opened, _phaseActive, _starless;
+	bool _staring, _eclipseActive, _opened, _phaseActive, _starless, _entering;
 
 	/// <summary>Can't be harmed or focused while The Abyss Opens.</summary>
 	public override bool IsUntargetable => _phaseActive;
@@ -94,9 +108,15 @@ public partial class TheInfiniteAbyss : EnemyCharacter
 
 		_riser = new AudioStreamPlayer { Stream = GD.Load<AudioStream>(AssetConstants.DeflectRiserSoundPath) };
 		AddChild(_riser);
+		_stareSfx = BossAudio.AddPlayer(this, AssetConstants.AbyssStareSfxPath, BossAudio.Kind.AbilityCue);
+		_consumeSfx = BossAudio.AddPlayer(this, AssetConstants.AbyssConsumeSfxPath, BossAudio.Kind.AbilityCue);
+		_croakSfx = BossAudio.AddPlayer(this, AssetConstants.AbyssCroakSfxPath, BossAudio.Kind.Voice);
+		_gruntSfx = BossAudio.AddPlayer(this, AssetConstants.AbyssExhaleGruntSfxPath, BossAudio.Kind.AbilityCue);
+		_tendrilImpactSfx = BossAudio.AddPlayer(this, AssetConstants.AbyssTendrilImpactsSfxPath, BossAudio.Kind.AbilityCue);
 
 		_visual = CharacterVisual.Attach(this, Clips);
 		_visual.AnimationFinished += OnAnimationFinished;
+		BeginEntrance();
 
 		_meleeTimer = MeleeInterval;
 		_tendrilTimer = 8f;
@@ -105,11 +125,27 @@ public partial class TheInfiniteAbyss : EnemyCharacter
 		ApplyRuneModifiers();
 
 		// The last fight has its own track (looping, set in its import settings).
-		if (GetParent()?.GetNodeOrNull<AudioStreamPlayer>("AudioStreamPlayer") is { } music)
-		{
-			music.Stream = GD.Load<AudioStream>(AssetConstants.InfiniteAbyssMusicPath);
-			music.Play();
-		}
+		BossAudio.PlayFightMusic(this, AssetConstants.InfiniteAbyssMusicPath);
+	}
+
+	/// <summary>
+	/// The Abyss rises out of the floor and fades in, croaking as it climbs.
+	/// Its abilities wait until it has fully risen.
+	/// </summary>
+	void BeginEntrance()
+	{
+		_entering = true;
+		_visual.Offset = new Vector2(0f, EntranceDepth);
+		Modulate = new Color(1f, 1f, 1f, 0f);
+		_croakSfx.Play();
+
+		var tween = CreateTween().SetParallel();
+		// Offset is a plain field, not a Godot property, so it's driven by a method tween.
+		tween.TweenMethod(Callable.From<float>(depth => _visual.Offset = new Vector2(0f, depth)),
+				EntranceDepth, 0f, EntranceDuration)
+			.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+		tween.TweenProperty(this, "modulate:a", 1f, EntranceDuration * 0.6f);
+		tween.Chain().TweenCallback(Callable.From(() => _entering = false));
 	}
 
 	/// <summary>
@@ -157,7 +193,7 @@ public partial class TheInfiniteAbyss : EnemyCharacter
 	public override void _Process(double delta)
 	{
 		base._Process(delta);
-		if (!IsAlive) return;
+		if (!IsAlive || _entering) return;
 		var dt = (float)delta;
 
 		if (!_opened && CurrentHealth <= MaxHealth * OpensAtHealth)
@@ -217,15 +253,23 @@ public partial class TheInfiniteAbyss : EnemyCharacter
 			.Where(c => c.CharacterName != GameConstants.LightkeeperName)
 			.Take(_starless ? 3 : 2)
 			.ToList();
-		foreach (var ally in allies)
-			SpawnStrike(ally, follow: true);
+		var strikes = allies.Select(ally => SpawnStrike(ally, follow: true)).ToList();
 		if (FindHealer() is { } healer)
-			SpawnStrike(healer, follow: false);
+			strikes.Add(SpawnStrike(healer, follow: false));
+		// The exhale is the cue that the circles are down.
+		if (strikes.Count > 0) _gruntSfx.Play();
+
+		// The whole volley lands at once and the impact sound covers all of it, so play it once.
+		if (strikes.Count > 0)
+			strikes[0].Landed += () =>
+			{
+				if (IsInstanceValid(this)) _tendrilImpactSfx.Play(TendrilImpactLeadIn);
+			};
 
 		RaiseBossSpellTargets(allies.Select(a => a.CharacterName).ToArray());
 	}
 
-	void SpawnStrike(Character target, bool follow)
+	FallingTendrilStrike SpawnStrike(Character target, bool follow)
 	{
 		var strike = new FallingTendrilStrike
 		{
@@ -233,6 +277,7 @@ public partial class TheInfiniteAbyss : EnemyCharacter
 		};
 		GetParent().AddChild(strike);
 		strike.GlobalPosition = FallingTendrilStrike.FeetOf(target);
+		return strike;
 	}
 
 	// ── The Abyss Stares ─────────────────────────────────────────────────────
@@ -247,6 +292,7 @@ public partial class TheInfiniteAbyss : EnemyCharacter
 		ParryWindowManager.OpenWindow(_stare.Name, _stare.Icon, StareWindup);
 		EmitSignalCastWindupStarted(_stare.Name, _stare.Icon, StareWindup);
 		_riser.Play();
+		_stareSfx.Play();
 		_visual.Play("cast");
 
 		var g = new Gradient();
@@ -308,6 +354,7 @@ public partial class TheInfiniteAbyss : EnemyCharacter
 			if (IsInstanceValid(this)) EmitSignalCastWindupEnded();
 		};
 		GetParent().AddChild(eclipse);
+		_consumeSfx.Play();
 		EmitSignalCastWindupStarted("Eclipse", LastLightIcons.ForAbyss("eclipse"), duration);
 	}
 

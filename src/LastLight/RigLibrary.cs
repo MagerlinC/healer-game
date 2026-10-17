@@ -86,6 +86,38 @@ public static partial class RigLibrary
 		.Part("arm", G(1f), "24,-92 48,-86 48,-79 26,-82", 1)
 		.Part("arm", G(0.9f), "46,-88 84,-94 48,-76", 1);
 
+	/// <summary>
+	/// The Duskblade at rest by the camp fire: daggers lowered, the scarf hanging
+	/// loose, elbows on the knees and the hood turned to the flames.
+	/// </summary>
+	public static RigDefinition DuskbladeResting() => new RigDefinition
+		{
+			Id = "duskblade-rest", Mode = RigMode.Party, Height = 118f, Width = 70f, Scale = 0.36f, Breath = 0.8f
+		}
+		.Joint("body", "", 0, -40)
+		.Joint("head", "body", 14, -94)
+		.Joint("arm", "body", 26, -88)
+		.Joint("off", "body", -4, -78)
+		.Joint("cape", "body", -6, -88)
+		// legs, crouched
+		.Part("", G(0.6f), "-26,0 -16,-44 0,-44 -10,0")
+		.Part("", G(0.6f), "18,0 14,-44 30,-44 38,0")
+		// scarf, hanging down the back
+		.Part("cape", G(0.7f), "-4,-92 -20,-88 -30,-58 -22,-55 -6,-80", -2)
+		// back arm resting on the lap, its dagger sheathed at the hip
+		.Part("off", G(0.75f), "-6,-80 12,-50 18,-53 2,-82", -1)
+		.Part("off", G(0.6f), "-16,-58 -32,-42 -28,-39 -12,-54", -1)
+		// hunched torso, leaning in to the warmth
+		.Part("body", G(1f), "-18,-38 -18,-70 -6,-92 10,-100 28,-94 34,-78 30,-38")
+		.Part("body", G(0.7f), "-16,-44 30,-44 30,-38 -18,-38")
+		// hood with a pointed tail, hanging lower now
+		.Part("head", G(0.85f), "4,-106 -28,-108 -2,-94", -1)
+		.Part("head", G(1f), "0,-92 4,-110 16,-118 30,-112 38,-96 28,-86 8,-84")
+		.Part("head", G(0.15f), "22,-104 35,-101 34,-93 23,-93")
+		// front forearm on the knee, the dagger hanging loose from the hand
+		.Part("arm", G(1f), "22,-92 44,-72 39,-66 20,-84", 1)
+		.Part("arm", G(0.9f), "39,-70 46,-71 47,-44 43,-46", 1);
+
 	public static RigDefinition Starcaller() => new RigDefinition
 		{
 			Id = "starcaller", Mode = RigMode.Party, Height = 178f, Width = 64f, Scale = 0.3f,
@@ -112,7 +144,10 @@ public static partial class RigLibrary
 		.Part("arm", G(0.7f), Thick(5f, "38,-160 40,-80 42,0"), 1)
 		.Part("arm", G(1f), Circle(38f, -168f, 9f), 1);
 
-	public static RigDefinition Healer() => new RigDefinition
+	/// <param name="atRest">Out of combat (camp): the reaching arm hangs at the side instead.</param>
+	public static RigDefinition Healer(bool atRest = false)
+	{
+		var rig = new RigDefinition
 		{
 			Id = "healer", Mode = RigMode.Light, Height = 176f, Width = 60f, Scale = 0.26f,
 			SwingAngle = -0.6f, CastRaise = 1.1f, LightJoint = "flame", LightOffset = new Vector2(3, -20)
@@ -132,10 +167,53 @@ public static partial class RigLibrary
 		.Part("head", new Color("c99a58"), "-8,-110 -6,-124 4,-130 12,-124 14,-110 4,-106")
 		// the flame where a face should be
 		.Part("flame", new Color("ffe7b0"), "3,-178 12,-163 18,-147 16,-130 3,-112 -10,-130 -12,-147 -6,-163")
-		.Part("flame", new Color("ffffff"), "3,-157 9,-143 10,-128 3,-118 -4,-128 -5,-143")
+		.Part("flame", new Color("ffffff"), "3,-157 9,-143 10,-128 3,-118 -4,-128 -5,-143");
+		if (atRest)
+			// arm lowered, the hand glowing at the side
+			return rig
+				.Part("arm", new Color("f2deb0"), "12,-100 24,-74 18,-70 8,-94", 1)
+				.Part("arm", new Color("ffffff"), Circle(22f, -68f, 5.5f, 10), 1);
 		// reaching arm
-		.Part("arm", new Color("f2deb0"), "14,-98 50,-114 52,-106 18,-88", 1)
-		.Part("arm", new Color("ffffff"), Circle(54f, -110f, 6f, 10), 1);
+		return rig
+			.Part("arm", new Color("f2deb0"), "14,-98 50,-114 52,-106 18,-88", 1)
+			.Part("arm", new Color("ffffff"), Circle(54f, -110f, 6f, 10), 1);
+	}
+
+	/// <summary>
+	/// The healer seen from behind, looking out over the dark (the main menu): a
+	/// hooded back with the flame-face glowing up past the hood, the crook staff
+	/// planted at its side.
+	/// </summary>
+	public static RigDefinition HealerFromBehind() => new RigDefinition
+		{
+			Id = "healer-back", Mode = RigMode.Light, Height = 182f, Width = 60f, Scale = 0.26f,
+			CastRaise = 0.4f, LightJoint = "flame", LightOffset = new Vector2(0, -24)
+		}
+		.Joint("body", "", 0, -30)
+		.Joint("head", "body", 0, -120)
+		.Joint("arm", "body", 18, -124)
+		.Joint("off", "body", -18, -124)
+		.Joint("flame", "head", 0, -130)
+		// the flame where the face is, rising past the hood
+		.Part("flame", new Color("ffe7b0"), "-16,-144 -13,-160 -6,-174 0,-190 6,-176 13,-162 16,-144", -1)
+		.Part("flame", new Color("ffffff"), "-7,-150 -4,-166 0,-178 4,-166 7,-150", -1)
+		// robe, from the back: in the shadow of its own light
+		.Part("body", new Color("9c8158"),
+			"-30,4 -27,-50 -24,-90 -22,-112 -19,-128 -12,-138 -4,-141 4,-141 12,-138 19,-128 22,-112 24,-90 27,-50 30,4")
+		// the seam down the back, and the hem in shadow
+		.Part("body", new Color("6e5a3c"), Thick(2.2f, "0,-108 1,-60 -1,2"), 1)
+		.Part("body", new Color("c4a676"), "-30,4 -29,-6 0,-3 29,-6 30,4", 1)
+		// the back of the hood, rimmed by the flame behind it
+		.Part("head", new Color("8a7150"),
+			"-15,-110 -18,-128 -15,-144 -8,-154 0,-158 8,-154 15,-144 18,-128 15,-110 0,-104", 2)
+		.Part("head", new Color("ffd890"), Thick(1.6f, "-15,-144 -8,-154 0,-158 8,-154 15,-144"), 3)
+		// the arm holding the staff, which stands planted at the healer's side
+		.Part("arm", new Color("f5dfa8"), Thick(4f, "34,4 34,-148 36,-162 30,-171 21,-168 19,-160"), 1)
+		.Part("arm", new Color("a88c62"), "14,-128 28,-114 33,-88 25,-86 19,-104", 2)
+		.Part("arm", new Color("ffffff"), Circle(31f, -86f, 5f, 10), 3)
+		// the other arm, hanging
+		.Part("off", new Color("957a52"), "-14,-128 -26,-112 -29,-80 -21,-79 -18,-104", 2)
+		.Part("off", new Color("ffffff"), Circle(-25f, -78f, 4.5f, 10), 3);
 
 	/// <summary>
 	/// The camp merchant: a hunched peddler under a mountain of goods, leaning on a

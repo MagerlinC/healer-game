@@ -211,7 +211,7 @@ public partial class EquipmentPane : Control
 
 		// ── Usage hint ────────────────────────────────────────────────────────
 		var hint = new Label();
-		hint.Text = "•Drag items to their slot to equip\n•Drag slots to inventory to unequip";
+		hint.Text = "•Drag items to their slot to equip (or right-click)\n•Drag slots to inventory to unequip";
 		hint.AutowrapMode = TextServer.AutowrapMode.Word;
 		hint.HorizontalAlignment = HorizontalAlignment.Left;
 		hint.AddThemeFontSizeOverride("font_size", 11);
@@ -281,6 +281,7 @@ public partial class EquipmentPane : Control
 			var isNew = _highlightItem != null && ReferenceEquals(item, _highlightItem);
 			var ctrl = new InventoryItemControl(item, isNew);
 			ctrl.OnUnequipDrop = Refresh;
+			ctrl.OnQuickEquip = Refresh;
 			_inventoryFlow.AddChild(ctrl);
 		}
 	}

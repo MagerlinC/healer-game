@@ -16,7 +16,7 @@ public partial class RotSpell : SpellResource
 		Name = "Rot";
 		Description =
 			$"Rots the target, damaging it for {DamagePerTick} umbral damage every {TickInterval}s for {EffectDuration}s.";
-		ManaCost = 6f;
+		ManaCost = 8f;
 		CastTime = 0.0f;
 		// HealOverTime implies Healing; the per-tick value is what gets modified.
 		Tags = SpellTags.Damage | SpellTags.Duration;

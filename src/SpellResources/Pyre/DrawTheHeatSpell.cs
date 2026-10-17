@@ -56,16 +56,24 @@ public partial class DrawTheHeatSpell : SpellResource
 		return DamageAmount;
 	}
 
+	public override SpellTags SecondaryKind => SpellTags.Healing;
+
+	public override float GetSecondaryBaseValue()
+	{
+		return HealPerAlly;
+	}
+
 	public override void Apply(SpellContext ctx)
 	{
 		// Deal damage to the boss (FinalValue has been run through the modifier pipeline).
 		ctx.Target?.TakeDamage(ctx.FinalValue);
 
 		// Disperse the stolen vitality across all living allies.
+		var heal = ctx.SecondaryFinalValue;
 		foreach (var node in ctx.Caster.GetTree().GetNodesInGroup("party"))
 		{
 			if (node is Character { IsAlive: true } ally)
-				ally.Heal(HealPerAlly);
+				ally.Heal(heal);
 		}
 	}
 }

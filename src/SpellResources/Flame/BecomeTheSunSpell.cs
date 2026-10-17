@@ -23,7 +23,7 @@ public partial class BecomeTheSunSpell : UltimateSpellResource
 		Name = "Become the Sun";
 		Description =
 			$"Burn as bright as the sun for {BuffDuration:F0}s, making all spells free and increasing light restored by Flame spells by {100 * HealingIncrease:F0}%. Light that overflows a full target spreads to all allies and burns all enemies.";
-		ActivationDescription = "Spend a total of 50 kindling on Flame spells.";
+		ActivationDescription = $"Spend a total of {Requirement:F0} kindling on Flame spells.";
 		ManaCost = 10f;
 		CastTime = 0.0f;
 		Cooldown = 0f;

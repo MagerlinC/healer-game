@@ -32,10 +32,19 @@ public partial class LastLightBackground : Control
 		FrozenPeak,
 
 		/// <summary>Nothing on the horizon at all; a broken floor whose fragments drift up into the black.</summary>
-		Abyss
+		Abyss,
+
+		/// <summary>Overworld / camp: a trampled clearing walled in by dark pines, under a canopy.</summary>
+		Camp
 	}
 
 	public Preset BackgroundPreset = Preset.AncientKeep;
+
+	/// <summary>
+	/// The camp's clearing on the floor: centre (UV) and radii (screen heights).
+	/// The camp's fire and props are laid out to sit inside it.
+	/// </summary>
+	public static readonly Vector4 CampClearing = new(0.5f, 0.69f, 0.66f, 0.25f);
 
 	/// <summary>Everything that gives a backdrop its mood, besides its silhouettes.</summary>
 	sealed record Palette(
@@ -79,6 +88,11 @@ public partial class LastLightBackground : Control
 			new(0.1f, 0.07f, 0.15f),
 			new(0.05f, 0.04f, 0.07f, 0.9f), new(0.03f, 0.024f, 0.045f), new(0.01f, 0.008f, 0.015f),
 			new(0.62f, 0.52f, 0.78f), 1.1f, 0.008f, 0.9f, 0.35f),
+		Preset.Camp => new Palette(0.4f,
+			new(0.02f, 0.02f, 0.024f), new(0.13f, 0.125f, 0.12f), new(0.15f, 0.13f, 0.105f), new(0.07f, 0.058f, 0.045f),
+			new(0.2f, 0.19f, 0.18f),
+			new(0.07f, 0.068f, 0.066f, 0.95f), new(0.035f, 0.032f, 0.03f), new(0.01f, 0.009f, 0.008f),
+			new(0.5f, 0.48f, 0.45f), 1.2f, 0.006f, 0.9f, 0.22f),
 		_ => Neutral
 	};
 
@@ -105,6 +119,11 @@ public partial class LastLightBackground : Control
 		groundMat.SetShaderParameter("ground_near", mood.GroundNear);
 		groundMat.SetShaderParameter("fog_color", mood.Fog);
 		groundMat.SetShaderParameter("stars", mood.Stars);
+		if (BackgroundPreset == Preset.Camp)
+		{
+			groundMat.SetShaderParameter("floor_style", 1f);
+			groundMat.SetShaderParameter("clearing", CampClearing);
+		}
 		_ground = FullRect(groundMat);
 
 		_ruins = new Control { MouseFilter = MouseFilterEnum.Ignore };
@@ -199,6 +218,9 @@ public partial class LastLightBackground : Control
 			case Preset.Abyss:
 				DrawAbyss(Shape, w, h, far, mid, near);
 				return;
+			case Preset.Camp:
+				DrawCamp(Shape, w, h, far, mid, near);
+				return;
 		}
 
 		// ── distant keep along the horizon ──
@@ -275,6 +297,94 @@ public partial class LastLightBackground : Control
 		Stone(near, w * 0.95f, 1.02f, 0.12f, 0.42f, -0.03f);
 		shape(near, 0, 1, w * 0.2f, 1, w * 0.14f, 0.96f, w * 0.05f, 0.94f, 0, 0.93f);
 		shape(near, w, 1, w * 0.78f, 1, w * 0.86f, 0.965f, w * 0.95f, 0.95f, w, 0.92f);
+	}
+
+	/// <summary>Deterministic 0..1 noise for scattering shapes.</summary>
+	static float Hash(int i) => Mathf.PosMod(Mathf.Sin(i * 12.9898f + 78.233f) * 43758.5453f, 1f);
+
+	/// <summary>A tiered pine silhouette with its trunk base at (x, b).</summary>
+	static void Pine(ShapeFn shape, Color c, float x, float b, float sw, float sh, int tiers = 4)
+	{
+		var left = new System.Collections.Generic.List<Vector2>();
+		var trunk = sh * 0.07f;
+		left.Add(new Vector2(x - sw * 0.06f, b));
+		left.Add(new Vector2(x - sw * 0.06f, b - trunk));
+		for (var k = 0; k < tiers; k++)
+		{
+			var y0 = b - trunk - (sh - trunk) * k / tiers * 0.95f;
+			var y1 = b - trunk - (sh - trunk) * (k + 1) / tiers * 0.95f;
+			var hw = sw * 0.5f * (1f - 0.75f * k / tiers);
+			left.Add(new Vector2(x - hw, y0));
+			left.Add(new Vector2(x - hw * 0.4f, y1 + (y0 - y1) * 0.3f));
+		}
+		var xy = new System.Collections.Generic.List<float>();
+		foreach (var p in left) { xy.Add(p.X); xy.Add(p.Y); }
+		xy.Add(x); xy.Add(b - sh);
+		for (var i = left.Count - 1; i >= 0; i--) { xy.Add(2f * x - left[i].X); xy.Add(left[i].Y); }
+		shape(c, xy.ToArray());
+	}
+
+	/// <summary>A tall trunk rising out of the frame, with a root flare at its base.</summary>
+	static void Trunk(ShapeFn shape, Color c, float x, float b, float tw, float bend)
+	{
+		shape(c,
+			x - tw * 0.5f - tw * 0.6f, b,
+			x - tw * 0.5f, b - 0.06f,
+			x - tw * 0.42f + bend * 0.5f, b - 0.4f,
+			x - tw * 0.36f + bend, -0.02f,
+			x + tw * 0.36f + bend, -0.02f,
+			x + tw * 0.42f + bend * 0.5f, b - 0.4f,
+			x + tw * 0.5f, b - 0.06f,
+			x + tw * 0.5f + tw * 0.7f, b);
+	}
+
+	static void DrawCamp(ShapeFn shape, float w, float h, Color far, Color mid, Color near)
+	{
+		var cx = w * 0.5f;
+
+		// ── a dense wall of pines along the horizon, fading into the fog ──
+		var i = 0;
+		for (var x = -0.02f; x < w + 0.04f; x += 0.032f, i++)
+			Pine(shape, far, x + (Hash(i) - 0.5f) * 0.02f, h + 0.012f, 0.06f + Hash(i + 50) * 0.03f,
+				0.13f + Hash(i + 100) * 0.12f, 4);
+
+		// ── nearer, taller pines closing round the clearing; lower behind the fire ──
+		i = 200;
+		for (var x = 0.02f; x < w; x += 0.075f, i++)
+		{
+			var fromCentre = Mathf.Abs(x - cx) / cx;
+			var height = 0.2f + fromCentre * 0.28f + Hash(i) * 0.08f;
+			Pine(shape, mid, x + (Hash(i + 7) - 0.5f) * 0.04f, h + 0.035f + fromCentre * 0.06f,
+				0.09f + fromCentre * 0.05f, height, 5);
+		}
+
+		// ── great trunks framing the camp on both sides ──
+		Trunk(shape, near, 0.05f, 0.98f, 0.075f, 0.01f);
+		Trunk(shape, near, 0.2f, h + 0.2f, 0.04f, -0.012f);
+		Trunk(shape, near, w - 0.06f, 0.96f, 0.085f, -0.012f);
+		Trunk(shape, near, w - 0.23f, h + 0.18f, 0.035f, 0.01f);
+
+		// ── the canopy hanging overhead, deepest at the sides ──
+		var canopy = new System.Collections.Generic.List<float> { 0, -0.01f, w, -0.01f };
+		i = 300;
+		for (var x = w; x >= -0.001f; x -= 0.04f, i++)
+		{
+			var edge = Mathf.Abs(x - cx) / cx;
+			canopy.Add(x);
+			canopy.Add(0.03f + edge * edge * 0.3f + Hash(i) * 0.05f);
+		}
+		shape(near, canopy.ToArray());
+
+		// ── undergrowth across the foreground, thickest in the corners ──
+		var brush = new System.Collections.Generic.List<float> { w, 1.01f, 0, 1.01f };
+		i = 400;
+		for (var x = 0f; x <= w + 0.001f; x += 0.03f, i++)
+		{
+			var edge = Mathf.Abs(x - cx) / cx;
+			brush.Add(x);
+			brush.Add(0.985f - edge * edge * edge * 0.2f - Hash(i) * 0.025f);
+		}
+		shape(near, brush.ToArray());
 	}
 
 	// ── per-dungeon skylines ────────────────────────────────────────────────

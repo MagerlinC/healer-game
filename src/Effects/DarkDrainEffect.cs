@@ -4,8 +4,8 @@ namespace healerfantasy.Effects;
 
 public partial class DarkDrainEffect : DamageOverTimeEffect
 {
-	/// <summary>Fraction of each tick's damage returned as healing to the caster.</summary>
-	public float HealFraction { get; }
+	/// <summary>Light restored to the caster on each tick (already scaled by healing bonuses).</summary>
+	public float HealPerTick { get; }
 
 	/// <summary>
 	/// The character who cast Siphon the Dark. Set from <see cref="SiphonTheDarkSpell.Apply"/>
@@ -13,11 +13,11 @@ public partial class DarkDrainEffect : DamageOverTimeEffect
 	/// </summary>
 	public Character Caster { get; set; }
 
-	public DarkDrainEffect(float damagePerTick, float duration, float healFraction) : base(damagePerTick, duration, 1f)
+	public DarkDrainEffect(float damagePerTick, float duration, float healPerTick) : base(damagePerTick, duration, 1f)
 	{
 		EffectId = "DarkDrain";
 		School = SpellSchool.Umbra;
-		HealFraction = healFraction;
+		HealPerTick = healPerTick;
 	}
 
 	protected override void OnTick(Character target)
@@ -26,8 +26,8 @@ public partial class DarkDrainEffect : DamageOverTimeEffect
 
 		if (Caster == null) return;
 
-		// Siphon a fraction of each tick's damage back to the caster.
-		var healAmount = DamagePerTick * HealFraction;
+		// Siphon light back to the caster.
+		var healAmount = HealPerTick;
 		Caster.Heal(healAmount);
 
 		// The base DoT pipeline emits FCT only on the enemy target.

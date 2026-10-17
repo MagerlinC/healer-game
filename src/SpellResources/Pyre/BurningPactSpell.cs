@@ -27,6 +27,7 @@ public partial class BurningPactSpell : SpellResource
 		Description =
 			$"Burn {HpCost} of your own light to restore {ManaGained} kindling instantly.";
 		ManaCost = 0f;
+		HealthCost = HpCost;
 		CastTime = 0.0f;
 		Cooldown = 14f;
 		School = SpellSchool.Pyre;

@@ -33,7 +33,7 @@ public class OverburnTalent : ISpellModifier
 		// For group spells (Spreading Embers), check whether the primary target
 		// is healthy. For single-target HoTs, check that target directly.
 		var target = ctx.Target;
-		if (target == null) return;
+		if (target is not { IsFriendly: true }) return;
 
 		var healthFraction = target.MaxHealth > 0f
 			? target.CurrentHealth / target.MaxHealth

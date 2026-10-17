@@ -7,7 +7,13 @@ uniform float aspect = 1.7778;
 uniform vec4 ground : source_color = vec4(0.035, 0.03, 0.027, 1.0);
 uniform vec4 ink : source_color = vec4(0.66, 0.55, 0.4, 1.0);
 
-float hash2(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+// Sin-free hash: fract(sin(...)) can round differently in neighbouring cells on
+// the GPU, tearing the noise into hard seams and blocks.
+float hash2(vec2 p) {
+	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
+}
 float noise(vec2 p) {
 	vec2 i = floor(p);
 	vec2 f = fract(p);

@@ -9,7 +9,7 @@ public partial class SwallowingDarkSpell : SpellResource
 {
 
 	public static readonly string SpellName = "Swallowing Dark";
-	[Export] public float AddedDamagePerConsumedHoT = 15f;
+	[Export] public float AddedDamagePerConsumedHoT = 25f;
 	[Export] public float BaseDamage = 10f;
 
 	public SwallowingDarkSpell()

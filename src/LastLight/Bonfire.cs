@@ -12,6 +12,12 @@ public partial class Bonfire : Node2D
 	/// <summary>Radius of the pocket it holds open, in screen heights.</summary>
 	public float LightRadius = 0.27f;
 
+	/// <summary>0 = a ragged pocket cleared of dark; towards 1, a fainter glow the dark seeps into.</summary>
+	public float LightSoftness;
+
+	/// <summary>Ring the fire with hearth stones (a camp fire rather than a battlefield pyre).</summary>
+	public bool StoneRing;
+
 	readonly LightPocket _pocket = new();
 	readonly Polygon2D[] _flames = new Polygon2D[3];
 	Sprite2D _glow = null!;
@@ -31,6 +37,9 @@ public partial class Bonfire : Node2D
 			Scale = new Vector2(0.7f, 0.55f)
 		};
 		AddChild(_glow);
+
+		_pocket.Soft = LightSoftness;
+		if (StoneRing) AddStones(back: true);
 
 		// ash mound, bones, coiled sword
 		AddChild(new Polygon2D { Color = Ash, Antialiased = true, Polygon = RigDefinition.P(
@@ -81,6 +90,33 @@ public partial class Bonfire : Node2D
 		fade.SetColor(1, new Color(1f, 0.4f, 0.1f, 0f));
 		embers.ColorRamp = fade;
 		AddChild(embers);
+
+		if (StoneRing) AddStones(back: false);
+	}
+
+	/// <summary>The hearth stones: the back half behind the fire, the front half over it.</summary>
+	void AddStones(bool back)
+	{
+		const int count = 11;
+		for (var i = 0; i < count; i++)
+		{
+			var a = Mathf.Tau * i / count + 0.2f;
+			var y = Mathf.Sin(a) * 6f;
+			if (back != (y < 0f)) continue;
+			var x = Mathf.Cos(a) * 27f;
+			var r = 3.4f + 1.2f * Mathf.Sin(i * 2.3f);
+			// Lit from the fire on the side that faces it.
+			var lit = back ? 0.16f : 0.1f;
+			AddChild(new Polygon2D
+			{
+				Color = new Color(lit, lit * 0.85f, lit * 0.72f), Antialiased = true,
+				Polygon = new[]
+				{
+					new Vector2(x - r, y + 1f), new Vector2(x - r * 0.7f, y - r * 0.8f), new Vector2(x + r * 0.4f, y - r),
+					new Vector2(x + r, y - r * 0.2f), new Vector2(x + r * 0.8f, y + 1.2f)
+				}
+			});
+		}
 	}
 
 	public override void _EnterTree() => LastLightStyle.Pockets.Add(_pocket);

@@ -10,11 +10,11 @@ public partial class TwinFlameSpell : UltimateSpellResource
 	const float Duration = 10f;
 
 	/// <summary>
-	/// Requirement: accumulate 12 seconds of Wick buff coverage across all targets.
+	/// Requirement: accumulate 60 seconds of Wick buff coverage across all targets.
 	/// Each active Wick buff on any party member contributes 1 second per real second.
 	/// Multiple simultaneous buffs or targets all count independently.
 	/// </summary>
-	public override float Requirement => 12f;
+	public override float Requirement => 60f;
 
 	public override string ActiveEffectId => "TwinFlameEffect";
 
@@ -23,7 +23,7 @@ public partial class TwinFlameSpell : UltimateSpellResource
 		Name = "Twin Flame";
 		Description =
 			$"Split your flame in two, lighting a twin of yourself. Each time you cast a spell while Twin Flame is active, your twin mimics that spell, dealing 50% of the damage or restoring 50% of the light to a random target within range. Lasts {Duration:F0}s.";
-		ActivationDescription = "Accumulate a total of 12 seconds of Wick buff duration across all targets.";
+		ActivationDescription = $"Accumulate a total of {Requirement:F0} seconds of Wick buff duration across all targets.";
 		ManaCost = 0f;
 		CastTime = 0.0f;
 		Cooldown = 20f;

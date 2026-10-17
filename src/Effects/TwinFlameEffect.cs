@@ -121,6 +121,8 @@ public partial class TwinFlameEffect : CharacterEffect, ISpellModifier
 			Tags = ctx.Tags,
 			BaseValue = ctx.BaseValue * MirrorFraction,
 			FinalValue = echoFinalValue,
+			SecondaryBaseValue = ctx.SecondaryBaseValue * MirrorFraction,
+			SecondaryFinalValue = ctx.SecondaryFinalValue * MirrorFraction,
 			Targets = echoTargets,
 			CasterStats = ctx.CasterStats,
 			Timestamp = Time.GetTicksMsec() / 1000.0,

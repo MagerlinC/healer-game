@@ -98,6 +98,7 @@ public static class AssetConstants
 	public static readonly string RumbleSoundPath = "res://assets/sound-effects/rumble.mp3";
 	public static readonly string LandingImpactSoundPath = "res://assets/sound-effects/landing-impact.wav";
 	public static readonly string VictorySoundPath = "res://assets/music/victory.mp3";
+	public static readonly string DeathSoundPath = "res://assets/sound-effects/death.wav";
 
 	public static readonly string ButtonClickPath = "res://assets/sound-effects/button-impact.wav";
 
@@ -105,6 +106,13 @@ public static class AssetConstants
 	public static readonly string SpellbookSfxPath = "res://assets/sound-effects/book.wav";
 	public static readonly string TalentsSfxPath = "res://assets/sound-effects/choir-hit.wav";
 	public static readonly string WalkSfxPath = "res://assets/sound-effects/movement/walk.wav";
+
+	// ── The Infinite Abyss SFX ────────────────────────────────────────────────
+	public static readonly string AbyssStareSfxPath = "res://assets/sound-effects/enemies/the-infinite-abyss/stare.wav";
+	public static readonly string AbyssConsumeSfxPath = "res://assets/sound-effects/enemies/the-infinite-abyss/consume.wav";
+	public static readonly string AbyssCroakSfxPath = "res://assets/sound-effects/enemies/the-infinite-abyss/croak.wav";
+	public static readonly string AbyssExhaleGruntSfxPath = "res://assets/sound-effects/enemies/the-infinite-abyss/exhale-grunt.wav";
+	public static readonly string AbyssTendrilImpactsSfxPath = "res://assets/sound-effects/enemies/the-infinite-abyss/tendril-impacts.mp3";
 
 	// ── Thorns enemy assets ────────────────────────────────────────────────────
 

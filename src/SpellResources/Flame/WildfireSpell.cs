@@ -18,7 +18,7 @@ public partial class WildfireSpell : SpellResource
 	{
 		Name = "Wildfire";
 		Description = $"Restores {HealAmount} light to all party members.";
-		ManaCost = 20f;
+		ManaCost = 16f;
 		CastTime = 2f;
 		Cooldown = 8f;
 		School = SpellSchool.Flame;

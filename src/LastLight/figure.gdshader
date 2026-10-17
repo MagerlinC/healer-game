@@ -37,8 +37,19 @@ uniform float burn_rim_px = 5.0;
 uniform float outline_px = 0.0;
 uniform vec4 outline_color : source_color = vec4(1.0, 0.84, 0.58, 0.8);
 
-float hash1(float n) { return fract(sin(n) * 43758.5453); }
-float hash2(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+// Sin-free hashes: fract(sin(...)) can round differently in neighbouring cells on
+// the GPU, tearing the noise into hard seams and blocks.
+float hash1(float n) {
+	n = fract(n * 0.1031);
+	n *= n + 33.33;
+	n *= n + n;
+	return fract(n);
+}
+float hash2(vec2 p) {
+	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
+}
 float vnoise(float x) {
 	float i = floor(x);
 	float f = fract(x);

@@ -4,9 +4,12 @@ using System.Linq;
 using Godot;
 using healerfantasy;
 using healerfantasy.CombatLog;
+using healerfantasy.LastLight.Hud;
 
 /// <summary>
-/// Full-screen death overlay shown when every party member has died.
+/// Full-screen death overlay shown when every party member has died: the last
+/// light goes out. A <c>faded_light</c> shader closes the darkness in over the
+/// frozen battlefield, then the title and recap rise out of it.
 ///
 /// Sits on CanvasLayer 20 (above GameUI at layer 10) and is hidden by default.
 /// <see cref="ShowDeathScreen"/> snapshots the CombatLog, clears it, then
@@ -29,8 +32,19 @@ public partial class DeathScreen : CanvasLayer
 
 	readonly HashSet<string> _deadPartyMembers = new();
 
+	/// <summary>How long the darkness takes to swallow the last light.</summary>
+	const float DarkenDuration = 3.2f;
+
 	/// <summary>Container populated by <see cref="BuildDamageTakenRecap"/> at death-time.</summary>
 	VBoxContainer _damageSectionContainer = null!;
+
+	ShaderMaterial _darkMat = null!;
+	Label _title = null!;
+	Label _subtitle = null!;
+	Control _details = null!;
+	readonly List<Button> _buttons = new();
+	readonly AudioStreamPlayer _audioPlayer = new();
+	float _time;
 
 	void OnCharacterDied(Character character)
 	{
@@ -47,12 +61,17 @@ public partial class DeathScreen : CanvasLayer
 		Visible = false;
 		ProcessMode = ProcessModeEnum.Always;
 
+		_audioPlayer.Stream = GD.Load<AudioStream>(AssetConstants.DeathSoundPath);
+		_audioPlayer.VolumeDb = -4f;
+		AddChild(_audioPlayer);
+
 		GlobalAutoLoad.SubscribeToSignal(nameof(Character.Died), Callable.From((Character character) => OnCharacterDied(character)));
 
-		// ── Dark overlay — blocks all mouse events from reaching the game ────
+		// ── The dark closing in — also blocks all mouse events from the game ─
+		_darkMat = new ShaderMaterial { Shader = GD.Load<Shader>("res://src/LastLight/faded_light.gdshader") };
 		var overlay = new ColorRect();
 		overlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		overlay.Color = new Color(0f, 0f, 0f, 0.80f);
+		overlay.Material = _darkMat;
 		overlay.MouseFilter = Control.MouseFilterEnum.Stop;
 		AddChild(overlay);
 
@@ -61,30 +80,60 @@ public partial class DeathScreen : CanvasLayer
 		vbox.SetAnchorsPreset(Control.LayoutPreset.Center);
 		vbox.GrowHorizontal = Control.GrowDirection.Both;
 		vbox.GrowVertical = Control.GrowDirection.Both;
-		vbox.AddThemeConstantOverride("separation", 24);
+		vbox.AddThemeConstantOverride("separation", 10);
 		overlay.AddChild(vbox);
 
-		// Title
-		var title = new Label();
-		title.Text = "YOUR PARTY HAS FALLEN";
-		title.HorizontalAlignment = HorizontalAlignment.Center;
-		title.AddThemeFontSizeOverride("font_size", 36);
-		title.AddThemeColorOverride("font_color", new Color(0.85f, 0.22f, 0.22f));
-		vbox.AddChild(title);
+		// Title — dim ash, with the last of the ember's glow behind it
+		_title = new Label();
+		_title.Text = "Your light has faded";
+		_title.HorizontalAlignment = HorizontalAlignment.Center;
+		_title.AddThemeFontOverride("font", LastLightHud.Serif);
+		_title.AddThemeFontSizeOverride("font_size", 46);
+		_title.AddThemeColorOverride("font_color", new Color(0.78f, 0.70f, 0.60f));
+		_title.AddThemeColorOverride("font_shadow_color", new Color(LastLightHud.Ember, 0.35f));
+		_title.AddThemeConstantOverride("shadow_offset_x", 0);
+		_title.AddThemeConstantOverride("shadow_offset_y", 0);
+		_title.AddThemeConstantOverride("shadow_outline_size", 14);
+		vbox.AddChild(_title);
+
+		_subtitle = new Label();
+		_subtitle.Text = "The darkness has claimed your party.";
+		_subtitle.HorizontalAlignment = HorizontalAlignment.Center;
+		_subtitle.AddThemeFontSizeOverride("font_size", 16);
+		_subtitle.AddThemeColorOverride("font_color", LastLightHud.TextDim);
+		vbox.AddChild(_subtitle);
+
+		// Everything below the title rises in once the dark has settled.
+		var details = new VBoxContainer();
+		details.AddThemeConstantOverride("separation", 24);
+		vbox.AddChild(details);
+		_details = details;
+
+		details.AddChild(new Control { CustomMinimumSize = new Vector2(0f, 6f) });
 
 		// ── Damage recap (populated lazily in ShowDeathScreen) ────────────────
 		_damageSectionContainer = new VBoxContainer();
 		_damageSectionContainer.AddThemeConstantOverride("separation", 6);
-		vbox.AddChild(_damageSectionContainer);
+		details.AddChild(_damageSectionContainer);
 
 		// ── Button row ────────────────────────────────────────────────────────
 		var btnRow = new HBoxContainer();
 		btnRow.Alignment = BoxContainer.AlignmentMode.Center;
 		btnRow.AddThemeConstantOverride("separation", 20);
-		vbox.AddChild(btnRow);
+		details.AddChild(btnRow);
 
-		btnRow.AddChild(MakeButton("New Run", new Color(0.50f, 0.20f, 0.20f), OnNewRunPressed));
+		btnRow.AddChild(MakeButton("New Run", new Color(0.55f, 0.26f, 0.12f), OnNewRunPressed));
 		btnRow.AddChild(MakeButton("Main Menu", new Color(0.35f, 0.30f, 0.22f), OnMainMenuPressed));
+	}
+
+	public override void _Process(double delta)
+	{
+		if (!Visible) return;
+
+		// The ember behind the title gutters like a flame about to go out.
+		_time += (float)delta;
+		var flicker = 0.22f + 0.10f * Mathf.Sin(_time * 2.3f) + 0.06f * Mathf.Sin(_time * 7.1f + 1.3f);
+		_title.AddThemeColorOverride("font_shadow_color", new Color(LastLightHud.Ember, Mathf.Max(flicker, 0f)));
 	}
 
 	// ── public API ────────────────────────────────────────────────────────────
@@ -109,6 +158,42 @@ public partial class DeathScreen : CanvasLayer
 
 		Visible = true;
 		GetTree().Paused = true;
+		PlayFadeOut();
+		_audioPlayer.Play();
+	}
+
+	// ── private — the light going out ─────────────────────────────────────────
+
+	/// <summary>
+	/// Darkness swallows the screen, then the title surfaces, then the recap and
+	/// buttons. Buttons ignore the mouse until they are visible so a panicked
+	/// click at the moment of death can't skip the screen.
+	/// </summary>
+	void PlayFadeOut()
+	{
+		_title.Modulate = Colors.Transparent;
+		_subtitle.Modulate = Colors.Transparent;
+		_details.Modulate = Colors.Transparent;
+		foreach (var btn in _buttons)
+			btn.MouseFilter = Control.MouseFilterEnum.Ignore;
+
+		var tween = CreateTween();
+		tween.SetPauseMode(Tween.TweenPauseMode.Process);
+		tween.SetParallel();
+
+		_darkMat.SetShaderParameter("progress", 0f);
+		tween.TweenMethod(Callable.From((float p) => _darkMat.SetShaderParameter("progress", p)), 0f, 1f, DarkenDuration)
+			.SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Sine);
+
+		tween.TweenProperty(_title, "modulate", Colors.White, 1.6f).SetDelay(DarkenDuration * 0.3f);
+		tween.TweenProperty(_subtitle, "modulate", Colors.White, 1.2f).SetDelay(DarkenDuration * 0.55f);
+		tween.TweenProperty(_details, "modulate", Colors.White, 0.9f).SetDelay(DarkenDuration * 0.8f);
+
+		tween.Chain().TweenCallback(Callable.From(() =>
+		{
+			foreach (var btn in _buttons)
+				btn.MouseFilter = Control.MouseFilterEnum.Stop;
+		}));
 	}
 
 	// ── private — damage recap ────────────────────────────────────────────────
@@ -139,14 +224,14 @@ public partial class DeathScreen : CanvasLayer
 		var grandTotal = rows.Sum(r => r.Total);
 
 		// ── top divider ───────────────────────────────────────────────────────
-		AddSeparator(new Color(0.60f, 0.22f, 0.18f, 0.55f));
+		AddSeparator(new Color(LastLightHud.Iron, 0.7f));
 
 		// ── section label ─────────────────────────────────────────────────────
 		var header = new Label();
-		header.Text = "DAMAGE TAKEN";
+		header.Text = "WHAT DIMMED YOUR LIGHT";
 		header.HorizontalAlignment = HorizontalAlignment.Center;
 		header.AddThemeFontSizeOverride("font_size", 14);
-		header.AddThemeColorOverride("font_color", new Color(0.85f, 0.45f, 0.20f));
+		header.AddThemeColorOverride("font_color", LastLightHud.Ember);
 		_damageSectionContainer.AddChild(header);
 
 		// ── scrollable table ──────────────────────────────────────────────────
@@ -168,7 +253,7 @@ public partial class DeathScreen : CanvasLayer
 		scroll.AddChild(table);
 
 		// Column header row
-		table.AddChild(MakeRow("Ability", "Source", "Hits", "★", "Total Dmg", true));
+		table.AddChild(MakeRow("Ability", "Source", "Hits", "★", "Light Lost", true));
 		AddTableSeparator(table);
 
 		// Data rows
@@ -193,7 +278,7 @@ public partial class DeathScreen : CanvasLayer
 		table.AddChild(MakeRow("Total", "", "", "", $"{grandTotal:0}", false, isTotal: true));
 
 		// ── bottom divider ────────────────────────────────────────────────────
-		AddSeparator(new Color(0.60f, 0.22f, 0.18f, 0.55f));
+		AddSeparator(new Color(LastLightHud.Iron, 0.7f));
 	}
 
 	// ── row / cell builders ───────────────────────────────────────────────────
@@ -319,7 +404,7 @@ public partial class DeathScreen : CanvasLayer
 
 	// ── helpers ───────────────────────────────────────────────────────────────
 
-	static Button MakeButton(string text, Color borderColor, Action onPressed)
+	Button MakeButton(string text, Color borderColor, Action onPressed)
 	{
 		var btn = new Button();
 		btn.Text = text;
@@ -338,6 +423,7 @@ public partial class DeathScreen : CanvasLayer
 		btn.AddThemeStyleboxOverride("focus", normal);
 
 		btn.Pressed += onPressed;
+		_buttons.Add(btn);
 		return btn;
 	}
 

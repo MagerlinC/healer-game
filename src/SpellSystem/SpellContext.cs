@@ -33,6 +33,14 @@ public class SpellContext
 	/// </summary>
 	public float FinalValue { get; set; }
 
+	/// <summary>
+	/// Secondary component of a spell with both damage and healing output
+	/// (see <see cref="SpellResource.SecondaryKind"/>). Scaled only by bonuses of that kind.
+	/// </summary>
+	public float SecondaryBaseValue { get; set; }
+
+	public float SecondaryFinalValue { get; set; }
+
 	/// <summary>Tags describing this cast. Modifiers may read and add tags.</summary>
 	public SpellTags Tags { get; set; }
 
@@ -62,6 +70,17 @@ public class SpellContext
 	/// Defaults to <c>true</c> so all spells that don't opt in are unaffected.
 	/// </summary>
 	public bool WasEffective { get; set; } = true;
+
+	/// <summary>
+	/// Scales an extra amount of the same kind as the primary value (e.g. Cinder's
+	/// instant hit alongside its DoT) by the same ratio the pipeline applied to
+	/// <see cref="BaseValue"/>, so it benefits from stat bonuses, talents, buffs and crit.
+	/// For an output of the other kind, use <see cref="SpellResource.SecondaryKind"/>.
+	/// </summary>
+	public float ScaleWithModifiers(float baseAmount)
+	{
+		return BaseValue > 0f ? baseAmount * FinalValue / BaseValue : baseAmount;
+	}
 
 	public bool IsSpellOfSchool(SpellSchool school)
 	{

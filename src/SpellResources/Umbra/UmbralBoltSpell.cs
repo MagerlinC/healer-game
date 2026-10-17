@@ -13,7 +13,7 @@ namespace healerfantasy.SpellResources;
 public partial class UmbralBoltSpell : SpellResource
 {
 	public static readonly string SpellName = "Umbral Bolt";
-	[Export] public float DamageAmount = 30f;
+	[Export] public float DamageAmount = 40f;
 
 	public UmbralBoltSpell()
 	{

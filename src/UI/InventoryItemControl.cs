@@ -24,6 +24,9 @@ public partial class InventoryItemControl : Control
 	/// <summary>Called after an equipped item is dropped onto this control (unequip).</summary>
 	public Action? OnUnequipDrop { get; set; }
 
+	/// <summary>Called after the item is quick-equipped via right-click.</summary>
+	public Action? OnQuickEquip { get; set; }
+
 	public InventoryItemControl(EquippableItem item, bool isHighlighted = false)
 	{
 		_item = item;
@@ -84,6 +87,20 @@ public partial class InventoryItemControl : Control
 			GameTooltip.Show(_item.Name,
 				$"{_item.Rarity}  •  {EquipSlotControl.SlotDisplayName(_item.Slot)}\n\n{_item.Description}");
 		MouseExited += () => GameTooltip.Hide();
+	}
+
+	// ── right-click quick-equip ───────────────────────────────────────────────
+
+	public override void _GuiInput(InputEvent @event)
+	{
+		if (@event is not InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true })
+			return;
+
+		AcceptEvent();
+		// This tile is freed when the inventory rebuilds, so MouseExited won't fire.
+		GameTooltip.Hide();
+		ItemStore.QuickEquip(_item);
+		OnQuickEquip?.Invoke();
 	}
 
 	// ── drag source ───────────────────────────────────────────────────────────

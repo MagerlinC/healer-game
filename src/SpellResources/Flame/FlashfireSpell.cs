@@ -48,19 +48,27 @@ public partial class FlashfireSpell : SpellResource
 		return targets;
 	}
 
+	public override SpellTags SecondaryKind => SpellTags.Damage;
+
+	public override float GetSecondaryBaseValue()
+	{
+		return DamageAmount;
+	}
+
 	public override void Apply(SpellContext ctx)
 	{
 		// Heal all party members for the pipeline-modified value.
 		foreach (var target in ctx.Targets)
 			target.Heal(ctx.FinalValue);
 
-		// Deal fixed Flame damage to all active bosses.
+		// Damage all active bosses (scaled by damage bonuses only).
+		var damage = ctx.SecondaryFinalValue;
 		var isCrit = ctx.Tags.HasFlag(SpellTags.Critical);
 		foreach (var node in ctx.Caster.GetTree().GetNodesInGroup(GameConstants.BossGroupName))
 		{
 			if (node is not Character { IsAlive: true } boss) continue;
-			boss.TakeDamage(DamageAmount);
-			boss.RaiseFloatingCombatText(DamageAmount, false, (int)School, isCrit);
+			boss.TakeDamage(damage);
+			boss.RaiseFloatingCombatText(damage, false, (int)School, isCrit);
 		}
 	}
 }
