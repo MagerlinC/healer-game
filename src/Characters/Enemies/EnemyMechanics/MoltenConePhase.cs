@@ -340,6 +340,14 @@ public partial class ConeDrawNode : Node2D
 	const float MaxOuterReach = 4000f;
 
 	/// <summary>
+	/// The cone is clipped to the arena ellipse scaled by this factor (and drawn as
+	/// a polygon with this many segments), so it reads as molten floor rather than
+	/// slices sprawling across the whole screen.
+	/// </summary>
+	const float ArenaClipMargin = 1.12f;
+	const int ArenaClipSegments = 64;
+
+	/// <summary>
 	/// How far past the arena bottom the base of every slice extends, expressed
 	/// as a fraction of RadiusY. Decreasing this shortens the cone and increases
 	/// the apparent angle; increasing it lengthens the cone and narrows the angle.
@@ -429,12 +437,23 @@ public partial class ConeDrawNode : Node2D
 	}
 
 	/// <summary>
-	/// The danger slices for <paramref name="zone"/> as world-space triangles
-	/// (tip, base-left, base-right). This is the single source of truth for the
-	/// cone: <see cref="_Draw"/> paints exactly these polygons and
-	/// <see cref="IsSafe"/> hit-tests against them, so the two cannot drift apart.
+	/// One danger slice. <see cref="Triangle"/> is the full pizza slice
+	/// (tip, base-left, base-right), used only to map the texture; <see cref="Shape"/>
+	/// is that slice clipped to the arena floor — the area that is drawn and hit-tested.
 	/// </summary>
-	public static Vector2[][] DangerSlices(MoltenConePhase.SafeZone zone, Vector2 tip)
+	public readonly record struct Slice(Vector2[] Triangle, Vector2[] Shape);
+
+	/// <summary>
+	/// The danger slices for <paramref name="zone"/>, clipped to the arena. This is
+	/// the single source of truth for the cone: <see cref="_Draw"/> paints exactly
+	/// these shapes and <see cref="IsSafe"/> hit-tests against them, so the two
+	/// cannot drift apart.
+	///
+	/// Clipping matters for readability: the unclipped slices reach far off-screen,
+	/// and their outlines would carve the off-arena corners into extra wedges that
+	/// look like additional cones.
+	/// </summary>
+	public static List<Slice> DangerSlices(MoltenConePhase.SafeZone zone, Vector2 tip)
 	{
 		var xLeft = OuterBaseX(tip, -1); // outer corners spread past the arena
 		var xRight = OuterBaseX(tip, 1);
@@ -442,25 +461,52 @@ public partial class ConeDrawNode : Node2D
 		var xRB = InnerBaseX(1); // middle-to-right boundary
 		var yBase = BaseY();
 
-		Vector2[] Slice(float x0, float x1) => new[] { tip, new Vector2(x0, yBase), new Vector2(x1, yBase) };
-
-		return zone switch
+		var triangles = zone switch
 		{
 			// Danger covers middle + right third.
-			MoltenConePhase.SafeZone.Left => new[] { Slice(xLB, xRight) },
+			MoltenConePhase.SafeZone.Left => new[] { (xLB, xRight) },
 			// Danger covers left third and right third (two separate slices).
-			MoltenConePhase.SafeZone.Middle => new[] { Slice(xLeft, xLB), Slice(xRB, xRight) },
+			MoltenConePhase.SafeZone.Middle => new[] { (xLeft, xLB), (xRB, xRight) },
 			// Danger covers left + middle third.
-			MoltenConePhase.SafeZone.Right => new[] { Slice(xLeft, xRB) },
-			_ => System.Array.Empty<Vector2[]>()
+			MoltenConePhase.SafeZone.Right => new[] { (xLeft, xRB) },
+			_ => System.Array.Empty<(float, float)>()
 		};
+
+		var floor = ArenaClipPolygon();
+		var slices = new List<Slice>();
+		foreach (var (x0, x1) in triangles)
+		{
+			var tri = new[] { tip, new Vector2(x0, yBase), new Vector2(x1, yBase) };
+			// Triangle ∩ convex ellipse is convex, so this yields at most one shape.
+			foreach (var shape in Geometry2D.IntersectPolygons(tri, floor))
+				slices.Add(new Slice(tri, shape));
+		}
+
+		return slices;
+	}
+
+	/// <summary>
+	/// The arena ellipse as a polygon, inflated by <see cref="ArenaClipMargin"/> so a
+	/// player hugging the boundary wall is still inside the drawn (and hit-tested) area.
+	/// </summary>
+	static Vector2[] ArenaClipPolygon()
+	{
+		var (cx, cy, rx, ry) = Arena();
+		var pts = new Vector2[ArenaClipSegments];
+		for (var i = 0; i < ArenaClipSegments; i++)
+		{
+			var a = Mathf.Tau * i / ArenaClipSegments;
+			pts[i] = new Vector2(cx + rx * ArenaClipMargin * Mathf.Cos(a), cy + ry * ArenaClipMargin * Mathf.Sin(a));
+		}
+
+		return pts;
 	}
 
 	/// <summary>True when <paramref name="pos"/> lies outside every slice from <see cref="DangerSlices"/>.</summary>
 	public static bool IsSafe(MoltenConePhase.SafeZone zone, Vector2 tip, Vector2 pos)
 	{
 		foreach (var slice in DangerSlices(zone, tip))
-			if (Geometry2D.IsPointInPolygon(pos, slice))
+			if (Geometry2D.IsPointInPolygon(pos, slice.Shape))
 				return false;
 		return true;
 	}
@@ -473,7 +519,7 @@ public partial class ConeDrawNode : Node2D
 		var outline = new Color(1.00f, 0.72f, 0.32f, 0.90f);
 		if (Telegraph)
 		{
-			tint = new Color(1.00f, 0.72f, 0.32f, 0.18f);
+			tint = new Color(1.00f, 0.72f, 0.32f, 0.32f);
 			outline = new Color(1.00f, 0.85f, 0.55f, 0.8f);
 		}
 
@@ -482,25 +528,41 @@ public partial class ConeDrawNode : Node2D
 	}
 
 	/// <summary>
-	/// Draws a single textured slice triangle (tip, base-left, base-right). UVs map
-	/// the texture so its narrow end sits at the tip and its wide end covers the
+	/// Draws one clipped danger slice. UVs are mapped from the full slice triangle
+	/// so the texture's narrow end sits at the tip and its wide end covers the
 	/// base — matching a cone asset that is narrow at the top and wide at the bottom.
 	/// </summary>
-	void DrawSlice(Vector2[] pts, Color tint, Color outline)
+	void DrawSlice(Slice slice, Color tint, Color outline)
 	{
-		// UV layout:
-		//   tip          → (0.5, 0)  — top-centre of the cone texture
-		//   bottom-left  → (0,   1)  — bottom-left corner of the texture
-		//   bottom-right → (1,   1)  — bottom-right corner of the texture
-		var uvs = new Vector2[]
-		{
-			new(0.5f, 0f),
-			new(0f, 1f),
-			new(1f, 1f)
-		};
+		var shape = slice.Shape;
+		var uvs = new Vector2[shape.Length];
+		for (var i = 0; i < shape.Length; i++)
+			uvs[i] = TriangleUv(shape[i], slice.Triangle);
 
 		// The telegraph is untextured: just a tinted wash under its outline.
-		DrawPolygon(pts, new Color[] { tint }, uvs, Telegraph ? null : _tex);
-		DrawPolyline(new[] { pts[0], pts[1], pts[2], pts[0] }, outline, Telegraph ? 3f : 2.5f);
+		DrawPolygon(shape, new Color[] { tint }, uvs, Telegraph ? null : _tex);
+
+		var closed = new Vector2[shape.Length + 1];
+		shape.CopyTo(closed, 0);
+		closed[^1] = shape[0];
+		DrawPolyline(closed, outline, Telegraph ? 3f : 2.5f);
+	}
+
+	/// <summary>
+	/// Texture coordinate of <paramref name="p"/> via barycentric interpolation over
+	/// the slice triangle, whose corners map to:
+	///   tip          → (0.5, 0)  — top-centre of the cone texture
+	///   bottom-left  → (0,   1)  — bottom-left corner of the texture
+	///   bottom-right → (1,   1)  — bottom-right corner of the texture
+	/// </summary>
+	static Vector2 TriangleUv(Vector2 p, Vector2[] tri)
+	{
+		var (a, b, c) = (tri[0], tri[1], tri[2]);
+		var den = (b.Y - c.Y) * (a.X - c.X) + (c.X - b.X) * (a.Y - c.Y);
+		if (Mathf.IsZeroApprox(den)) return new Vector2(0.5f, 0.5f);
+		var wa = ((b.Y - c.Y) * (p.X - c.X) + (c.X - b.X) * (p.Y - c.Y)) / den;
+		var wb = ((c.Y - a.Y) * (p.X - c.X) + (a.X - c.X) * (p.Y - c.Y)) / den;
+		var wc = 1f - wa - wb;
+		return wa * new Vector2(0.5f, 0f) + wb * new Vector2(0f, 1f) + wc * new Vector2(1f, 1f);
 	}
 }

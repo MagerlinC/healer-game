@@ -265,6 +265,7 @@ public partial class MainMenuUI : Node2D
 		btn.AddThemeStyleboxOverride("focus", normal);
 
 		btn.Pressed += onPressed;
+		UiSfx.WireClick(btn);
 		return btn;
 	}
 
@@ -313,7 +314,10 @@ public partial class MainMenuUI : Node2D
 		row.GuiInput += (InputEvent evt) =>
 		{
 			if (evt is InputEventMouseButton mb && mb.ButtonIndex == MouseButton.Left && mb.Pressed)
+			{
+				UiSfx.PlayClick();
 				onPressed();
+			}
 		};
 
 		row.AddChild(dot);
@@ -940,6 +944,7 @@ public partial class MainMenuUI : Node2D
 		btn.AddThemeStyleboxOverride("focus", normal);
 
 		btn.Pressed += onPressed;
+		UiSfx.WireClick(btn);
 		return btn;
 	}
 

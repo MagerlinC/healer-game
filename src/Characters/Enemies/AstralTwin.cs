@@ -25,11 +25,24 @@ using healerfantasy.SpellSystem;
 /// ─────────────────────
 /// Each twin shields itself at 75 %, 50 %, and 25 % of its own maximum health
 /// (one shield per threshold, each used only once).  While shielded the twin is
-/// completely immune — all incoming damage is discarded.  The shield breaks the
-/// instant the PLAYER deals damage to the OTHER twin, which also causes the party
-/// to switch focus.  This forces repeated target-swapping throughout the fight.
+/// completely immune — all incoming damage is discarded.  The shield breaks once
+/// the OTHER twin has lost <see cref="ShieldBreakFraction"/> of its maximum health,
+/// so a single stray hit (e.g. from a multi-target spell) is no longer enough —
+/// the party has to genuinely swap focus.  The remaining break amount is shown as
+/// a shield segment on the shielded twin's health bar, and on the models by a
+/// <see cref="TwinTetherIndicator"/> — an aura tethered to the sibling.
+///
+/// Only one twin can hide at a time: if a twin raises its shield while its sibling
+/// is still shielded, the sibling's shield breaks (otherwise both would be immune).
 ///
 /// The twin holds its "shielded" pose while the immunity is active.
+///
+/// Bond of the Twins (enrage)
+/// ──────────────────────────
+/// When one twin dies the survivor enrages: its damage is multiplied by
+/// <see cref="EnrageDamageMultiplier"/> and its abilities come
+/// <see cref="EnrageHasteMultiplier"/>× faster.  This rewards bringing both
+/// twins down close together.
 /// </summary>
 public partial class AstralTwin : EnemyCharacter
 {
@@ -70,6 +83,18 @@ public partial class AstralTwin : EnemyCharacter
 	[Export] public float StarfallDamage = 40f;
 	[Export] public float ConvergenceDamage = 80f;
 
+	/// <summary>
+	/// Fraction of the sibling's maximum health the party must strip from it to
+	/// break this twin's phase shield.
+	/// </summary>
+	[Export] public float ShieldBreakFraction = 0.08f;
+
+	/// <summary>Damage multiplier applied to the surviving twin's abilities.</summary>
+	[Export] public float EnrageDamageMultiplier = 1.5f;
+
+	/// <summary>Ability speed multiplier applied to the surviving twin (intervals are divided by this).</summary>
+	[Export] public float EnrageHasteMultiplier = 1.3f;
+
 	// ── internal state ────────────────────────────────────────────────────────
 
 	float _strikeTimer;
@@ -106,6 +131,16 @@ public partial class AstralTwin : EnemyCharacter
 	// ── Phase-shield state ────────────────────────────────────────────────────
 
 	bool _isPhaseShielded;
+
+	/// <summary>Sibling health still to be removed before this twin's shield breaks.</summary>
+	float _shieldBreakRemaining;
+	float _shieldBreakTotal;
+
+	bool _enraged;
+	float _enrageTime;
+	// Kept at or below 1 — the rig treats a brightened visual as "hover highlighted",
+	// and tinting the twin node itself (not its visual) leaves hover untouched.
+	static readonly Color EnrageTint = new(1f, 0.45f, 0.45f);
 
 	/// <summary>
 	/// Threshold percentages at which this twin shields itself.
@@ -183,12 +218,42 @@ public partial class AstralTwin : EnemyCharacter
 
 		if (_isPhaseShielded)
 			ClearPhaseShield();
+
+		if (IsAlive)
+			TriggerEnrage();
+	}
+
+	void TriggerEnrage()
+	{
+		if (_enraged) return;
+		_enraged = true;
+
+		_strikeSpell.DamageAmount *= EnrageDamageMultiplier;
+		_starfallSpell.DamageAmount *= EnrageDamageMultiplier;
+		_novaSpell.DamageAmount *= EnrageDamageMultiplier;
+
+		StrikeInterval /= EnrageHasteMultiplier;
+		StarfallInterval /= EnrageHasteMultiplier;
+		ConvergenceInterval /= EnrageHasteMultiplier;
+		_strikeTimer = Mathf.Min(_strikeTimer, StrikeInterval);
+		_starfallTimer = Mathf.Min(_starfallTimer, StarfallInterval);
+		_convergenceTimer = Mathf.Min(_convergenceTimer, ConvergenceInterval);
+
+		GD.Print($"[AstralTwin] {CharacterName} is ENRAGED by the loss of its twin!");
 	}
 
 	public override void _Process(double delta)
 	{
 		base._Process(delta);
 		if (!IsAlive) return;
+
+		if (_enraged)
+		{
+			// Slow red pulse so the enrage reads on the model itself.
+			_enrageTime += (float)delta;
+			var pulse = 0.5f + 0.5f * Mathf.Sin(_enrageTime * 4f);
+			Modulate = Colors.White.Lerp(EnrageTint, 0.5f + 0.5f * pulse);
+		}
 
 		// ── Celestial Convergence wind-up countdown ───────────────────────────
 		if (_convergenceWindupTimer > 0f)
@@ -240,22 +305,29 @@ public partial class AstralTwin : EnemyCharacter
 		var healthBefore = CurrentHealth;
 		base.TakeDamage(amount);
 
-		// Any successful hit on this twin immediately breaks the sibling's shield.
-		if (IsInstanceValid(_sibling) && !_sibling.IsBeingRemoved && !_sibling.IsQueuedForDeletion())
-			_sibling.NotifySiblingHit();
+		// Health actually lost on this twin wears down the sibling's shield.
+		var healthLost = healthBefore - CurrentHealth;
+		if (healthLost > 0f && IsInstanceValid(_sibling) && !_sibling.IsBeingRemoved && !_sibling.IsQueuedForDeletion())
+			_sibling.NotifySiblingHit(healthLost);
 
 		// Check whether crossing a threshold triggers our OWN shield.
 		CheckShieldThresholds(healthBefore);
 	}
 
 	/// <summary>
-	/// Called by the sibling twin when it takes damage, giving this twin a
-	/// chance to drop its own phase-shield if it is currently active.
+	/// Called by the sibling twin when it loses <paramref name="healthLost"/>
+	/// health. Wears down this twin's phase shield, breaking it once enough
+	/// damage has been dealt to the sibling.
 	/// </summary>
-	public void NotifySiblingHit()
+	public void NotifySiblingHit(float healthLost)
 	{
-		if (_isPhaseShielded)
+		if (!_isPhaseShielded) return;
+
+		_shieldBreakRemaining -= healthLost;
+		if (_shieldBreakRemaining <= 0f)
 			ClearPhaseShield();
+		else
+			EmitSignalShieldChanged(CharacterName, _shieldBreakRemaining, MaxHealth);
 	}
 
 	// ── combat actions ────────────────────────────────────────────────────────
@@ -369,6 +441,14 @@ public partial class AstralTwin : EnemyCharacter
 	void ApplyPhaseShield()
 	{
 		_isPhaseShielded = true;
+		_shieldBreakTotal = _shieldBreakRemaining = ShieldBreakFraction * _sibling.MaxHealth;
+		EmitSignalShieldChanged(CharacterName, _shieldBreakRemaining, MaxHealth);
+		TwinTetherIndicator.Attach(this, _sibling);
+
+		// Both twins shielded at once would leave nothing damageable — the newer
+		// shield takes over and the sibling's breaks.
+		if (_sibling.IsPhaseShielded)
+			_sibling.ClearPhaseShield();
 
 		// If a one-shot animation (attack/casting) was in flight, interrupting it
 		// means AnimationFinished will never fire — clear pending state now so the
@@ -395,9 +475,18 @@ public partial class AstralTwin : EnemyCharacter
 		GD.Print($"[AstralTwin] {CharacterName} has raised a phase shield! Attack the other twin to break it.");
 	}
 
+	public bool IsPhaseShielded => _isPhaseShielded;
+
+	/// <summary>How much of the current phase shield is left (1 = fresh, 0 = broken or none).</summary>
+	public float ShieldStrength => _isPhaseShielded && _shieldBreakTotal > 0f
+		? Mathf.Clamp(_shieldBreakRemaining / _shieldBreakTotal, 0f, 1f)
+		: 0f;
+
 	void ClearPhaseShield()
 	{
 		_isPhaseShielded = false;
+		_shieldBreakRemaining = 0f;
+		EmitSignalShieldChanged(CharacterName, 0f, MaxHealth);
 		_visual.Play("idle");
 		GD.Print($"[AstralTwin] {CharacterName}'s phase shield has been broken!");
 	}

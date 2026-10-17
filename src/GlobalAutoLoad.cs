@@ -34,6 +34,7 @@ public partial class GlobalAutoLoad : Node
 		// Grade every UI control created from here on into the Last Light look.
 		LastLight.Hud.LastLightSkin.Install(GetTree());
 		LastLight.LastLightStyle.InstallAutoRigs(GetTree());
+		UiSfx.Install(this);
 
 	}
 

@@ -21,6 +21,14 @@ public partial class PauseMenu : CanvasLayer
 {
 	bool _isOpen;
 
+	/// <summary>True while the pause menu is showing, so other pausers don't unpause underneath it.</summary>
+	public static bool IsOpen { get; private set; }
+
+	public override void _ExitTree()
+	{
+		IsOpen = false;
+	}
+
 	public override void _Ready()
 	{
 		Layer = 25;
@@ -90,14 +98,14 @@ public partial class PauseMenu : CanvasLayer
 
 	void Open()
 	{
-		_isOpen = true;
+		_isOpen = IsOpen = true;
 		Visible = true;
 		GetTree().Paused = true;
 	}
 
 	void Close()
 	{
-		_isOpen = false;
+		_isOpen = IsOpen = false;
 		Visible = false;
 		GetTree().Paused = false;
 	}
@@ -152,6 +160,7 @@ public partial class PauseMenu : CanvasLayer
 		btn.AddThemeStyleboxOverride("focus", normal);
 
 		btn.Pressed += onPressed;
+		UiSfx.WireClick(btn);
 		return btn;
 	}
 

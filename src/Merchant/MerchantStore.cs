@@ -133,8 +133,9 @@ public static class MerchantStore
 
     /// <summary>
     /// Attempt to revive <paramref name="character"/> using the Stone of Rebirth.
-    /// Returns true (and revives at 50% HP) if the stone was active and the
-    /// character is a party member; false otherwise.
+    /// Returns true (and starts <see cref="StoneOfRebirthSequence"/>, which revives
+    /// at 50% HP) if the stone was active and the character is a party member;
+    /// false otherwise.
     /// </summary>
     public static bool TryRevive(Character character)
     {
@@ -143,14 +144,9 @@ public static class MerchantStore
 
         ConsumeStoneOfRebirth();
 
-        // Bring the character back at 50% of their maximum health.
-        // Revive() bypasses the IsAlive guard that Heal() has, which is required
-        // here because CurrentHealth is 0 at the point OnDeath() calls us.
-        var reviveAmount = character.MaxHealth * 0.5f;
-        character.Revive(reviveAmount);
-
-        // Show a golden heal number so the revival is visible.
-        character.RaiseFloatingCombatText(reviveAmount, true, (int)SpellSchool.Flame, false);
+        // Pause briefly, let the character fall, then bring them back at 50% of
+        // their maximum health with a "Stone of Rebirth used" callout.
+        StoneOfRebirthSequence.Play(character, character.MaxHealth * 0.5f);
 
         return true;
     }

@@ -77,6 +77,9 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 	[Export] public float CataclysmInterval = 20.0f;
 	[Export] public float CataclysmHitWindow = 1.5f; // parry window duration per hit
 
+	/// <summary>Wind-up of a typical parryable boss cast, which the shared riser sound is timed for.</summary>
+	const float RiserReferenceWindup = 3.0f;
+
 	[Export] public float MeleeDamage = 30f;
 	[Export] public float BeamDamage = 40f;
 	[Export] public float CataclysmDamage = 65f; // per hit
@@ -343,11 +346,10 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 		_cataclysmPhase = phase;
 		_cataclysmPhaseTimer = CataclysmHitWindow;
 
-		// Always (re)start the riser at Hit1; for subsequent hits only restart it if the
-		// previous play already finished — this way a long riser flows continuously
-		// across all three windows, and a short one gets a fresh play on each hit.
-		if (phase == CataclysmPhase.Hit1 || !_riserPlayer.Playing)
-			_riserPlayer.Play();
+		// Every hit gets its own riser cue. The riser is longer than a hit, so start it
+		// part-way in: each hit resolves at the point in the riser where a standard
+		// parryable cast (RiserReferenceWindup) would, so the cue peaks on the parry.
+		_riserPlayer.Play(Mathf.Max(0f, RiserReferenceWindup - CataclysmHitWindow));
 
 		EmitSignalCastWindupStarted(_cataclysmSpell.Name, _cataclysmSpell.Icon, CataclysmHitWindow);
 		ParryWindowManager.OpenWindow(_cataclysmSpell.Name, _cataclysmSpell.Icon, CataclysmHitWindow);
@@ -432,6 +434,7 @@ public partial class ThatWhichSwallowedTheStars : EnemyCharacter
 		}
 
 		_visual.Play("reveal");
+		SwallowedStarsAura.Attach(this).FadeInDuration = PhaseTransitionDuration * 0.75f;
 
 		if (_fightCamera == null)
 			_fightCamera = GetViewport().GetCamera2D();

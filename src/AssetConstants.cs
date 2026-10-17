@@ -101,6 +101,7 @@ public static class AssetConstants
 	public static readonly string DeathSoundPath = "res://assets/sound-effects/death.wav";
 
 	public static readonly string ButtonClickPath = "res://assets/sound-effects/button-impact.wav";
+	public static readonly string MenuClickSfxPath = "res://assets/sound-effects/click.wav";
 
 	public static readonly string RuneSfxPath = "res://assets/sound-effects/rune.wav";
 	public static readonly string SpellbookSfxPath = "res://assets/sound-effects/book.wav";

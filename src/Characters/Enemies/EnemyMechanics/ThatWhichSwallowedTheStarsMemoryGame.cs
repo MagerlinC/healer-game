@@ -14,21 +14,22 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 	public float DamageAmount { get; set; } = 95f;
 	public string BossName { get; set; } = GameConstants.SanctumBoss3Name;
 
-	readonly Texture2D[] _safeTextures =
+	// Tiles are drawn by a shader in the boss's look (void, stolen stars); the sprite's
+	// texture only gives it a size.
+	static readonly Shader TileShader =
+		GD.Load<Shader>("res://src/Characters/Enemies/EnemyMechanics/stolen_memory.gdshader");
+
+	enum TileLook
 	{
-		GD.Load<Texture2D>("res://assets/enemies/that-which-swallowed-the-stars/memory-game/safe1.png"),
-		GD.Load<Texture2D>("res://assets/enemies/that-which-swallowed-the-stars/memory-game/safe2.png"),
-		GD.Load<Texture2D>("res://assets/enemies/that-which-swallowed-the-stars/memory-game/safe3.png")
-	};
-
-	readonly Texture2D _dangerTexture =
-		GD.Load<Texture2D>("res://assets/enemies/that-which-swallowed-the-stars/memory-game/danger.png");
-
-	readonly Texture2D _dangerTextureFull =
-		GD.Load<Texture2D>("res://assets/enemies/that-which-swallowed-the-stars/memory-game/danger-full.png");
+		Safe = 0,
+		DangerPreview = 1,
+		DangerReplay = 2
+	}
 
 	readonly List<int> _safeQuadrants = new();
 	readonly Sprite2D[] _tiles = new Sprite2D[4];
+	readonly ShaderMaterial[] _tileMaterials = new ShaderMaterial[4];
+	readonly float[] _tileAge = new float[4];
 	readonly bool[] _hitThisReplayStep = new bool[4];
 	readonly RandomNumberGenerator _rng = new();
 
@@ -79,6 +80,12 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 			return;
 
 		_stateTimer -= (float)delta;
+
+		for (var i = 0; i < _tiles.Length; i++)
+		{
+			_tileAge[i] += (float)delta;
+			_tileMaterials[i].SetShaderParameter("age", _tileAge[i]);
+		}
 
 		if (_state == State.Replay)
 			CheckReplayDamage();
@@ -153,10 +160,21 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 	void BuildTiles()
 	{
 		var quadrantSize = _arenaRect.Size / 2f;
+		var pixel = Image.CreateEmpty(1, 1, false, Image.Format.Rgba8);
+		pixel.Fill(Colors.White);
+		var texture = ImageTexture.CreateFromImage(pixel);
+
 		for (var i = 0; i < _tiles.Length; i++)
 		{
+			var material = new ShaderMaterial { Shader = TileShader };
+			material.SetShaderParameter("size", quadrantSize);
+			material.SetShaderParameter("seed", _rng.Randf() * 10f);
+			_tileMaterials[i] = material;
+
 			var tile = new Sprite2D
 			{
+				Texture = texture,
+				Material = material,
 				Centered = true,
 				Visible = false,
 				ZIndex = 50
@@ -164,7 +182,7 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 
 			var quadrantRect = GetQuadrantRect(i);
 			tile.Position = quadrantRect.GetCenter() - GlobalPosition;
-			tile.Scale = quadrantSize / _dangerTexture.GetSize();
+			tile.Scale = quadrantSize;
 			AddChild(tile);
 			_tiles[i] = tile;
 		}
@@ -175,7 +193,7 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 		_stepIndex = stepIndex;
 		_state = State.Preview;
 		_stateTimer = PreviewDuration;
-		ShowPreviewPattern(_safeQuadrants[stepIndex], _safeTextures[stepIndex % _safeTextures.Length]);
+		ShowPreviewPattern(_safeQuadrants[stepIndex]);
 	}
 
 	void StartReplayStep(int stepIndex)
@@ -188,22 +206,55 @@ public partial class ThatWhichSwallowedTheStarsMemoryGame : Node2D
 		CheckReplayDamage();
 	}
 
-	void ShowPreviewPattern(int safeQuadrant, Texture2D safeTexture)
+	void ShowPreviewPattern(int safeQuadrant)
 	{
 		for (var i = 0; i < _tiles.Length; i++)
-		{
-			_tiles[i].Texture = i == safeQuadrant ? safeTexture : _dangerTexture;
-			_tiles[i].Visible = true;
-		}
+			ShowTile(i, i == safeQuadrant ? TileLook.Safe : TileLook.DangerPreview, Vector4.One);
 	}
 
 	void ShowReplayPattern(int safeQuadrant)
 	{
 		for (var i = 0; i < _tiles.Length; i++)
 		{
-			_tiles[i].Visible = i != safeQuadrant;
-			_tiles[i].Texture = _dangerTextureFull;
+			if (i == safeQuadrant)
+				_tiles[i].Visible = false;
+			else
+				ShowTile(i, TileLook.DangerReplay, RimFacing(i, safeQuadrant));
 		}
+	}
+
+	void ShowTile(int index, TileLook look, Vector4 rim)
+	{
+		var material = _tileMaterials[index];
+		material.SetShaderParameter("mode", (int)look);
+		material.SetShaderParameter("rim", rim);
+		material.SetShaderParameter("age", 0f);
+		_tileAge[index] = 0f;
+		_tiles[index].Visible = true;
+	}
+
+	/// <summary>
+	/// The edges (left, top, right, bottom) of a danger quadrant that border the safe one,
+	/// so the void gets its starlit rim only where it meets safety, not between two danger tiles.
+	/// </summary>
+	static Vector4 RimFacing(int quadrant, int safeQuadrant)
+	{
+		int col = quadrant % 2, row = quadrant / 2;
+		int safeCol = safeQuadrant % 2, safeRow = safeQuadrant / 2;
+		var rim = Vector4.Zero;
+		if (row == safeRow)
+		{
+			if (safeCol < col) rim.X = 1f;
+			else rim.Z = 1f;
+		}
+
+		if (col == safeCol)
+		{
+			if (safeRow < row) rim.Y = 1f;
+			else rim.W = 1f;
+		}
+
+		return rim;
 	}
 
 	void HideAllTiles()

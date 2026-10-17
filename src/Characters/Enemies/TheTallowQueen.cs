@@ -333,6 +333,7 @@ public partial class TheTallowQueen : EnemyCharacter
 
 		AddShield(shieldAmount);
 		_visual.Play("wax_shell");
+		WaxShellIndicator.Attach(this); // shatters on its own once the shield is gone
 
 		// Show an Snuff Out cast bar (8 seconds, fills from 0 → 1).
 		EmitSignalCastWindupStarted("Snuff Out", _snuffOutSpell.Icon, SnuffOutDuration);

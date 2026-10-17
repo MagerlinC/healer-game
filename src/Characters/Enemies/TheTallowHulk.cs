@@ -596,21 +596,37 @@ public partial class TallowHulkShroud : Node2D
 
 /// <summary>
 /// The Tallow Hulk's eyes, drawn above its shroud so they glow out of the darkness:
-/// dim, drooping slits matching its rig (design points × rig scale 0.5).
+/// dim, drooping slits matching its rig. Points are in the rig's design space; every
+/// frame the node takes the head joint's pose, so the eyes move with the head.
 /// </summary>
 public partial class TallowHulkEyes : Node2D
 {
 	static readonly Color Eye = new(1f, 0.66f, 0.3f, 0.85f);
 	static readonly Color Glow = new(1f, 0.55f, 0.2f, 0.035f);
 
-	static readonly Vector2[] Left = { new(55f, -180f), new(68f, -176f), new(67f, -171f), new(56f, -174f) };
-	static readonly Vector2[] Right = { new(79f, -176f), new(93f, -181f), new(92f, -175f), new(80f, -171f) };
+	static readonly Vector2[] Left = { new(110f, -360f), new(136f, -352f), new(134f, -342f), new(112f, -348f) };
+	static readonly Vector2[] Right = { new(158f, -352f), new(186f, -362f), new(184f, -350f), new(160f, -342f) };
+
+	SilhouetteRig _rig;
+
+	public override void _Ready()
+	{
+		// Run after the rig has posed itself this frame, so the eyes never lag a frame behind.
+		ProcessPriority = 1;
+	}
+
+	public override void _Process(double delta)
+	{
+		_rig ??= GetParent().GetNodeOrNull<SilhouetteRig>("SilhouetteRig");
+		if (_rig?.PartTransform("head") is { } head)
+			Transform = head;
+	}
 
 	public override void _Draw()
 	{
 		// a faint, soft glow: a few stacked translucent discs, densest in the middle
-		foreach (var centre in new[] { new Vector2(61f, -175f), new Vector2(86f, -176f) })
-			for (var r = 3f; r <= 9f; r += 2f)
+		foreach (var centre in new[] { new Vector2(122f, -350f), new Vector2(172f, -352f) })
+			for (var r = 6f; r <= 18f; r += 4f)
 				DrawCircle(centre, r, Glow);
 		DrawColoredPolygon(Left, Eye);
 		DrawColoredPolygon(Right, Eye);

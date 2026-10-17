@@ -1278,6 +1278,7 @@ public partial class VictoryScreen : CanvasLayer
 		btn.AddThemeFontSizeOverride("font_size", 16);
 		btn.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.85f));
 		btn.Pressed += onPressed;
+		UiSfx.WireClick(btn);
 		return btn;
 	}
 

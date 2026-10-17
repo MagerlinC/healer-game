@@ -2,13 +2,13 @@
 
 importer="wav"
 type="AudioStreamWAV"
-uid="uid://lek47u5a8qem"
-path="res://.godot/imported/overworld.wav-fe3178a19eb6bd4a7806360580e29377.sample"
+uid="uid://dtxn7txs0uqo4"
+path="res://.godot/imported/click.wav-4fc102ec0049169890e485562f80a4f7.sample"
 
 [deps]
 
-source_file="res://assets/music/overworld.wav"
-dest_files=["res://.godot/imported/overworld.wav-fe3178a19eb6bd4a7806360580e29377.sample"]
+source_file="res://assets/sound-effects/click.wav"
+dest_files=["res://.godot/imported/click.wav-4fc102ec0049169890e485562f80a4f7.sample"]
 
 [params]
 

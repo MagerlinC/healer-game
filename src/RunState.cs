@@ -67,6 +67,13 @@ public partial class RunState : Node
 
 	public bool HasLoadout => SelectedSpells.Any(s => s != null);
 
+	/// <summary>
+	/// Names of talent-gated spells the player has already been shown since they
+	/// unlocked — either by opening the spellbook or by dismissing the camp's
+	/// "new spells unlocked" warning.  Cleared by <see cref="Reset"/>.
+	/// </summary>
+	public HashSet<string> SeenUnlockedSpells { get; } = new();
+
 	// ── Run dungeon list ──────────────────────────────────────────────────────
 
 	/// <summary>
@@ -381,6 +388,7 @@ public partial class RunState : Node
 		Merchant.MerchantStore.Clear();
 		InitSchoolAffinityFromPreferences(); // restore persisted affinity rather than clearing it
 		SelectedTalentDefs.Clear();
+		SeenUnlockedSpells.Clear();
 		_activeRunes.Clear();
 		InitRunesFromPreferences();
 		ItemStore.Clear();

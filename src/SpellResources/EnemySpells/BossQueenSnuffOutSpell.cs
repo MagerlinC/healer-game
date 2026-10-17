@@ -1,4 +1,4 @@
-tadusing System.Collections.Generic;
+using System.Collections.Generic;
 using Godot;
 using healerfantasy.CombatLog;
 using healerfantasy.SpellSystem;
@@ -28,7 +28,7 @@ public partial class BossQueenSnuffOutSpell : SpellResource
 	public BossQueenSnuffOutSpell()
 	{
 		Name = "Snuff Out";
-		Description = $"The Queen pinches out every flame — deals {1000:F0} damage to every living party member. " +
+		Description = $"The Queen pinches out every flame - deals {1000:F0} damage to every living party member. " +
 		              $"Break the Queen's Wax Shell before the cast completes to prevent it.";
 		Tags = SpellTags.Damage;
 		ManaCost = 0f;
@@ -62,7 +62,7 @@ public partial class BossQueenSnuffOutSpell : SpellResource
 				Amount = DamageAmount,
 				Type = CombatEventType.Damage,
 				IsCrit = false,
-				Description = "The Queen's Snuff Out resolves — every flame in the spire is pinched out at once."
+				Description = "The Queen's Snuff Out resolves - every flame in the spire is pinched out at once."
 			});
 		}
 

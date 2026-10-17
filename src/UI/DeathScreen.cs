@@ -423,6 +423,7 @@ public partial class DeathScreen : CanvasLayer
 		btn.AddThemeStyleboxOverride("focus", normal);
 
 		btn.Pressed += onPressed;
+		UiSfx.WireClick(btn);
 		_buttons.Add(btn);
 		return btn;
 	}

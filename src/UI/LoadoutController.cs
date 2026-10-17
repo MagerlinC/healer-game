@@ -177,6 +177,7 @@ public abstract partial class LoadoutController : Node2D
 
 	protected void OpenPanel(CanvasLayer panel)
 	{
+		if (panel == _spellPanel) MarkUnlockedSpellsSeen();
 		CloseAllPanels();
 		panel.Visible = true;
 		SetInteractiblesPickable(false);
@@ -499,6 +500,179 @@ public abstract partial class LoadoutController : Node2D
 		GetTree().ChangeSceneToFile("res://levels/MapScreen.tscn");
 	}
 
+	// ── new spells warning ────────────────────────────────────────────────────
+
+	CanvasLayer? _newSpellsPanel;
+	VBoxContainer? _newSpellsList;
+
+	/// <summary>
+	/// Clicking the map first warns the player if talents acquired since they last
+	/// looked at the spellbook have unlocked spells they have not seen yet.
+	/// </summary>
+	void OnMapInteracted()
+	{
+		var unseen = GetUnseenUnlockedSpells();
+		if (unseen.Count == 0)
+		{
+			OnOpenMap();
+			return;
+		}
+
+		ShowNewSpellsWarning(unseen);
+	}
+
+	/// <summary>Talent-gated spells that are now usable but have not been shown to the player.</summary>
+	List<SpellResource> GetUnseenUnlockedSpells() =>
+		SpellRegistry.AllSpells
+			.Where(s => s.RequiredSchoolPoints > 0
+			            && !IsSpellLocked(s)
+			            && !RunState.Instance.SeenUnlockedSpells.Contains(s.Name))
+			.ToList();
+
+	void MarkUnlockedSpellsSeen()
+	{
+		foreach (var spell in GetUnseenUnlockedSpells())
+			RunState.Instance.SeenUnlockedSpells.Add(spell.Name);
+	}
+
+	void ShowNewSpellsWarning(List<SpellResource> spells)
+	{
+		if (_newSpellsPanel == null) BuildNewSpellsPanel();
+
+		foreach (var child in _newSpellsList!.GetChildren()) child.QueueFree();
+		foreach (var spell in spells)
+		{
+			var row = new HBoxContainer();
+			row.AddThemeConstantOverride("separation", 10);
+			row.Alignment = BoxContainer.AlignmentMode.Center;
+
+			var icon = new TextureRect();
+			icon.Texture = spell.Icon;
+			icon.CustomMinimumSize = new Vector2(36f, 36f);
+			icon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+			icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+			row.AddChild(icon);
+
+			var name = new Label();
+			name.Text = spell is UltimateSpellResource ? $"{spell.Name} (Ultimate)" : spell.Name;
+			name.VerticalAlignment = VerticalAlignment.Center;
+			name.AddThemeFontSizeOverride("font_size", 17);
+			name.AddThemeColorOverride("font_color", AssetConstants.SpellSchoolColor(spell.School));
+			row.AddChild(name);
+
+			_newSpellsList.AddChild(row);
+		}
+
+		OpenPanel(_newSpellsPanel!);
+	}
+
+	void BuildNewSpellsPanel()
+	{
+		_newSpellsPanel = new CanvasLayer { Layer = 10 };
+		_newSpellsPanel.Visible = false;
+
+		var dimmer = new ColorRect();
+		dimmer.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		dimmer.Color = new Color(0f, 0f, 0f, 0.72f);
+		dimmer.MouseFilter = Control.MouseFilterEnum.Stop;
+		_newSpellsPanel.AddChild(dimmer);
+
+		var center = new CenterContainer();
+		center.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		center.MouseFilter = Control.MouseFilterEnum.Ignore;
+		_newSpellsPanel.AddChild(center);
+
+		var panelStyle = new StyleBoxFlat();
+		panelStyle.BgColor = PanelBg;
+		panelStyle.SetCornerRadiusAll(8);
+		panelStyle.SetBorderWidthAll(2);
+		panelStyle.BorderColor = PanelBorder;
+		panelStyle.ContentMarginLeft = panelStyle.ContentMarginRight = 28f;
+		panelStyle.ContentMarginTop = panelStyle.ContentMarginBottom = 22f;
+
+		var panel = new PanelContainer();
+		panel.AddThemeStyleboxOverride("panel", panelStyle);
+		panel.CustomMinimumSize = new Vector2(460f, 0f);
+		center.AddChild(panel);
+
+		var vbox = new VBoxContainer();
+		vbox.AddThemeConstantOverride("separation", 14);
+		panel.AddChild(vbox);
+
+		var title = new Label();
+		title.Text = "New Spells Unlocked!";
+		title.HorizontalAlignment = HorizontalAlignment.Center;
+		title.AddThemeFontSizeOverride("font_size", 22);
+		title.AddThemeColorOverride("font_color", TitleColor);
+		vbox.AddChild(title);
+
+		AddHSep(vbox);
+
+		var body = new Label();
+		body.Text = "The talents you have acquired unlocked new spells.\nVisit the spellbook to add them to your loadout.";
+		body.HorizontalAlignment = HorizontalAlignment.Center;
+		body.AddThemeFontSizeOverride("font_size", 15);
+		body.AddThemeColorOverride("font_color", new Color(0.82f, 0.78f, 0.72f));
+		vbox.AddChild(body);
+
+		_newSpellsList = new VBoxContainer();
+		_newSpellsList.AddThemeConstantOverride("separation", 6);
+		vbox.AddChild(_newSpellsList);
+
+		AddHSep(vbox);
+
+		var buttons = new HBoxContainer();
+		buttons.Alignment = BoxContainer.AlignmentMode.Center;
+		buttons.AddThemeConstantOverride("separation", 16);
+		vbox.AddChild(buttons);
+
+		var spellbookBtn = MakeDialogButton("Open Spellbook",
+			new Color(0.12f, 0.17f, 0.12f), new Color(0.30f, 0.65f, 0.28f), new Color(0.40f, 0.80f, 0.35f));
+		spellbookBtn.Pressed += () => OpenPanel(_spellPanel!);
+		buttons.AddChild(spellbookBtn);
+
+		var mapBtn = MakeDialogButton("Continue to Map",
+			new Color(0.12f, 0.10f, 0.08f), new Color(0.40f, 0.32f, 0.20f), PanelBorder);
+		mapBtn.Pressed += () =>
+		{
+			MarkUnlockedSpellsSeen();
+			OnOpenMap();
+		};
+		buttons.AddChild(mapBtn);
+
+		_panels.Add(_newSpellsPanel);
+		AddChild(_newSpellsPanel);
+	}
+
+	static Button MakeDialogButton(string text, Color bg, Color border, Color hoverBorder)
+	{
+		StyleBoxFlat Style(Color b)
+		{
+			var s = new StyleBoxFlat();
+			s.BgColor = bg;
+			s.SetCornerRadiusAll(6);
+			s.SetBorderWidthAll(2);
+			s.BorderColor = b;
+			s.ContentMarginLeft = s.ContentMarginRight = 20f;
+			s.ContentMarginTop = s.ContentMarginBottom = 10f;
+			return s;
+		}
+
+		var normal = Style(border);
+		var btn = new Button();
+		btn.Text = text;
+		btn.CustomMinimumSize = new Vector2(180f, 46f);
+		btn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+		btn.AddThemeFontSizeOverride("font_size", 16);
+		btn.AddThemeColorOverride("font_color", new Color(0.90f, 0.87f, 0.83f));
+		btn.AddThemeColorOverride("font_hover_color", new Color(0.95f, 0.92f, 0.88f));
+		btn.AddThemeStyleboxOverride("normal", normal);
+		btn.AddThemeStyleboxOverride("hover", Style(hoverBorder));
+		btn.AddThemeStyleboxOverride("pressed", normal);
+		btn.AddThemeStyleboxOverride("focus", normal);
+		return btn;
+	}
+
 	/// <summary>
 	/// Creates and registers the interactibles and panels that are shared between
 	/// the Overworld and Camp scenes:
@@ -545,7 +719,7 @@ public abstract partial class LoadoutController : Node2D
 			AssetConstants.MapInteractiblePath,
 			SlotBackCentreRight, new Vector2(0.11f, 0.11f), 28f));
 		mapItem.Scale = new Vector2(1.5f, 1.5f);
-		mapItem.Interacted += OnOpenMap;
+		mapItem.Interacted += OnMapInteracted;
 		WireHints(mapItem, MapHintText);
 
 		// ── News Board ────────────────────────────────────────────────────────

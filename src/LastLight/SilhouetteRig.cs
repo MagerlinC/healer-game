@@ -45,6 +45,12 @@ public partial class SilhouetteRig : CanvasGroup
 
 	float _t, _seed, _facing = 1f, _move, _consumed, _deathT;
 
+	/// <summary>Seconds a revived figure takes to stand back up.</summary>
+	const float RiseDuration = 0.9f;
+
+	/// <summary>Time since the figure was revived (starts finished, so spawning doesn't rise).</summary>
+	float _riseT = RiseDuration;
+
 	// Vertical extent of the drawn polygons at rest (design units, y down).
 	float _drawnTop, _drawnBottom;
 	Vector2 _srcBaseScale = Vector2.One;
@@ -85,6 +91,27 @@ public partial class SilhouetteRig : CanvasGroup
 		owner.GetNodeOrNull<SilhouetteRig>("SilhouetteRig") is { } rig
 			? rig._def.Width * 0.5f * rig._def.Scale * rig._def.Grow
 			: 0f;
+
+	/// <summary>
+	/// The figure's nominal body (Width × Height, feet at the rig origin) in the
+	/// owner's local space — e.g. for fitting an overlay around the figure.
+	/// </summary>
+	public Rect2 GetBodyRectLocal()
+	{
+		var a = Transform * new Vector2(-_def.Width * 0.5f, -_def.Height);
+		var b = Transform * new Vector2(_def.Width * 0.5f, 0f);
+		var min = new Vector2(Mathf.Min(a.X, b.X), Mathf.Min(a.Y, b.Y));
+		return new Rect2(min, (a - b).Abs());
+	}
+
+	/// <summary>
+	/// The current pose of <paramref name="joint"/>, mapping design-space points (as
+	/// authored in the <see cref="RigDefinition"/>) into the owner's local space — the
+	/// same transform that joint's polygons are drawn with, so anything drawn with it
+	/// moves exactly with that part. Null if the rig has no such joint.
+	/// </summary>
+	public Transform2D? PartTransform(string joint) =>
+		Get(joint) is { } j ? Transform * j.Xf * new Transform2D(0f, -j.Def.Pivot) : null;
 
 	/// <summary>Turns the figure to face a direction (sign of <paramref name="x"/>); kept until something else turns it.</summary>
 	public void Face(float x) => _facing = x < 0f ? -1f : 1f;
@@ -395,7 +422,14 @@ public partial class SilhouetteRig : CanvasGroup
 		}
 		else
 		{
+			// Revived (e.g. the Stone of Rebirth): stand back up slowly from the fallen pose.
+			if (_deathT > 0f) _riseT = 0f;
 			_deathT = 0f;
+			if (_riseT < RiseDuration && _def.Mode != RigMode.Darkness)
+			{
+				_riseT += (float)GetProcessDeltaTime();
+				root.RotTarget = -1.45f * (1f - Smooth(0f, RiseDuration, _riseT));
+			}
 		}
 
 		// ease + compose transforms (root → children; parents always come first)
