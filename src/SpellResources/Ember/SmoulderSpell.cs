@@ -21,7 +21,6 @@ public partial class SmoulderSpell : SpellResource
 		School = SpellSchool.Ember;
 		// HealOverTime implies Healing; the per-tick value is what gets modified.
 		Tags = SpellTags.Healing | SpellTags.Duration;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "healer/healer1.png");
 	}
 
 	/// <summary>

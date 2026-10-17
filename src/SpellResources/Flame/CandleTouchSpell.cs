@@ -17,7 +17,6 @@ public partial class CandleTouchSpell : SpellResource
 		CastTime = 1.5f;
 		Tags = SpellTags.Healing;
 		School = SpellSchool.Flame;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "holy/touch-of-light.png");
 	}
 
 	public override float GetBaseValue()

@@ -16,7 +16,6 @@ public class PreciseRing : EquippableItem
 
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Ring1;
-		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(5));
 		CharacterModifiers.Add(new CriticalStrikeModifier(_critChance));
 	}
 

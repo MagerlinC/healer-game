@@ -31,7 +31,6 @@ public partial class SoulShatterSpell : SpellResource
 		Tags = SpellTags.Damage;
 		RequiredSchoolPoints = 2;
 		TargetingType = TargetingType.Enemy;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/void-burst.png");
 	}
 
 	public override float GetBaseValue()

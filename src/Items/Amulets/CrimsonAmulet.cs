@@ -17,7 +17,6 @@ public partial class CrimsonAmulet : EquippableItem
 		Description = $"{100 * LeechRate:F0}% of damage dealt is restored to you as light.";
 		Rarity = ItemRarity.Epic;
 		Slot = EquipSlot.Amulet;
-		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(7));
 		SpellModifiers.Add(new LeechModifier());
 	}
 

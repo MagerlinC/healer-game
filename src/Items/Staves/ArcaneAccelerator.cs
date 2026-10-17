@@ -22,7 +22,6 @@ public class ArcaneAccelerator : EquippableItem
 		Description = $"+{Math.Round(_hasteAmount * 100)}% haste.\n10% increased damage.";
 		Rarity = ItemRarity.Epic;
 		Slot = EquipSlot.Staff;
-		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(4));
 		CharacterModifiers.Add(new SpeedDamageModifier());
 	}
 

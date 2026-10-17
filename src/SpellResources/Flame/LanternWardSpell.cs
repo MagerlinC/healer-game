@@ -28,7 +28,6 @@ public partial class LanternWardSpell : SpellResource
 		RequiredSchoolPoints = 1;
 		Tags = SpellTags.Healing;
 		TargetingType = TargetingType.Ally;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "holy/aura-of-radiance.png");
 	}
 
 	public override float GetBaseValue()

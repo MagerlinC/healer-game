@@ -26,7 +26,6 @@ public class SeersBand : EquippableItem
 			$"+{Math.Round(_critChanceBonus * 100)}% crit chance. +{Math.Round(_critMultiplierBonus * 100)}% Critical strike multiplier.";
 		Rarity = ItemRarity.Epic;
 		Slot = EquipSlot.Ring1;
-		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(3));
 		CharacterModifiers.Add(new CritModifier());
 	}
 

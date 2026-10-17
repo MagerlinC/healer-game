@@ -30,7 +30,6 @@ public partial class RelightSpell : SpellResource
 		Tags = SpellTags.Damage | SpellTags.Duration;
 		RequiredSchoolPoints = 1;
 		TargetingType = TargetingType.Enemy;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/time-loop.png");
 	}
 
 	public override float GetBaseValue()

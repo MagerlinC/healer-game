@@ -30,7 +30,6 @@ public class RingOfTriage : EquippableItem
 			$"Single-target spells restore {Math.Round(_bonusMultiplier * 100)}% more light to allies below {Math.Round(_hpThreshold * 100)}% light.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Ring1;
-		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(4));
 		SpellModifiers.Add(new TriageModifier(_hpThreshold, _bonusMultiplier));
 	}
 

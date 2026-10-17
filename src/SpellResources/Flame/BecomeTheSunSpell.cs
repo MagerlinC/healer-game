@@ -31,7 +31,6 @@ public partial class BecomeTheSunSpell : UltimateSpellResource
 		Tags = SpellTags.Healing;
 		RequiredSchoolPoints = 3;
 		TargetingType = TargetingType.Ally;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "holy/archangel-of-light.png");
 	}
 
 	public override void Apply(SpellContext ctx)

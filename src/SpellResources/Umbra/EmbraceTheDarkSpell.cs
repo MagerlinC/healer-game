@@ -31,7 +31,6 @@ public partial class EmbraceTheDarkSpell : UltimateSpellResource
 		School = SpellSchool.Umbra;
 		RequiredSchoolPoints = 3;
 		TargetingType = TargetingType.Self;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/voids-embrace.png");
 	}
 
 	public override void Apply(SpellContext ctx)

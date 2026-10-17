@@ -18,7 +18,6 @@ public class ChainOfReflection : EquippableItem
 			$"Deal {_damageBonus * 100:F0}% increased damage, but {100 * _damageReflected:F0}% of damage dealt is reflected to you as umbral damage.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Amulet;
-		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(6));
 		CharacterModifiers.Add(new DamageModifier());
 		SpellModifiers.Add(new ReflectionModifier());
 	}

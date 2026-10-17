@@ -20,7 +20,7 @@ using healerfantasy.SpellResources;
 ///      (cast bar shown via <see cref="ShowCastBar"/>), while a faint outline of
 ///      the cone telegraphs where it will land.
 ///   5. Cone visual fires; the player takes <see cref="ConeDamage"/> if they
-///      are NOT standing in the safe third of the arena.
+///      are standing inside the drawn cone.
 ///   6. Wax overlays are removed, party members are un-stunned, boss tweens
 ///      back to its saved position, and <see cref="OnPhaseComplete"/> fires.
 /// </summary>
@@ -61,6 +61,7 @@ public partial class MoltenConePhase : Node2D
 	Character _boss;
 	SafeZone _safeZone;
 	Vector2 _bossSavedPosition;
+	Vector2 _coneTip;
 	readonly List<PartyMember> _encased = new();
 	readonly List<Node2D> _overlays = new();
 	ConeDrawNode _telegraph;
@@ -184,10 +185,13 @@ public partial class MoltenConePhase : Node2D
 		ShowCastBar?.Invoke("Molten Cone",
 			GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "enemy/the-tallow-queen/molten-cone.png"), CastDuration);
 
+		// Lock the cone's tip now so the telegraph, the fired cone and the hit
+		// test all share exactly the same geometry.
+		_coneTip = _boss.GlobalPosition;
 		_telegraph = new ConeDrawNode
 		{
 			SafeZone = _safeZone,
-			BossTip = _boss.GlobalPosition,
+			BossTip = _coneTip,
 			Telegraph = true,
 			ZIndex = 15,
 			GlobalPosition = Vector2.Zero
@@ -219,7 +223,7 @@ public partial class MoltenConePhase : Node2D
 		var draw = new ConeDrawNode
 		{
 			SafeZone = _safeZone,
-			BossTip = _boss.GlobalPosition,
+			BossTip = _coneTip,
 			ZIndex = 15,
 			GlobalPosition = Vector2.Zero
 		};
@@ -268,28 +272,11 @@ public partial class MoltenConePhase : Node2D
 	}
 
 	/// <summary>
-	/// Returns true when <paramref name="worldPos"/> falls within the safe third
-	/// of the arena. The arena is divided into three equal vertical strips along
-	/// the X axis using the active <see cref="PartyMember.ArenaBoundary"/>.
+	/// Returns true when <paramref name="worldPos"/> lies outside the drawn cone.
+	/// Hit-tests the exact polygons <see cref="ConeDrawNode"/> draws, so the hit
+	/// test always matches what the telegraph shows.
 	/// </summary>
-	bool IsInSafeZone(Vector2 worldPos)
-	{
-		var cx = PartyMember.ArenaBoundary?.Center.X ?? 0f;
-		var rx = PartyMember.ArenaBoundary is { } b ? b.RadiusX : 300f;
-		// The arena spans [-rx, rx] around cx; each third is rx*2/3 wide.
-		// The boundary between left and middle is at cx - rx/3,
-		// and between middle and right is at cx + rx/3.
-		var edge = rx / 3f;
-		var relX = worldPos.X - cx;
-
-		return _safeZone switch
-		{
-			SafeZone.Left => relX < -edge,
-			SafeZone.Middle => relX >= -edge && relX <= edge,
-			SafeZone.Right => relX > edge,
-			_ => false
-		};
-	}
+	bool IsInSafeZone(Vector2 worldPos) => ConeDrawNode.IsSafe(_safeZone, _coneTip, worldPos);
 
 	// ─────────────────────────────────────────────────────────────────────────
 	// Step 6 — cleanup, boss returns, phase complete
@@ -346,6 +333,13 @@ public partial class ConeDrawNode : Node2D
 	const float OuterOvershoot = 140f;
 
 	/// <summary>
+	/// Extra spread applied past the arena tangent so the outer edge never grazes
+	/// the boundary, and a hard cap so a near-horizontal tangent can't explode.
+	/// </summary>
+	const float OuterTangentMargin = 1.1f;
+	const float MaxOuterReach = 4000f;
+
+	/// <summary>
 	/// How far past the arena bottom the base of every slice extends, expressed
 	/// as a fraction of RadiusY. Decreasing this shortens the cone and increases
 	/// the apparent angle; increasing it lengthens the cone and narrows the angle.
@@ -379,28 +373,100 @@ public partial class ConeDrawNode : Node2D
 		Modulate = new Color(1f, 1f, 1f, 0.55f + 0.3f * Mathf.Sin(_t * 5f));
 	}
 
-	public override void _Draw()
+	// ── shared geometry (drawing + hit test) ────────────────────────────────
+
+	/// <summary>Arena dimensions (fallback values keep editor previews sane).</summary>
+	static (float Cx, float Cy, float Rx, float Ry) Arena()
 	{
-		// Collect arena dimensions (fallback values keep editor previews sane).
-		float cx = 0f, cy = 0f, rx = 200f, ry = 150f;
 		if (PartyMember.ArenaBoundary is { } b)
+			return (b.Center.X, b.Center.Y, b.RadiusX, b.RadiusY);
+		return (0f, 0f, 200f, 150f);
+	}
+
+	/// <summary>Y of the base of every pizza slice — past the arena bottom so the fill is solid.</summary>
+	static float BaseY()
+	{
+		var (_, cy, _, ry) = Arena();
+		return cy + ry * BaseExtentFraction;
+	}
+
+	/// <summary>Base X of the inner slice edge on <paramref name="side"/> (-1 left, +1 right).</summary>
+	static float InnerBaseX(int side)
+	{
+		var (cx, _, rx, _) = Arena();
+		return cx + side * rx * SafeZoneHalfWidth;
+	}
+
+	/// <summary>
+	/// Base X of the outer slice corner on <paramref name="side"/> (-1 left, +1 right).
+	/// The boss hovers just above the arena, so a fixed overshoot leaves the arena's
+	/// flanks outside the drawn slice even though they are dangerous. Push the corner
+	/// out until the outer edge clears the arena ellipse (tangent from the tip).
+	/// </summary>
+	static float OuterBaseX(Vector2 tip, int side)
+	{
+		var (cx, cy, rx, ry) = Arena();
+		var yBase = BaseY();
+		var x = cx + side * (rx + OuterOvershoot);
+
+		// Tangent from the tip to the ellipse, solved in the ellipse's unit-circle space.
+		var p = new Vector2((tip.X - cx) / rx, (tip.Y - cy) / ry);
+		var d = p.Length();
+		if (d <= 1f) return x; // tip inside the arena — no tangent exists
+
+		var phi = p.Angle();
+		var alpha = Mathf.Acos(1f / d);
+		foreach (var a in new[] { phi + alpha, phi - alpha })
 		{
-			cx = b.Center.X;
-			cy = b.Center.Y;
-			rx = b.RadiusX;
-			ry = b.RadiusY;
+			var q = new Vector2(cx + rx * Mathf.Cos(a), cy + ry * Mathf.Sin(a));
+			var dy = q.Y - tip.Y;
+			if (dy <= 0.01f || Mathf.Sign(q.X - tip.X) != side) continue;
+			var reach = tip.X + (q.X - tip.X) / dy * (yBase - tip.Y) * OuterTangentMargin;
+			x = side > 0 ? Mathf.Max(x, reach) : Mathf.Min(x, reach);
 		}
 
-		var tip = BossTip;
+		return Mathf.Clamp(x, cx - MaxOuterReach, cx + MaxOuterReach);
+	}
 
-		// Horizontal boundaries that divide the arena into equal thirds.
-		var xLeft = cx - rx - OuterOvershoot; // outer corners spread past arena edge
-		var xRight = cx + rx + OuterOvershoot;
-		var xLB = cx - rx * SafeZoneHalfWidth; // left-to-middle boundary
-		var xRB = cx + rx * SafeZoneHalfWidth; // middle-to-right boundary
-		// Base of every pizza slice — past the arena bottom so the fill is solid.
-		var yBase = cy + ry * BaseExtentFraction;
+	/// <summary>
+	/// The danger slices for <paramref name="zone"/> as world-space triangles
+	/// (tip, base-left, base-right). This is the single source of truth for the
+	/// cone: <see cref="_Draw"/> paints exactly these polygons and
+	/// <see cref="IsSafe"/> hit-tests against them, so the two cannot drift apart.
+	/// </summary>
+	public static Vector2[][] DangerSlices(MoltenConePhase.SafeZone zone, Vector2 tip)
+	{
+		var xLeft = OuterBaseX(tip, -1); // outer corners spread past the arena
+		var xRight = OuterBaseX(tip, 1);
+		var xLB = InnerBaseX(-1); // left-to-middle boundary
+		var xRB = InnerBaseX(1); // middle-to-right boundary
+		var yBase = BaseY();
 
+		Vector2[] Slice(float x0, float x1) => new[] { tip, new Vector2(x0, yBase), new Vector2(x1, yBase) };
+
+		return zone switch
+		{
+			// Danger covers middle + right third.
+			MoltenConePhase.SafeZone.Left => new[] { Slice(xLB, xRight) },
+			// Danger covers left third and right third (two separate slices).
+			MoltenConePhase.SafeZone.Middle => new[] { Slice(xLeft, xLB), Slice(xRB, xRight) },
+			// Danger covers left + middle third.
+			MoltenConePhase.SafeZone.Right => new[] { Slice(xLeft, xRB) },
+			_ => System.Array.Empty<Vector2[]>()
+		};
+	}
+
+	/// <summary>True when <paramref name="pos"/> lies outside every slice from <see cref="DangerSlices"/>.</summary>
+	public static bool IsSafe(MoltenConePhase.SafeZone zone, Vector2 tip, Vector2 pos)
+	{
+		foreach (var slice in DangerSlices(zone, tip))
+			if (Geometry2D.IsPointInPolygon(pos, slice))
+				return false;
+		return true;
+	}
+
+	public override void _Draw()
+	{
 		// White with slight transparency lets the texture show its natural colours.
 		// The outline is kept as a bright molten-amber edge.
 		var tint = new Color(1f, 1f, 1f, 0.85f);
@@ -411,39 +477,17 @@ public partial class ConeDrawNode : Node2D
 			outline = new Color(1.00f, 0.85f, 0.55f, 0.8f);
 		}
 
-		switch (SafeZone)
-		{
-			case MoltenConePhase.SafeZone.Left:
-				// Danger covers middle + right third.
-				DrawSlice(tip, xLB, yBase, xRight, yBase, tint, outline);
-				break;
-
-			case MoltenConePhase.SafeZone.Middle:
-				// Danger covers left third and right third (two separate slices).
-				DrawSlice(tip, xLeft, yBase, xLB, yBase, tint, outline);
-				DrawSlice(tip, xRB, yBase, xRight, yBase, tint, outline);
-				break;
-
-			case MoltenConePhase.SafeZone.Right:
-				// Danger covers left + middle third.
-				DrawSlice(tip, xLeft, yBase, xRB, yBase, tint, outline);
-				break;
-		}
+		foreach (var slice in DangerSlices(SafeZone, BossTip))
+			DrawSlice(slice, tint, outline);
 	}
 
 	/// <summary>
-	/// Draws a single textured triangle from <paramref name="tip"/> down to the
-	/// horizontal span [x0, x1] at y. UVs map the texture so its narrow end sits
-	/// at the tip and its wide end covers the base — matching a cone asset that
-	/// is narrow at the top and wide at the bottom.
+	/// Draws a single textured slice triangle (tip, base-left, base-right). UVs map
+	/// the texture so its narrow end sits at the tip and its wide end covers the
+	/// base — matching a cone asset that is narrow at the top and wide at the bottom.
 	/// </summary>
-	void DrawSlice(Vector2 tip,
-		float x0, float y0,
-		float x1, float y1,
-		Color tint, Color outline)
+	void DrawSlice(Vector2[] pts, Color tint, Color outline)
 	{
-		var pts = new Vector2[] { tip, new(x0, y0), new(x1, y1) };
-
 		// UV layout:
 		//   tip          → (0.5, 0)  — top-centre of the cone texture
 		//   bottom-left  → (0,   1)  — bottom-left corner of the texture
@@ -457,10 +501,6 @@ public partial class ConeDrawNode : Node2D
 
 		// The telegraph is untextured: just a tinted wash under its outline.
 		DrawPolygon(pts, new Color[] { tint }, uvs, Telegraph ? null : _tex);
-		DrawPolyline(new Vector2[]
-		{
-			tip, new(x0, y0),
-			new(x1, y1), tip
-		}, outline, Telegraph ? 3f : 2.5f);
+		DrawPolyline(new[] { pts[0], pts[1], pts[2], pts[0] }, outline, Telegraph ? 3f : 2.5f);
 	}
 }

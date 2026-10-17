@@ -30,7 +30,6 @@ public partial class TwinFlameSpell : UltimateSpellResource
 		School = SpellSchool.Wick;
 		RequiredSchoolPoints = 3;
 		TargetingType = TargetingType.Self;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/mirror-image.png");
 	}
 
 	/// <summary>

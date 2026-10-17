@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 using healerfantasy;
 
@@ -8,7 +9,8 @@ using healerfantasy;
 /// Every frame it checks whether it is within <see cref="CollisionRadius"/>
 /// pixels of the healer — if so it explodes. NPC party members do not
 /// trigger the drop, so only the player can detonate it by running into it
-/// (or avoiding it to steer the blast to the arena edge).
+/// (or avoiding it to steer the blast to the arena edge). If the healer is
+/// dead, the drop chases a random living party member instead.
 ///
 ///   1. It removes itself from the scene.
 ///   2. It spawns an <see cref="MoltenWaxPool"/> at its current position,
@@ -33,6 +35,7 @@ public partial class MoltenDropProjectile : Node2D
 	readonly float _zoneDamagePerTick;
 
 	bool _exploded;
+	Character _target;
 
 	// ── ctor ──────────────────────────────────────────────────────────────────
 	public MoltenDropProjectile(float speed, float zoneDamagePerTick)
@@ -70,31 +73,43 @@ public partial class MoltenDropProjectile : Node2D
 		// ── tumble ───────────────────────────────────────────────────────────
 		Rotation += TumbleSpeed * (float)delta;
 
-		// ── move toward the healer ────────────────────────────────────────────
-		var healer = FindHealer();
-		if (healer != null && healer.IsAlive)
-		{
-			var direction = (healer.GlobalPosition - GlobalPosition).Normalized();
-			GlobalPosition += direction * _speed * (float)delta;
-		}
+		// ── move toward the target ────────────────────────────────────────────
+		var target = ResolveTarget();
+		if (target == null) return;
 
-		// ── collision check — only the healer (player) triggers the drop ─────
-		// NPC party members pass through it; the player must actively kite it.
-		if (healer != null && healer.IsAlive &&
-		    GlobalPosition.DistanceTo(healer.GlobalPosition) <= CollisionRadius)
-		{
+		var direction = (target.GlobalPosition - GlobalPosition).Normalized();
+		GlobalPosition += direction * _speed * (float)delta;
+
+		// ── collision check — only the current target triggers the drop ──────
+		// Other party members pass through it; the player must actively kite it.
+		if (GlobalPosition.DistanceTo(target.GlobalPosition) <= CollisionRadius)
 			Explode();
-		}
 	}
 
 	// ── private ───────────────────────────────────────────────────────────────
 
-	Character FindHealer()
+	/// <summary>
+	/// The drop chases the healer while they live. Once the healer is dead it
+	/// locks onto a random living party member, and only re-picks if that one
+	/// dies too — so it never flips between targets mid-flight.
+	/// </summary>
+	Character ResolveTarget()
 	{
+		Character healer = null;
+		var living = new List<Character>();
 		foreach (var node in GetTree().GetNodesInGroup("party"))
-			if (node is Character c && c.IsAlive && c.CharacterName == GameConstants.LightkeeperName)
-				return c;
-		return null;
+		{
+			if (node is not Character c || !c.IsAlive) continue;
+			living.Add(c);
+			if (c.CharacterName == GameConstants.LightkeeperName) healer = c;
+		}
+
+		if (healer != null)
+			_target = healer;
+		else if (_target == null || !IsInstanceValid(_target) || !_target.IsAlive)
+			_target = living.Count > 0 ? living[(int)(GD.Randi() % (uint)living.Count)] : null;
+
+		return _target;
 	}
 
 	void Explode()

@@ -27,7 +27,6 @@ public partial class SpreadingEmbersSpell : SpellResource
 		RequiredSchoolPoints = 1;
 		TargetingType = TargetingType.None;
 		Tags = SpellTags.Healing | SpellTags.Duration | SpellTags.GroupSpell;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "nature/wild-growth.png");
 	}
 
 	public override float GetBaseValue()

@@ -20,7 +20,6 @@ public class SlimewardenSceptre : EquippableItem
         Description = "+10% critical strike chance.";
         Rarity      = ItemRarity.Rare;
         Slot        = EquipSlot.Staff;
-        Icon        = GD.Load<Texture2D>(AssetConstants.StaveIconPath(3));
         CharacterModifiers.Add(new CritModifier());
     }
 

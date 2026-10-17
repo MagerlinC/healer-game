@@ -31,7 +31,6 @@ public class WrathOfEmbers : EquippableItem
 		              "as the light it restored.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Staff;
-		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(9));
 		SpellModifiers.Add(new ConvertHoTToDoTModifier());
 	}
 

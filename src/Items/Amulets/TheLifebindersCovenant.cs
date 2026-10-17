@@ -29,7 +29,6 @@ public class TheLifebindersCovenant : EquippableItem
 		Description = $"Group restoring spells return {_manaPerTarget} kindling per ally they reach.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Amulet;
-		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(4));
 		SpellModifiers.Add(new CovenantModifier(_manaPerTarget));
 	}
 

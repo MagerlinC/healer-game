@@ -31,7 +31,6 @@ public partial class FlashfireSpell : SpellResource
 		Tags = SpellTags.Healing | SpellTags.Light | SpellTags.GroupSpell;
 		RequiredSchoolPoints = 2;
 		TargetingType = TargetingType.Ally;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "holy/holy-nova.png");
 	}
 
 	public override float GetBaseValue()

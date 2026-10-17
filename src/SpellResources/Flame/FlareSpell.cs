@@ -19,7 +19,6 @@ public partial class FlareSpell : SpellResource
 		Tags = SpellTags.Damage | SpellTags.Light;
 		School = SpellSchool.Flame;
 		TargetingType = TargetingType.Enemy;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "holy/burst-of-light.png");
 	}
 
 	public override float GetBaseValue()

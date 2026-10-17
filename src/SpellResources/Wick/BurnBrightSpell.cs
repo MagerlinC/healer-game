@@ -27,7 +27,6 @@ public partial class BurnBrightSpell : SpellResource
 		RequiredSchoolPoints = 2;
 		Tags = SpellTags.Duration | SpellTags.GroupSpell;
 		TargetingType = TargetingType.None;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/time-warp.png");
 	}
 
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)

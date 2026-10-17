@@ -31,7 +31,6 @@ public partial class QuickenTheWickSpell : SpellResource
 		Tags = SpellTags.Duration;
 		RequiredSchoolPoints = 0;
 		TargetingType = TargetingType.Self;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "healer/healer2.png");
 	}
 
 	public override void Apply(SpellContext ctx)

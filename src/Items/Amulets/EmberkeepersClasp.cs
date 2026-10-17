@@ -24,7 +24,6 @@ public class EmberkeepersClasp : EquippableItem
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Amulet;
 		School = SpellSchool.Ember;
-		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(1));
 		CharacterModifiers.Add(new EmberModifier());
 	}
 

@@ -132,7 +132,7 @@ public partial class GloomEffect : CharacterEffect, ICharacterModifier
 		IsDispellable = false;
 		MaximumStacks = LightMechanics.MaxGloom;
 		CurrentStacks = stacks;
-		Icon = _icon ??= Hud.LastLightIcons.Gloom() ?? GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/consuming-void.png");
+		Icon = _icon ??= Hud.LastLightIcons.Gloom();
 		UpdateDescription();
 	}
 

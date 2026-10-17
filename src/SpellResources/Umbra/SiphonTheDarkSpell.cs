@@ -31,7 +31,6 @@ public partial class SiphonTheDarkSpell : SpellResource
 		School = SpellSchool.Umbra;
 		Tags = SpellTags.Damage | SpellTags.Healing | SpellTags.Duration;
 		TargetingType = TargetingType.Enemy;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/void-drain.png");
 	}
 
 	public override float GetBaseValue()

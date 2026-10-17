@@ -17,7 +17,6 @@ public partial class RekindleSpell : SpellResource
 		RequiredSchoolPoints = 1;
 		School = SpellSchool.Flame;
 		Tags = SpellTags.Healing;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "healer/healer4.png");
 	}
 
 	public override float GetBaseValue()

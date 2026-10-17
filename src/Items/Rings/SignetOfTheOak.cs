@@ -15,7 +15,6 @@ public partial class SignetOfTheOak : EquippableItem
 		Description = $"+{HealthBonus:F0} Maximum Light";
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Ring1;
-		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(1));
 		CharacterModifiers.Add(new HealthModifier());
 	}
 

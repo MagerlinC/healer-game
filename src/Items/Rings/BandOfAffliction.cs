@@ -28,7 +28,6 @@ public class BandOfAffliction : EquippableItem
 		Description = $"Damage over time effects last {_durationExtension}s longer";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Ring1;
-		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(5));
 		SpellModifiers.Add(new DurationExtenderModifier(_durationExtension));
 	}
 

@@ -41,7 +41,6 @@ public partial class FeedThePyreSpell : SpellResource
 		TargetingType = TargetingType.None;
 		Tags = SpellTags.Damage;
 		RequiredSchoolPoints = 2;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/exsanguinate.png");
 	}
 
 	/// <summary>

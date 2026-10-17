@@ -23,7 +23,6 @@ public partial class MothswarmSpell : SpellResource
 		Tags = SpellTags.Damage | SpellTags.Healing | SpellTags.Duration;
 		RequiredSchoolPoints = 2;
 		TargetingType = TargetingType.Enemy;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "nature/swarm-of-locusts.png");
 	}
 
 	public override float GetBaseValue()

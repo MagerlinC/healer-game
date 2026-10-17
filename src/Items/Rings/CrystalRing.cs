@@ -20,7 +20,6 @@ public class CrystalRing : EquippableItem
 		Description = "+20 maximum kindling.";
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Ring1;
-		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(5));
 		CharacterModifiers.Add(new MaxManaModifier());
 	}
 

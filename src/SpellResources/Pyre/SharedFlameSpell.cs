@@ -32,7 +32,6 @@ public partial class SharedFlameSpell : UltimateSpellResource
 		School = SpellSchool.Pyre;
 		RequiredSchoolPoints = 3;
 		TargetingType = TargetingType.Self;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/vampiric-embrace.png");
 	}
 
 	/// <summary>

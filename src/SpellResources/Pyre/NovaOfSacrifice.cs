@@ -24,7 +24,6 @@ public partial class NovaOfSacrifice : SpellResource
 		TargetingType = TargetingType.None;
 		Tags = SpellTags.Healing;
 		RequiredSchoolPoints = 2;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/nova-of-sacrifice.png");
 	}
 
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)

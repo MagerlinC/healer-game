@@ -32,7 +32,6 @@ public partial class WaxSealSpell : SpellResource
 		Tags = SpellTags.Healing | SpellTags.Duration | SpellTags.GroupSpell;
 		RequiredSchoolPoints = 0;
 		TargetingType = TargetingType.None;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "healer/healer5.png");
 	}
 
 	public override float GetBaseValue()

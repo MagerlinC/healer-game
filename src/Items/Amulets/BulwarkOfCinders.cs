@@ -16,7 +16,6 @@ public class BulwarkOfCinders : EquippableItem
 		Description = $"{100 * ShieldConversion:F0}% of light that overflows a full target is turned into shield.";
 		Rarity = ItemRarity.Epic;
 		Slot = EquipSlot.Amulet;
-		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(2));
 		SpellModifiers.Add(new OverhealShieldingModifier());
 	}
 

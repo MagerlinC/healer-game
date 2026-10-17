@@ -25,7 +25,6 @@ public partial class WildfireSpell : SpellResource
 		Tags = SpellTags.Healing | SpellTags.GroupSpell;
 		TargetingType = TargetingType.None;
 		RequiredSchoolPoints = 2;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "holy/wave-of-incandescence.png");
 	}
 
 	public override float GetBaseValue()

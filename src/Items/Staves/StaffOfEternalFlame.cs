@@ -23,7 +23,6 @@ public class StaffOfEternalFlame : EquippableItem
 		Description = "20% more light restored.\nCritical strikes that restore light also return 5 kindling.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Staff;
-		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(5));
 		CharacterModifiers.Add(new HealingModifier());
 		SpellModifiers.Add(new ManaOnCritHealModifier());
 	}

@@ -13,7 +13,6 @@ public class BandOfArcaneRecovery : EquippableItem
 		Description = $"Restoring light to a target refunds kindling equal to {100 * ManaRestorationRate:F0}% of the light restored.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Ring1;
-		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(6));
 		SpellModifiers.Add(new ManaRecoupEffect(ManaRestorationRate));
 	}
 

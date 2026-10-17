@@ -27,7 +27,6 @@ public partial class CinderSpell : SpellResource
 		School = SpellSchool.Ember;
 		Tags = SpellTags.Damage | SpellTags.Duration;
 		TargetingType = TargetingType.Enemy;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "nature/poison-bolt.png");
 	}
 
 	public override float GetBaseValue()

@@ -22,7 +22,6 @@ public partial class AshVeilSpell : SpellResource
 		Tags = SpellTags.Healing;
 		RequiredSchoolPoints = 2;
 		TargetingType = TargetingType.Ally;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "nature/seeds-of-spring.png");
 	}
 
 	public override void Apply(SpellContext ctx)

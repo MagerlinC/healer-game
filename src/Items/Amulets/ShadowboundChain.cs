@@ -27,7 +27,6 @@ public class ShadowboundChain : EquippableItem
 		Rarity = ItemRarity.Epic;
 		Slot = EquipSlot.Amulet;
 		School = SpellSchool.Umbra;
-		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(3));
 		CharacterModifiers.Add(new ShadowboundModifier());
 	}
 

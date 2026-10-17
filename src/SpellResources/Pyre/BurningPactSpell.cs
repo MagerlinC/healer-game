@@ -33,7 +33,6 @@ public partial class BurningPactSpell : SpellResource
 		School = SpellSchool.Pyre;
 		RequiredSchoolPoints = 1;
 		TargetingType = TargetingType.Self;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/sanguine-pact.png");
 	}
 
 	/// <summary>

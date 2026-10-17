@@ -20,7 +20,6 @@ public class CrystalStaff : EquippableItem
         Description = "+25 maximum kindling.";
         Rarity      = ItemRarity.Rare;
         Slot        = EquipSlot.Staff;
-        Icon        = GD.Load<Texture2D>(AssetConstants.StaveIconPath(1));
         CharacterModifiers.Add(new MaxManaModifier());
     }
 

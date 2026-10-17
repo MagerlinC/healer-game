@@ -17,7 +17,6 @@ public partial class ChainsOfCommand : EquippableItem
 		Description = $"Party members deal {100 * PartyDamageBonus:F0}% more damage";
 		Rarity = ItemRarity.Epic;
 		Slot = EquipSlot.Amulet;
-		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(8));
 		SpellModifiers.Add(new PartyBoostingModifier());
 	}
 

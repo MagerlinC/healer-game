@@ -20,7 +20,6 @@ public partial class UnburnSpell : SpellResource
 		TargetingType = TargetingType.None;
 		RequiredSchoolPoints = 2;
 		School = SpellSchool.Wick;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "chronomancy/rewind.png");
 	}
 
 	public override void Apply(SpellContext ctx)

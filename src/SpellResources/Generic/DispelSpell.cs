@@ -23,7 +23,6 @@ public partial class DispelSpell : SpellResource
 		School = SpellSchool.Generic;
 		TargetingType = TargetingType.Ally;
 		Tags = SpellTags.None;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "generic/dispel.png");
 	}
 
 	public override void Apply(SpellContext ctx)

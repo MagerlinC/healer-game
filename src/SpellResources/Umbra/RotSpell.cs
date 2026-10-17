@@ -23,7 +23,6 @@ public partial class RotSpell : SpellResource
 		TargetingType = TargetingType.Enemy;
 		School = SpellSchool.Umbra;
 		RequiredSchoolPoints = 1;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/decay.png");
 	}
 
 	/// <summary>

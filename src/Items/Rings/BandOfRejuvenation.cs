@@ -16,7 +16,6 @@ public class BandOfRejuvenation : EquippableItem
 		Description = $"Lingering light effects last {_durationExtension}s longer";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Ring1;
-		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(2));
 		SpellModifiers.Add(new DurationExtenderModifier(_durationExtension));
 	}
 

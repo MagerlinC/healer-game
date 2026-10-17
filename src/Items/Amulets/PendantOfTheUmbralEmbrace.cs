@@ -36,7 +36,6 @@ public class PendantOfTheUmbralEmbrace : EquippableItem
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Amulet;
 		School = SpellSchool.Umbra;
-		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(5));
 		SpellModifiers.Add(new UmbraSynergyModifier(
 			_healingBonus,
 			Icon,

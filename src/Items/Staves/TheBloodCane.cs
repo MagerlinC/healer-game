@@ -25,7 +25,6 @@ public class TheBloodCane : EquippableItem
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Staff;
 		School = SpellSchool.Pyre;
-		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(8));
 		CharacterModifiers.Add(new PyreEffect());
 	}
 

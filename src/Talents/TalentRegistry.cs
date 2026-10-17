@@ -17,7 +17,8 @@ namespace healerfantasy.Talents;
 /// Add new <see cref="TalentDefinition"/> entries here to expose them in
 /// the talent selector UI — no other file needs changing.
 ///
-/// Each entry defines Name, Description, and IconPath exactly once.
+/// Each entry defines Name and Description exactly once (icons are drawn by
+/// <see cref="LastLight.Hud.LastLightIcons"/>, keyed by Name).
 /// <see cref="TalentDefinition.CreateTalent"/> forwards them to the built
 /// <see cref="Talent"/> automatically; <see cref="TalentDefinition.Configure"/>
 /// only needs to wire up the modifiers.
@@ -30,7 +31,6 @@ public static class TalentRegistry
 		{
 			Name = "Umbral Specialist",
 			Description = "20% increased umbral damage.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_5.png",
 			TalentRow = 0,
 			School = SpellSchool.Umbra,
 			Configure = (t, _) =>
@@ -40,7 +40,6 @@ public static class TalentRegistry
 		{
 			Name = "Entropic Surge",
 			Description = "Umbra spells have a 15% chance to deal double damage.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_9.png",
 			TalentRow = 1,
 			School = SpellSchool.Umbra,
 			Configure = (t, _) =>
@@ -50,7 +49,6 @@ public static class TalentRegistry
 		{
 			Name = "Siphoning Dark",
 			Description = "Dealing umbral damage restores 1 kindling.",
-			IconPath = AssetConstants.TalentIconAssets + "void/siphoning-void.png",
 			TalentRow = 2,
 			School = SpellSchool.Umbra,
 			Configure = (t, _) =>
@@ -60,7 +58,6 @@ public static class TalentRegistry
 		{
 			Name = "Necrotic Touch",
 			Description = "Umbral damage spells have a 25% chance to apply a free 3-tick, 5-damage-per-tick DoT.",
-			IconPath = AssetConstants.TalentIconAssets + "void/necrotic-touch.png",
 			TalentRow = 3,
 			School = SpellSchool.Umbra,
 			Configure = (t, _) =>
@@ -70,7 +67,6 @@ public static class TalentRegistry
 		{
 			Name = "Umbral Resonance",
 			Description = "Casting Umbral Bolt consumes all DoTs on the target, instantly dealing their remaining damage.",
-			IconPath = AssetConstants.TalentIconAssets + "void/void-resonance.png",
 			TalentRow = 3,
 			School = SpellSchool.Umbra,
 			Configure = (t, _) =>
@@ -84,7 +80,6 @@ public static class TalentRegistry
 		{
 			Name = "Shielding Rekindle",
 			Description = "Restoring light to a target grants a 5s shield equal to 20% of the light restored.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_17.png",
 			School = SpellSchool.Flame,
 			TalentRow = 0,
 			Configure = (t, icon) =>
@@ -94,7 +89,6 @@ public static class TalentRegistry
 		{
 			Name = "Sacred Ground",
 			Description = "Restoring spells return 2 kindling for each target they reach.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_2.png",
 			School = SpellSchool.Flame,
 			TalentRow = 1,
 			Configure = (t, _) =>
@@ -104,7 +98,6 @@ public static class TalentRegistry
 		{
 			Name = "Sacred Momentum",
 			Description = "Flame spells are 15% more effective when the target is below 50% light.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_3.png",
 			School = SpellSchool.Flame,
 			TalentRow = 2,
 			Configure = (t, _) =>
@@ -114,7 +107,6 @@ public static class TalentRegistry
 		{
 			Name = "Radiant Infusion",
 			Description = "Restoring spells grant a 6s buff that increases the target's damage by 15%.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_15.png",
 			School = SpellSchool.Flame,
 			TalentRow = 3,
 			Configure = (t, icon) =>
@@ -124,7 +116,6 @@ public static class TalentRegistry
 		{
 			Name = "Illumination",
 			Description = "Critical strikes that restore light refund 50% of the spell's kindling cost.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_16.png",
 			School = SpellSchool.Flame,
 			TalentRow = 3,
 			Configure = (t, _) =>
@@ -138,7 +129,6 @@ public static class TalentRegistry
 		{
 			Name = "Banked Embers",
 			Description = "Ember restoring spells are 20% more effective.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_6.png",
 			School = SpellSchool.Ember,
 			TalentRow = 0,
 			Configure = (t, _) =>
@@ -148,7 +138,6 @@ public static class TalentRegistry
 		{
 			Name = "Searing Cinders",
 			Description = "Ember damage spells deal 20% more damage.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_7.png",
 			School = SpellSchool.Ember,
 			TalentRow = 1,
 			Configure = (t, _) =>
@@ -159,7 +148,6 @@ public static class TalentRegistry
 			Name = "Spreading Warmth",
 			Description =
 				"Casting a restoring spell on a target also restores 8 light to the party member with the least light.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_8.png",
 			School = SpellSchool.Ember,
 			TalentRow = 2,
 			Configure = (t, _) =>
@@ -169,7 +157,6 @@ public static class TalentRegistry
 		{
 			Name = "Deep Coals",
 			Description = "Casting lingering light on a target that already has lingering light active returns 4 kindling.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_18.png",
 			School = SpellSchool.Ember,
 			TalentRow = 3,
 			Configure = (t, _) =>
@@ -179,7 +166,6 @@ public static class TalentRegistry
 		{
 			Name = "Overburn",
 			Description = "Lingering light ticks for 20% more on targets above 75% light.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_19.png",
 			School = SpellSchool.Ember,
 			TalentRow = 3,
 			Configure = (t, _) =>
@@ -194,7 +180,6 @@ public static class TalentRegistry
 			Name = "Acceleration",
 			Description =
 				"Casting a Wick spell increases haste for 10%. Stacks up to 3 times.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_15.png",
 			School = SpellSchool.Wick,
 			TalentRow = 0,
 			Configure = (t, icon) =>
@@ -204,7 +189,6 @@ public static class TalentRegistry
 		{
 			Name = "Temporal Flow",
 			Description = "Passively increases haste by 15%.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_12.png",
 			School = SpellSchool.Wick,
 			TalentRow = 1,
 			Configure = (t, _) =>
@@ -214,7 +198,6 @@ public static class TalentRegistry
 		{
 			Name = "Kindling Rift",
 			Description = "Wick spells have a 20% chance to refund their full kindling cost.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_14.png",
 			School = SpellSchool.Wick,
 			TalentRow = 2,
 			Configure = (t, _) =>
@@ -225,7 +208,6 @@ public static class TalentRegistry
 			Name = "Future Sight",
 			Description =
 				"Casting a Wick spell makes your next non-Wick spell always crit.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_24.png",
 			School = SpellSchool.Wick,
 			TalentRow = 3,
 			Configure = (t, icon) =>
@@ -238,7 +220,6 @@ public static class TalentRegistry
 		{
 			Name = "Temporal Momentum",
 			Description = "Casting a Wick spell makes your next non-Wick spell instant.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_25.png",
 			School = SpellSchool.Wick,
 			TalentRow = 3,
 			Configure = (t, icon) =>
@@ -258,7 +239,6 @@ public static class TalentRegistry
 		{
 			Name = "Critical Amplifier",
 			Description = "+10% base critical strike chance on all spells.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_11.png",
 			School = SpellSchool.Generic,
 			TalentRow = 0,
 			Configure = (t, _) =>
@@ -269,7 +249,6 @@ public static class TalentRegistry
 			Name = "Critical Recharge",
 			Description =
 				"Critical hits restore 10 kindling.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_21.png",
 			School = SpellSchool.Generic,
 			TalentRow = 0,
 			Configure = (t, icon) =>
@@ -280,7 +259,6 @@ public static class TalentRegistry
 			Name = "Gathered Kindling",
 			Description =
 				"Gather 2 additional kindling per second.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_29.png",
 			School = SpellSchool.Generic,
 			TalentRow = 0,
 			Configure = (t, icon) =>
@@ -291,7 +269,6 @@ public static class TalentRegistry
 			Name = "Arcane Hunger",
 			Description =
 				"When casting a spell, spend up to 10% of maximum kindling to increase its damage or light restored by 1% per 1 kindling spent (maximum of 50%).",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_13.png",
 			School = SpellSchool.Generic,
 			TalentRow = 1,
 			Configure = (t, icon) =>
@@ -301,7 +278,6 @@ public static class TalentRegistry
 		{
 			Name = "Critical Infusion",
 			Description = "Critical hits grant a 10s buff amplifying the next spell's damage and light restored by 30%.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_23.png",
 			School = SpellSchool.Generic,
 			TalentRow = 1,
 			Configure = (t, icon) =>
@@ -315,7 +291,6 @@ public static class TalentRegistry
 		{
 			Name = "Crimson Rebound",
 			Description = "After casting a Pyre spell, recover 40% of the light it burned over 5 seconds.",
-			IconPath = AssetConstants.TalentIconAssets + "sanguimancy/crimson-rebound.png",
 			School = SpellSchool.Pyre,
 			TalentRow = 0,
 			Configure = (t, icon) =>
@@ -325,7 +300,6 @@ public static class TalentRegistry
 		{
 			Name = "Bloodthirst",
 			Description = "Pyre spells deal 25% more damage and restore 25% more light.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_9.png",
 			School = SpellSchool.Pyre,
 			TalentRow = 1,
 			Configure = (t, _) =>
@@ -336,7 +310,6 @@ public static class TalentRegistry
 			Name = "Pyre Ward",
 			Description =
 				"When you burn your own light on a Pyre spell, all living allies gain a shield equal to the light burned for 10 seconds.",
-			IconPath = AssetConstants.TalentIconAssets + "sanguimancy/sanguine-ward.png",
 			School = SpellSchool.Pyre,
 			TalentRow = 2,
 			Configure = (t, icon) =>
@@ -346,7 +319,6 @@ public static class TalentRegistry
 		{
 			Name = "Desperate Blaze",
 			Description = "Pyre spells are up to 40% more effective the less light you have.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_20.png",
 			School = SpellSchool.Pyre,
 			TalentRow = 3,
 			Configure = (t, _) =>
@@ -356,7 +328,6 @@ public static class TalentRegistry
 		{
 			Name = "Phoenix Heart",
 			Description = "Casting a Pyre spell that leaves you below 40% light restores the light it burned.",
-			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_26.png",
 			School = SpellSchool.Pyre,
 			TalentRow = 3,
 			Configure = (t, _) =>

@@ -27,6 +27,7 @@ public partial class WaxRainChannelNode : Node2D
 	float _remaining;
 	float _tickTimer;
 	bool _ended;
+	CpuParticles2D _rain;
 
 	// ── callback ──────────────────────────────────────────────────────────────
 	/// <summary>Invoked when the channel finishes (naturally or boss death).</summary>
@@ -43,6 +44,11 @@ public partial class WaxRainChannelNode : Node2D
 	}
 
 	// ── lifecycle ─────────────────────────────────────────────────────────────
+	public override void _Ready()
+	{
+		SpawnRain();
+	}
+
 	public override void _Process(double delta)
 	{
 		if (_ended) return;
@@ -69,6 +75,75 @@ public partial class WaxRainChannelNode : Node2D
 	}
 
 	// ── private ───────────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Spawns molten droplets falling from just above the top of the camera view
+	/// across its full width. Droplets are thin streaks aligned to their velocity,
+	/// and their randomised lifetime makes them "land" at varying depths.
+	/// </summary>
+	void SpawnRain()
+	{
+		var center = Vector2.Zero;
+		var half = new Vector2(320f, 180f);
+		if (GetViewport().GetCamera2D() is { } cam)
+		{
+			center = cam.GetScreenCenterPosition();
+			half = GetViewport().GetVisibleRect().Size / (2f * cam.Zoom);
+		}
+
+		var streak = new Gradient();
+		streak.SetColor(0, new Color(1f, 0.85f, 0.55f, 0f));
+		streak.SetColor(1, new Color(1f, 0.9f, 0.65f, 1f));
+
+		_rain = new CpuParticles2D
+		{
+			Amount = 140,
+			Lifetime = 1.1f,
+			LifetimeRandomness = 0.35f,
+			Texture = new GradientTexture2D
+			{
+				Gradient = streak, Width = 2, Height = 10,
+				FillFrom = new Vector2(0f, 0f), FillTo = new Vector2(0f, 1f)
+			},
+			Position = new Vector2(center.X, center.Y - half.Y - 12f),
+			EmissionShape = CpuParticles2D.EmissionShapeEnum.Rectangle,
+			EmissionRectExtents = new Vector2(half.X + 24f, 4f),
+			Direction = new Vector2(0.08f, 1f),
+			Spread = 4f,
+			Gravity = new Vector2(0f, 300f),
+			InitialVelocityMin = 220f,
+			InitialVelocityMax = 300f,
+			ScaleAmountMin = 0.7f,
+			ScaleAmountMax = 1.3f,
+			ZIndex = 20,
+			Material = new CanvasItemMaterial { BlendMode = CanvasItemMaterial.BlendModeEnum.Add }
+		};
+		_rain.SetParticleFlag(CpuParticles2D.ParticleFlags.AlignYToVelocity, true);
+
+		var fade = new Gradient();
+		fade.SetColor(0, new Color(1f, 0.8f, 0.45f, 0.9f));
+		fade.SetColor(1, new Color(1f, 0.5f, 0.15f, 0.6f));
+		_rain.ColorRamp = fade;
+
+		AddChild(_rain);
+	}
+
+	/// <summary>
+	/// Stops emitting and hands the rain to the parent so droplets already in
+	/// the air finish falling after this node frees itself.
+	/// </summary>
+	void StopRain()
+	{
+		if (_rain == null || !IsInstanceValid(_rain) || GetParent() is not { } parent) return;
+		_rain.Emitting = false;
+		_rain.Reparent(parent);
+		var rain = _rain;
+		GetTree().CreateTimer(rain.Lifetime).Timeout += () =>
+		{
+			if (IsInstanceValid(rain)) rain.QueueFree();
+		};
+		_rain = null;
+	}
 
 	void DamageParty()
 	{
@@ -105,6 +180,7 @@ public partial class WaxRainChannelNode : Node2D
 		if (_ended) return;
 		_ended = true;
 
+		StopRain();
 		OnChannelFinished?.Invoke();
 		GD.Print("[WaxRain] Channel ended.");
 		QueueFree();

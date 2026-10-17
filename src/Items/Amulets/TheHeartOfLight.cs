@@ -33,7 +33,6 @@ public class TheHeartOfLight : EquippableItem
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Amulet;
 		School = SpellSchool.Flame;
-		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(2));
 		SpellModifiers.Add(new DamageReductionModifier(DamageReductionAmount));
 	}
 

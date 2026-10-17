@@ -34,7 +34,6 @@ public partial class LifeflameSpell : SpellResource
 		Tags = SpellTags.Healing;
 		TargetingType = TargetingType.Ally;
 		RequiredSchoolPoints = 0;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/vital-surge.png");
 	}
 
 	public override List<Character> ResolveTargets(Character caster, Character explicitTarget)

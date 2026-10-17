@@ -21,7 +21,6 @@ public class RingOfMending : EquippableItem
 		Description = $"+{100 * _healingBonus:F0}% more light restored";
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Ring1;
-		Icon = GD.Load<Texture2D>(AssetConstants.RingIconPath(2));
 		CharacterModifiers.Add(new HealingModifier());
 	}
 

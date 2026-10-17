@@ -35,7 +35,6 @@ public partial class DrawTheHeatSpell : SpellResource
 		TargetingType = TargetingType.Enemy;
 		Tags = SpellTags.Damage | SpellTags.Healing | SpellTags.GroupSpell;
 		RequiredSchoolPoints = 1;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "sanguimancy/sanguine-drain.png");
 	}
 
 	/// <summary>

@@ -24,7 +24,6 @@ public partial class UmbralBoltSpell : SpellResource
 		School = SpellSchool.Umbra;
 		TargetingType = TargetingType.Enemy;
 		Tags = SpellTags.Damage;
-		Icon = GD.Load<Texture2D>(AssetConstants.SpellIconAssets + "void/shadow-bolt.png");
 	}
 
 	public override float GetBaseValue()
