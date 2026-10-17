@@ -64,7 +64,9 @@ public partial class LastLightPreview : Node
 			"map" => "res://levels/MapScreen.tscn",
 			_ => "res://levels/World.tscn"
 		};
-		if (scene == "fight") RunState.Instance.SetupDevTestFight(DungeonDefinition.All[dungeon], boss);
+		if (scene == "fight")
+			RunState.Instance.SetupDevTestFight(DungeonDefinition.All[dungeon], boss,
+				System.Enum.GetValues<Runes.RuneIndex>().Where(RunState.Instance.IsRuneActive).ToList());
 		else RunState.Instance.Reset();
 		// --runes=1,2,5 — activates these runes for the preview (e.g. 5 shows the Abyss on the map).
 		foreach (var arg in OS.GetCmdlineUserArgs())

@@ -443,7 +443,7 @@ public abstract partial class LoadoutController : Node2D
 		AddChild(_player);
 
 		{
-			SilhouetteRig.Attach(_player, RigLibrary.Healer(atRest: true));
+			SilhouetteRig.Attach(_player, RigLibrary.Healer(true));
 			// The painted props are seen by candlelight, like the spell icons.
 			foreach (var area in _interactibles)
 				if (area is InteractibleObject io)
@@ -538,7 +538,7 @@ public abstract partial class LoadoutController : Node2D
 		_spellTomeInteractible.SetTexture(
 			AssetConstants.GetSpellBookPathForAffinity(RunState.Instance.SchoolAffinity));
 		_spellTomeInteractible.Interacted += OnSpellTomeInteracted;
-		WireHints(_spellTomeInteractible, "Spellbook  •  Click to open  •  Set school affinity inside");
+		WireHints(_spellTomeInteractible, "Spellbook  •  Pick your loadout");
 
 		// ── Map ───────────────────────────────────────────────────────────────
 		var mapItem = AddInteractible(new InteractibleObject(
@@ -653,7 +653,8 @@ public abstract partial class LoadoutController : Node2D
 			header.AddThemeColorOverride("font_color", AssetConstants.SpellSchoolColor(school));
 			headerMarginContainer.AddChild(header);
 			headerMarginContainer.AddThemeConstantOverride("margin_right", 8);
-			headerMarginContainer.AddChild(BuildAffinityToggle(school, name));
+			if (PlayerProgressStore.IsAffinityUnlocked)
+				headerMarginContainer.AddChild(BuildAffinityToggle(school, name));
 
 			wrapper.AddChild(headerMarginContainer);
 			wrapper.AddChild(BuildSchoolDescription(school));
@@ -670,8 +671,9 @@ public abstract partial class LoadoutController : Node2D
 		vbox.AddChild(BuildLoadoutRow());
 
 		var hint = new Label();
-		hint.Text =
-			"Click a spell to equip or unequip it  •  Click Affinity to favour a school's talents  •  Click a loadout slot to clear it";
+		hint.Text = PlayerProgressStore.IsAffinityUnlocked
+			? "Click a spell to equip or unequip it  •  Click Affinity to favour a school's talents  •  Click a loadout slot to clear it"
+			: "Click a spell to equip or unequip it  •  Click a loadout slot to clear it";
 		hint.HorizontalAlignment = HorizontalAlignment.Center;
 		hint.AddThemeFontSizeOverride("font_size", 11);
 		hint.AddThemeColorOverride("font_color", HintColor);
@@ -1396,8 +1398,9 @@ public abstract partial class LoadoutController : Node2D
 		scroll.AddChild(_readOnlyTalentContent);
 
 		var hint = new Label();
-		hint.Text =
-			"Talents are earned by defeating bosses.  Hover an icon to read its effect.\nSet School Affinity above to bias offers (+50%) toward your preferred school.";
+		hint.Text = PlayerProgressStore.IsAffinityUnlocked
+			? "Talents are earned by defeating bosses.  Hover an icon to read its effect.\nSet School Affinity above to bias offers (+50%) toward your preferred school."
+			: "Talents are earned by defeating bosses.  Hover an icon to read its effect.";
 		hint.HorizontalAlignment = HorizontalAlignment.Center;
 		hint.AutowrapMode = TextServer.AutowrapMode.Word;
 		hint.AddThemeFontSizeOverride("font_size", 11);
@@ -1421,12 +1424,15 @@ public abstract partial class LoadoutController : Node2D
 		if (_readOnlyTalentContent == null) return;
 		foreach (var child in _readOnlyTalentContent.GetChildren()) child.QueueFree();
 
-		// ── School affinity picker ─────────────────────────────────────────────
-		BuildAffinityPicker(_readOnlyTalentContent);
+		// ── School affinity picker (unlocked by the first dungeon clear) ───────
+		if (PlayerProgressStore.IsAffinityUnlocked)
+		{
+			BuildAffinityPicker(_readOnlyTalentContent);
 
-		var affinitySep = new HSeparator();
-		affinitySep.AddThemeColorOverride("color", SepColor);
-		_readOnlyTalentContent.AddChild(affinitySep);
+			var affinitySep = new HSeparator();
+			affinitySep.AddThemeColorOverride("color", SepColor);
+			_readOnlyTalentContent.AddChild(affinitySep);
+		}
 
 		// ── Acquired talent icons ──────────────────────────────────────────────
 		var acquired = RunState.Instance.SelectedTalentDefs;

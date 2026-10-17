@@ -5,6 +5,7 @@ using System.Linq;
 using Godot;
 using healerfantasy;
 using healerfantasy.Items;
+using healerfantasy.Runes;
 using healerfantasy.SpellResources;
 using healerfantasy.SpellResources.Umbra;
 using healerfantasy.Talents;
@@ -73,6 +74,11 @@ public partial class DevBossPopup : CanvasLayer
 	readonly Dictionary<string, StyleBoxFlat> _spellCardBorders = new();
 	(StyleBoxFlat Border, TextureRect Icon)[]? _slotVisuals;
 	(StyleBoxFlat Border, TextureRect Icon)? _ultSlotVisual;
+
+	// ── dev rune state ────────────────────────────────────────────────────────
+	/// <summary>Runes active in the test fight; any rune can be toggled, acquired or not.</summary>
+	readonly HashSet<RuneIndex> _devRunes = new();
+	readonly Dictionary<RuneIndex, Button> _runeButtons = new();
 
 	// ── dev item state ────────────────────────────────────────────────────────
 	EquipmentPane? _equipmentPane;
@@ -215,6 +221,9 @@ public partial class DevBossPopup : CanvasLayer
 			{
 				// Sync dev loadout mirror from RunState when opening
 				Array.Copy(RunState.Instance.SelectedSpells, _devLoadout, Player.MaxSpellSlots);
+				_devRunes.Clear();
+				_devRunes.UnionWith(Enum.GetValues<RuneIndex>().Where(RunState.Instance.IsRuneActive));
+				RefreshDevRuneVisuals();
 				_input.Clear();
 				OnInputChanged("");
 				_input.GrabFocus();
@@ -359,7 +368,7 @@ public partial class DevBossPopup : CanvasLayer
 		if (_currentMatch == null) return;
 		CloseDevSubPanels();
 		var (dungeon, bossIndex) = _currentMatch.Value;
-		RunState.Instance.SetupDevTestFight(dungeon, bossIndex);
+		RunState.Instance.SetupDevTestFight(dungeon, bossIndex, _devRunes);
 		GetTree().ChangeSceneToFile("res://levels/World.tscn");
 	}
 
@@ -383,6 +392,32 @@ public partial class DevBossPopup : CanvasLayer
 		btnRow.AddChild(MakeDevButton("✨  Spells", OpenDevSpellPanel));
 		btnRow.AddChild(MakeDevButton("🗡  Items", OpenDevItemPanel));
 
+		// Rune toggles — one per rune, lit when active for the test fight.
+		var runeRow = new HBoxContainer();
+		runeRow.AddThemeConstantOverride("separation", 6);
+		parent.AddChild(runeRow);
+
+		var runeLabel = new Label();
+		runeLabel.Text = "Runes";
+		runeLabel.AddThemeFontSizeOverride("font_size", 12);
+		runeLabel.AddThemeColorOverride("font_color", new Color(0.55f, 0.52f, 0.48f));
+		runeRow.AddChild(runeLabel);
+
+		foreach (var rune in Enum.GetValues<RuneIndex>())
+		{
+			var r = rune;
+			var btn = MakeDevButton(((int)r).ToString(), () =>
+			{
+				if (!_devRunes.Remove(r)) _devRunes.Add(r);
+				RefreshDevRuneVisuals();
+			});
+			btn.CustomMinimumSize = new Vector2(40f, 0f);
+			btn.FocusMode = Control.FocusModeEnum.None;
+			btn.TooltipText = $"{RuneInfo.Name(r)}\n{RuneInfo.Description(r)}";
+			_runeButtons[r] = btn;
+			runeRow.AddChild(btn);
+		}
+
 		_loadoutStatusLabel = new Label();
 		_loadoutStatusLabel.Text = "";
 		_loadoutStatusLabel.HorizontalAlignment = HorizontalAlignment.Center;
@@ -401,6 +436,22 @@ public partial class DevBossPopup : CanvasLayer
 		var itemCount = ItemStore.Inventory.Count + ItemStore.Equipped.Count;
 		_loadoutStatusLabel.Text =
 			$"Spells: {spellCount}/6{ultSuffix}  •  Talents: {talentCount}  •  Items: {itemCount}";
+	}
+
+	void RefreshDevRuneVisuals()
+	{
+		foreach (var (rune, btn) in _runeButtons)
+		{
+			var active = _devRunes.Contains(rune);
+			var color = active ? RuneInfo.Color(rune) : HintColor;
+			btn.AddThemeColorOverride("font_color", color);
+			btn.AddThemeColorOverride("font_hover_color", active ? color.Lightened(0.3f) : TitleColor);
+			var style = MakeButtonStyle(active ? new Color(0.14f, 0.12f, 0.18f) : new Color(0.08f, 0.08f, 0.09f),
+				active ? color : new Color(0.22f, 0.22f, 0.24f));
+			btn.AddThemeStyleboxOverride("normal", style);
+			btn.AddThemeStyleboxOverride("pressed", style);
+			btn.AddThemeStyleboxOverride("focus", style);
+		}
 	}
 
 	void CloseDevSubPanels()

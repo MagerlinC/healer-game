@@ -43,7 +43,7 @@ public static class SpellRegistry
 		new TouchOfAffliction(),
 		new RotSpell(),
 		new SoulShatterSpell(),
-		new SwallowingDarkSpell(),
+		new ConsumingDarkSpell(),
 		new EmbraceTheDarkSpell()
 	];
 

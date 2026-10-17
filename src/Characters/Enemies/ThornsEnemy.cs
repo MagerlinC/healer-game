@@ -50,7 +50,8 @@ public partial class ThornsEnemy : EnemyCharacter
 
 	public ThornsEnemy(Character target, string instanceName)
 	{
-		MaxHealth = (RunState.Instance.CurrentDungeonIndex + 1) * GameConstants.RuneNightfallThornsMaxHealthPerDungeonTier;
+		// By tier rather than run progress, so dev test fights get the same thorns as a real run.
+		MaxHealth = RunState.Instance.CurrentDungeon.Tier * GameConstants.RuneNightfallThornsMaxHealthPerDungeonTier;
 		IsFriendly = false;
 		CharacterName = instanceName;
 		DisplayName = $"Thorns ({target.CharacterName})";

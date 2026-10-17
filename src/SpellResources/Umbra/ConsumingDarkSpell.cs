@@ -5,14 +5,14 @@ using healerfantasy.SpellSystem;
 
 namespace healerfantasy.SpellResources.Umbra;
 
-public partial class SwallowingDarkSpell : SpellResource
+public partial class ConsumingDarkSpell : SpellResource
 {
 
-	public static readonly string SpellName = "Swallowing Dark";
+	public static readonly string SpellName = "Consuming Dark";
 	[Export] public float AddedDamagePerConsumedHoT = 25f;
 	[Export] public float BaseDamage = 10f;
 
-	public SwallowingDarkSpell()
+	public ConsumingDarkSpell()
 	{
 		Name = SpellName;
 		Description =

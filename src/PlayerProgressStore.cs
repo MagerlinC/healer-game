@@ -47,6 +47,17 @@ public static class PlayerProgressStore
 		/// <summary>True once the player has read the Runes board entry.</summary>
 		public bool HasSeenRuneEntry { get; set; } = false;
 
+		/// <summary>True once the player has read the School Affinity board entry.</summary>
+		public bool HasSeenAffinityEntry { get; set; } = false;
+
+		// ── Feature unlocks ───────────────────────────────────────────────────────
+
+		/// <summary>
+		/// Set the first time the player clears any dungeon — unlocks School Affinity
+		/// and reveals its board entry.
+		/// </summary>
+		public bool HasUnlockedAffinity { get; set; } = false;
+
 		// ── Spell school unlocks ──────────────────────────────────────────────────
 
 		/// <summary>
@@ -141,6 +152,14 @@ public static class PlayerProgressStore
 		_ => true
 	};
 
+	/// <summary>
+	/// Whether School Affinity is available.  Unlocks on the first dungeon clear.
+	/// Saves from before the flag existed fall back to the Tallow Queen / Blood Prince
+	/// kills, which both end a dungeon.
+	/// </summary>
+	public static bool IsAffinityUnlocked =>
+		_data.HasUnlockedAffinity || HasDefeatedTallowQueen || HasDefeatedCastleOfBlood;
+
 	/// <summary>How to unlock a locked school, for tooltips.</summary>
 	public static string SchoolUnlockHint(SpellSchool school) => school switch
 	{
@@ -173,6 +192,9 @@ public static class PlayerProgressStore
 	/// <summary>True once the player has read the Runes news entry.</summary>
 	public static bool HasSeenRuneEntry => _data.HasSeenRuneEntry;
 
+	/// <summary>True once the player has read the School Affinity news entry.</summary>
+	public static bool HasSeenAffinityEntry => _data.HasSeenAffinityEntry;
+
 	// ── In-combat tutorial overlay properties ─────────────────────────────────
 
 	/// <summary>True once the Deflect in-combat tutorial overlay has been dismissed.</summary>
@@ -196,7 +218,8 @@ public static class PlayerProgressStore
 	/// </summary>
 	public static bool HasUnreadBoardEntries =>
 		(HasUnlockedUltimateEntry && !HasSeenUltimateEntry) ||
-		(HasUnlockedRuneEntry     && !HasSeenRuneEntry);
+		(HasUnlockedRuneEntry     && !HasSeenRuneEntry) ||
+		(IsAffinityUnlocked       && !HasSeenAffinityEntry);
 
 	// ── public API ────────────────────────────────────────────────────────────
 
@@ -279,6 +302,26 @@ public static class PlayerProgressStore
 	{
 		if (_data.HasSeenRuneEntry) return;
 		_data.HasSeenRuneEntry = true;
+		SaveToDisk();
+	}
+
+	/// <summary>
+	/// Unlocks School Affinity (and its news board entry).  Called each time a dungeon is cleared.
+	/// Returns true only the first time, so the victory screen can announce it.
+	/// </summary>
+	public static bool UnlockAffinity()
+	{
+		if (IsAffinityUnlocked) return false;
+		_data.HasUnlockedAffinity = true;
+		SaveToDisk();
+		return true;
+	}
+
+	/// <summary>Marks the School Affinity news entry as read. Idempotent.</summary>
+	public static void MarkAffinityEntrySeen()
+	{
+		if (_data.HasSeenAffinityEntry) return;
+		_data.HasSeenAffinityEntry = true;
 		SaveToDisk();
 	}
 

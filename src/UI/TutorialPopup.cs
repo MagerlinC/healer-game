@@ -78,7 +78,7 @@ public partial class TutorialPopup : CanvasLayer
 
 		// ── Title ─────────────────────────────────────────────────────────────────
 		var titleLabel = new Label();
-		titleLabel.Text = "Welcome to Keep Us Alive!";
+		titleLabel.Text = "Welcome to Keep the Light!";
 		titleLabel.HorizontalAlignment = HorizontalAlignment.Center;
 		titleLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		titleLabel.AddThemeFontSizeOverride("font_size", 26);

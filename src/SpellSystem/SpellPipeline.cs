@@ -228,11 +228,12 @@ public static class SpellPipeline
 		{
 			ctx.FinalValue *= 1.0f + totalIncreasedDamage;
 
-			// Party members gain +20% damage per completed dungeon.
-			// e.g. dungeon 0 = 1×, dungeon 1 = 1.2×, dungeon 2 = 1.4×, etc.
+			// Party members gain +20% damage per dungeon tier past the first.
+			// e.g. tier 1 = 1×, tier 2 = 1.2×, tier 3 = 1.4×, etc.
+			// By tier rather than run progress, so dev test fights match a real run.
 			if (caster is PartyMember)
 			{
-				var dungeonScalar = 1.0f + 0.2f * RunState.Instance.CurrentDungeonIndex;
+				var dungeonScalar = 1.0f + 0.2f * (RunState.Instance.CurrentDungeon.Tier - 1);
 				ctx.FinalValue *= dungeonScalar;
 			}
 		}

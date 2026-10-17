@@ -52,9 +52,8 @@ public static class TutorialContent
 			"✦  Talents",
 			"Talents are passive upgrades that enhance your spells and playstyle. " +
 			"Talents are offered as rewards for killing bosses, and selecting talents within a school " +
-			"unlocks both new spells and further talents within that school.\n" +
-			"Use the Talent Board to pick a school affinity to influence talents offered during a run.\n\n" +
-			"➜  Click the Talent Board to change your school affinity or review earned talents!"));
+			"unlocks both new spells and further talents within that school.\n\n" +
+			"➜  Click the Talent Board to review earned talents!"));
 
 		vbox.AddChild(MakeSection(
 			"🎒  Items",

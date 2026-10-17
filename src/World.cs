@@ -120,7 +120,7 @@ public partial class World : Node2D
 		AddChild(tutorialManager);
 
 		// ── Rune of Nightfall — thorns manager ────────────────────────────────────
-		if (RunState.Instance.IsRuneActive(RuneIndex.Nightfall) && !RunState.Instance.IsDevTestFight)
+		if (RunState.Instance.IsRuneActive(RuneIndex.Nightfall))
 		{
 			var thornsManager = new ThornsManager();
 			AddChild(thornsManager);

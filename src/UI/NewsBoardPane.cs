@@ -88,10 +88,26 @@ public partial class NewsBoardPane : VBoxContainer
 
 		// Tutorial — always visible
 		list.AddChild(BuildTopicRow(
-			"📖  Welcome to Keep Us Alive",
+			"📖  Welcome to Keep the Light",
 			"Tutorial: your guide to dungeon delving",
 			false,
 			() => ShowDetail(BuildTutorialDetail())));
+
+		// School Affinity — unlocked after clearing any dungeon
+		if (PlayerProgressStore.IsAffinityUnlocked)
+		{
+			var isNew = !PlayerProgressStore.HasSeenAffinityEntry;
+			list.AddChild(BuildTopicRow(
+				"❖  School Affinity",
+				"Favour a school of magic to see more of its talents.",
+				isNew,
+				() =>
+				{
+					PlayerProgressStore.MarkAffinityEntrySeen();
+					RefreshExclamation();
+					ShowDetail(BuildAffinityDetail());
+				}));
+		}
 
 		// Ultimate Abilities — unlocked after 3 school talents in a run
 		if (PlayerProgressStore.HasUnlockedUltimateEntry)
@@ -244,6 +260,24 @@ public partial class NewsBoardPane : VBoxContainer
 	static Control BuildTutorialDetail()
 	{
 		return TutorialContent.Build();
+	}
+
+	static Control BuildAffinityDetail()
+	{
+		var scroll = new ScrollContainer();
+		scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
+
+		var vbox = new VBoxContainer();
+		vbox.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		vbox.AddThemeConstantOverride("separation", 20);
+		scroll.AddChild(vbox);
+
+		vbox.AddChild(TutorialContent.MakeSection("❖  School Affinity",
+			"Having cleared your first dungeon, you can now choose a School Affinity to steer which talents you are offered.\n" +
+			"Set it by clicking Affinity on a school in your Spellbook, or from the School Affinity picker on the Talent Board." +
+			"Talents from your chosen school are more likely to appear after each boss. Click the selected school again to clear it."));
+
+		return scroll;
 	}
 
 	static Control BuildUltimateDetail()

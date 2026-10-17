@@ -139,6 +139,11 @@ public partial class VictoryScreen : CanvasLayer
 				                   && RunState.Instance.CurrentBossName == GameConstants.CastleBoss3Name
 				                   && PlayerProgressStore.UnlockPyreSchool();
 
+				// The first dungeon clear of any kind unlocks School Affinity.
+				var affinityUnlocked = !RunState.Instance.IsDevTestFight
+				                       && RunState.Instance.IsLastBossInDungeon
+				                       && PlayerProgressStore.UnlockAffinity();
+
 				if (RunState.Instance.IsDevTestFight)
 					ShowDevTestComplete(character.CharacterName, droppedItem, droppedGold);
 				else if (!RunState.Instance.IsLastBossInDungeon)
@@ -152,6 +157,8 @@ public partial class VictoryScreen : CanvasLayer
 					_subLabel.Text += "\nThe Wick school of spells is now open to you.";
 				if (pyreUnlocked)
 					_subLabel.Text += "\nThe Pyre school of spells is now open to you.";
+				if (affinityUnlocked)
+					_subLabel.Text += "\nSchool Affinity unlocked — read about it on the News Board.";
 			}));
 
 		BuildLayout();

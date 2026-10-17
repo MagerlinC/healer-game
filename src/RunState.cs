@@ -298,14 +298,19 @@ public partial class RunState : Node
 	/// Preserves the player's current spell loadout and equipped items, but
 	/// replaces run progression so that <see cref="World"/> loads exactly
 	/// the chosen boss.
+	/// <paramref name="runes"/> replaces the active runes for the fight, bypassing
+	/// <see cref="RuneSelectionLocked"/> and the acquired-rune check; <see cref="Reset"/>
+	/// restores the saved selection afterwards.
 	/// </summary>
-	public void SetupDevTestFight(DungeonDefinition dungeon, int bossIndex)
+	public void SetupDevTestFight(DungeonDefinition dungeon, int bossIndex, IEnumerable<RuneIndex> runes)
 	{
 		CompletedDungeons = 0;
 		CompletedCamps = 0;
 		CurrentBossIndexInDungeon = bossIndex;
 		_devDungeons = new List<DungeonDefinition> { dungeon };
 		IsDevTestFight = true;
+		_activeRunes.Clear();
+		foreach (var r in runes) _activeRunes.Add(r);
 	}
 
 	// ── State transitions ─────────────────────────────────────────────────────
@@ -407,11 +412,11 @@ public partial class RunState : Node
 
 	void InitDefaultSpells()
 	{
-		// Only schools open from the start — Wick unlocks after the Tallow Queen.
+		// Only spells usable on a fresh save: open schools, no talent requirement.
 		SelectedSpells =
 		[
-			new CandleTouchSpell(), new WildfireSpell(), new SpreadingEmbersSpell(),
-			new RekindleSpell(), new SmoulderSpell(), new RotSpell()
+			new CandleTouchSpell(), new SmoulderSpell(), new FlareSpell(),
+			new CinderSpell(), new UmbralBoltSpell(), null
 		];
 	}
 
@@ -425,6 +430,10 @@ public partial class RunState : Node
 	void InitSchoolAffinityFromPreferences()
 	{
 		var saved = LoadoutPreferences.SavedSchoolAffinity;
-		SchoolAffinity = saved is { } school && PlayerProgressStore.IsSchoolUnlocked(school) ? saved : null;
+		SchoolAffinity = saved is { } school
+		                 && PlayerProgressStore.IsAffinityUnlocked
+		                 && PlayerProgressStore.IsSchoolUnlocked(school)
+			? saved
+			: null;
 	}
 }
