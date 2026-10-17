@@ -102,14 +102,14 @@ public class DungeonDefinition
 		},
 		new()
 		{
-			Name = "The Frozen Peak",
-			Description = "The last summit at the edge of the world, where the cold is old enough to have a will of its own. A queen rules the wastes from a throne of ice, and she has not seen a living flame in a very long time.",
-			Tier = GameConstants.FrozenPeakTier,
+			Name = "The Guttering Spire",
+			Description = "The last candle at the edge of the world, burned down into a spire of its own wax. A queen sits on a throne of drippings and hoards what is left of the light, and she means to snuff out yours.",
+			Tier = GameConstants.GutteringSpireTier,
 			MapPosition = new Vector2(960f, 120f), // centre-top of the world map — the final destination
-			BossScenePaths = GameConstants.FrozenPeakBossScenePaths,
+			BossScenePaths = GameConstants.GutteringSpireBossScenePaths,
 			BossNames = new[]
 			{
-				GameConstants.FrozenPeakBossName // "Queen of the Frozen Wastes"
+				GameConstants.GutteringSpireBossName // "The Tallow Queen"
 			}
 		},
 		new()

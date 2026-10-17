@@ -33,7 +33,7 @@ using healerfantasy.UI;
 ///      Shows 4 talent offer cards; Continue is disabled until two are selected.
 ///      Continue button: mark dungeon as completed and load Camp.tscn.
 ///
-///   3. Final boss of the final dungeon (The Frozen Peak, dungeon 3) → "VICTORY!"
+///   3. Final boss of the final dungeon (The Guttering Spire, dungeon 3) → "VICTORY!"
 ///      No talent offer. Play Again / Main Menu buttons: finalize the run.
 ///
 ///   4. Dev test fight → "TEST COMPLETE"
@@ -127,6 +127,18 @@ public partial class VictoryScreen : CanvasLayer
 				var droppedGold = ItemRegistry.RollGoldDrop();
 				RunState.Instance.AddGold(droppedGold);
 
+				// The first Tallow Queen kill unlocks the Wick school. Checked by dungeon,
+				// not boss name: the fight can end on the Tallow Hulk instead of the Queen.
+				var wickUnlocked = !RunState.Instance.IsDevTestFight
+				                   && RunState.Instance.CurrentDungeon.Tier == GameConstants.GutteringSpireTier
+				                   && PlayerProgressStore.UnlockWickSchool();
+
+				// Likewise the first Blood Prince kill unlocks Pyre. By the fight's boss name,
+				// since the Castle of Blood shares its tier with the Forsaken Citadel.
+				var pyreUnlocked = !RunState.Instance.IsDevTestFight
+				                   && RunState.Instance.CurrentBossName == GameConstants.CastleBoss3Name
+				                   && PlayerProgressStore.UnlockPyreSchool();
+
 				if (RunState.Instance.IsDevTestFight)
 					ShowDevTestComplete(character.CharacterName, droppedItem, droppedGold);
 				else if (!RunState.Instance.IsLastBossInDungeon)
@@ -135,6 +147,11 @@ public partial class VictoryScreen : CanvasLayer
 					ShowDungeonCleared(character.CharacterName, droppedItem, droppedGold);
 				else
 					ShowVictoryScreen(droppedItem, droppedGold);
+
+				if (wickUnlocked)
+					_subLabel.Text += "\nThe Wick school of spells is now open to you.";
+				if (pyreUnlocked)
+					_subLabel.Text += "\nThe Pyre school of spells is now open to you.";
 			}));
 
 		BuildLayout();
@@ -194,7 +211,7 @@ public partial class VictoryScreen : CanvasLayer
 		_audioPlayer.Play();
 
 		// ── Rune progression ──────────────────────────────────────────────────
-		// The Queen of the Frozen Wastes drops the next rune if the player ran
+		// The Tallow Queen drops the next rune if the player ran
 		// with ALL previously acquired runes active (i.e. active count ==
 		// acquired count) and there are still runes left to unlock.
 		var acquired = RuneStore.AcquiredRuneCount;
@@ -216,7 +233,7 @@ public partial class VictoryScreen : CanvasLayer
 		_titleLabel.Text = "VICTORY!";
 		_subLabel.Text = RunState.Instance.CurrentBossName == GameConstants.AbyssBossName
 			? "The Infinite Abyss is unmade.\nFor the first time in an age, dawn breaks over the realm."
-			: "The Queen of the Frozen Wastes has fallen.\nAll dungeons conquered — the realm is saved!";
+			: "The Tallow Queen has guttered out.\nAll dungeons conquered — the realm is saved!";
 		_offerSectionWrapper.Visible = false; // no talent offer on final victory
 		_activeBtn = null;
 		PopulateItemsCard(droppedItem, droppedGold, runeDropped, runeDropName, runeIndex);

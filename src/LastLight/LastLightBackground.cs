@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 
 namespace healerfantasy.LastLight;
@@ -28,8 +29,8 @@ public partial class LastLightBackground : Control
 		/// <summary>A starry sky, floating rock islands, a broken orrery ring and obelisks.</summary>
 		SanctumOfStars,
 
-		/// <summary>Jagged peaks, falling snow, a pale floor and the frost ring of the arena.</summary>
-		FrozenPeak,
+		/// <summary>The top of a great candle: a round wax platform ringed by candle stubs, darkness all around, far candles below.</summary>
+		GutteringSpire,
 
 		/// <summary>Nothing on the horizon at all; a broken floor whose fragments drift up into the black.</summary>
 		Abyss,
@@ -45,6 +46,16 @@ public partial class LastLightBackground : Control
 	/// The camp's fire and props are laid out to sit inside it.
 	/// </summary>
 	public static readonly Vector4 CampClearing = new(0.5f, 0.69f, 0.66f, 0.25f);
+
+	/// <summary>
+	/// The Guttering Spire's platform ellipse: centre X and radius X as fractions of the
+	/// screen width, centre Y and radius Y as fractions of its height (x, y, rx, ry).
+	/// Matches the arena's physics boundary; rigs tucked behind the platform mask against it.
+	/// </summary>
+	public static readonly Vector4 GutteringPlatform = new(0.5f, 0.64f, 0.36f, 0.3f);
+
+	/// <summary>How far the candle's side drops below the platform's front edge, in screen heights.</summary>
+	public const float GutteringWallDrop = 0.12f;
 
 	/// <summary>Everything that gives a backdrop its mood, besides its silhouettes.</summary>
 	sealed record Palette(
@@ -78,11 +89,11 @@ public partial class LastLightBackground : Control
 			new(0.14f, 0.12f, 0.24f),
 			new(0.09f, 0.08f, 0.14f, 0.92f), new(0.05f, 0.045f, 0.08f), new(0.015f, 0.014f, 0.025f),
 			new(0.6f, 0.66f, 1f), 0.7f, 0.01f, 0.8f, 0.4f, Stars: 0.006f),
-		Preset.FrozenPeak => new Palette(0.2f,
-			new(0.12f, 0.14f, 0.18f), new(0.42f, 0.46f, 0.52f), new(0.42f, 0.45f, 0.5f), new(0.2f, 0.22f, 0.26f),
-			new(0.5f, 0.55f, 0.6f),
-			new(0.26f, 0.3f, 0.36f, 0.92f), new(0.13f, 0.15f, 0.19f), new(0.04f, 0.045f, 0.06f),
-			new(0.92f, 0.96f, 1f), -2.4f, 0.03f, 1.3f, 0.45f),
+		Preset.GutteringSpire => new Palette(0.2f,
+			new(0.07f, 0.05f, 0.035f), new(0.36f, 0.26f, 0.15f), new(0.4f, 0.31f, 0.2f), new(0.17f, 0.12f, 0.075f),
+			new(0.44f, 0.33f, 0.2f),
+			new(0.24f, 0.18f, 0.11f, 0.92f), new(0.12f, 0.085f, 0.055f), new(0.04f, 0.028f, 0.018f),
+			new(1f, 0.78f, 0.45f), -1.4f, 0.02f, 1.2f, 0.4f),
 		Preset.Abyss => new Palette(0.26f,
 			new(0.008f, 0.006f, 0.012f), new(0.05f, 0.035f, 0.07f), new(0.07f, 0.055f, 0.09f), new(0.025f, 0.02f, 0.035f),
 			new(0.1f, 0.07f, 0.15f),
@@ -212,8 +223,8 @@ public partial class LastLightBackground : Control
 			case Preset.SanctumOfStars:
 				DrawSanctum(Shape, Line, w, h, far, mid, near);
 				return;
-			case Preset.FrozenPeak:
-				DrawFrozen(Shape, Line, w, h, far, mid, near);
+			case Preset.GutteringSpire:
+				DrawGuttering(Shape, Line, w, h, far, mid, near);
 				return;
 			case Preset.Abyss:
 				DrawAbyss(Shape, w, h, far, mid, near);
@@ -532,35 +543,107 @@ public partial class LastLightBackground : Control
 		shape(near, w, 1, w, 0.32f, w - 0.06f, 0.4f, w - 0.1f, 0.7f, w - 0.07f, 1);
 	}
 
-	static void DrawFrozen(ShapeFn shape, LineFn line, float w, float h, Color far, Color mid, Color near)
+	static void DrawGuttering(ShapeFn shape, LineFn line, float w, float h, Color far, Color mid, Color near)
 	{
-		// jagged peaks along the horizon, one great peak behind the arena
-		shape(far, 0, h, 0, h - 0.08f, w * 0.08f, h - 0.15f, w * 0.14f, h - 0.07f, w * 0.22f, h - 0.13f, w * 0.3f, h - 0.05f,
-			w * 0.42f, h - 0.16f, w * 0.5f, h - 0.3f, w * 0.58f, h - 0.17f, w * 0.68f, h - 0.1f, w * 0.76f, h - 0.17f,
-			w * 0.86f, h - 0.06f, w * 0.94f, h - 0.12f, w, h - 0.07f, w, h);
-		shape(new Color(0.75f, 0.82f, 0.9f, 0.55f), w * 0.475f, h - 0.25f, w * 0.5f, h - 0.3f, w * 0.525f, h - 0.25f, w * 0.51f, h - 0.26f, w * 0.495f, h - 0.24f);
+		// The fight is on top of the great candle: a round platform of soft wax with
+		// nothing around it but darkness, other candles burning far below.
+		var cx = w * GutteringPlatform.X;
+		var cy = GutteringPlatform.Y;
+		var rx = w * GutteringPlatform.Z;
+		var ry = GutteringPlatform.W;
+		var voidColor = new Color(0.014f, 0.01f, 0.007f);
+		const int n = 48;
 
-		// the arena: a frozen lake inside a frost ring (matches the physics boundary)
-		var cx = w * 0.5f;
-		var cy = 0.64f;
-		var rx = w * 0.36f;
-		const float ry = 0.3f;
-		shape(new Color(0.55f, 0.66f, 0.78f, 0.12f), Flatten(Ellipse(cx, cy, rx, ry)));
-		line(new Color(0.85f, 0.93f, 1f, 0.45f), 4f, Ellipse(cx, cy, rx, ry));
-		line(new Color(0.85f, 0.93f, 1f, 0.15f), 10f, Ellipse(cx, cy, rx + 0.005f, ry + 0.004f));
-		// ice shards jutting outward from the ring
+		// the candle's side, falling away below the front of the platform
+		const float wallDrop = GutteringWallDrop;
+		var wall = new List<float>();
+		for (var i = 0; i <= n; i++)
+		{
+			var a = Mathf.Pi * i / n; // front half, right → left
+			wall.Add(cx + Mathf.Cos(a) * rx);
+			wall.Add(cy + Mathf.Sin(a) * ry);
+		}
+		for (var i = n; i >= 0; i--)
+		{
+			var a = Mathf.Pi * i / n;
+			wall.Add(cx + Mathf.Cos(a) * rx);
+			wall.Add(cy + Mathf.Sin(a) * ry + wallDrop);
+		}
+
+		// darkness everywhere off the platform: above its far edge, and either side of and below the wall
+		var top = new List<float> { 0, 0, w, 0, w, cy };
+		for (var i = 0; i <= n; i++)
+		{
+			var a = -Mathf.Pi * i / n; // far half, right → left
+			top.Add(cx + Mathf.Cos(a) * rx);
+			top.Add(cy + Mathf.Sin(a) * ry);
+		}
+		top.Add(0);
+		top.Add(cy);
+		var bottom = new List<float> { 0, cy, cx - rx, cy };
+		for (var i = n; i >= 0; i--)
+		{
+			var a = Mathf.Pi * i / n; // the wall's lower edge, left → right
+			bottom.Add(cx + Mathf.Cos(a) * rx);
+			bottom.Add(cy + Mathf.Sin(a) * ry + wallDrop);
+		}
+		bottom.AddRange(new[] { cx + rx, cy, w, cy, w, 1.2f, 0, 1.2f });
+		shape(voidColor, top.ToArray());
+		shape(voidColor, bottom.ToArray());
+
+		// a faint warm haze rising off the candle into the dark, so a giant standing
+		// beside it still shows as a silhouette
+		for (var i = 0; i < 5; i++)
+		{
+			var hx = rx * (1.25f + 0.3f * i);
+			var hy = 0.16f + 0.06f * i;
+			shape(new Color(0.16f, 0.11f, 0.065f, 0.16f), Flatten(Ellipse(cx, cy - ry * 0.45f, hx, hy)));
+		}
+
+		// distant candles far below, barely more than their flames
+		var rng = new RandomNumberGenerator { Seed = 1717 };
+		for (var i = 0; i < 14; i++)
+		{
+			var x = rng.RandfRange(0.02f, w - 0.02f);
+			var y = rng.RandfRange(h + 0.02f, 0.3f);
+			if (Mathf.Abs(x - cx) < rx * 0.9f && y > 0.27f) continue; // keep clear of the platform's far edge
+			var size = rng.RandfRange(0.4f, 1f);
+			var stub = 0.04f * size;
+			var half = 0.005f * size;
+			shape(new Color(0.12f, 0.085f, 0.05f, 0.7f), x - half, y + stub, x - half, y, x + half, y, x + half, y + stub);
+			shape(new Color(1f, 0.66f, 0.26f, 0.45f + 0.3f * size),
+				x - half * 0.8f, y, x, y - 0.018f * size, x + half * 0.8f, y);
+		}
+
+		shape(new Color(0.11f, 0.08f, 0.05f), wall.ToArray());
+		// wax that ran over the platform's edge and hardened down the side
+		for (var i = 0; i < 16; i++)
+		{
+			var a = Mathf.Pi * (i + 0.5f) / 16f;
+			var x = cx + Mathf.Cos(a) * rx;
+			var y = cy + Mathf.Sin(a) * ry;
+			var len = wallDrop * (0.35f + 0.5f * ((i * 7) % 5) / 4f);
+			const float dw = 0.006f;
+			shape(new Color(0.2f, 0.15f, 0.09f), x - dw, y, x - dw * 0.7f, y + len, x, y + len + 0.008f, x + dw * 0.7f, y + len, x + dw, y);
+		}
+
+		// the platform: a pool of soft wax inside a ring of drippings (matches the physics boundary)
+		shape(new Color(0.78f, 0.6f, 0.36f, 0.12f), Flatten(Ellipse(cx, cy, rx, ry)));
+		line(new Color(1f, 0.82f, 0.52f, 0.45f), 4f, Ellipse(cx, cy, rx, ry));
+		line(new Color(1f, 0.82f, 0.52f, 0.15f), 10f, Ellipse(cx, cy, rx + 0.005f, ry + 0.004f));
+		// candle stubs standing around the rim, every third one still lit
 		for (var i = 0; i < 18; i++)
 		{
 			var a = Mathf.Tau * i / 18f + 0.12f;
 			var dir = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
-			var basePt = new Vector2(cx + dir.X * rx, cy + dir.Y * ry);
-			var len = 0.035f + (i % 3) * 0.015f;
-			var tip = basePt + dir * len;
-			var side = new Vector2(-dir.Y, dir.X) * 0.008f;
-			shape(new Color(0.7f, 0.8f, 0.9f, 0.5f), (basePt - side).X, (basePt - side).Y, tip.X, tip.Y, (basePt + side).X, (basePt + side).Y);
+			var basePt = new Vector2(cx + dir.X * (rx - 0.006f), cy + dir.Y * (ry - 0.005f));
+			var tall = 0.03f + (i % 3) * 0.014f;
+			const float half = 0.006f;
+			shape(new Color(0.72f, 0.58f, 0.4f, 0.5f), basePt.X - half, basePt.Y, basePt.X - half, basePt.Y - tall,
+				basePt.X + half, basePt.Y - tall + 0.004f, basePt.X + half, basePt.Y);
+			if (i % 3 != 0) continue;
+			var flameTop = basePt.Y - tall;
+			shape(new Color(1f, 0.7f, 0.3f, 0.65f), basePt.X - 0.004f, flameTop - 0.002f, basePt.X, flameTop - 0.024f, basePt.X + 0.004f, flameTop - 0.002f);
 		}
-		// snow-heavy rocks framing the arena
-		shape(near, 0, 1, 0, 0.35f, 0.06f, 0.3f, 0.12f, 0.55f, 0.1f, 0.8f, 0.16f, 1);
-		shape(near, w, 1, w, 0.4f, w - 0.07f, 0.36f, w - 0.11f, 0.6f, w - 0.14f, 1);
 	}
 }

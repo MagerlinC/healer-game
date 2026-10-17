@@ -56,9 +56,9 @@ public static class LastLightStyle
 		[typeof(AstralTwin)] = c => RigLibrary.AstralTwin(dusk: c.Name.ToString().Contains("Dusk")),
 		[typeof(ThatWhichSwallowedTheStars)] = _ => RigLibrary.ThatWhichSwallowedTheStars(),
 
-		// The Frozen Peak
-		[typeof(QueenOfTheFrozenWastes)] = _ => RigLibrary.QueenOfTheFrozenWastes(),
-		[typeof(TheFrozenTerror)] = _ => RigLibrary.TheFrozenTerror(),
+		// The Guttering Spire
+		[typeof(TheTallowQueen)] = _ => RigLibrary.TheTallowQueen(),
+		[typeof(TheTallowHulk)] = _ => RigLibrary.TheTallowHulk(),
 
 		// Rune of Ember
 		[typeof(ThornsEnemy)] = _ => RigLibrary.Thorns(),
@@ -73,7 +73,7 @@ public static class LastLightStyle
 		["The Forsaken Citadel"] = LastLightBackground.Preset.ForsakenCitadel,
 		["Castle of Blood"] = LastLightBackground.Preset.CastleOfBlood,
 		["The Sanctum of Stars"] = LastLightBackground.Preset.SanctumOfStars,
-		["The Frozen Peak"] = LastLightBackground.Preset.FrozenPeak,
+		["The Guttering Spire"] = LastLightBackground.Preset.GutteringSpire,
 		[GameConstants.AbyssDungeonName] = LastLightBackground.Preset.Abyss
 	};
 

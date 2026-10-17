@@ -136,6 +136,12 @@ public partial class GameUI : CanvasLayer
 		castBar.OffsetLeft = -140f;
 		castBar.OffsetRight = 140f;
 		castBar.OffsetTop = castBar.OffsetBottom = CastBarBottomOffset;
+		// Draw above the party frames, whose effect badges stack upward into
+		// this bar when a member has many effects.  ZIndex only changes draw
+		// order; input picking still follows tree order, so the frames and
+		// badges (added later) keep mouse priority — and the bar ignores the
+		// mouse anyway.
+		castBar.ZIndex = 1;
 		anchor.AddChild(castBar);
 
 		// ── Mana bar ──────────────────────────────────────────────────────────

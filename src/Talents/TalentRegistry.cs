@@ -341,6 +341,26 @@ public static class TalentRegistry
 			TalentRow = 2,
 			Configure = (t, icon) =>
 				t.SpellModifiers.Add(new PyreWardTalent { EffectIcon = icon })
+		},
+		new()
+		{
+			Name = "Desperate Blaze",
+			Description = "Pyre spells are up to 40% more effective the less light you have.",
+			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_20.png",
+			School = SpellSchool.Pyre,
+			TalentRow = 3,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new DesperateBlazeTalent())
+		},
+		new()
+		{
+			Name = "Phoenix Heart",
+			Description = "Casting a Pyre spell that leaves you below 40% light restores the light it burned.",
+			IconPath = AssetConstants.TalentIconAssets + "monk/Monk_26.png",
+			School = SpellSchool.Pyre,
+			TalentRow = 3,
+			Configure = (t, _) =>
+				t.SpellModifiers.Add(new PhoenixHeartTalent())
 		}
 	];
 
@@ -383,8 +403,8 @@ public static class TalentRegistry
 		var eligible = AllTalents.Where(t =>
 		{
 			if (acquiredNames.Contains(t.Name)) return false;
-			// Pyre requires the Castle of Blood to have been defeated in a previous run.
-			if (t.School == SpellSchool.Pyre && !PlayerProgressStore.HasDefeatedCastleOfBlood)
+			// Pyre requires the Castle of Blood, Wick the Tallow Queen, to have been defeated in a previous run.
+			if (!PlayerProgressStore.IsSchoolUnlocked(t.School))
 				return false;
 			if (t.TalentRow == 0) return true;
 			// Requires at least one talent from the previous row in the same school.

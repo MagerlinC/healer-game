@@ -101,7 +101,7 @@ public partial class DeflectOverlay : Node
 
 		// Subscribe to the central parry-window events rather than individual boss
 		// signals. ParryWindowManager.OpenWindow() is only called for genuinely
-		// parryable casts, so non-parryable spells (e.g. Volatile Icicle) never
+		// parryable casts, so non-parryable spells (e.g. Molten Drop) never
 		// trigger the overlay. This also removes the CrystalKnight-specific coupling.
 		// Named methods (not lambdas) are used so _ExitTree can unsubscribe and
 		// prevent callbacks firing on a disposed node after scene reload.

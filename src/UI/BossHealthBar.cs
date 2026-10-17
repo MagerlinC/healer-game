@@ -353,7 +353,7 @@ public partial class BossHealthBar : CharacterFrame
 		_healthTargetMarker.Visible = false;
 		overlay.AddChild(_healthTargetMarker);
 
-		// ── shield overlay (Ice Block / absorb shields) ───────────────────────
+		// ── shield overlay (Wax Shell / absorb shields) ───────────────────────
 		// Icy blue bar that sits to the right of the health fill, representing
 		// the boss's current absorb shield. Repositioned whenever health or
 		// shield changes via RefreshShieldBar().

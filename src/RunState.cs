@@ -17,7 +17,7 @@ namespace healerfantasy;
 ///
 /// Tracks spell/talent loadout AND the overall run progression through the
 /// dungeon → camp → dungeon → camp → dungeon → camp → dungeon sequence.
-/// (4 dungeons, 3 camps — the final dungeon is always The Frozen Peak.)
+/// (4 dungeons, 3 camps — the final dungeon is always The Guttering Spire.)
 ///
 /// Key properties used by World.cs:
 ///   <see cref="CurrentDungeon"/>    — which dungeon we're currently fighting
@@ -73,7 +73,7 @@ public partial class RunState : Node
 	/// The ordered list of dungeons for this run, one randomly chosen per tier.
 	/// Populated at run start and on Reset(). Always contains exactly one dungeon
 	/// per tier (1, 2, 3, 4) in ascending tier order. Tier 4 has only one dungeon
-	/// (The Frozen Peak), so it is always the final destination.
+	/// (The Guttering Spire), so it is always the final destination.
 	/// </summary>
 	public List<DungeonDefinition> RunDungeons =>
 		_devDungeons ?? _pickedDungeons
@@ -397,17 +397,21 @@ public partial class RunState : Node
 	void InitSpellsFromPreferences()
 	{
 		if (LoadoutPreferences.HasSavedSpells)
-			SetSpells(LoadoutPreferences.SavedSpells);
+			// A loadout saved before a school was locked (e.g. Wick) can't bring its spells along.
+			SetSpells(LoadoutPreferences.SavedSpells
+				.Select(s => s != null && PlayerProgressStore.IsSchoolUnlocked(s.School) ? s : null)
+				.ToArray());
 		else
 			InitDefaultSpells();
 	}
 
 	void InitDefaultSpells()
 	{
+		// Only schools open from the start — Wick unlocks after the Tallow Queen.
 		SelectedSpells =
 		[
 			new CandleTouchSpell(), new WildfireSpell(), new SpreadingEmbersSpell(),
-			new UnburnSpell(), new BurnBrightSpell(), new RotSpell()
+			new RekindleSpell(), new SmoulderSpell(), new RotSpell()
 		];
 	}
 
@@ -420,6 +424,7 @@ public partial class RunState : Node
 
 	void InitSchoolAffinityFromPreferences()
 	{
-		SchoolAffinity = LoadoutPreferences.SavedSchoolAffinity;
+		var saved = LoadoutPreferences.SavedSchoolAffinity;
+		SchoolAffinity = saved is { } school && PlayerProgressStore.IsSchoolUnlocked(school) ? saved : null;
 	}
 }

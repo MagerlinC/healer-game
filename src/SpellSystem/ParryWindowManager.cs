@@ -40,7 +40,7 @@ public static class ParryWindowManager
 	/// Fired when a parryable wind-up begins.
 	/// Parameters: spell name, spell icon, wind-up duration in seconds.
 	/// Subscribe here instead of individual boss signals so non-parryable
-	/// casts (e.g. Volatile Icicle) never trigger deflect cues.
+	/// casts (e.g. Molten Drop) never trigger deflect cues.
 	/// </summary>
 	public static event Action<string, Texture2D, float>? WindupStarted;
 

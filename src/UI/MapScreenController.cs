@@ -12,7 +12,7 @@ using healerfantasy.LastLight.Hud;
 ///   Dungeon 0 → Camp 0 → Dungeon 1 → Camp 1 → Dungeon 2 → Camp 2 → Dungeon 3
 ///
 /// Dungeons 0–2 are randomly chosen from tiers 1–3 at run start.
-/// Dungeon 3 is always The Frozen Peak (tier 4) — the final boss encounter.
+/// Dungeon 3 is always The Guttering Spire (tier 4) — the final boss encounter.
 ///
 /// Clicking any node opens a detail panel on the right showing the location's
 /// name, description, and (for the currently Available dungeon) an Enter button
@@ -24,7 +24,7 @@ using healerfantasy.LastLight.Hud;
 public partial class MapScreenController : Node2D
 {
 	// Map node positions in viewport space (1920×1080).
-	// The path winds across the map and ascends toward the frozen peak in the upper-right.
+	// The path winds across the map and ascends toward the guttering spire in the upper-right.
 	// With the Rune of the Abyss active it climbs on past the peak, then turns back
 	// across the top of the map into the dark.
 	static readonly Vector2[] BaseCentres =
@@ -35,7 +35,7 @@ public partial class MapScreenController : Node2D
 		new(1215f, 780f), // Camp 1    — right-centre
 		new(1490f, 964f), // Dungeon 2 — lower-right
 		new(1640f, 790f), // Camp 2    — far-right, beginning to ascend
-		new(1800f, 540f) // Dungeon 3 — The Frozen Peak, upper-far-right
+		new(1800f, 540f) // Dungeon 3 — The Guttering Spire, upper-far-right
 	};
 
 	static readonly Vector2[] AbyssCentres =
@@ -44,7 +44,7 @@ public partial class MapScreenController : Node2D
 		new(1120f, 150f) // Dungeon 4 — The Abyss, top-centre
 	};
 
-	/// <summary>True when this run continues past the Frozen Peak into the Abyss.</summary>
+	/// <summary>True when this run continues past the Guttering Spire into the Abyss.</summary>
 	static bool HasAbyss => RunState.Instance.RunDungeons.Count > 4;
 
 	static Vector2[] NodeCentres => HasAbyss ? [..BaseCentres, ..AbyssCentres] : BaseCentres;
@@ -138,7 +138,7 @@ public partial class MapScreenController : Node2D
 		}
 
 		// The secret: a pit at the top of the world, where the path would go on past
-		// the Frozen Peak. Drawn above the darkness so it shows through it; only a
+		// the Guttering Spire. Drawn above the darkness so it shows through it; only a
 		// rumour until the Rune of the Abyss opens the way to it.
 		var abyssLayer = new CanvasLayer { Layer = -4 };
 		AddChild(abyssLayer);

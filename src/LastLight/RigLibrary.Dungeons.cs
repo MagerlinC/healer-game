@@ -9,7 +9,7 @@ namespace healerfantasy.LastLight;
 ///   • Forsaken Citadel — rusted war-machines and carrion fliers; ember and rust.
 ///   • Castle of Blood  — gaunt aristocrats; blood-red eyes and veins.
 ///   • Sanctum of Stars — the void wearing star-shaped holes; cold starlight.
-///   • Frozen Peak      — frost-rimed shapes; pale blue-white glints.
+///   • Guttering Spire  — melted, dripping shapes; warm tallow and candle flames.
 ///   • The Abyss        — darkness itself, too vast to see whole; two pale eyes.
 /// Same authoring rules as <see cref="RigLibrary"/>: feet at (0,0), facing right.
 /// </summary>
@@ -29,10 +29,11 @@ public static partial class RigLibrary
 	static readonly Color Star = new(0.86f, 0.9f, 1f);
 	static readonly Color StarDim = new(0.5f, 0.55f, 0.8f);
 
-	// ── Frozen Peak ──────────────────────────────────────────────────────────
-	static readonly Color Frost = new(0.82f, 0.93f, 1f);
-	static readonly Color FrostDim = new(0.3f, 0.36f, 0.42f);
-	static readonly Color FrostPool = new(0.02f, 0.03f, 0.04f, 0.92f);
+	// ── Guttering Spire ──────────────────────────────────────────────────────
+	static readonly Color Tallow = new(1f, 0.86f, 0.6f);
+	static readonly Color TallowDim = new(0.42f, 0.31f, 0.18f);
+	static readonly Color TallowFlame = new(1f, 0.66f, 0.24f);
+	static readonly Color TallowPool = new(0.05f, 0.03f, 0.01f, 0.92f);
 
 	// ═════════════════════════════════════════════════════════════════════════
 	// THE FORSAKEN CITADEL
@@ -344,15 +345,15 @@ public static partial class RigLibrary
 		.Part("arm", Dark, "206,-66 240,-40 214,-52 226,-20 202,-48", 1);
 
 	// ═════════════════════════════════════════════════════════════════════════
-	// THE FROZEN PEAK
+	// THE GUTTERING SPIRE
 	// ═════════════════════════════════════════════════════════════════════════
 
-	/// <summary>Queen of the Frozen Wastes → a tall queen in an icicle crown with a frost-crystal staff.</summary>
-	public static RigDefinition QueenOfTheFrozenWastes() => new RigDefinition
+	/// <summary>The Tallow Queen → a tall queen in a dripping gown, crowned with lit candles, holding a candle staff.</summary>
+	public static RigDefinition TheTallowQueen() => new RigDefinition
 		{
-			Id = "queen-of-the-frozen-wastes", Mode = RigMode.Darkness, Height = 300f, Width = 130f, MaxGrow = 1.05f, // the Frozen Peak camera is close; she already towers
+			Id = "the-tallow-queen", Mode = RigMode.Darkness, Height = 300f, Width = 130f, MaxGrow = 1.05f, // the Guttering Spire camera is close; she already towers
 			Scale = 0.37f, SwingAngle = 1.1f, Lunge = 8f, Breath = 0.6f, CastRaise = 1.4f,
-			Pool = new Vector2(150, 24), PoolColor = FrostPool
+			Pool = new Vector2(150, 24), PoolColor = TallowPool
 		}
 		.Joint("body", "", 0, -80)
 		.Joint("head", "body", 6, -206)
@@ -361,58 +362,85 @@ public static partial class RigLibrary
 		.Part("body", Dark,
 			"-80,0 -56,-80 -28,-156 -20,-196 22,-196 30,-156 56,-80 84,0 " +
 			"70,6 58,0 46,8 34,0 22,8 10,0 -2,8 -14,0 -26,8 -38,0 -50,8 -64,0")
-		.Part("body", Frost, "-62,0 -58,-10 -54,0")
-		.Part("body", Frost, "-12,0 -8,-12 -4,0")
-		.Part("body", Frost, "40,0 44,-10 48,0")
-		.Part("body", FrostDim, Thick(1.4f, "0,-190 -6,-140 4,-100 -4,-60"))
+		// wax running down the gown, each run ending in a bead
+		.Part("body", TallowDim, Thick(1.4f, "-30,-150 -36,-110 -42,-70"))
+		.Part("body", Tallow, Circle(-42f, -66f, 2.2f, 8))
+		.Part("body", TallowDim, Thick(1.4f, "0,-190 -4,-140 2,-100 -2,-40"))
+		.Part("body", Tallow, Circle(-2f, -36f, 2.4f, 8))
+		.Part("body", TallowDim, Thick(1.4f, "30,-150 38,-100 46,-56"))
+		.Part("body", Tallow, Circle(46f, -52f, 2.2f, 8))
 		.Part("head", Dark, "-8,-200 -12,-236 0,-254 18,-252 24,-232 20,-200")
-		.Part("head", Dark2, "-12,-246 -18,-290 -6,-256 2,-302 8,-256 16,-296 18,-254 30,-284 24,-246")
-		.Part("head", Frost, "-18,-290 -16,-280 -20,-282")
-		.Part("head", Frost, "2,-302 4,-290 0,-292")
-		.Part("head", Frost, "16,-296 17,-284 13,-287")
-		.Part("head", Frost, Circle(14f, -232f, 1.9f, 8))
-		.Part("head", Frost, Circle(20f, -231f, 1.6f, 8))
+		// a crown of candle stubs, burned to uneven heights
+		.Part("head", Dark2, "-14,-246 -15,-280 -7,-282 -6,-252 0,-252 0,-294 8,-294 8,-252 14,-252 15,-286 23,-284 24,-246")
+		.Part("head", TallowFlame, "-11,-283 -14,-291 -11,-301 -8,-291")
+		.Part("head", TallowFlame, "4,-297 1,-305 4,-316 7,-305")
+		.Part("head", TallowFlame, "19,-287 16,-295 19,-305 22,-295")
+		.Part("head", Tallow, Circle(14f, -232f, 1.9f, 8))
+		.Part("head", Tallow, Circle(20f, -231f, 1.6f, 8))
 		.Part("off", Dark, "-14,-190 -44,-150 -38,-142 -10,-174", -1)
 		.Part("arm", Dark, "20,-190 48,-156 42,-148 14,-176", 1)
 		.Part("arm", Dark2, Thick(4f, "44,-20 46,-150 48,-250"), 1)
-		.Part("arm", Frost, "48,-250 38,-270 48,-300 58,-270", 1)
-		.Part("arm", new Color(1f, 1f, 1f), "48,-256 44,-270 48,-288 52,-270", 1);
+		// the staff is a tall candle: a drip down its side and a flame at the top
+		.Part("arm", Dark2, "40,-246 40,-262 56,-262 56,-246", 1)
+		.Part("arm", TallowDim, Thick(1.2f, "41,-258 39,-236 40,-222"), 1)
+		.Part("arm", TallowFlame, "48,-264 39,-280 48,-306 57,-280", 1)
+		.Part("arm", new Color(1f, 0.97f, 0.85f), "48,-268 44,-280 48,-294 52,-280", 1);
 
-	/// <summary>The Frozen Terror → a hulking frost-beast with a shaggy, ice-spined back.</summary>
-	public static RigDefinition TheFrozenTerror() => new RigDefinition
+	/// <summary>
+	/// The Tallow Hulk → a lumbering, gloomy giant of melted candles, so big that its
+	/// legs vanish into the darkness below the great candle. It hunches over the
+	/// arena from the left: head hung high in the corner, both hands resting on the
+	/// platform's near side.
+	/// Heavy brow, drooping eyes, a downturned mouth; most candles on its back are out.
+	/// Authored facing right (the arena); the rig's origin is its waist, level with the platform.
+	/// </summary>
+	public static RigDefinition TheTallowHulk() => new RigDefinition
 		{
-			Id = "the-frozen-terror", Mode = RigMode.Darkness, Height = 230f, Width = 300f, Scale = 0.5f,
+			Id = "the-tallow-hulk", Mode = RigMode.Darkness, Height = 520f, Width = 360f, Scale = 0.5f,
+			FeetOffset = 0f, BurnTop = -420f,
 			// Already huge, and joins the Queen mid-fight: stays its size and behind her,
-			// so her ice cone can always be read.
-			MaxGrow = 1f, BehindOtherBosses = true,
-			SwingAngle = 1.1f, Lunge = 18f, Breath = 1.4f, CastRaise = 0.6f,
-			Pool = new Vector2(180, 26), PoolColor = FrostPool
+			// so her molten cone can always be read.
+			MaxGrow = 1f, BehindOtherBosses = true, TuckedBehindPlatform = true,
+			SwingAngle = 0.25f, Lunge = 0f, Breath = 1.2f, CastRaise = 0.3f
 		}
-		.Joint("body", "", 0, -60)
-		.Joint("head", "body", 110, -150)
-		.Joint("arm", "body", 90, -110)
-		.Joint("off", "body", -100, -80)
-		.Part("off", Dark, "-90,-90 -130,-40 -140,0 -110,0 -100,-40 -70,-70", -1)
+		.Joint("body", "", 40, -120)
+		.Joint("head", "body", 146, -350)
+		.Joint("arm", "body", 220, -290)
+		.Joint("off", "body", 30, -240)
+		// legs, sinking into the darkness below the platform
+		.Part("", Dark, Thick(80f, "-10,0 -36,150 -60,320"))
+		.Part("", Dark, Thick(80f, "80,0 92,160 84,320"))
+		// the torso, hunched forward over the arena
 		.Part("body", Dark,
-			"-140,-30 -130,-110 -90,-180 -30,-220 40,-214 100,-190 130,-140 120,-80 80,-50 -60,-40")
-		// ice spines along the back
-		.Part("body", Dark2, "-100,-170 -112,-212 -78,-184")
-		.Part("body", Dark2, "-60,-204 -66,-250 -36,-214")
-		.Part("body", Dark2, "-10,-220 -4,-268 16,-220")
-		.Part("body", Dark2, "40,-214 56,-252 66,-206")
-		.Part("body", Frost, "-112,-212 -108,-200 -104,-206")
-		.Part("body", Frost, "-66,-250 -62,-236 -58,-242")
-		.Part("body", Frost, "-4,-268 -2,-254 4,-258")
-		.Part("body", Frost, "56,-252 58,-238 62,-242")
-		.Part("", Dark, "-60,-46 -70,0 -40,0 -30,-46")
-		.Part("head", Dark, "90,-170 140,-182 172,-160 180,-130 160,-112 120,-118 96,-140")
-		.Part("head", Void, "150,-126 178,-128 170,-112 152,-114")
-		.Part("head", Frost, Circle(150f, -156f, 3f, 8))
-		.Part("head", Frost, Circle(162f, -154f, 2.4f, 8))
-		.Part("head", Dark2, "120,-176 110,-210 134,-180")
-		.Part("arm", Dark, "80,-120 130,-60 150,-10 120,0 100,-50 60,-90", 1)
-		.Part("arm", Dark, "150,-10 172,4 146,4", 1)
-		.Part("arm", Dark, "140,-6 158,10 132,6", 1);
+			"-90,20 -116,-80 -104,-190 -44,-276 56,-334 160,-352 236,-322 256,-250 226,-160 176,-60 150,20")
+		.Part("body", TallowDim, Thick(1.5f, "-70,-200 -80,-130 -74,-60"))
+		.Part("body", Tallow, Circle(-74f, -55f, 2.6f, 8))
+		.Part("body", TallowDim, Thick(1.5f, "20,-300 30,-230 24,-170"))
+		.Part("body", Tallow, Circle(24f, -165f, 2.4f, 8))
+		// guttered candle stubs along its back, only one still (barely) lit
+		.Part("body", Dark2, "-70,-238 -80,-272 -64,-280 -54,-248")
+		.Part("body", Dark2, "-26,-286 -34,-324 -16,-330 -8,-294")
+		.Part("body", Dark2, "26,-322 22,-352 38,-356 42,-326")
+		.Part("body", TallowFlame, "-25,-329 -27,-336 -25,-346 -22,-336")
+		// the head, hung forward between the shoulders
+		.Part("head", Dark, "92,-318 86,-380 120,-412 176,-414 208,-380 202,-326 160,-302")
+		// a heavy brow, sloping down toward the middle into a scowl
+		.Part("head", Dark2, "100,-376 146,-362 200,-380 200,-368 146,-350 100,-364")
+		// big dim eyes, drooping at the outer corners
+		.Part("head", TallowDim, "110,-360 136,-352 134,-342 112,-348")
+		.Part("head", TallowDim, "158,-352 186,-362 184,-350 160,-342")
+		// a downturned mouth
+		.Part("head", Void, "122,-322 148,-332 176,-322 176,-316 148,-325 122,-315")
+		// drippings hanging from its chin
+		.Part("head", Dark, "110,-312 118,-284 126,-306 138,-276 148,-304 160,-280 172,-308 184,-292 196,-318")
+		// near arm: reaching forward and down, its hand resting on the platform
+		.Part("arm", Dark, Thick(56f, "220,-290 312,-238 338,-158"), 1)
+		.Part("arm", Dark, "298,-160 370,-164 386,-126 370,-96 308,-96 290,-128", 1)
+		.Part("arm", TallowDim, Thick(1.3f, "300,-236 310,-206 306,-186"), 1)
+		.Part("arm", Tallow, Circle(306f, -182f, 2.2f, 8), 1)
+		// far arm, its hand on the platform's near edge
+		.Part("off", Dark, Thick(48f, "30,-240 6,-150 80,-64 150,-34"), -1)
+		.Part("off", Dark, "118,-56 184,-60 198,-28 184,2 124,2 108,-26", -1);
 
 	// ═════════════════════════════════════════════════════════════════════════
 	// RUNE OF NIGHTFALL

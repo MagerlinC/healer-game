@@ -493,7 +493,9 @@ public static class LastLightIcons
 		// Pyre
 		["Crimson Rebound"] = Heart(30, 36, 1.2f) + ArcArrow(32, 32, 24, 220, 470, 3, "{H}"),
 		["Bloodthirst"] = Drop(32, 38, 1.45f) + Poly("22,10 28,10 25,22", "{H}") + Poly("36,10 42,10 39,22", "{H}"),
-		["Pyre Ward"] = Shield(32, 32, 1.5f, "none", "{C}") + Heart(32, 34, 0.75f)
+		["Pyre Ward"] = Shield(32, 32, 1.5f, "none", "{C}") + Heart(32, 34, 0.75f),
+		["Desperate Blaze"] = Flame(32, 27, 0.95f) + Path("M14,50 L50,50 L50,58 L14,58 Z", "none", "{C}", 2) + Poly("15,51 21,51 21,57 15,57", "{H}"),
+		["Phoenix Heart"] = Heart(32, 42, 1.25f) + Flame(32, 20, 0.55f, "{H}", "{C}")
 	};
 
 	/// <summary>Gloom: a flame being eclipsed by the dark.</summary>

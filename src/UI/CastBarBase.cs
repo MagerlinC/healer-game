@@ -168,6 +168,7 @@ public abstract partial class CastBarBase : PanelContainer
 
 		var row = new HBoxContainer();
 		row.AddThemeConstantOverride("separation", 8);
+		row.MouseFilter = MouseFilterEnum.Ignore;
 		AddChild(row);
 
 		// Icon
@@ -182,6 +183,7 @@ public abstract partial class CastBarBase : PanelContainer
 		var overlay                  = new Control();
 		overlay.SizeFlagsHorizontal  = SizeFlags.ExpandFill;
 		overlay.CustomMinimumSize    = new Vector2(0f, 24f);
+		overlay.MouseFilter          = MouseFilterEnum.Ignore;
 		row.AddChild(overlay);
 
 		// Progress bar

@@ -23,7 +23,7 @@ public partial class FlashfireSpell : SpellResource
 	{
 		Name = "Flashfire";
 		Description =
-			$"Release a flash of fire, restoring {HealAmount} light to all party members and dealing {DamageAmount} damage to the enemy.";
+			$"Release a flash of fire, restoring {HealAmount} light to all party members and dealing {DamageAmount} damage to all enemies.";
 		ManaCost = 16f;
 		CastTime = 1.5f;
 		Cooldown = 10f;

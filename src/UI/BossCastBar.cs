@@ -75,14 +75,14 @@ public partial class BossCastBar : CastBarBase
 			nameof(TheBloodPrince.SanguineChannelEnded),
 			Callable.From(StopCast));
 
-		// ── Queen of the Frozen Wastes: Snowstorm channel bar ────────────────
+		// ── The Tallow Queen: Wax Rain channel bar ────────────────
 		GlobalAutoLoad.SubscribeToSignal(
-			nameof(QueenOfTheFrozenWastes.SnowstormChannelStarted),
-			Callable.From((BossQueenSnowstormSpell spell) =>
+			nameof(TheTallowQueen.WaxRainChannelStarted),
+			Callable.From((BossQueenWaxRainSpell spell) =>
 				StartChannel(spell.Name, spell.Icon, spell.ChannelDuration)));
 
 		GlobalAutoLoad.SubscribeToSignal(
-			nameof(QueenOfTheFrozenWastes.SnowstormChannelEnded),
+			nameof(TheTallowQueen.WaxRainChannelEnded),
 			Callable.From(StopCast));
 	}
 

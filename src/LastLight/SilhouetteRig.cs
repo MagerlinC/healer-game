@@ -107,6 +107,12 @@ public partial class SilhouetteRig : CanvasGroup
 		_mat = new ShaderMaterial { Shader = _shader };
 		_mat.SetShaderParameter("mode", (int)_def.Mode);
 		_mat.SetShaderParameter("seed", _seed);
+		if (_def.TuckedBehindPlatform)
+		{
+			_mat.SetShaderParameter("platform_mask", 1);
+			_mat.SetShaderParameter("platform", LastLightBackground.GutteringPlatform);
+			_mat.SetShaderParameter("platform_wall_drop", LastLightBackground.GutteringWallDrop);
+		}
 		Material = _mat;
 
 		BuildJoints();
@@ -457,6 +463,8 @@ public partial class SilhouetteRig : CanvasGroup
 		_mat.SetShaderParameter("body_feet", feet / size);
 		_mat.SetShaderParameter("body_size", new Vector2(width / size.X, Mathf.Max(feet.Y - top.Y, 1f) / size.Y));
 		_mat.SetShaderParameter("consumed", _consumed);
+		if (_def.TuckedBehindPlatform)
+			_mat.SetShaderParameter("platform_mask_line", (xf * Vector2.Zero).Y / size.Y);
 		if (LitBy != null && IsInstanceValid(LitBy))
 		{
 			_mat.SetShaderParameter("light_uv", LitBy.GetGlobalTransformWithCanvas() * LitByOffset / size);
@@ -499,7 +507,7 @@ public partial class SilhouetteRig : CanvasGroup
 		return anim switch
 		{
 			"attack" or "cleave" or "land" => "attack",
-			"cast" or "spell" or "casting" or "beam" or "shield" or "shielded" or "ice_block"
+			"cast" or "spell" or "casting" or "beam" or "shield" or "shielded" or "wax_shell"
 				or "jump" or "jump_hang" => "cast",
 			"walk" or "run" or "charge" => "move",
 			_ => "idle"

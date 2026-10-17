@@ -37,6 +37,13 @@ uniform float burn_rim_px = 5.0;
 uniform float outline_px = 0.0;
 uniform vec4 outline_color : source_color = vec4(1.0, 0.84, 0.58, 0.8);
 
+// Tucked behind the Guttering Spire's platform (see RigDefinition.TuckedBehindPlatform):
+// below platform_mask_line (screen UV y), nothing is drawn over the platform or its side.
+uniform int platform_mask = 0;
+uniform vec4 platform = vec4(0.5, 0.64, 0.36, 0.3); // centre x, centre y, radius x, radius y (screen fractions)
+uniform float platform_wall_drop = 0.12;          // screen heights
+uniform float platform_mask_line = 2.0;
+
 // Sin-free hashes: fract(sin(...)) can round differently in neighbouring cells on
 // the GPU, tearing the noise into hard seams and blocks.
 float hash1(float n) {
@@ -64,9 +71,27 @@ float vnoise2(vec2 p) {
 	           mix(hash2(i + vec2(0.0, 1.0)), hash2(i + vec2(1.0, 1.0)), f.x), f.y);
 }
 
+bool behind_platform(vec2 uv, vec2 px) {
+	if (uv.y < platform_mask_line) return false;
+	// work in screen heights so the ellipse keeps its shape on any aspect ratio
+	float aspect = px.y / px.x;
+	vec2 p = vec2(uv.x * aspect, uv.y);
+	vec2 c = vec2(platform.x * aspect, platform.y);
+	vec2 r = vec2(platform.z * aspect, platform.w);
+	vec2 d = (p - c) / r;
+	if (dot(d, d) <= 1.0) return true; // on the platform
+	// the candle's side, hanging below the platform's front edge
+	if (abs(d.x) > 1.0 || p.y < c.y) return false;
+	float front = c.y + r.y * sqrt(1.0 - d.x * d.x);
+	return p.y <= front + platform_wall_drop;
+}
+
 void fragment() {
 	vec4 src = textureLod(screen_tex, SCREEN_UV, 0.0);
 	vec2 px = SCREEN_PIXEL_SIZE;
+	if (platform_mask == 1 && behind_platform(SCREEN_UV, px)) {
+		discard;
+	}
 
 	// Outside the silhouette: either the outline ring, or nothing.
 	float outline = 0.0;

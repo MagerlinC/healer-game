@@ -34,7 +34,7 @@ public static class RuneInfo
 			"Not a single star remains; yours is the only light. Every boss fights in its " +
 			"truest, darkest form, unlocking its full strength.",
 		RuneIndex.Abyss =>
-			"Beyond the night lies only the Abyss. A final path opens past the Frozen Peak, " +
+			"Beyond the night lies only the Abyss. A final path opens past the Guttering Spire, " +
 			"where The Infinite Abyss waits for the last light.",
 		_ => ""
 	};

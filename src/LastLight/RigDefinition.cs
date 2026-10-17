@@ -85,6 +85,13 @@ public sealed class RigDefinition
 	public bool BehindOtherBosses;
 
 	/// <summary>
+	/// For a giant standing beside the Guttering Spire's platform: everything below the
+	/// rig's origin is hidden where the platform (or the candle's side below it) is, so
+	/// the arena reads as in front of its lower body while its torso and arms lean over it.
+	/// </summary>
+	public bool TuckedBehindPlatform;
+
+	/// <summary>
 	/// Where the feet sit below the owner's origin, in world units. Negative (the default)
 	/// means "mid-body", i.e. 45% of the drawn height. A towering figure sets this so it
 	/// stands on its origin and rises (partly off-screen) above it.

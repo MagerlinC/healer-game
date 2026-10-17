@@ -34,7 +34,7 @@ public enum RuneIndex
     StarlessNight = 4,
 
     /// <summary>
-    /// Rune of the Abyss — opens a fifth, final dungeon past the Frozen Peak:
+    /// Rune of the Abyss — opens a fifth, final dungeon past the Guttering Spire:
     /// The Abyss, home of The Infinite Abyss.
     /// </summary>
     Abyss = 5,

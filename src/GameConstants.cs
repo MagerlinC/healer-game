@@ -43,16 +43,16 @@ public static class GameConstants
 
 	public const string SanctumBoss3Name = "That Which Swallowed the Stars";
 
-	// ── Boss names — The Frozen Peak ──────────────────────────────────────────
+	// ── Boss names — The Guttering Spire ──────────────────────────────────────────
 	/// <summary>Tier 4 — a single-boss final dungeon accessible after clearing all Tier 3 dungeons.</summary>
-	public const int FrozenPeakTier = 4;
+	public const int GutteringSpireTier = 4;
 
-	public const string FrozenPeakBossName = "Queen of the Frozen Wastes";
-	public const string FrozenTerrorName = "The Frozen Terror";
+	public const string GutteringSpireBossName = "The Tallow Queen";
+	public const string TallowHulkName = "The Tallow Hulk";
 
 	// ── Boss names — The Abyss ────────────────────────────────────────────────
 	/// <summary>
-	/// Tier 5 — a secret final dungeon past the Frozen Peak, only part of a run while
+	/// Tier 5 — a secret final dungeon past the Guttering Spire, only part of a run while
 	/// the Rune of the Abyss is active.
 	/// </summary>
 	public const int AbyssTier = 5;
@@ -110,7 +110,7 @@ public static class GameConstants
 
 
 	/// <summary>
-	/// Elliptical arena boundary for the Frozen Peak, expressed as fractions of
+	/// Elliptical arena boundary for the Guttering Spire, expressed as fractions of
 	/// the viewport's world-space half-width (X) and half-height (Y).
 	/// This mirrors how <c>AddArenaBounds</c> computes wall positions, so the
 	/// boundary scales correctly at any resolution or camera zoom.
@@ -119,21 +119,21 @@ public static class GameConstants
 	/// foreshortening (arena looks wider than it is tall). Tune in-game with
 	/// Debug → Visible Collision Shapes enabled.
 	/// </summary>
-	public const float FrozenPeakArenaFractionX = 0.72f; // horizontal semi-axis 
+	public const float GutteringSpireArenaFractionX = 0.72f; // horizontal semi-axis 
 
-	public const float FrozenPeakArenaFractionY = 0.60f; // vertical semi-axis 
+	public const float GutteringSpireArenaFractionY = 0.60f; // vertical semi-axis 
 
 	/// <summary>
 	/// How far to shift the ellipse centre downward, as a fraction of the
 	/// viewport's total world-space height (0 = screen centre, 1 = bottom edge).
 	/// 0.20 moves the ring down by 20 % of the screen height.
 	/// </summary>
-	public const float FrozenPeakArenaCenterOffsetY = 0.14f;
+	public const float GutteringSpireArenaCenterOffsetY = 0.14f;
 
-	/// <summary>Packed scene path for the Frozen Peak — a single final boss encounter.</summary>
-	public static readonly string[] FrozenPeakBossScenePaths =
+	/// <summary>Packed scene path for the Guttering Spire — a single final boss encounter.</summary>
+	public static readonly string[] GutteringSpireBossScenePaths =
 	{
-		"res://levels/QueenOfTheFrozenWastes.tscn"
+		"res://levels/TheTallowQueen.tscn"
 	};
 
 	/// <summary>Packed scene path for The Abyss — the secret final encounter.</summary>

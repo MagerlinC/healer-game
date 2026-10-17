@@ -602,9 +602,10 @@ public abstract partial class LoadoutController : Node2D
 		columns.CustomMinimumSize = new Vector2(0, 280f);
 		columns.AddThemeConstantOverride("separation", 6);
 
-		var availableSchools = PlayerProgressStore.HasDefeatedCastleOfBlood
-			? SpellSchoolTabs
-			: SpellSchoolTabs.Where(s => s.School != SpellSchool.Pyre).ToArray();
+		// Locked schools (Pyre, Wick) stay hidden until unlocked.
+		var availableSchools = SpellSchoolTabs
+			.Where(s => PlayerProgressStore.IsSchoolUnlocked(s.School))
+			.ToArray();
 
 		foreach (var (school, name) in availableSchools)
 		{
@@ -723,11 +724,11 @@ public abstract partial class LoadoutController : Node2D
 	/// Clicking it toggles that school as the active school affinity; a gold
 	/// border shows the currently selected school.
 	///
-	/// Pyre is shown locked until the Castle of Blood has been defeated.
+	/// Pyre and Wick are shown locked until their unlocking boss has been defeated.
 	/// </summary>
 	Control BuildAffinityToggle(SpellSchool school, string schoolName)
 	{
-		var isLocked = school == SpellSchool.Pyre && !PlayerProgressStore.HasDefeatedCastleOfBlood;
+		var isLocked = !PlayerProgressStore.IsSchoolUnlocked(school);
 		var isSelected = RunState.Instance.SchoolAffinity == school;
 		var (_, _, accent) = TalentSchoolOrder.First(e => e.School == school);
 
@@ -773,7 +774,7 @@ public abstract partial class LoadoutController : Node2D
 
 		if (isLocked)
 		{
-			// ── Locked (Pyre before Castle of Blood) ───────────────────
+			// ── Locked (Pyre / Wick before their unlock) ───────────────
 			var lockLabel = new Label();
 			lockLabel.Text = "🔒";
 			lockLabel.HorizontalAlignment = HorizontalAlignment.Center;
@@ -1020,14 +1021,14 @@ public abstract partial class LoadoutController : Node2D
 	// ── spell lock helpers ────────────────────────────────────────────────────
 
 	/// <summary>
-	/// A spell is locked if its school has not been unlocked yet (e.g. Pyre
-	/// requires the Castle of Blood to have been defeated), or if the player has not
+	/// A spell is locked if its school has not been unlocked yet (Pyre requires
+	/// the Castle of Blood, Wick the Tallow Queen), or if the player has not
 	/// yet acquired enough school talents this run.
 	/// </summary>
 	bool IsSpellLocked(SpellResource spell)
 	{
 		// School-wide unlock check.
-		if (spell.School == SpellSchool.Pyre && !PlayerProgressStore.HasDefeatedCastleOfBlood)
+		if (!PlayerProgressStore.IsSchoolUnlocked(spell.School))
 			return true;
 
 		if (spell.RequiredSchoolPoints <= 0) return false;
@@ -1037,10 +1038,10 @@ public abstract partial class LoadoutController : Node2D
 
 	(string title, string desc) GetLockedSpellTooltip(SpellResource spell)
 	{
-		// School unlock tooltip for Pyre.
-		if (spell.School == SpellSchool.Pyre && !PlayerProgressStore.HasDefeatedCastleOfBlood)
+		// School unlock tooltip (Pyre, Wick).
+		if (!PlayerProgressStore.IsSchoolUnlocked(spell.School))
 			return (spell.Name,
-				$"{spell.Description}\n\n🔒 Pyre is locked.\nDefeat The Blood Prince in the Castle of Blood to unlock this school.");
+				$"{spell.Description}\n\n🔒 {SchoolInfo.Name(spell.School)} is locked.\n{PlayerProgressStore.SchoolUnlockHint(spell.School)}");
 
 		var invested = RunState.Instance.SelectedTalentDefs.Count(d => d.School == spell.School);
 		var ultIndicator = spell is UltimateSpellResource ? " (Ultimate)" : "";
@@ -1530,16 +1531,15 @@ public abstract partial class LoadoutController : Node2D
 		cardRow.AddThemeConstantOverride("separation", 16);
 		center.AddChild(cardRow);
 
-		// Schools eligible for affinity (Generic excluded; Pyre gated on progress).
+		// Schools eligible for affinity (Generic excluded; Wick and Pyre gated on progress).
 		var schools = new List<SpellSchool>
 		{
 			SpellSchool.Wick,
 			SpellSchool.Flame,
 			SpellSchool.Ember,
-			SpellSchool.Umbra
-		};
-		if (PlayerProgressStore.HasDefeatedCastleOfBlood)
-			schools.Add(SpellSchool.Pyre);
+			SpellSchool.Umbra,
+			SpellSchool.Pyre
+		}.Where(PlayerProgressStore.IsSchoolUnlocked).ToList();
 
 		// Keep references to update borders on click without rebuilding nodes.
 		var cardEntries = new List<(SpellSchool School, StyleBoxFlat Style)>();

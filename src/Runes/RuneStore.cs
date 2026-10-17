@@ -10,7 +10,7 @@ namespace healerfantasy;
 /// Saved to <c>user://runes.save</c> and survives game restarts.
 ///
 /// Acquiring rune N requires completing a full run with all runes 1..N-1
-/// active.  The Queen of the Frozen Wastes will only drop rune N when the
+/// active.  The Tallow Queen will only drop rune N when the
 /// current run had exactly runes 1..N-1 enabled (handled in
 /// <see cref="VictoryScreen"/>).
 /// </summary>

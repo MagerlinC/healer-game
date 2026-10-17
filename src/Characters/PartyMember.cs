@@ -63,7 +63,7 @@ public partial class PartyMember : Character
 	/// Stuns the party member in place for <paramref name="duration"/> seconds
 	/// without changing their position. While stunned <see cref="IsKnockedBack"/>
 	/// returns true and movement logic is suppressed, allowing an external tween
-	/// (e.g. from <c>ConeOfColdPhase</c>) to move them smoothly.
+	/// (e.g. from <c>MoltenConePhase</c>) to move them smoothly.
 	/// </summary>
 	public void StunInPlace(float duration)
 	{
@@ -145,7 +145,7 @@ public partial class PartyMember : Character
 	/// <summary>
 	/// If <see cref="ArenaBoundary"/> is active, clamps <see cref="Node2D.GlobalPosition"/>
 	/// to lie within the ellipse. Call this after every <c>MoveAndSlide()</c>.
-	/// Uses the same ellipse-containment formula as <c>IcicleExplosionZone</c>:
+	/// Uses the same ellipse-containment formula as <c>MoltenWaxPool</c>:
 	/// (dx/rx)² + (dy/ry)² ≤ 1.
 	/// </summary>
 	/// <summary>Closest two party members may stand before a melee member steps aside.</summary>

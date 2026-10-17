@@ -152,22 +152,22 @@ public partial class World : Node2D
 		// the walls are always exactly at the visible edge regardless of resolution.
 		AddArenaBounds();
 
-		// For the Frozen Peak the background has a prominent circular arena.
+		// For the Guttering Spire the background has a prominent circular arena.
 		// A physics ring keeps the player inside the visible circle — tune
-		// GameConstants.FrozenPeakArenaRadius if the ring looks too large or small.
-		if (dungeon.Tier == GameConstants.FrozenPeakTier)
+		// GameConstants.GutteringSpireArenaRadius if the ring looks too large or small.
+		if (dungeon.Tier == GameConstants.GutteringSpireTier)
 		{
-			AddCircularArenaBound(Vector2.Zero, GameConstants.FrozenPeakArenaFractionX, GameConstants.FrozenPeakArenaFractionY,
-				GameConstants.FrozenPeakArenaCenterOffsetY);
+			AddCircularArenaBound(Vector2.Zero, GameConstants.GutteringSpireArenaFractionX, GameConstants.GutteringSpireArenaFractionY,
+				GameConstants.GutteringSpireArenaCenterOffsetY);
 
 			// Also constrain NPC party members via PartyMember.ClampToArenaBoundary().
 			// Compute the same world-space radii that AddCircularArenaBound uses so
 			// both the physics wall and the positional clamp agree on the boundary.
 			var boundsCamera = GetNode<Camera2D>("Camera2D");
 			var boundsView = GetViewport().GetVisibleRect().Size;
-			var boundRx = boundsView.X / (2f * boundsCamera.Zoom.X) * GameConstants.FrozenPeakArenaFractionX;
-			var boundRy = boundsView.Y / (2f * boundsCamera.Zoom.Y) * GameConstants.FrozenPeakArenaFractionY;
-			var boundCenterY = boundsView.Y / boundsCamera.Zoom.Y * GameConstants.FrozenPeakArenaCenterOffsetY;
+			var boundRx = boundsView.X / (2f * boundsCamera.Zoom.X) * GameConstants.GutteringSpireArenaFractionX;
+			var boundRy = boundsView.Y / (2f * boundsCamera.Zoom.Y) * GameConstants.GutteringSpireArenaFractionY;
+			var boundCenterY = boundsView.Y / boundsCamera.Zoom.Y * GameConstants.GutteringSpireArenaCenterOffsetY;
 			PartyMember.ArenaBoundary = (new Vector2(0f, boundCenterY), boundRx, boundRy);
 		}
 		else
