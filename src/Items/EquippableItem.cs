@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 
 namespace healerfantasy.Items;
@@ -49,10 +50,27 @@ public abstract class EquippableItem
 	public string Name { get; protected init; } = string.Empty;
 	public string Description { get; protected init; } = string.Empty;
 
-	/// <summary>Icon loaded at construction time from <see cref="AssetConstants"/>.</summary>
-	public Texture2D? Icon { get; protected set; }
+	Texture2D? _icon;
+
+	/// <summary>
+	/// The item's icon: the drawn Last Light icon (see <c>LastLightIcons</c>), falling back
+	/// to the art loaded at construction time from <see cref="AssetConstants"/>.
+	/// </summary>
+	public Texture2D? Icon
+	{
+		get => LastLight.Hud.LastLightIcons.ForItem(this) ?? _icon;
+		protected set => _icon = value;
+	}
 
 	public ItemRarity Rarity { get; protected init; }
+
+	/// <summary>
+	/// The spell school this item is built around, if any (e.g. a Pyre-only staff).
+	/// Items tied to a school only drop and appear at the merchant once that school
+	/// is unlocked (see <see cref="PlayerProgressStore.IsSchoolUnlocked"/>).
+	/// </summary>
+	public SpellSchool? School { get; protected init; }
+
 	public EquipSlot Slot { get; protected init; }
 
 	/// <summary>

@@ -90,7 +90,8 @@ public partial class FlameProtectionActiveBuff : CharacterEffect, ICharacterModi
 		: base(GameConstants.InfiniteDuration, 0f)
 	{
 		EffectId = ActiveBuffEffectId;
-		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(2));
+		Icon = LastLight.Hud.LastLightIcons.ForItem(nameof(Items.Amulets.TheHeartOfLight))
+		       ?? GD.Load<Texture2D>(AssetConstants.AmuletIconPath(2));
 		Description = $"Damage taken reduced by {100 * damageReductionAmount:F0}% while a Flame effect is active.";
 		_damageReductionAmount = damageReductionAmount;
 	}

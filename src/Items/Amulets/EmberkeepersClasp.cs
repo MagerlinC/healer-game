@@ -23,6 +23,7 @@ public class EmberkeepersClasp : EquippableItem
 		Description = $"{Math.Round(Bonus * 100)}% increased Ember spell damage & light restored.";
 		Rarity = ItemRarity.Rare;
 		Slot = EquipSlot.Amulet;
+		School = SpellSchool.Ember;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(1));
 		CharacterModifiers.Add(new EmberModifier());
 	}

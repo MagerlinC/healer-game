@@ -16,7 +16,8 @@ namespace healerfantasy.Items;
 /// twice, which would break modifier lists).
 ///
 /// Adding a new item:
-///   1. Create a subclass of <see cref="EquippableItem"/> in src/Items/.
+///   1. Create a subclass of <see cref="EquippableItem"/> in src/Items/. If it is built
+///      around one spell school, set its School so it waits for that school's unlock.
 ///   2. Add a factory entry here with the restricting boss name (or null for any boss).
 ///   3. Done — the loot roller picks from the eligible pool automatically.
 /// </summary>
@@ -93,6 +94,12 @@ public static class ItemRegistry
 		};
 	}
 
+	/// <summary>Items tied to a spell school stay out of the loot pool until that school is unlocked.</summary>
+	static bool IsSchoolAvailable(EquippableItem item)
+	{
+		return item.School is not { } school || PlayerProgressStore.IsSchoolUnlocked(school);
+	}
+
 	public static EquippableItem? RollDrop(string bossName)
 	{
 		var rarity = RollRarity();
@@ -103,7 +110,7 @@ public static class ItemRegistry
 			.Where(e =>
 			{
 				var item = e.Factory();
-				return item.Rarity == rarity && !ItemStore.HasFoundItem(item.ItemId);
+				return item.Rarity == rarity && !ItemStore.HasFoundItem(item.ItemId) && IsSchoolAvailable(item);
 			})
 			.ToList();
 
@@ -119,7 +126,7 @@ public static class ItemRegistry
 			.Where(e =>
 			{
 				var item = e.Factory();
-				return item.Rarity == rarity && !ItemStore.HasFoundItem(item.ItemId);
+				return item.Rarity == rarity && !ItemStore.HasFoundItem(item.ItemId) && IsSchoolAvailable(item);
 			})
 			.ToList();
 		if (genericPool.Count > 0)

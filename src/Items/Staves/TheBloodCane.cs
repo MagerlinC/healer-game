@@ -24,6 +24,7 @@ public class TheBloodCane : EquippableItem
 			$"Pyre spells burn {100 * LifeCostMultiplier:F0}% more of your own light, but also deal {100 * LifeCostMultiplier:F0}% more damage and restore {100 * LifeCostMultiplier:F0}% more light";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Staff;
+		School = SpellSchool.Pyre;
 		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(8));
 		CharacterModifiers.Add(new PyreEffect());
 	}

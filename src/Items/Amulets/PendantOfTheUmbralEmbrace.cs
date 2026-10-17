@@ -35,6 +35,7 @@ public class PendantOfTheUmbralEmbrace : EquippableItem
 		Description = $"After casting an Umbra damage spell, the next restoring spell restores {Math.Round(_healingBonus * 100)}% more light.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Amulet;
+		School = SpellSchool.Umbra;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(5));
 		SpellModifiers.Add(new UmbraSynergyModifier(
 			_healingBonus,

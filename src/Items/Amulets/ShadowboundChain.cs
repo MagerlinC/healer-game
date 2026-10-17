@@ -26,6 +26,7 @@ public class ShadowboundChain : EquippableItem
 		Description = $"+{Math.Round(_umbraDamageBonus * 100)}% Umbra damage. +{Math.Round(_hasteBonus * 100)}% haste.";
 		Rarity = ItemRarity.Epic;
 		Slot = EquipSlot.Amulet;
+		School = SpellSchool.Umbra;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(3));
 		CharacterModifiers.Add(new ShadowboundModifier());
 	}

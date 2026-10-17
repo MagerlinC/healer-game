@@ -11,7 +11,7 @@ using healerfantasy.UI;
 ///
 /// Extends <see cref="LoadoutController"/> to inherit the full spell/talent
 /// overlay system.  Camp-specific additions:
-///   • Armory interactible + overlay (item equip/unequip management)
+///   • Armory interactible + overlay (equipped items, inventory, talents this run)
 ///   • Merchant interactible + overlay (buy/sell items for gold)
 ///   • Dungeon progress label in the HUD
 ///   • Camp merchant first-visit tutorial
@@ -26,7 +26,7 @@ using healerfantasy.UI;
 public partial class CampController : LoadoutController
 {
 	CanvasLayer? _armoryPanel;
-	EquipmentPane? _equipmentPane;
+	ArmoryPane? _armoryPane;
 	CanvasLayer? _merchantPanel;
 	MerchantPane? _merchantPane;
 	InteractibleObject? _merchantInteractible;
@@ -46,8 +46,8 @@ public partial class CampController : LoadoutController
 
 		// ── Armory overlay panel ──────────────────────────────────────────────
 		// Built before the interactibles so the panel reference is ready to wire.
-		_equipmentPane = new EquipmentPane();
-		(_armoryPanel, _) = BuildOverlayPanel("Armory", _equipmentPane);
+		_armoryPane = new ArmoryPane();
+		(_armoryPanel, _) = BuildOverlayPanel("Armory", _armoryPane);
 		_panels.Add(_armoryPanel);
 		AddChild(_armoryPanel);
 
@@ -100,7 +100,7 @@ public partial class CampController : LoadoutController
 
 		// ── Wire camp-specific interactibles ──────────────────────────────────
 		armory.Interacted += OpenArmory;
-		WireHints(armory, "Armory  •  Manage your equipped items");
+		WireHints(armory, "Armory  •  Review your gear and talents");
 
 		merchant.Interacted += OpenMerchant;
 		WireHints(merchant, "Merchant  •  Buy and sell items for gold");
@@ -115,8 +115,8 @@ public partial class CampController : LoadoutController
 
 	void OpenArmory()
 	{
-		// Refresh EquipmentPane from ItemStore each time the panel is opened.
-		_equipmentPane!.Refresh();
+		// Refresh from ItemStore and the run's talents each time the panel is opened.
+		_armoryPane!.Refresh();
 		OpenPanel(_armoryPanel!);
 	}
 

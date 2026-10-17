@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using healerfantasy.Items;
 using healerfantasy.LastLight.Hud;
 using healerfantasy.SpellResources;
 using healerfantasy.Talents;
@@ -46,6 +47,18 @@ public partial class IconSheet : CanvasLayer
 			row.AddChild(new Control { CustomMinimumSize = new Vector2(20, 0) });
 			foreach (var talent in TalentRegistry.AllTalents.Where(t => t.School == school))
 				row.AddChild(Cell(talent.LoadIcon(), talent.Name));
+		}
+
+		foreach (var slot in new[] { EquipSlot.Staff, EquipSlot.Ring1, EquipSlot.Amulet })
+		{
+			var row = new HBoxContainer();
+			row.AddThemeConstantOverride("separation", 8);
+			rows.AddChild(row);
+			var title = new Label { Text = slot == EquipSlot.Ring1 ? "Rings" : slot + "s", CustomMinimumSize = new Vector2(90, 0) };
+			LastLightHud.Style(title, 16, new Color(0.86f, 0.8f, 0.66f));
+			row.AddChild(title);
+			foreach (var item in ItemRegistry.AllItemFactories.Select(f => f()).Where(i => i.Slot == slot))
+				row.AddChild(Cell(item.Icon, item.Name));
 		}
 
 		var runes = new HBoxContainer();

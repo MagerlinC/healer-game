@@ -19,6 +19,7 @@ public class Shadeweaver : EquippableItem
 			$"20% increased Umbra damage. Casting an Umbra spell increases the remaining duration of damage effects on the target by {DurationExtension:F0}s";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Staff;
+		School = SpellSchool.Umbra;
 		Icon = GD.Load<Texture2D>(AssetConstants.StaveIconPath(6));
 		CharacterModifiers.Add(new UmbraModifier());
 		SpellModifiers.Add(new RefreshDotsModifier());

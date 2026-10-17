@@ -1,6 +1,7 @@
 using System;
 using Godot;
 using healerfantasy.Effects;
+using healerfantasy.SpellResources;
 using healerfantasy.SpellSystem;
 using healerfantasy.Talents;
 
@@ -31,6 +32,7 @@ public class TheHeartOfLight : EquippableItem
 			$"While any Flame effect is active on the target, they take {Math.Round(DamageReductionAmount * 100)}% less damage.";
 		Rarity = ItemRarity.Legendary;
 		Slot = EquipSlot.Amulet;
+		School = SpellSchool.Flame;
 		Icon = GD.Load<Texture2D>(AssetConstants.AmuletIconPath(2));
 		SpellModifiers.Add(new DamageReductionModifier(DamageReductionAmount));
 	}

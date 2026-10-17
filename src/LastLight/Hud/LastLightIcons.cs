@@ -28,6 +28,7 @@ public static class LastLightIcons
 
 	static readonly Dictionary<string, Texture2D> Cache = new();
 	static Dictionary<string, string> SpellGlyphs, TalentGlyphs;
+	static Dictionary<string, (SpellSchool School, string Glyph)> ItemGlyphs;
 	static string GloomGlyph;
 
 	/// <summary>Builds the glyph strings once, with numbers formatted culture-independently.</summary>
@@ -40,6 +41,7 @@ public static class LastLightIcons
 		{
 			SpellGlyphs = BuildSpellGlyphs();
 			TalentGlyphs = BuildTalentGlyphs();
+			ItemGlyphs = BuildItemGlyphs();
 			GloomGlyph = BuildGloomGlyph();
 		}
 		finally
@@ -64,6 +66,21 @@ public static class LastLightIcons
 		if (name == null) return null;
 		EnsureGlyphs();
 		return TalentGlyphs.TryGetValue(name, out var glyph) ? Render("talent:" + name, school, glyph, true) : null;
+	}
+
+	/// <summary>The icon for an equippable item, or null if it has none.</summary>
+	public static Texture2D ForItem(Items.EquippableItem item)
+	{
+		return item == null ? null : ForItem(item.GetType().Name);
+	}
+
+	/// <summary>The icon for an item by class name — for effects that borrow their item's icon.</summary>
+	public static Texture2D ForItem(string className)
+	{
+		EnsureGlyphs();
+		return ItemGlyphs.TryGetValue(className, out var item)
+			? Render("item:" + className, item.School, ItemFrame + item.Glyph, false)
+			: null;
 	}
 
 	/// <summary>The Gloom debuff badge.</summary>
@@ -235,6 +252,7 @@ public static class LastLightIcons
 			.ToString()
 			.Replace("{C}", "#" + c.ToHtml(false))
 			.Replace("{H}", "#" + hot.ToHtml(false))
+			.Replace("{D}", "#" + c.Darkened(0.25f).ToHtml(false))
 			.Replace("{K}", "#0e0c0b")
 			.Replace("{U}", "#120c1a");
 
@@ -589,6 +607,139 @@ public static class LastLightIcons
 			["Desperate Blaze"] = Flame(32, 27, 0.95f) + Path("M14,50 L50,50 L50,58 L14,58 Z", "none", "{C}", 2) +
 			                      Poly("15,51 21,51 21,57 15,57", "{H}"),
 			["Phoenix Heart"] = Heart(32, 42, 1.25f) + Flame(32, 20, 0.55f, "{H}", "{C}")
+		};
+	}
+
+	// ── items ────────────────────────────────────────────────────────────────
+
+	/// <summary>Corner brackets: marks an icon as an item rather than a spell or talent.</summary>
+	const string ItemFrame =
+		"<path d='M4,13 L4,4 L13,4 M51,4 L60,4 L60,13 M60,51 L60,60 L51,60 M13,60 L4,60 L4,51' " +
+		"fill='none' stroke='{C}' stroke-opacity='0.6' stroke-width='2'/>";
+
+	/// <summary>Any 64×64 glyph, scaled by <paramref name="s"/> and centred on (x, y).</summary>
+	static string Place(float x, float y, float s, string glyph)
+	{
+		return F($"<g transform='translate({x} {y}) scale({s}) translate(-32 -32)'>") + glyph + "</g>";
+	}
+
+	/// <summary>A staff rising from the bottom left; its head goes around (43, 20).</summary>
+	static string Staff(string head)
+	{
+		// the shaft, with three bands of wrapping across it
+		var sb = new StringBuilder(Line(12, 59, 36, 30, 6, "{D}"));
+		foreach (var t in new[] { 0.3f, 0.45f, 0.6f })
+		{
+			var p = new Vector2(Mathf.Lerp(12, 36, t), Mathf.Lerp(59, 30, t));
+			sb.Append(Line(p.X - 4f, p.Y - 3.3f, p.X + 4f, p.Y + 3.3f, 2.5f));
+		}
+
+		return sb + head;
+	}
+
+	/// <summary>A ring band with its stone (or signet face) around (32, 22).</summary>
+	static string Band(string stone)
+	{
+		return Ring(32, 43, 14, 6, "{D}") + Path("M21,51 C26,56 38,56 43,51", "none", "{C}", 2) + stone;
+	}
+
+	/// <summary>A flat signet face at (32, 23) with a mark carved into it.</summary>
+	static string Signet(string mark)
+	{
+		return Band(F("<ellipse cx='32' cy='23' rx='16' ry='12' fill='{K}' stroke='{C}' stroke-width='3'/>") + mark);
+	}
+
+	/// <summary>A pendant hanging from its chain; the pendant goes around (32, 44).</summary>
+	static string Pendant(string pendant, bool heavyChain = false)
+	{
+		var chain = heavyChain
+			? "stroke-width='4.5' stroke-dasharray='6 3' stroke-linecap='butt'"
+			: "stroke-width='4' stroke-dasharray='0.1 5.5' stroke-linecap='round'";
+		return $"<path d='M9,2 C11,16 22,26 32,28 C42,26 53,16 55,2' fill='none' stroke='{{D}}' {chain}/>" +
+		       Ring(32, 29, 3, 2.5f, "{C}") + pendant;
+	}
+
+	/// <summary>A cut gem, as a kite with its facets.</summary>
+	static string Crystal(float x, float y, float s)
+	{
+		return Place(x, y, s,
+			Poly("32,8 46,26 32,56 18,26", "{H}", "{C}") + Poly("18,26 32,30 46,26 32,8", "{C}") +
+			Line(32, 30, 32, 56, 1.5f, "{C}"));
+	}
+
+	static string Crown(float x, float y, float s, string fill = "{H}")
+	{
+		return Place(x, y, s, Poly("14,44 12,20 23,32 32,16 41,32 52,20 50,44", fill) + Line(14, 50, 50, 50, 5, fill));
+	}
+
+	static string Leaf(float x, float y, float s, string fill = "{H}")
+	{
+		return Place(x, y, s,
+			Path("M32,6 C52,18 54,40 32,56 C10,40 12,18 32,6 Z", fill, fill, 1) + Line(32, 16, 32, 58, 3.5f, "{K}") +
+			Line(32, 30, 42, 22, 3, "{K}") + Line(32, 42, 22, 34, 3, "{K}"));
+	}
+
+	static Dictionary<string, (SpellSchool, string)> BuildItemGlyphs()
+	{
+		var umbralBolt = Poly("44,8 20,34 31,34 19,56 46,26 35,26", "{U}", "{C}");
+
+		return new Dictionary<string, (SpellSchool, string)>
+		{
+			// STAVES
+			["CrystalStaff"] = (SpellSchool.Wick, Staff(Crystal(43, 21, 0.66f))),
+			["StaffOfRestoration"] = (SpellSchool.Flame, Staff(Ring(43, 20, 13, 3.5f) + Flame(43, 21, 0.48f, "{C}", "{H}"))),
+			["SlimewardenSceptre"] = (SpellSchool.Generic,
+				Staff(Ring(43, 20, 13, 3.5f) + Star(43, 20, 4, 11, 3, "{H}"))),
+			["ArcaneAccelerator"] = (SpellSchool.Wick, Staff(Hourglass(43, 19, 0.8f))),
+			["StaffOfEternalFlame"] = (SpellSchool.Flame,
+				Staff(Rays(43, 20, 15, 21, 8, 3) + Flame(43, 21, 0.68f, "{C}", "{H}"))),
+			["Shadeweaver"] = (SpellSchool.Umbra, Staff(Circle(43, 20, 14, "{U}") + Spiral(43, 20, 2.2f, 12, 3))),
+			["StaffOfKindling"] = (SpellSchool.Ember, Staff(Drop(43, 22, 1.1f) + Flame(43, 28, 0.3f, "{H}", "{C}"))),
+			["TheBloodCane"] = (SpellSchool.Pyre,
+				Line(12, 59, 32, 32, 6, "{D}") + Path("M32,32 C38,20 42,8 51,8 C58,8 61,15 56,21", "none", "{D}", 6) +
+				Line(14.8f, 51.6f, 22.2f, 57.2f, 2.5f) + Line(20.2f, 44.5f, 27.6f, 50.1f, 2.5f) + Heart(44, 34, 0.85f) +
+				Drop(56, 30, 0.35f)),
+			["WrathOfEmbers"] = (SpellSchool.Ember,
+				Staff(Coal(43, 23, 1.15f) + Coal(43, 23, 0.5f, "{H}") + Flame(35, 9, 0.3f) + Flame(51, 7, 0.36f))),
+
+			// RINGS
+			["CrystalRing"] = (SpellSchool.Wick, Band(Crystal(32, 21, 0.56f))),
+			["RingOfMending"] = (SpellSchool.Flame, Band(Flame(32, 20, 0.65f, "{C}", "{H}"))),
+			["PreciseRing"] = (SpellSchool.Generic, Band(Star(32, 21, 4, 16, 4, "{H}"))),
+			["RulersSignet"] = (SpellSchool.Wick, Signet(Crown(32, 23, 0.42f))),
+			["SignetOfTheOak"] = (SpellSchool.Generic, Signet(Leaf(32, 23, 0.38f))),
+			["SeersBand"] = (SpellSchool.Generic, Band(Circle(32, 21, 12, "{K}") + Eye(32, 21, 0.7f))),
+			["RingOfTriage"] = (SpellSchool.Flame,
+				Band(Heart(32, 24, 1f) + Line(32, 15, 32, 26, 3, "{K}") + Line(26.5f, 20.5f, 37.5f, 20.5f, 3, "{K}"))),
+			["BandOfRejuvenation"] = (SpellSchool.Ember,
+				Band(Coal(32, 24, 0.95f) + Coal(32, 24, 0.45f, "{H}") + Circle(19, 10, 2.5f) + Circle(44, 8, 3, "{H}") +
+				     Circle(31, 4, 2))),
+			["BandOfAffliction"] = (SpellSchool.Umbra,
+				Band(Circle(32, 22, 12, "{U}") + Ring(32, 22, 12, 3) + Path("M26,17 C35,13 40,24 32,28", "none", "{H}", 2.5f) +
+				     Drop(14, 10, 0.4f) + Drop(50, 10, 0.4f))),
+			["BandOfArcaneRecovery"] = (SpellSchool.Wick,
+				Band(Drop(32, 24, 0.85f, "{H}") + ArcArrow(32, 22, 16, 190, 350, 3))),
+
+			// AMULETS
+			["EmberkeepersClasp"] = (SpellSchool.Ember,
+				Pendant(Circle(32, 45, 13, "{K}") + Ring(32, 45, 13, 3.5f) + Coal(32, 45, 0.8f) + Coal(32, 45, 0.38f, "{H}"))),
+			["BulwarkOfCinders"] = (SpellSchool.Ember,
+				Pendant(Shield(32, 46, 1.15f, "{K}", "{C}") + Coal(32, 46, 0.7f) + Coal(32, 46, 0.32f, "{H}"))),
+			["CrimsonAmulet"] = (SpellSchool.Pyre, Pendant(Drop(32, 46, 1.3f) + Circle(27, 51, 2.8f, "{H}"))),
+			["ChainsOfCommand"] = (SpellSchool.Generic,
+				Pendant(Flame(32, 44, 0.45f, "{C}", "{H}") + Flame(20, 53, 0.36f, "{C}", "{H}") + Flame(44, 53, 0.36f, "{C}", "{H}") +
+				        Line(26, 47, 22, 49, 2.5f, "{D}") + Line(38, 47, 42, 49, 2.5f, "{D}"), true)),
+			["ShadowboundChain"] = (SpellSchool.Umbra, Pendant(Place(32, 45, 0.68f, umbralBolt), true)),
+			["ChainOfReflection"] = (SpellSchool.Umbra,
+				Pendant(Circle(32, 46, 13, "{U}") + Ring(32, 46, 13, 3.5f) + Line(25, 51, 37, 39, 2.5f, "{H}") +
+				        Line(31, 55, 39, 47, 2, "{H}"), true)),
+			["PendantOfTheUmbralEmbrace"] = (SpellSchool.Umbra,
+				Pendant(Flame(32, 46, 0.78f, "#000000", "{C}", "{C}") + Circle(32, 51, 2.2f, "{H}"))),
+			["TheHeartOfLight"] = (SpellSchool.Flame,
+				Pendant(Rays(32, 46, 16, 22, 8, 2.5f) + Heart(32, 49, 1.15f) + Flame(32, 46, 0.3f, "{H}", "#ffffff"))),
+			["TheLifebindersCovenant"] = (SpellSchool.Flame,
+				Pendant(Ring(32, 45, 13, 3) + Drop(32, 47, 0.55f, "{H}") + Circle(19, 45, 4, "{H}") +
+				        Circle(45, 45, 4, "{H}") + Circle(32, 58, 4, "{H}")))
 		};
 	}
 

@@ -174,8 +174,12 @@ public partial class MerchantPane : Control
 		return row;
 	}
 
-	/// <summary>A framed, titled column with a scrollable list inside.</summary>
-	static Control BuildSection(string title, string tag, Color bg, Color border, out VBoxContainer list)
+	/// <summary>
+	/// A framed, titled column with a scrollable list inside. An optional
+	/// <paramref name="footer"/> sits below the list, outside the scroll area.
+	/// </summary>
+	internal static Control BuildSection(string title, string tag, Color bg, Color border, out VBoxContainer list,
+		Control? footer = null)
 	{
 		var style = new StyleBoxFlat();
 		style.BgColor = bg;
@@ -227,6 +231,8 @@ public partial class MerchantPane : Control
 		list.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		list.AddThemeConstantOverride("separation", 8);
 		scroll.AddChild(list);
+
+		if (footer != null) vbox.AddChild(footer);
 
 		return frame;
 	}
@@ -464,7 +470,7 @@ public partial class MerchantPane : Control
 		return card;
 	}
 
-	static Control BuildIconFrame(Texture2D? icon, Color accent, float size)
+	internal static Control BuildIconFrame(Texture2D? icon, Color accent, float size)
 	{
 		var style = new StyleBoxFlat();
 		style.BgColor = new Color(0.03f, 0.03f, 0.03f, 0.9f);
@@ -536,7 +542,7 @@ public partial class MerchantPane : Control
 		return label;
 	}
 
-	static Control BuildSubheader(string text)
+	internal static Control BuildSubheader(string text)
 	{
 		var label = new Label();
 		label.Text = text.ToUpperInvariant();
@@ -546,7 +552,7 @@ public partial class MerchantPane : Control
 		return label;
 	}
 
-	static Control BuildHint(string text)
+	internal static Control BuildHint(string text)
 	{
 		var label = new Label();
 		label.Text = text;
@@ -569,7 +575,7 @@ public partial class MerchantPane : Control
 	static string ItemSubtitle(EquippableItem item) =>
 		$"{item.Rarity}  •  {EquipSlotControl.SlotDisplayName(item.Slot)}";
 
-	static void ClearChildren(Node node)
+	internal static void ClearChildren(Node node)
 	{
 		// Detach immediately so the old rows don't linger for a frame next to the new ones.
 		foreach (var child in node.GetChildren())

@@ -32,6 +32,9 @@ public partial class GameTooltip : CanvasLayer
 	static readonly Color TooltipBg = new(0.08f, 0.07f, 0.06f, 0.96f);
 	static readonly Color TooltipBorder = new(0.55f, 0.45f, 0.25f, 0.90f);
 	static readonly Color TooltipText = new(0.95f, 0.88f, 0.70f);
+	const float PanelWidth = 200f;
+	const float PanelMarginX = 10f;
+	const float InnerWidth = PanelWidth - PanelMarginX * 2f;
 
 	// ── private state ─────────────────────────────────────────────────────────
 	PanelContainer _panel = null!;
@@ -52,11 +55,11 @@ public partial class GameTooltip : CanvasLayer
 		style.SetCornerRadiusAll(5);
 		style.SetBorderWidthAll(1);
 		style.BorderColor = TooltipBorder;
-		style.ContentMarginLeft = style.ContentMarginRight = 10f;
+		style.ContentMarginLeft = style.ContentMarginRight = PanelMarginX;
 		style.ContentMarginTop = style.ContentMarginBottom = 6f;
 
 		_panel = new PanelContainer();
-		_panel.CustomMinimumSize = new Vector2(200, 50);
+		_panel.CustomMinimumSize = new Vector2(PanelWidth, 50);
 		_panel.AddThemeStyleboxOverride("panel", style);
 		_panel.MouseFilter = Control.MouseFilterEnum.Ignore;
 		_panel.Visible = false;
@@ -106,6 +109,12 @@ public partial class GameTooltip : CanvasLayer
 		if (Instance is null) return;
 		Instance._titleLabel.Text = title;
 		Instance._descLabel.Text = desc;
+		// Autowrap labels measure their height from their current width. Before the
+		// panel's first layout pass (it starts hidden, so the container never sorted)
+		// that width is 0 → one word per line → a giant, empty-looking panel.
+		// Give them the inner width up front so the minimum size is correct immediately.
+		Instance._titleLabel.Size = new Vector2(InnerWidth, Instance._titleLabel.Size.Y);
+		Instance._descLabel.Size = new Vector2(InnerWidth, Instance._descLabel.Size.Y);
 		Instance._panel.ResetSize(); // force recompute from label's current minimum size
 		Instance._panel.Visible = true;
 		Instance._isShowing = true;
