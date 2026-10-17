@@ -137,6 +137,23 @@ public partial class MapScreenController : Node2D
 			});
 		}
 
+		// The secret: a pit at the top of the world, where the path would go on past
+		// the Frozen Peak. Drawn above the darkness so it shows through it; only a
+		// rumour until the Rune of the Abyss opens the way to it.
+		var abyssLayer = new CanvasLayer { Layer = -4 };
+		AddChild(abyssLayer);
+		var abyssSize = new Vector2(520f, 340f);
+		var abyssMat = new ShaderMaterial { Shader = GD.Load<Shader>("res://src/LastLight/map_abyss.gdshader") };
+		abyssMat.SetShaderParameter("rect_aspect", abyssSize.X / abyssSize.Y);
+		abyssMat.SetShaderParameter("awake", HasAbyss ? 1f : 0f);
+		abyssLayer.AddChild(new ColorRect
+		{
+			Material = abyssMat,
+			MouseFilter = Control.MouseFilterEnum.Ignore,
+			Position = AbyssCentres[^1] - abyssSize / 2f,
+			Size = abyssSize
+		});
+
 		// ── Map canvas layer ──────────────────────────────────────────────────
 		var mapLayer = new CanvasLayer { Layer = 0 };
 		AddChild(mapLayer);
@@ -447,17 +464,17 @@ public partial class MapScreenController : Node2D
 				case RunState.MapNodeState.Available:
 					sub = "▶  Available";
 					subColor = ColAvailable;
-					body = $"Bosses:\n" + def.BossNames.Join("\n");
+					body = def.Description;
 					break;
 				case RunState.MapNodeState.Completed:
 					sub = "✓  Cleared";
 					subColor = ColCompleted;
-					body = "You have already conquered this dungeon.";
+					body = def.Description + "\n\nYour light has passed through here, and the dark has drawn back.";
 					break;
 				default:
 					sub = "🔒  Locked";
 					subColor = ColLocked;
-					body = "Complete earlier dungeons to unlock this location.";
+					body = def.Description + "\n\nComplete earlier dungeons to reach this place.";
 					break;
 			}
 		}

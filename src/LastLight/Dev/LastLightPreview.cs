@@ -17,7 +17,7 @@ public partial class LastLightPreview : Node
 
 	/// <summary>
 	/// UI states to trigger at t=2s (--do=a,b): settings, panel0..panelN (overlay panels),
-	/// tooltip, pause, killparty, killboss, bosshp:0.4, cast:Spell_Name, mouse:x;y, thorns,
+	/// tooltip, pause, killparty, killboss, bosshp:0.4, cast:Spell_Name, mouse:x;y, click:x;y, thorns,
 	/// abyss:stare|eclipse|tendrils|open, devsearch:text (overworld).
 	/// </summary>
 	static string[] Actions = System.Array.Empty<string>();
@@ -109,6 +109,16 @@ public partial class LastLightPreview : Node
 					// mouse:x;y — moves the cursor to a screen position (e.g. to hover an interactible).
 					var xy = action.Substring(6).Split(';');
 					GetViewport().WarpMouse(new Vector2(float.Parse(xy[0]), float.Parse(xy[1])));
+				}
+				else if (action.StartsWith("click:"))
+				{
+					// click:x;y — left-clicks a screen position (e.g. to open a map location's details).
+					var xy = action.Substring(6).Split(';');
+					var pos = new Vector2(float.Parse(xy[0]), float.Parse(xy[1]));
+					GetViewport().WarpMouse(pos);
+					foreach (var pressed in new[] { true, false })
+						Input.ParseInputEvent(new InputEventMouseButton
+							{ ButtonIndex = MouseButton.Left, Pressed = pressed, Position = pos, GlobalPosition = pos });
 				}
 				else if (action == "pause")
 					Input.ParseInputEvent(new InputEventKey { PhysicalKeycode = Key.Escape, Keycode = Key.Escape, Pressed = true });
