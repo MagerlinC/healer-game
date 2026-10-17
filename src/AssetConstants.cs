@@ -14,7 +14,7 @@ public static class AssetConstants
 	public static readonly string TalentIconAssets = "res://assets/talent-icons/";
 
 	public static readonly string FinalBossPhase2MusicPath = "res://assets/music/boss-battle.ogg";
-	public static readonly string InfiniteAbyssMusicPath = "res://assets/music/The Infinite Abyss.wav";
+	public static readonly string InfiniteAbyssMusicPath = "res://assets/music/The Infinite Abyss.ogg";
 
 	public static readonly string MistTexturePath = "res://assets/textures/mist.png";
 
